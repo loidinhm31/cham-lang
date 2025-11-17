@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+/* Tailwind v4 CSS-First Configuration */
+@theme {
+    /* Custom Colors */
+    --color-primary-50: #f0fdfa;
+    --color-primary-100: #ccfbf1;
+    --color-primary-200: #99f6e4;
+    --color-primary-300: #5eead4;
+    --color-primary-400: #2dd4bf;
+    --color-primary-500: #14b8a6;
+    --color-primary-600: #0d9488;
+    --color-primary-700: #0f766e;
+    --color-primary-800: #115e59;
+    --color-primary-900: #134e4a;
+
+    --color-accent-50: #fffbeb;
+    --color-accent-100: #fef3c7;
+    --color-accent-200: #fde68a;
+    --color-accent-300: #fcd34d;
+    --color-accent-400: #fbbf24;
+    --color-accent-500: #f59e0b;
+    --color-accent-600: #d97706;
+    --color-accent-700: #b45309;
+    --color-accent-800: #92400e;
+    --color-accent-900: #78350f;
+
+    /* Custom Animations */
+    --animate-float: float 3s ease-in-out infinite;
+    --animate-fade-in-up: fadeInUp 0.6s ease-out forwards;
+
+    /* Font Family */
+    --font-family-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Animation Keyframes */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-20px) rotate(5deg);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+body {
+    font-family: var(--font-family-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgb(203 213 225 / 0.3);
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgb(20 184 166 / 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(20 184 166 / 0.8);
+}
+
+/* Custom Utility Classes */
+.glass-effect {
+    background: rgb(255 255 255 / 0.4);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.glass-effect-dark {
+    background: rgb(0 0 0 / 0.3);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.animate-float {
+    animation: var(--animate-float);
+}
+
+.animate-fade-in-up {
+    animation: var(--animate-fade-in-up);
+}
+
+/* Gradient Text */
+.gradient-text {
+    background: linear-gradient(135deg, var(--color-accent-500) 0%, var(--color-primary-500) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Button Styles */
+.btn-primary {
+    @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold py-4 px-8 rounded-full shadow-2xl transform transition-all duration-200 hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+    @apply bg-white/60 backdrop-blur-lg text-gray-800 font-semibold py-3 px-6 rounded-2xl shadow-lg transform transition-all duration-200 hover:bg-white/80 active:scale-95;
+}
+
+/* Card Styles */
+.card-glass {
+    @apply bg-white/40 backdrop-blur-lg rounded-3xl shadow-xl;
+}
+
+.card-hover {
+    @apply transform transition-all duration-200 hover:scale-105 hover:shadow-2xl;
+}
+
+/* Browser Compatibility */
+@supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+    .glass-effect,
+    .glass-effect-dark {
+        -webkit-backdrop-filter: blur(12px);
+        backdrop-filter: blur(12px);
+    }
+}
+
+/* Smooth Transitions */
+button, a, input, select, textarea {
+    transition: all 0.2s ease-in-out;
+}
+
+/* Focus Styles for Accessibility */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid var(--color-primary-500);
+    outline-offset: 2px;
+}
