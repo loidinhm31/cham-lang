@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Plus, X } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { CollectionService } from '../../services/collection.service';
 import { Input, TextArea, Select, Button, Card } from '../atoms';
 import type {
   CreateVocabularyRequest,
@@ -8,6 +10,7 @@ import type {
   LanguageLevel,
   Definition,
 } from '../../types/vocabulary';
+import type { Collection } from '../../types/collection';
 
 interface VocabularyFormProps {
   initialData?: Partial<CreateVocabularyRequest>;
@@ -23,6 +26,9 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
   loading = false,
 }) => {
   const { t } = useTranslation();
+  const { user } = useAuth();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [loadingCollections, setLoadingCollections] = useState(true);
 
   const [formData, setFormData] = useState<CreateVocabularyRequest>({
     word: initialData?.word || '',
@@ -34,7 +40,30 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     topics: initialData?.topics || [''],
     related_words: initialData?.related_words || [],
     language: initialData?.language || 'en',
+    collection_id: initialData?.collection_id || '',
   });
+
+  useEffect(() => {
+    loadCollections();
+  }, [user]);
+
+  const loadCollections = async () => {
+    if (!user) return;
+
+    try {
+      const data = await CollectionService.getUserCollections(user.user_id);
+      setCollections(data);
+
+      // Auto-select first collection if no initial data
+      if (!initialData?.collection_id && data.length > 0) {
+        setFormData(prev => ({ ...prev, collection_id: data[0].id || '' }));
+      }
+    } catch (error) {
+      console.error('Failed to load collections:', error);
+    } finally {
+      setLoadingCollections(false);
+    }
+  };
 
   const wordTypeOptions = [
     'noun', 'verb', 'adjective', 'adverb', 'pronoun',
@@ -47,6 +76,11 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
   const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(level => ({
     value: level,
     label: t(`levels.${level}`)
+  }));
+
+  const collectionOptions = collections.map(collection => ({
+    value: collection.id || '',
+    label: collection.name,
   }));
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -125,6 +159,24 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card variant="glass">
         <div className="space-y-4">
+          {loadingCollections ? (
+            <div className="text-center py-4 text-gray-600">
+              {t('common.loading')}
+            </div>
+          ) : collections.length === 0 ? (
+            <div className="bg-amber-100 border border-amber-400 text-amber-700 px-4 py-3 rounded-2xl">
+              {t('vocabulary.noCollectionsWarning')}
+            </div>
+          ) : (
+            <Select
+              label={t('vocabulary.collection')}
+              options={collectionOptions}
+              value={formData.collection_id}
+              onChange={(e) => setFormData({ ...formData, collection_id: e.target.value })}
+              required
+            />
+          )}
+
           <Input
             label={t('vocabulary.word')}
             value={formData.word}

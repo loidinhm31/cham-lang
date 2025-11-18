@@ -5,3 +5,6 @@ export { TopBar } from './TopBar';
 export { StatsCard } from './StatsCard';
 export { MultipleChoiceCard } from './MultipleChoiceCard';
 export { FillWordCard } from './FillWordCard';
+export { ProtectedRoute } from './ProtectedRoute';
+export { CollectionModal } from './CollectionModal';
+export { ShareModal } from './ShareModal';

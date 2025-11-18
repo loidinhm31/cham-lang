@@ -9,7 +9,8 @@ export type WordType =
   | 'interjection'
   | 'phrase';
 
-export type LanguageLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+// Level is now flexible based on language - stored as string
+export type LanguageLevel = string;
 
 export type WordRelationship =
   | 'synonym'
@@ -43,6 +44,8 @@ export interface Vocabulary {
   created_at: string;
   updated_at: string;
   language: string;
+  collection_id: string;
+  user_id: string;
 }
 
 export interface CreateVocabularyRequest {
@@ -55,6 +58,7 @@ export interface CreateVocabularyRequest {
   topics: string[];
   related_words: RelatedWord[];
   language: string;
+  collection_id: string;
 }
 
 export interface UpdateVocabularyRequest {
@@ -79,6 +83,7 @@ export interface SearchQuery {
 
 export interface UserPreferences {
   id?: string;
+  user_id: string;
   interface_language: string;
   native_language: string;
   learning_languages: string[];

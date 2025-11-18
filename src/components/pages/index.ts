@@ -8,3 +8,7 @@ export { PracticeModePage } from './PracticeModePage';
 export { FlashcardPracticePage } from './FlashcardPracticePage';
 export { FillWordPracticePage } from './FillWordPracticePage';
 export { MultipleChoicePracticePage } from './MultipleChoicePracticePage';
+export { LoginPage } from './LoginPage';
+export { RegisterPage } from './RegisterPage';
+export { CollectionsPage } from './CollectionsPage';
+export { CreateCollectionPage } from './CreateCollectionPage';

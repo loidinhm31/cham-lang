@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, X, RotateCcw } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { TopBar } from '../molecules';
 import { FlashCard, Button, Card } from '../atoms';
 import { VocabularyService } from '../../services/vocabulary.service';
@@ -11,6 +12,7 @@ import type { PracticeResult } from '../../types/practice';
 
 export const FlashcardPracticePage: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
@@ -59,15 +61,18 @@ export const FlashcardPracticePage: React.FC = () => {
     setResults([...results, result]);
 
     // Update progress
-    try {
-      await PracticeService.updatePracticeProgress({
-        language: 'en',
-        vocabulary_id: currentVocab.id || '',
-        word: currentVocab.word,
-        correct,
-      });
-    } catch (error) {
-      console.error('Failed to update progress:', error);
+    if (user) {
+      try {
+        await PracticeService.updatePracticeProgress({
+          user_id: user.user_id,
+          language: 'en',
+          vocabulary_id: currentVocab.id || '',
+          word: currentVocab.word,
+          correct,
+        });
+      } catch (error) {
+        console.error('Failed to update progress:', error);
+      }
     }
 
     // Move to next or complete
@@ -83,15 +88,19 @@ export const FlashcardPracticePage: React.FC = () => {
   const completeSession = async () => {
     const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
 
-    try {
-      await PracticeService.createPracticeSession({
-        mode: 'flashcard',
-        language: 'en',
-        results: [...results],
-        duration_seconds: durationSeconds,
-      });
-    } catch (error) {
-      console.error('Failed to save session:', error);
+    if (user && currentVocab) {
+      try {
+        await PracticeService.createPracticeSession({
+          user_id: user.user_id,
+          collection_id: currentVocab.collection_id || '', // TODO: Select collection before practice
+          mode: 'flashcard',
+          language: 'en',
+          results: [...results],
+          duration_seconds: durationSeconds,
+        });
+      } catch (error) {
+        console.error('Failed to save session:', error);
+      }
     }
 
     setCompleted(true);

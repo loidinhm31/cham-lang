@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Database } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Globe, Database, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { TopBar } from '../molecules';
 import { Card, Button, Input, Select } from '../atoms';
 import { VocabularyService } from '../../services/vocabulary.service';
@@ -8,19 +10,25 @@ import type { UserPreferences } from '../../types/vocabulary';
 
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [preferences, setPreferences] = useState<UserPreferences | null>(null);
   const [connectionString, setConnectionString] = useState('mongodb://localhost:27017');
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadPreferences();
+    if (user) {
+      loadPreferences();
+    }
     checkConnection();
-  }, []);
+  }, [user]);
 
   const loadPreferences = async () => {
+    if (!user) return;
+
     try {
-      const prefs = await VocabularyService.getPreferences();
+      const prefs = await VocabularyService.getPreferences(user.user_id);
       if (prefs) {
         setPreferences(prefs);
         i18n.changeLanguage(prefs.interface_language);
@@ -68,11 +76,14 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleLanguageChange = async (language: string) => {
+    if (!user) return;
+
     try {
       i18n.changeLanguage(language);
 
       const now = new Date().toISOString();
       const updatedPrefs: UserPreferences = preferences || {
+        user_id: user.user_id,
         interface_language: language,
         native_language: 'vi',
         learning_languages: ['en'],
@@ -106,11 +117,27 @@ export const ProfilePage: React.FC = () => {
         {/* Profile Header */}
         <Card variant="gradient">
           <div className="text-center">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center text-5xl mx-auto mb-4">
-              🦎
+            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <UserIcon className="w-12 h-12 text-white" />
             </div>
-            <h2 className="text-2xl font-bold mb-2">Language Learner</h2>
-            <p className="text-white/90">{t('app.tagline')}</p>
+            <h2 className="text-2xl font-bold mb-2">{user?.username}</h2>
+            <p className="text-white/90 mb-1">{user?.email}</p>
+            <p className="text-white/70 text-sm">{t('app.tagline')}</p>
+          </div>
+
+          <div className="mt-6">
+            <Button
+              variant="danger"
+              fullWidth
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="flex items-center justify-center gap-2"
+            >
+              <LogOut className="w-5 h-5" />
+              {t('auth.logout')}
+            </Button>
           </div>
         </Card>
 

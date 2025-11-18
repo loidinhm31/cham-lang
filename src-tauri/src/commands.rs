@@ -35,6 +35,7 @@ pub async fn is_database_connected(db_manager: State<'_, DatabaseManager>) -> Re
 #[tauri::command]
 pub async fn create_vocabulary(
     db_manager: State<'_, DatabaseManager>,
+    user_id: String,
     request: CreateVocabularyRequest,
 ) -> Result<String, String> {
     let collection = db_manager.get_vocabulary_collection().await?;
@@ -51,6 +52,8 @@ pub async fn create_vocabulary(
         topics: request.topics,
         related_words: request.related_words,
         language: request.language,
+        collection_id: request.collection_id.clone(),
+        user_id,
         created_at: now,
         updated_at: now,
     };
@@ -59,6 +62,9 @@ pub async fn create_vocabulary(
         .insert_one(&vocabulary)
         .await
         .map_err(|e| format!("Failed to create vocabulary: {}", e))?;
+
+    // Update collection word count
+    let _ = crate::collection_commands::update_collection_word_count(db_manager.clone(), request.collection_id).await;
 
     Ok(result.inserted_id.as_object_id().unwrap().to_hex())
 }
@@ -305,7 +311,7 @@ pub async fn save_preferences(
 ) -> Result<String, String> {
     let collection = db_manager.get_preferences_collection().await?;
 
-    let filter = doc! {};
+    let filter = doc! { "user_id": &preferences.user_id };
     let mut prefs = preferences;
     prefs.updated_at = Utc::now();
 
@@ -326,11 +332,12 @@ pub async fn save_preferences(
 #[tauri::command]
 pub async fn get_preferences(
     db_manager: State<'_, DatabaseManager>,
+    user_id: String,
 ) -> Result<Option<UserPreferences>, String> {
     let collection = db_manager.get_preferences_collection().await?;
 
     let preferences = collection
-        .find_one(doc! {})
+        .find_one(doc! { "user_id": &user_id })
         .await
         .map_err(|e| format!("Failed to get preferences: {}", e))?;
 
@@ -351,6 +358,8 @@ pub async fn create_practice_session(
 
     let session = PracticeSession {
         id: None,
+        user_id: request.user_id,
+        collection_id: request.collection_id,
         mode: request.mode,
         language: request.language,
         topic: request.topic,
@@ -484,6 +493,7 @@ pub async fn update_practice_progress(
             // Create new progress
             let progress = UserPracticeProgress {
                 id: None,
+                user_id: request.user_id,
                 language: request.language,
                 words_progress: vec![WordProgress {
                     vocabulary_id: request.vocabulary_id,
@@ -553,4 +563,39 @@ pub async fn get_word_progress(
     }
 
     Ok(None)
+}
+
+// Level configuration command
+#[tauri::command]
+pub async fn get_level_configuration(language: String) -> Result<Vec<String>, String> {
+    Ok(crate::models::get_level_config(&language))
+}
+
+// Get vocabularies by collection
+#[tauri::command]
+pub async fn get_vocabularies_by_collection(
+    db_manager: State<'_, DatabaseManager>,
+    collection_id: String,
+    limit: Option<i64>,
+) -> Result<Vec<Vocabulary>, String> {
+    let collection = db_manager.get_vocabulary_collection().await?;
+
+    let filter = doc! {"collection_id": collection_id};
+
+    let mut cursor = collection
+        .find(filter)
+        .limit(limit.unwrap_or(100))
+        .await
+        .map_err(|e| format!("Failed to get vocabularies: {}", e))?;
+
+    let mut vocabularies = Vec::new();
+    while let Some(vocabulary) = cursor
+        .try_next()
+        .await
+        .map_err(|e| format!("Failed to iterate vocabularies: {}", e))?
+    {
+        vocabularies.push(vocabulary);
+    }
+
+    Ok(vocabularies)
 }

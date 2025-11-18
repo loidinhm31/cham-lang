@@ -23,7 +23,7 @@ export const ExplorePage: React.FC = () => {
   ];
 
   const levels: LanguageLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
-  const levelColors = {
+  const levelColors: Record<string, string> = {
     A1: 'from-emerald-500 to-teal-600',
     A2: 'from-teal-500 to-cyan-600',
     B1: 'from-cyan-500 to-blue-600',

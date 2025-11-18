@@ -1,0 +1,242 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Plus, BookOpen, Globe, Lock, Trash2, Share2, Edit } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { CollectionService } from '../../services/collection.service';
+import { TopBar, CollectionModal, ShareModal } from '../molecules';
+import { Button, Card } from '../atoms';
+import type { Collection, CreateCollectionRequest } from '../../types/collection';
+
+export const CollectionsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
+
+  useEffect(() => {
+    loadCollections();
+  }, [user]);
+
+  const loadCollections = async () => {
+    if (!user) return;
+
+    try {
+      const data = await CollectionService.getUserCollections(user.user_id);
+      setCollections(data);
+    } catch (error) {
+      console.error('Failed to load collections:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEdit = async (data: CreateCollectionRequest) => {
+    if (!user || !selectedCollection) return;
+
+    try {
+      await CollectionService.updateCollection(user.user_id, {
+        id: selectedCollection.id!,
+        ...data,
+      });
+      await loadCollections();
+      alert(t('collections.updateSuccess'));
+    } catch (error) {
+      console.error('Failed to update collection:', error);
+      alert(t('messages.error'));
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!user || !confirm(t('collections.confirmDelete'))) return;
+
+    try {
+      await CollectionService.deleteCollection(user.user_id, id);
+      setCollections(collections.filter((c) => c.id !== id));
+    } catch (error) {
+      console.error('Failed to delete collection:', error);
+      alert(t('collections.deleteFailed'));
+    }
+  };
+
+  const handleShare = async (username: string) => {
+    if (!user || !selectedCollection) return;
+
+    try {
+      await CollectionService.shareCollection(
+        user.user_id,
+        selectedCollection.id!,
+        username
+      );
+      await loadCollections();
+      alert(t('collections.shareSuccess'));
+    } catch (error) {
+      console.error('Failed to share collection:', error);
+      alert(t('collections.shareFailed'));
+    }
+  };
+
+  const handleUnshare = async (userId: string) => {
+    if (!user || !selectedCollection) return;
+
+    try {
+      await CollectionService.unshareCollection(
+        user.user_id,
+        selectedCollection.id!,
+        userId
+      );
+      await loadCollections();
+    } catch (error) {
+      console.error('Failed to unshare collection:', error);
+      alert(t('messages.error'));
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-6 space-y-6">
+      <TopBar title={t('collections.title')} showBack={false} />
+
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {t('collections.myCollections')}
+        </h2>
+        <Button
+          variant="primary"
+          onClick={() => navigate('/collections/new')}
+          className="flex items-center gap-2"
+        >
+          <Plus className="w-5 h-5" />
+          {t('collections.create')}
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <div className="text-center py-12">
+          <div className="text-gray-600">{t('common.loading')}</div>
+        </div>
+      ) : collections.length === 0 ? (
+        <Card className="p-12 text-center">
+          <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            {t('collections.noCollections')}
+          </h3>
+          <p className="text-gray-600 mb-6">
+            {t('collections.noCollectionsDescription')}
+          </p>
+          <Button variant="primary" onClick={() => navigate('/collections/new')}>
+            {t('collections.createFirst')}
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {collections.map((collection) => (
+            <Card key={collection.id} className="p-6 hover:shadow-xl transition-shadow">
+              <div className="flex justify-between items-start mb-4">
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-800 mb-1">
+                    {collection.name}
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-2">
+                    {collection.description}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <BookOpen className="w-4 h-4" />
+                      {collection.word_count} {t('collections.words')}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      {collection.is_public ? (
+                        <>
+                          <Globe className="w-4 h-4" />
+                          {t('collections.public')}
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-4 h-4" />
+                          {t('collections.private')}
+                        </>
+                      )}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-2">
+                {collection.owner_id === user?.user_id ? (
+                  <>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCollection(collection);
+                        setShowEditModal(true);
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <Edit className="w-4 h-4" />
+                      {t('common.edit')}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedCollection(collection);
+                        setShowShareModal(true);
+                      }}
+                      className="flex items-center gap-1"
+                    >
+                      <Share2 className="w-4 h-4" />
+                      {t('collections.share')}
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => handleDelete(collection.id!)}
+                      className="flex items-center gap-1"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      {t('common.delete')}
+                    </Button>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500 italic">
+                    {t('collections.sharedWithYou')}
+                  </div>
+                )}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+
+      {/* Modals */}
+      <CollectionModal
+        isOpen={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setSelectedCollection(null);
+        }}
+        onSubmit={handleEdit}
+        initialData={selectedCollection || undefined}
+        title={t('collections.edit')}
+      />
+
+      {selectedCollection && (
+        <ShareModal
+          isOpen={showShareModal}
+          onClose={() => {
+            setShowShareModal(false);
+            setSelectedCollection(null);
+          }}
+          collection={selectedCollection}
+          onShare={handleShare}
+          onUnshare={handleUnshare}
+        />
+      )}
+    </div>
+  );
+};

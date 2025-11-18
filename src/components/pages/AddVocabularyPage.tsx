@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
 import { TopBar } from '../molecules';
 import { VocabularyForm } from '../organisms';
 import { VocabularyService } from '../../services/vocabulary.service';
@@ -8,13 +9,16 @@ import type { CreateVocabularyRequest } from '../../types/vocabulary';
 
 export const AddVocabularyPage: React.FC = () => {
   const { t } = useTranslation();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data: CreateVocabularyRequest) => {
+    if (!user) return;
+
     try {
       setLoading(true);
-      await VocabularyService.createVocabulary(data);
+      await VocabularyService.createVocabulary(user.user_id, data);
       alert(t('messages.saveSuccess'));
       navigate('/');
     } catch (error) {

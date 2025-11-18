@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
 import { MainLayout } from './components/templates/MainLayout';
 import {
   HomePage,
@@ -12,26 +13,42 @@ import {
   FlashcardPracticePage,
   FillWordPracticePage,
   MultipleChoicePracticePage,
+  LoginPage,
+  RegisterPage,
+  CollectionsPage,
+  CreateCollectionPage,
 } from './components/pages';
+import { ProtectedRoute } from './components/molecules/ProtectedRoute';
 import './i18n/config';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <MainLayout>
+      <AuthProvider>
         <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
-          <Route path="/vocabulary/:id" element={<VocabularyDetailPage />} />
-          <Route path="/explore" element={<ExplorePage />} />
-          <Route path="/progress" element={<ProgressPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/practice" element={<PracticeModePage />} />
-          <Route path="/practice/flashcard" element={<FlashcardPracticePage />} />
-          <Route path="/practice/fill-word" element={<FillWordPracticePage />} />
-          <Route path="/practice/multiple-choice" element={<MultipleChoicePracticePage />} />
+          {/* Public routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route element={<MainLayout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
+              <Route path="/vocabulary/:id" element={<VocabularyDetailPage />} />
+              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/progress" element={<ProgressPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/collections" element={<CollectionsPage />} />
+              <Route path="/collections/new" element={<CreateCollectionPage />} />
+              <Route path="/practice" element={<PracticeModePage />} />
+              <Route path="/practice/flashcard" element={<FlashcardPracticePage />} />
+              <Route path="/practice/fill-word" element={<FillWordPracticePage />} />
+              <Route path="/practice/multiple-choice" element={<MultipleChoicePracticePage />} />
+            </Route>
+          </Route>
         </Routes>
-      </MainLayout>
+      </AuthProvider>
     </BrowserRouter>
   );
 };

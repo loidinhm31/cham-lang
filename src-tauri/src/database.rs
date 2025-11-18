@@ -3,8 +3,9 @@ use mongodb::bson::{doc, oid::ObjectId};
 use mongodb::options::ClientOptions;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::models::{Vocabulary, UserPreferences, PracticeSession, UserPracticeProgress};
+use crate::models::{Vocabulary, UserPreferences, PracticeSession, UserPracticeProgress, User, Collection as CollectionModel};
 
+#[derive(Clone)]
 pub struct DatabaseManager {
     client: Arc<Mutex<Option<Client>>>,
     db_name: String,
@@ -65,6 +66,16 @@ impl DatabaseManager {
     pub async fn get_practice_progress_collection(&self) -> Result<Collection<UserPracticeProgress>, String> {
         let db = self.get_database().await?;
         Ok(db.collection("practice_progress"))
+    }
+
+    pub async fn get_users_collection(&self) -> Result<Collection<User>, String> {
+        let db = self.get_database().await?;
+        Ok(db.collection("users"))
+    }
+
+    pub async fn get_collections_collection(&self) -> Result<Collection<CollectionModel>, String> {
+        let db = self.get_database().await?;
+        Ok(db.collection("collections"))
     }
 
     pub async fn disconnect(&self) -> Result<(), String> {
