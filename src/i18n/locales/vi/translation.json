@@ -1,0 +1,140 @@
+{
+  "app": {
+    "name": "Chameleon",
+    "tagline": "Thích Nghi Để Học",
+    "loading": "Đang tải..."
+  },
+  "nav": {
+    "learn": "Học",
+    "explore": "Khám Phá",
+    "progress": "Tiến Độ",
+    "profile": "Hồ Sơ",
+    "back": "Quay Lại",
+    "home": "Trang Chủ"
+  },
+  "vocabulary": {
+    "title": "Từ Vựng",
+    "add": "Thêm Từ",
+    "edit": "Sửa Từ",
+    "delete": "Xóa Từ",
+    "search": "Tìm kiếm từ...",
+    "word": "Từ",
+    "wordType": "Loại Từ",
+    "level": "Cấp Độ",
+    "pronunciation": "Phát Âm (IPA)",
+    "definition": "Định Nghĩa",
+    "definitions": "Các Định Nghĩa",
+    "meaning": "Nghĩa",
+    "translation": "Dịch",
+    "example": "Ví Dụ",
+    "exampleSentence": "Câu Ví Dụ",
+    "exampleSentences": "Các Câu Ví Dụ",
+    "topics": "Chủ Đề",
+    "relatedWords": "Từ Liên Quan",
+    "language": "Ngôn Ngữ",
+    "noResults": "Không tìm thấy từ nào",
+    "createdAt": "Đã Tạo",
+    "updatedAt": "Cập Nhật Lần Cuối"
+  },
+  "wordTypes": {
+    "noun": "Danh Từ",
+    "verb": "Động Từ",
+    "adjective": "Tính Từ",
+    "adverb": "Trạng Từ",
+    "pronoun": "Đại Từ",
+    "preposition": "Giới Từ",
+    "conjunction": "Liên Từ",
+    "interjection": "Thán Từ",
+    "phrase": "Cụm Từ"
+  },
+  "levels": {
+    "A1": "A1 - Sơ Cấp",
+    "A2": "A2 - Cơ Bản",
+    "B1": "B1 - Trung Cấp",
+    "B2": "B2 - Trung Cấp Cao",
+    "C1": "C1 - Cao Cấp",
+    "C2": "C2 - Thành Thạo"
+  },
+  "relationships": {
+    "synonym": "Từ Đồng Nghĩa",
+    "antonym": "Từ Trái Nghĩa",
+    "similar": "Tương Tự",
+    "related": "Liên Quan",
+    "derivative": "Từ Phái Sinh"
+  },
+  "topics": {
+    "title": "Chủ Đề",
+    "all": "Tất Cả Chủ Đề",
+    "business": "Kinh Doanh",
+    "travel": "Du Lịch",
+    "food": "Ẩm Thực",
+    "technology": "Công Nghệ",
+    "education": "Giáo Dục",
+    "health": "Sức Khỏe",
+    "sports": "Thể Thao",
+    "entertainment": "Giải Trí",
+    "nature": "Thiên Nhiên",
+    "daily": "Cuộc Sống Hàng Ngày"
+  },
+  "buttons": {
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "add": "Thêm",
+    "search": "Tìm Kiếm",
+    "filter": "Lọc",
+    "clear": "Xóa",
+    "viewDetails": "Xem Chi Tiết",
+    "close": "Đóng"
+  },
+  "messages": {
+    "saveSuccess": "Đã lưu thành công!",
+    "deleteSuccess": "Đã xóa thành công!",
+    "updateSuccess": "Đã cập nhật thành công!",
+    "error": "Đã xảy ra lỗi",
+    "confirmDelete": "Bạn có chắc muốn xóa từ này?",
+    "noConnection": "Chưa kết nối cơ sở dữ liệu",
+    "connecting": "Đang kết nối cơ sở dữ liệu..."
+  },
+  "settings": {
+    "title": "Cài Đặt",
+    "language": "Ngôn Ngữ Giao Diện",
+    "nativeLanguage": "Ngôn Ngữ Mẹ Đẻ",
+    "learningLanguages": "Ngôn Ngữ Đang Học",
+    "theme": "Giao Diện",
+    "database": "Cơ Sở Dữ Liệu",
+    "connectionString": "Chuỗi Kết Nối",
+    "connect": "Kết Nối",
+    "disconnect": "Ngắt Kết Nối",
+    "connected": "Đã Kết Nối",
+    "disconnected": "Chưa Kết Nối"
+  },
+  "stats": {
+    "totalWords": "Tổng Số Từ",
+    "wordsLearned": "Từ Đã Học",
+    "streak": "Chuỗi Ngày",
+    "lessonsCompleted": "Bài Học Hoàn Thành"
+  },
+  "practice": {
+    "title": "Luyện Tập",
+    "selectMode": "Chọn Chế Độ Luyện Tập",
+    "selectModeDescription": "Chọn cách bạn muốn luyện tập từ vựng",
+    "flashcardMode": "Chế Độ Thẻ Ghi Nhớ",
+    "flashcardDescription": "Lật thẻ để kiểm tra trí nhớ của bạn",
+    "fillWordMode": "Điền Từ",
+    "fillWordDescription": "Nhập từ đúng dựa trên định nghĩa",
+    "multipleChoiceMode": "Trắc Nghiệm",
+    "multipleChoiceDescription": "Chọn định nghĩa đúng từ các lựa chọn",
+    "progress": "Tiến Độ",
+    "correct": "Đúng",
+    "incorrect": "Sai",
+    "next": "Tiếp Theo",
+    "finish": "Hoàn Thành",
+    "completed": "Đã Hoàn Thành Bài Luyện Tập",
+    "wellDone": "Làm Tốt Lắm!",
+    "accuracy": "Độ Chính Xác",
+    "tryAgain": "Thử Lại",
+    "startPractice": "Bắt Đầu Luyện Tập"
+  }
+}
