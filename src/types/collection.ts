@@ -11,6 +11,13 @@ export interface Collection {
   updated_at: string;
 }
 
+export const getCollectionId = (collection: Collection): string | undefined => {
+  if (collection.id) {
+    return collection.id as string;
+  }
+  return collection.id;
+};
+
 export interface CreateCollectionRequest {
   name: string;
   description: string;

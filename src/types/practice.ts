@@ -10,7 +10,6 @@ export interface PracticeResult {
 
 export interface PracticeSession {
   id?: string;
-  user_id: string;
   collection_id: string;
   mode: PracticeMode;
   language: string;
@@ -35,7 +34,6 @@ export interface WordProgress {
 
 export interface UserPracticeProgress {
   id?: string;
-  user_id: string;
   language: string;
   words_progress: WordProgress[];
   total_sessions: number;
@@ -48,7 +46,6 @@ export interface UserPracticeProgress {
 }
 
 export interface CreatePracticeSessionRequest {
-  user_id: string;
   collection_id: string;
   mode: PracticeMode;
   language: string;
@@ -59,7 +56,6 @@ export interface CreatePracticeSessionRequest {
 }
 
 export interface UpdateProgressRequest {
-  user_id: string;
   language: string;
   vocabulary_id: string;
   word: string;

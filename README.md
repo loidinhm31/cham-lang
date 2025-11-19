@@ -32,7 +32,7 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
   - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
   - **Organisms**: VocabularyList, VocabularyForm
   - **Templates**: MainLayout
-  - **Pages**: Home, AddVocabulary, VocabularyDetail, Explore, Progress, Profile
+  - **Pages**: Home, AddVocabulary, VocabularyDetail, Progress, Profile
 
 ### 💾 Database
 - **MongoDB Backend**: Full-featured NoSQL database
@@ -113,7 +113,6 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 
 ### Exploring Vocabulary
 - **Home**: Browse all words with search functionality
-- **Explore**: Browse by topics or language levels
 - **Progress**: Track your learning statistics
 - **Profile**: Manage settings and database connection
 

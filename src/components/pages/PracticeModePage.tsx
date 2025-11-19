@@ -1,16 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Brain, PenTool, CheckSquare, Library } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { CollectionService } from '../../services/collection.service';
-import { TopBar } from '../molecules';
-import { Card, Select, Button } from '../atoms';
-import type { Collection } from '../../types/collection';
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {Brain, CheckSquare, Library, PenTool} from 'lucide-react';
+import {TopBar} from '../molecules';
+import {Button, Card, Select} from '../atoms';
+import {CollectionService} from '../../services/collection.service';
+import type {Collection} from '../../types/collection';
 
 export const PracticeModePage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedCollection, setSelectedCollection] = useState<string>('');
@@ -19,19 +17,12 @@ export const PracticeModePage: React.FC = () => {
 
   useEffect(() => {
     loadCollections();
-  }, [user]);
+  }, []);
 
   const loadCollections = async () => {
-    if (!user) return;
-
     try {
-      const data = await CollectionService.getUserCollections(user.user_id);
+      const data = await CollectionService.getUserCollections();
       setCollections(data);
-
-      // Auto-select first collection
-      if (data.length > 0) {
-        setSelectedCollection(data[0].id || '');
-      }
     } catch (error) {
       console.error('Failed to load collections:', error);
     } finally {
@@ -129,6 +120,7 @@ export const PracticeModePage: React.FC = () => {
                   options={collectionOptions}
                   value={selectedCollection}
                   onChange={(e) => setSelectedCollection(e.target.value)}
+                  placeholder={t('practice.selectCollection')}
                 />
 
                 {selectedCollectionData && (

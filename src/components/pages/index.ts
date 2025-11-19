@@ -1,14 +1,14 @@
 export { HomePage } from './HomePage';
 export { AddVocabularyPage } from './AddVocabularyPage';
+export { EditVocabularyPage } from './EditVocabularyPage';
 export { VocabularyDetailPage } from './VocabularyDetailPage';
-export { ExplorePage } from './ExplorePage';
 export { ProgressPage } from './ProgressPage';
 export { ProfilePage } from './ProfilePage';
 export { PracticeModePage } from './PracticeModePage';
 export { FlashcardPracticePage } from './FlashcardPracticePage';
 export { FillWordPracticePage } from './FillWordPracticePage';
 export { MultipleChoicePracticePage } from './MultipleChoicePracticePage';
-export { LoginPage } from './LoginPage';
-export { RegisterPage } from './RegisterPage';
 export { CollectionsPage } from './CollectionsPage';
+export { CollectionDetailPage } from './CollectionDetailPage';
 export { CreateCollectionPage } from './CreateCollectionPage';
+export { EditCollectionPage } from './EditCollectionPage';

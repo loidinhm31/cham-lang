@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Check, X, RotateCcw } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { TopBar } from '../molecules';
 import { FlashCard, Button, Card } from '../atoms';
 import { VocabularyService } from '../../services/vocabulary.service';
@@ -12,8 +11,9 @@ import type { PracticeResult } from '../../types/practice';
 
 export const FlashcardPracticePage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const collectionId = searchParams.get('collection');
 
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,13 +25,20 @@ export const FlashcardPracticePage: React.FC = () => {
   const [completed, setCompleted] = useState(false);
 
   useEffect(() => {
-    loadVocabularies();
-  }, []);
+    if (collectionId) {
+      loadVocabularies();
+    }
+  }, [collectionId]);
 
   const loadVocabularies = async () => {
+    if (!collectionId) {
+      console.error('No collection ID provided');
+      return;
+    }
+
     try {
       setLoading(true);
-      const data = await VocabularyService.getAllVocabularies('en', 10);
+      const data = await VocabularyService.getVocabulariesByCollection(collectionId);
       // Shuffle vocabularies
       const shuffled = [...data].sort(() => Math.random() - 0.5);
       setVocabularies(shuffled);
@@ -61,18 +68,15 @@ export const FlashcardPracticePage: React.FC = () => {
     setResults([...results, result]);
 
     // Update progress
-    if (user) {
-      try {
-        await PracticeService.updatePracticeProgress({
-          user_id: user.user_id,
-          language: 'en',
-          vocabulary_id: currentVocab.id || '',
-          word: currentVocab.word,
-          correct,
-        });
-      } catch (error) {
-        console.error('Failed to update progress:', error);
-      }
+    try {
+      await PracticeService.updatePracticeProgress({
+        language: currentVocab.language || 'en',
+        vocabulary_id: currentVocab.id || '',
+        word: currentVocab.word,
+        correct,
+      });
+    } catch (error) {
+      console.error('Failed to update progress:', error);
     }
 
     // Move to next or complete
@@ -88,13 +92,12 @@ export const FlashcardPracticePage: React.FC = () => {
   const completeSession = async () => {
     const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
 
-    if (user && currentVocab) {
+    if (collectionId && currentVocab) {
       try {
         await PracticeService.createPracticeSession({
-          user_id: user.user_id,
-          collection_id: currentVocab.collection_id || '', // TODO: Select collection before practice
+          collection_id: collectionId,
           mode: 'flashcard',
-          language: 'en',
+          language: currentVocab.language || 'en',
           results: [...results],
           duration_seconds: durationSeconds,
         });

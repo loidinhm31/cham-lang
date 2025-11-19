@@ -1,7 +1,7 @@
 import React from 'react';
-import { BookOpen, Globe, Award, User, Library, LucideIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import {Award, BookOpen, Library, LucideIcon, User} from 'lucide-react';
+import {useTranslation} from 'react-i18next';
+import {useLocation, useNavigate} from 'react-router-dom';
 
 interface NavItem {
   id: string;
@@ -18,7 +18,6 @@ export const BottomNavigation: React.FC = () => {
   const navItems: NavItem[] = [
     { id: 'learn', icon: BookOpen, label: t('nav.learn'), path: '/' },
     { id: 'collections', icon: Library, label: t('nav.collections'), path: '/collections' },
-    { id: 'explore', icon: Globe, label: t('nav.explore'), path: '/explore' },
     { id: 'progress', icon: Award, label: t('nav.progress'), path: '/progress' },
     { id: 'profile', icon: User, label: t('nav.profile'), path: '/profile' },
   ];
@@ -26,7 +25,7 @@ export const BottomNavigation: React.FC = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
       <div className="max-w-2xl mx-auto px-4 pb-4">
-        <div className="grid grid-cols-5 gap-2 bg-white/60 backdrop-blur-lg rounded-2xl p-3 shadow-lg">
+        <div className="grid grid-cols-4 gap-2 bg-white/60 backdrop-blur-lg rounded-2xl p-3 shadow-lg">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;

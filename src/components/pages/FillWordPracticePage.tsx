@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { RotateCcw } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { TopBar } from '../molecules';
-import { FillWordCard } from '../molecules';
-import { Button, Card } from '../atoms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import { PracticeService } from '../../services/practice.service';
-import type { Vocabulary } from '../../types/vocabulary';
-import type { PracticeResult } from '../../types/practice';
+import {FillWordCard, TopBar} from '../molecules';
+import { Card, Button } from '../atoms';
+import {Vocabulary} from "../../types/vocabulary.ts";
+import {PracticeResult} from "../../types/practice.ts";
+import {VocabularyService} from "../../services/vocabulary.service.ts";
+import {PracticeService} from "../../services/practice.service.ts";
 
 export const FillWordPracticePage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const collectionId = searchParams.get('collection');
 
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -26,13 +25,20 @@ export const FillWordPracticePage: React.FC = () => {
   const [showNext, setShowNext] = useState(false);
 
   useEffect(() => {
-    loadVocabularies();
-  }, []);
+    if (collectionId) {
+      loadVocabularies();
+    }
+  }, [collectionId]);
 
   const loadVocabularies = async () => {
+    if (!collectionId) {
+      console.error('No collection ID provided');
+      return;
+    }
+
     try {
       setLoading(true);
-      const data = await VocabularyService.getAllVocabularies('en', 10);
+      const data = await VocabularyService.getVocabulariesByCollection(collectionId);
       const shuffled = [...data].sort(() => Math.random() - 0.5);
       setVocabularies(shuffled);
     } catch (error) {
@@ -61,18 +67,15 @@ export const FillWordPracticePage: React.FC = () => {
     setResults([...results, result]);
 
     // Update progress
-    if (user) {
-      try {
-        await PracticeService.updatePracticeProgress({
-          user_id: user.user_id,
-          language: 'en',
-          vocabulary_id: currentVocab.id || '',
-          word: currentVocab.word,
-          correct,
-        });
-      } catch (error) {
-        console.error('Failed to update progress:', error);
-      }
+    try {
+      await PracticeService.updatePracticeProgress({
+        language: currentVocab.language || 'en',
+        vocabulary_id: currentVocab.id || '',
+        word: currentVocab.word,
+        correct,
+      });
+    } catch (error) {
+      console.error('Failed to update progress:', error);
     }
 
     setShowNext(true);
@@ -91,13 +94,12 @@ export const FillWordPracticePage: React.FC = () => {
   const completeSession = async () => {
     const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
 
-    if (user && vocabularies[0]) {
+    if (collectionId && vocabularies[0]) {
       try {
         await PracticeService.createPracticeSession({
-          user_id: user.user_id,
-          collection_id: vocabularies[0].collection_id || '',
+          collection_id: collectionId,
           mode: 'fillword',
-          language: 'en',
+          language: vocabularies[0].language || 'en',
           results: [...results],
           duration_seconds: durationSeconds,
         });
@@ -204,6 +206,7 @@ export const FillWordPracticePage: React.FC = () => {
 
         {/* Fill Word Card */}
         <FillWordCard
+          key={currentVocab.id || currentIndex}
           definition={currentVocab.definitions[0]?.meaning || 'No definition'}
           correctAnswer={currentVocab.word}
           hint={hint}

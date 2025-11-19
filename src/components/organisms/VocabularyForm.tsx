@@ -1,16 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Plus, X } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { CollectionService } from '../../services/collection.service';
-import { Input, TextArea, Select, Button, Card } from '../atoms';
-import type {
-  CreateVocabularyRequest,
-  WordType,
-  LanguageLevel,
-  Definition,
-} from '../../types/vocabulary';
-import type { Collection } from '../../types/collection';
+import React, {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
+import {Plus, X} from 'lucide-react';
+import {CollectionService} from '../../services/collection.service';
+import {Button, Card, Input, Select, TextArea} from '../atoms';
+import type {CreateVocabularyRequest, Definition, LanguageLevel, WordType,} from '../../types/vocabulary';
+import type {Collection} from '../../types/collection';
+import {getCollectionId} from '../../types/collection';
 
 interface VocabularyFormProps {
   initialData?: Partial<CreateVocabularyRequest>;
@@ -26,9 +21,10 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
   loading = false,
 }) => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [loadingCollections, setLoadingCollections] = useState(true);
+  const [availableLevels, setAvailableLevels] = useState<string[]>([]);
+  const [_loadingLevels, setLoadingLevels] = useState(false);
 
   const [formData, setFormData] = useState<CreateVocabularyRequest>({
     word: initialData?.word || '',
@@ -45,23 +41,55 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
 
   useEffect(() => {
     loadCollections();
-  }, [user]);
+  }, []);
+
+  // Load levels when collection changes
+  useEffect(() => {
+    if (formData.collection_id) {
+      const selectedCollection = collections.find(c => getCollectionId(c) === formData.collection_id);
+      if (selectedCollection) {
+        loadLevels(selectedCollection.language);
+      }
+    }
+  }, [formData.collection_id, collections]);
 
   const loadCollections = async () => {
-    if (!user) return;
-
     try {
-      const data = await CollectionService.getUserCollections(user.user_id);
+      const data = await CollectionService.getUserCollections();
       setCollections(data);
 
       // Auto-select first collection if no initial data
       if (!initialData?.collection_id && data.length > 0) {
-        setFormData(prev => ({ ...prev, collection_id: data[0].id || '' }));
+        const firstCollection = data[0];
+        const collectionId = getCollectionId(firstCollection);
+        setFormData(prev => ({
+          ...prev,
+          collection_id: collectionId || '',
+          language: firstCollection.language
+        }));
       }
     } catch (error) {
       console.error('Failed to load collections:', error);
     } finally {
       setLoadingCollections(false);
+    }
+  };
+
+  const loadLevels = async (language: string) => {
+    try {
+      setLoadingLevels(true);
+      const levels = await CollectionService.getLevelConfiguration(language);
+      setAvailableLevels(levels);
+
+      // If current level is not in new levels, reset to first available level
+      if (levels.length > 0 && !levels.includes(formData.level)) {
+        setFormData(prev => ({ ...prev, level: levels[0] }));
+      }
+    } catch (error) {
+      // Fallback to CEFR levels
+      setAvailableLevels(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']);
+    } finally {
+      setLoadingLevels(false);
     }
   };
 
@@ -73,15 +101,29 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     label: t(`wordTypes.${type}`)
   }));
 
-  const levelOptions = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map(level => ({
+  const levelOptions = availableLevels.map(level => ({
     value: level,
-    label: t(`levels.${level}`)
+    label: t(`levels.${level}`, { defaultValue: level })
   }));
 
-  const collectionOptions = collections.map(collection => ({
-    value: collection.id || '',
-    label: collection.name,
-  }));
+  const collectionOptions = collections.map(collection => {
+    const collectionId = getCollectionId(collection);
+    return {
+      value: collectionId || '',
+      label: collection.name,
+    };
+  });
+
+  const handleCollectionChange = (collectionId: string) => {
+    const selectedCollection = collections.find(c => getCollectionId(c) === collectionId);
+    if (selectedCollection) {
+      setFormData({
+        ...formData,
+        collection_id: collectionId,
+        language: selectedCollection.language
+      });
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,7 +214,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
               label={t('vocabulary.collection')}
               options={collectionOptions}
               value={formData.collection_id}
-              onChange={(e) => setFormData({ ...formData, collection_id: e.target.value })}
+              onChange={(e) => handleCollectionChange(e.target.value)}
               required
             />
           )}

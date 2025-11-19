@@ -2,31 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, BookOpen, Globe, Lock, Trash2, Share2, Edit } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
 import { CollectionService } from '../../services/collection.service';
-import { TopBar, CollectionModal, ShareModal } from '../molecules';
+import { TopBar, ShareModal } from '../molecules';
 import { Button, Card } from '../atoms';
-import type { Collection, CreateCollectionRequest } from '../../types/collection';
+import type { Collection } from '../../types/collection';
+import { getCollectionId } from '../../types/collection';
 
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showEditModal, setShowEditModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
   useEffect(() => {
     loadCollections();
-  }, [user]);
+  }, []);
 
   const loadCollections = async () => {
-    if (!user) return;
-
     try {
-      const data = await CollectionService.getUserCollections(user.user_id);
+      const data = await CollectionService.getUserCollections();
       setCollections(data);
     } catch (error) {
       console.error('Failed to load collections:', error);
@@ -35,28 +31,12 @@ export const CollectionsPage: React.FC = () => {
     }
   };
 
-  const handleEdit = async (data: CreateCollectionRequest) => {
-    if (!user || !selectedCollection) return;
-
-    try {
-      await CollectionService.updateCollection(user.user_id, {
-        id: selectedCollection.id!,
-        ...data,
-      });
-      await loadCollections();
-      alert(t('collections.updateSuccess'));
-    } catch (error) {
-      console.error('Failed to update collection:', error);
-      alert(t('messages.error'));
-    }
-  };
-
   const handleDelete = async (id: string) => {
-    if (!user || !confirm(t('collections.confirmDelete'))) return;
+    if (!confirm(t('collections.confirmDelete'))) return;
 
     try {
-      await CollectionService.deleteCollection(user.user_id, id);
-      setCollections(collections.filter((c) => c.id !== id));
+      await CollectionService.deleteCollection(id);
+      setCollections(collections.filter((c) => getCollectionId(c) !== id));
     } catch (error) {
       console.error('Failed to delete collection:', error);
       alert(t('collections.deleteFailed'));
@@ -64,12 +44,11 @@ export const CollectionsPage: React.FC = () => {
   };
 
   const handleShare = async (username: string) => {
-    if (!user || !selectedCollection) return;
+    if (!selectedCollection) return;
 
     try {
       await CollectionService.shareCollection(
-        user.user_id,
-        selectedCollection.id!,
+        getCollectionId(selectedCollection)!,
         username
       );
       await loadCollections();
@@ -81,12 +60,11 @@ export const CollectionsPage: React.FC = () => {
   };
 
   const handleUnshare = async (userId: string) => {
-    if (!user || !selectedCollection) return;
+    if (!selectedCollection) return;
 
     try {
       await CollectionService.unshareCollection(
-        user.user_id,
-        selectedCollection.id!,
+        getCollectionId(selectedCollection)!,
         userId
       );
       await loadCollections();
@@ -134,7 +112,7 @@ export const CollectionsPage: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {collections.map((collection) => (
-            <Card key={collection.id} className="p-6 hover:shadow-xl transition-shadow">
+            <Card key={getCollectionId(collection)} className="p-6 hover:shadow-xl transition-shadow">
               <div className="flex justify-between items-start mb-4">
                 <div className="flex-1">
                   <h3 className="text-xl font-bold text-gray-800 mb-1">
@@ -166,47 +144,36 @@ export const CollectionsPage: React.FC = () => {
               </div>
 
               <div className="flex gap-2">
-                {collection.owner_id === user?.user_id ? (
-                  <>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCollection(collection);
-                        setShowEditModal(true);
-                      }}
-                      className="flex items-center gap-1"
-                    >
-                      <Edit className="w-4 h-4" />
-                      {t('common.edit')}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedCollection(collection);
-                        setShowShareModal(true);
-                      }}
-                      className="flex items-center gap-1"
-                    >
-                      <Share2 className="w-4 h-4" />
-                      {t('collections.share')}
-                    </Button>
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => handleDelete(collection.id!)}
-                      className="flex items-center gap-1"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      {t('common.delete')}
-                    </Button>
-                  </>
-                ) : (
-                  <div className="text-sm text-gray-500 italic">
-                    {t('collections.sharedWithYou')}
-                  </div>
-                )}
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(`/collections/${getCollectionId(collection)}/edit`)}
+                  className="flex items-center gap-1"
+                >
+                  <Edit className="w-4 h-4" />
+                  {t('common.edit')}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedCollection(collection);
+                    setShowShareModal(true);
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <Share2 className="w-4 h-4" />
+                  {t('collections.share')}
+                </Button>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => handleDelete(getCollectionId(collection)!)}
+                  className="flex items-center gap-1"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t('common.delete')}
+                </Button>
               </div>
             </Card>
           ))}
@@ -214,17 +181,6 @@ export const CollectionsPage: React.FC = () => {
       )}
 
       {/* Modals */}
-      <CollectionModal
-        isOpen={showEditModal}
-        onClose={() => {
-          setShowEditModal(false);
-          setSelectedCollection(null);
-        }}
-        onSubmit={handleEdit}
-        initialData={selectedCollection || undefined}
-        title={t('collections.edit')}
-      />
-
       {selectedCollection && (
         <ShareModal
           isOpen={showShareModal}

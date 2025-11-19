@@ -3,29 +3,30 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Plus, Brain } from 'lucide-react';
 import { TopBar, SearchBar } from '../molecules';
-import { VocabularyList } from '../organisms';
+import { CollectionList } from '../organisms';
 import { Button } from '../atoms';
 import { VocabularyService } from '../../services/vocabulary.service';
-import type { Vocabulary } from '../../types/vocabulary';
+import { CollectionService } from '../../services/collection.service';
+import type { Collection } from '../../types/collection';
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
+  const [collections, setCollections] = useState<Collection[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadVocabularies();
+    loadCollections();
   }, []);
 
-  const loadVocabularies = async () => {
+  const loadCollections = async () => {
     try {
       setLoading(true);
-      const data = await VocabularyService.getAllVocabularies('en', 50);
-      setVocabularies(data);
+      const data = await CollectionService.getUserCollections();
+      setCollections(data);
     } catch (error) {
-      console.error('Failed to load vocabularies:', error);
+      console.error('Failed to load collections:', error);
     } finally {
       setLoading(false);
     }
@@ -33,17 +34,33 @@ export const HomePage: React.FC = () => {
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      loadVocabularies();
+      loadCollections();
       return;
     }
 
     try {
       setLoading(true);
-      const data = await VocabularyService.searchVocabularies({
+      // Search vocabularies to find matching words
+      const matchingVocabularies = await VocabularyService.searchVocabularies({
         query: searchQuery,
-        language: 'en',
       });
-      setVocabularies(data);
+
+      // Extract unique collection IDs from matching vocabularies
+      const collectionIds = new Set(
+        matchingVocabularies
+          .map(v => v.collection_id)
+          .filter(id => id) // Filter out undefined/null values
+      );
+
+      // Get all user collections
+      const allCollections = await CollectionService.getUserCollections();
+
+      // Filter collections to only show those with matching words
+      const filteredCollections = allCollections.filter(collection =>
+        collectionIds.has(collection.id || '')
+      );
+
+      setCollections(filteredCollections);
     } catch (error) {
       console.error('Search failed:', error);
     } finally {
@@ -51,8 +68,8 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const handleVocabularyClick = (vocabulary: Vocabulary) => {
-    navigate(`/vocabulary/${vocabulary.id}`);
+  const handleCollectionClick = (collection: Collection) => {
+    navigate(`/collections/${collection.id}`);
   };
 
   return (
@@ -97,10 +114,10 @@ export const HomePage: React.FC = () => {
           </Button>
         </div>
 
-        {/* Vocabulary List */}
-        <VocabularyList
-          vocabularies={vocabularies}
-          onVocabularyClick={handleVocabularyClick}
+        {/* Collection List */}
+        <CollectionList
+          collections={collections}
+          onCollectionClick={handleCollectionClick}
           loading={loading}
         />
       </div>

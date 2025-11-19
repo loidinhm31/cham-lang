@@ -32,7 +32,8 @@ export interface RelatedWord {
 }
 
 export interface Vocabulary {
-  id?: string;
+  _id?: { $oid: string } | string; // MongoDB BSON ObjectId format or string
+  id?: string; // Rust field name
   word: string;
   word_type: WordType;
   level: LanguageLevel;
@@ -47,6 +48,13 @@ export interface Vocabulary {
   collection_id: string;
   user_id: string;
 }
+
+export const getVocabularyId = (vocab: Vocabulary): string | undefined => {
+  if (vocab._id) {
+    return vocab._id as string;
+  }
+  return vocab.id;
+};
 
 export interface CreateVocabularyRequest {
   word: string;

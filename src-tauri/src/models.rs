@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
-use mongodb::bson::oid::ObjectId;
 use chrono::{DateTime, Utc};
+
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Vocabulary {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: Option<String>,
     pub word: String,
     pub word_type: WordType,
     pub level: String, // Flexible level system (CEFR: A1-C2, Korean: Basic/Intermediate/Advanced, etc.)
@@ -75,7 +74,7 @@ pub struct Definition {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct RelatedWord {
-    pub word_id: Option<ObjectId>,
+    pub word_id: String,
     pub word: String,
     pub relationship: WordRelationship,
 }
@@ -93,8 +92,7 @@ pub enum WordRelationship {
 // User Authentication
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: String,
     pub username: String,
     pub email: String,
     pub password_hash: String, // bcrypt hash
@@ -125,8 +123,7 @@ pub struct UserSession {
 // Collection Model
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Collection {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: String,
     pub name: String,
     pub description: String,
     pub language: String,
@@ -157,8 +154,7 @@ pub struct UpdateCollectionRequest {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserPreferences {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: String,
     pub user_id: String,
     pub interface_language: String, // "en", "vi"
     pub native_language: String,
@@ -225,8 +221,7 @@ pub struct PracticeResult {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PracticeSession {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: String,
     pub user_id: String,
     pub collection_id: String,
     pub mode: PracticeMode,
@@ -253,8 +248,7 @@ pub struct WordProgress {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserPracticeProgress {
-    #[serde(rename = "_id", skip_serializing_if = "Option::is_none")]
-    pub id: Option<ObjectId>,
+    pub id: String,
     pub user_id: String,
     pub language: String,
     pub words_progress: Vec<WordProgress>,

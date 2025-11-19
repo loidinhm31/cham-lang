@@ -1,10 +1,10 @@
 export { SearchBar } from './SearchBar';
 export { VocabularyCard } from './VocabularyCard';
-export { BottomNavigation } from './BottomNavigation';
 export { TopBar } from './TopBar';
+export { BottomNavigation } from './BottomNavigation';
+export { CollectionCard } from './CollectionCard';
 export { StatsCard } from './StatsCard';
-export { MultipleChoiceCard } from './MultipleChoiceCard';
 export { FillWordCard } from './FillWordCard';
-export { ProtectedRoute } from './ProtectedRoute';
+export { MultipleChoiceCard } from './MultipleChoiceCard';
 export { CollectionModal } from './CollectionModal';
 export { ShareModal } from './ShareModal';

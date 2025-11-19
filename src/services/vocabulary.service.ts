@@ -23,10 +23,9 @@ export class VocabularyService {
 
   // Vocabulary CRUD
   static async createVocabulary(
-    userId: string,
     request: CreateVocabularyRequest
   ): Promise<string> {
-    return invoke('create_vocabulary', { userId, request });
+    return invoke('create_vocabulary', { request });
   }
 
   static async getVocabulary(id: string): Promise<Vocabulary> {
@@ -49,7 +48,7 @@ export class VocabularyService {
   }
 
   static async searchVocabularies(query: SearchQuery): Promise<Vocabulary[]> {
-    return invoke('search_vocabularies', { query });
+    return invoke('search_vocabularies', { query: query.query, language: query.language });
   }
 
   static async getVocabulariesByTopic(
@@ -78,7 +77,7 @@ export class VocabularyService {
     return invoke('save_preferences', { preferences });
   }
 
-  static async getPreferences(userId: string): Promise<UserPreferences | null> {
-    return invoke('get_preferences', { userId });
+  static async getPreferences(): Promise<UserPreferences | null> {
+    return invoke('get_preferences');
   }
 }
