@@ -17,29 +17,32 @@ import {
   ProgressPage,
   VocabularyDetailPage,
 } from './components/pages';
+import { SyncNotificationProvider } from './contexts';
 import './i18n/config';
 
 const App: React.FC = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route element={<MainLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
-          <Route path="/vocabulary/edit/:id" element={<EditVocabularyPage />} />
-          <Route path="/vocabulary/:id" element={<VocabularyDetailPage />} />
-          <Route path="/progress" element={<ProgressPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/collections" element={<CollectionsPage />} />
-          <Route path="/collections/new" element={<CreateCollectionPage />} />
-          <Route path="/collections/:id/edit" element={<EditCollectionPage />} />
-          <Route path="/collections/:id" element={<CollectionDetailPage />} />
-          <Route path="/practice" element={<PracticeModePage />} />
-          <Route path="/practice/flashcard" element={<FlashcardPracticePage />} />
-          <Route path="/practice/fill-word" element={<FillWordPracticePage />} />
-          <Route path="/practice/multiple-choice" element={<MultipleChoicePracticePage />} />
-        </Route>
-      </Routes>
+      <SyncNotificationProvider>
+        <Routes>
+          <Route element={<MainLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
+            <Route path="/vocabulary/edit/:id" element={<EditVocabularyPage />} />
+            <Route path="/vocabulary/:id" element={<VocabularyDetailPage />} />
+            <Route path="/progress" element={<ProgressPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/collections" element={<CollectionsPage />} />
+            <Route path="/collections/new" element={<CreateCollectionPage />} />
+            <Route path="/collections/:id/edit" element={<EditCollectionPage />} />
+            <Route path="/collections/:id" element={<CollectionDetailPage />} />
+            <Route path="/practice" element={<PracticeModePage />} />
+            <Route path="/practice/flashcard" element={<FlashcardPracticePage />} />
+            <Route path="/practice/fill-word" element={<FillWordPracticePage />} />
+            <Route path="/practice/multiple-choice" element={<MultipleChoicePracticePage />} />
+          </Route>
+        </Routes>
+      </SyncNotificationProvider>
     </BrowserRouter>
   );
 };

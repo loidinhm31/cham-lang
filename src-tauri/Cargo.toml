@@ -20,6 +20,7 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
+tauri-plugin-google-auth = "0.3"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Local database
@@ -29,4 +30,7 @@ uuid = { version = "1.0", features = ["v4", "serde"] }
 log = "0.4.28"
 env_logger = "0.11.8"
 android_logger = "0.15.1"
+# Google Drive API
+reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
+tokio = { version = "1", features = ["full"] }
 

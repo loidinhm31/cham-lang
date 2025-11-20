@@ -27,6 +27,28 @@ impl LocalDatabase {
         Ok(db)
     }
 
+    /// Clear all data from the database
+    pub fn clear_all_data(&self) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+
+        // Drop all tables including metadata to start fresh
+        conn.execute("DROP TABLE IF EXISTS practice_sessions", [])?;
+        conn.execute("DROP TABLE IF EXISTS practice_progress", [])?;
+        conn.execute("DROP TABLE IF EXISTS user_preferences", [])?;
+        conn.execute("DROP TABLE IF EXISTS vocabularies", [])?;
+        conn.execute("DROP TABLE IF EXISTS collections", [])?;
+        conn.execute("DROP TABLE IF EXISTS users", [])?;
+        conn.execute("DROP TABLE IF EXISTS database_metadata", [])?;
+
+        // Release the lock before calling init_schema
+        drop(conn);
+
+        // Reinitialize the schema
+        self.init_schema()?;
+
+        Ok(())
+    }
+
     /// Initialize database schema
     fn init_schema(&self) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
@@ -150,6 +172,33 @@ impl LocalDatabase {
             [],
         )?;
 
+        // Database metadata table (for version tracking)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS database_metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL,
+                updated_at INTEGER NOT NULL
+            )",
+            [],
+        )?;
+
+        // Initialize version if not exists
+        let now = Utc::now().timestamp();
+        conn.execute(
+            "INSERT OR IGNORE INTO database_metadata (key, value, updated_at)
+             VALUES ('version', ?1, ?2)",
+            params![now.to_string(), now],
+        )?;
+
+        // Migration: Fix version if it's stored as integer instead of string
+        // This handles databases created with the old schema
+        let _ = conn.execute(
+            "UPDATE database_metadata
+             SET value = CAST(value AS TEXT)
+             WHERE key = 'version' AND TYPEOF(value) = 'integer'",
+            [],
+        );
+
         // Create indexes
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_user ON vocabularies(user_id)", [])?;
@@ -167,6 +216,31 @@ impl LocalDatabase {
     /// Get the default local user ID (for single-user app)
     pub fn get_local_user_id(&self) -> &str {
         "local"
+    }
+
+    /// Get current database version
+    pub fn get_version(&self) -> SqlResult<i64> {
+        let conn = self.conn.lock().unwrap();
+        let version_str: String = conn.query_row(
+            "SELECT value FROM database_metadata WHERE key = 'version'",
+            [],
+            |row| row.get(0),
+        )?;
+
+        // Parse the string to i64
+        version_str.parse::<i64>()
+            .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
+    }
+
+    /// Update database version (call this when data changes)
+    pub fn update_version(&self) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now().timestamp();
+        conn.execute(
+            "UPDATE database_metadata SET value = ?1, updated_at = ?2 WHERE key = 'version'",
+            params![now.to_string(), now],
+        )?;
+        Ok(())
     }
 
     //==========================================================================

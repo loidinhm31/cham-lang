@@ -1,6 +1,7 @@
 import React from 'react';
 import { Menu, Bell, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSyncNotification } from '../../contexts';
 
 interface TopBarProps {
   title?: string;
@@ -8,7 +9,6 @@ interface TopBarProps {
   showMenu?: boolean;
   showNotifications?: boolean;
   onMenuClick?: () => void;
-  hasNotifications?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -17,9 +17,13 @@ export const TopBar: React.FC<TopBarProps> = ({
   showMenu = true,
   showNotifications = true,
   onMenuClick,
-  hasNotifications = false,
 }) => {
   const navigate = useNavigate();
+  const { hasSyncNotification } = useSyncNotification();
+
+  const handleNotificationClick = () => {
+    navigate('/profile');
+  };
 
   return (
     <div className="sticky top-0 z-40 pt-safe">
@@ -46,10 +50,14 @@ export const TopBar: React.FC<TopBarProps> = ({
           <h1 className="text-xl font-bold text-gray-800">{title}</h1>
 
           {showNotifications ? (
-            <button className="p-2 hover:bg-white/50 rounded-xl transition relative">
-              <Bell className="w-6 h-6 text-gray-800" />
-              {hasNotifications && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <button
+              onClick={handleNotificationClick}
+              className="p-2 hover:bg-white/50 rounded-xl transition relative"
+              title={hasSyncNotification ? "Cloud backup version is different from local" : "Notifications"}
+            >
+              <Bell className={`w-6 h-6 ${hasSyncNotification ? 'text-blue-600' : 'text-gray-800'}`} />
+              {hasSyncNotification && (
+                <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
               )}
             </button>
           ) : (

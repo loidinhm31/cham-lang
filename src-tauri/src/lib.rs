@@ -2,10 +2,12 @@ mod models;
 mod local_db;
 mod commands;
 mod collection_commands;
+mod gdrive;
 
 use local_db::LocalDatabase;
 use commands::*;
 use collection_commands::*;
+use gdrive::*;
 use tauri::Manager;
 
 
@@ -37,6 +39,7 @@ pub fn run() {
 
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_google_auth::init())
         .setup(|app| {
             // Get application data directory using Tauri's API (works on all platforms including Android)
             let app_data_dir = app.path().app_data_dir()
@@ -90,6 +93,12 @@ pub fn run() {
             get_practice_sessions,
             update_practice_progress,
             get_practice_progress,
+            // Google Drive sync
+            backup_to_gdrive,
+            restore_from_gdrive,
+            get_gdrive_backup_info,
+            clear_local_database,
+            check_version_difference,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

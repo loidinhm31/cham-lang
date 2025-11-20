@@ -29,7 +29,7 @@ export const CollectionList: React.FC<CollectionListProps> = ({
             <div className="flex items-center justify-center py-12">
                 <div className="text-center">
                     <div className="text-6xl mb-4">🦎</div>
-                    <p className="text-gray-600">{t('collection.noResults')}</p>
+                    <p className="text-gray-600">{t('collections.noCollections')}</p>
                 </div>
             </div>
         );

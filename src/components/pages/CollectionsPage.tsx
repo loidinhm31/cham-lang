@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Plus, BookOpen, Globe, Lock, Trash2, Share2, Edit } from 'lucide-react';
-import { CollectionService } from '../../services/collection.service';
-import { TopBar, ShareModal } from '../molecules';
-import { Button, Card } from '../atoms';
-import type { Collection } from '../../types/collection';
-import { getCollectionId } from '../../types/collection';
+import React, {useEffect, useState} from 'react';
+import {useNavigate} from 'react-router-dom';
+import {useTranslation} from 'react-i18next';
+import {BookOpen, Edit, Globe, Lock, Plus, Trash2} from 'lucide-react';
+import {CollectionService} from '../../services/collection.service';
+import {TopBar} from '../molecules';
+import {Button, Card} from '../atoms';
+import type {Collection} from '../../types/collection';
+import {getCollectionId} from '../../types/collection';
 
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [selectedCollection, setSelectedCollection] = useState<Collection | null>(null);
 
   useEffect(() => {
     loadCollections();
@@ -40,37 +38,6 @@ export const CollectionsPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete collection:', error);
       alert(t('collections.deleteFailed'));
-    }
-  };
-
-  const handleShare = async (username: string) => {
-    if (!selectedCollection) return;
-
-    try {
-      await CollectionService.shareCollection(
-        getCollectionId(selectedCollection)!,
-        username
-      );
-      await loadCollections();
-      alert(t('collections.shareSuccess'));
-    } catch (error) {
-      console.error('Failed to share collection:', error);
-      alert(t('collections.shareFailed'));
-    }
-  };
-
-  const handleUnshare = async (userId: string) => {
-    if (!selectedCollection) return;
-
-    try {
-      await CollectionService.unshareCollection(
-        getCollectionId(selectedCollection)!,
-        userId
-      );
-      await loadCollections();
-    } catch (error) {
-      console.error('Failed to unshare collection:', error);
-      alert(t('messages.error'));
     }
   };
 
@@ -154,18 +121,6 @@ export const CollectionsPage: React.FC = () => {
                   {t('common.edit')}
                 </Button>
                 <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedCollection(collection);
-                    setShowShareModal(true);
-                  }}
-                  className="flex items-center gap-1"
-                >
-                  <Share2 className="w-4 h-4" />
-                  {t('collections.share')}
-                </Button>
-                <Button
                   variant="danger"
                   size="sm"
                   onClick={() => handleDelete(getCollectionId(collection)!)}
@@ -180,19 +135,6 @@ export const CollectionsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Modals */}
-      {selectedCollection && (
-        <ShareModal
-          isOpen={showShareModal}
-          onClose={() => {
-            setShowShareModal(false);
-            setSelectedCollection(null);
-          }}
-          collection={selectedCollection}
-          onShare={handleShare}
-          onUnshare={handleUnshare}
-        />
-      )}
     </div>
   );
 };
