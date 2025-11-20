@@ -78,9 +78,11 @@ pub fn run() {
             unshare_collection,
             // Level configuration
             get_level_configuration,
+            get_all_languages,
             // Vocabulary CRUD
             create_vocabulary,
             get_vocabulary,
+            get_all_vocabularies,
             get_vocabularies_by_collection,
             search_vocabularies,
             update_vocabulary,

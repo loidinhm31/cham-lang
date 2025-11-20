@@ -55,6 +55,18 @@ pub fn get_vocabulary(
 }
 
 #[tauri::command]
+pub fn get_all_vocabularies(
+    local_db: State<'_, LocalDatabase>,
+    language: Option<String>,
+    limit: Option<i64>,
+) -> Result<Vec<Vocabulary>, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_all_vocabularies(user_id, language.as_deref(), limit)
+        .map_err(|e| format!("Database error: {}", e))
+}
+
+#[tauri::command]
 pub fn get_vocabularies_by_collection(
     local_db: State<'_, LocalDatabase>,
     collection_id: String,
@@ -136,12 +148,14 @@ pub fn create_practice_session(
 
 #[tauri::command]
 pub fn get_practice_sessions(
-    _local_db: State<'_, LocalDatabase>,
-    _language: String,
-    _limit: Option<i64>,
+    local_db: State<'_, LocalDatabase>,
+    language: String,
+    limit: Option<i64>,
 ) -> Result<Vec<PracticeSession>, String> {
-    // TODO: Implement get_practice_sessions in local_db.rs
-    Ok(vec![])
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_practice_sessions(user_id, &language, limit)
+        .map_err(|e| format!("Failed to get practice sessions: {}", e))
 }
 
 #[tauri::command]
@@ -158,15 +172,27 @@ pub fn update_practice_progress(
 
 #[tauri::command]
 pub fn get_practice_progress(
-    _local_db: State<'_, LocalDatabase>,
-    _language: String,
+    local_db: State<'_, LocalDatabase>,
+    language: String,
 ) -> Result<Option<UserPracticeProgress>, String> {
-    // TODO: Implement get_practice_progress in local_db.rs
-    Ok(None)
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_practice_progress(user_id, &language)
+        .map_err(|e| format!("Failed to get practice progress: {}", e))
 }
 
 // Level configuration command
 #[tauri::command]
 pub fn get_level_configuration(language: String) -> Result<Vec<String>, String> {
     Ok(crate::models::get_level_config(&language))
+}
+
+#[tauri::command]
+pub fn get_all_languages(
+    local_db: State<'_, LocalDatabase>,
+) -> Result<Vec<String>, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_all_languages(user_id)
+        .map_err(|e| format!("Failed to get languages: {}", e))
 }

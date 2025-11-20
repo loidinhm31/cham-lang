@@ -263,7 +263,6 @@ pub struct UserPracticeProgress {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreatePracticeSessionRequest {
-    pub user_id: String,
     pub collection_id: String,
     pub mode: PracticeMode,
     pub language: String,
@@ -275,7 +274,6 @@ pub struct CreatePracticeSessionRequest {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct UpdateProgressRequest {
-    pub user_id: String,
     pub language: String,
     pub vocabulary_id: String,
     pub word: String,

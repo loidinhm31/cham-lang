@@ -440,6 +440,48 @@ impl LocalDatabase {
         }
     }
 
+    pub fn get_all_vocabularies(
+        &self,
+        user_id: &str,
+        language: Option<&str>,
+        limit: Option<i64>,
+    ) -> SqlResult<Vec<Vocabulary>> {
+        let conn = self.conn.lock().unwrap();
+
+        let (sql, params_vec): (String, Vec<Box<dyn rusqlite::ToSql>>) = if let Some(lang) = language {
+            (
+                format!(
+                    "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+                            related_words, language, collection_id, user_id, created_at, updated_at
+                     FROM vocabularies
+                     WHERE user_id = ?1 AND language = ?2 AND deleted_at IS NULL
+                     ORDER BY created_at DESC
+                     LIMIT {}",
+                    limit.unwrap_or(1000)
+                ),
+                vec![Box::new(user_id.to_string()), Box::new(lang.to_string())]
+            )
+        } else {
+            (
+                format!(
+                    "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+                            related_words, language, collection_id, user_id, created_at, updated_at
+                     FROM vocabularies
+                     WHERE user_id = ?1 AND deleted_at IS NULL
+                     ORDER BY created_at DESC
+                     LIMIT {}",
+                    limit.unwrap_or(1000)
+                ),
+                vec![Box::new(user_id.to_string())]
+            )
+        };
+
+        let params_refs: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|p| p.as_ref()).collect();
+        let mut stmt = conn.prepare(&sql)?;
+        let rows = stmt.query_map(params_refs.as_slice(), row_to_vocabulary)?;
+        rows.collect()
+    }
+
     pub fn get_vocabularies_by_collection(
         &self,
         collection_id: &str,
@@ -703,6 +745,101 @@ impl LocalDatabase {
         }
 
         Ok(())
+    }
+
+    pub fn get_practice_progress(
+        &self,
+        user_id: &str,
+        language: &str,
+    ) -> SqlResult<Option<UserPracticeProgress>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, language, words_progress, total_sessions, total_words_practiced,
+                    current_streak, longest_streak, last_practice_date, created_at, updated_at
+             FROM practice_progress
+             WHERE user_id = ?1 AND language = ?2"
+        )?;
+
+        let mut rows = stmt.query(params![user_id, language])?;
+
+        if let Some(row) = rows.next()? {
+            let words_progress_str: String = row.get(2)?;
+            let words_progress: Vec<WordProgress> =
+                serde_json::from_str(&words_progress_str).unwrap_or_else(|_| Vec::new());
+
+            Ok(Some(UserPracticeProgress {
+                id: row.get(0)?,
+                user_id: user_id.to_string(),
+                language: row.get(1)?,
+                words_progress,
+                total_sessions: row.get(3)?,
+                total_words_practiced: row.get(4)?,
+                current_streak: row.get(5)?,
+                longest_streak: row.get(6)?,
+                last_practice_date: timestamp_to_datetime(row.get(7)?),
+                created_at: timestamp_to_datetime(row.get(8)?),
+                updated_at: timestamp_to_datetime(row.get(9)?),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    pub fn get_practice_sessions(
+        &self,
+        user_id: &str,
+        language: &str,
+        limit: Option<i64>,
+    ) -> SqlResult<Vec<PracticeSession>> {
+        let conn = self.conn.lock().unwrap();
+        let sql = format!(
+            "SELECT id, collection_id, mode, language, topic, level, results,
+                    total_questions, correct_answers, started_at, completed_at, duration_seconds
+             FROM practice_sessions
+             WHERE user_id = ?1 AND language = ?2
+             ORDER BY completed_at DESC
+             LIMIT {}",
+            limit.unwrap_or(50)
+        );
+
+        let user_id_owned = user_id.to_string();
+        let mut stmt = conn.prepare(&sql)?;
+        let rows = stmt.query_map(params![user_id, language], move |row| {
+            let results_str: String = row.get(6)?;
+            let results: Vec<PracticeResult> =
+                serde_json::from_str(&results_str).unwrap_or_else(|_| Vec::new());
+            let mode_str: String = row.get(2)?;
+            let mode: PracticeMode =
+                serde_json::from_str(&mode_str).unwrap_or(PracticeMode::Flashcard);
+
+            Ok(PracticeSession {
+                id: row.get(0)?,
+                user_id: user_id_owned.clone(),
+                collection_id: row.get(1)?,
+                mode,
+                language: row.get(3)?,
+                topic: row.get(4)?,
+                level: row.get(5)?,
+                results,
+                total_questions: row.get(7)?,
+                correct_answers: row.get(8)?,
+                started_at: timestamp_to_datetime(row.get(9)?),
+                completed_at: timestamp_to_datetime(row.get(10)?),
+                duration_seconds: row.get(11)?,
+            })
+        })?;
+
+        rows.collect()
+    }
+
+    pub fn get_all_languages(&self, user_id: &str) -> SqlResult<Vec<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT DISTINCT language FROM collections WHERE owner_id = ?1 AND deleted_at IS NULL"
+        )?;
+
+        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        rows.collect()
     }
 
 }

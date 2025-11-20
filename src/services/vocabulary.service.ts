@@ -80,4 +80,9 @@ export class VocabularyService {
   static async getPreferences(): Promise<UserPreferences | null> {
     return invoke('get_preferences');
   }
+
+  // Language management
+  static async getAllLanguages(): Promise<string[]> {
+    return invoke('get_all_languages');
+  }
 }
