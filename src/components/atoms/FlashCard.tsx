@@ -56,7 +56,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
         {/* Front */}
         <div className="flip-card-front">
           <Card variant="gradient" className="h-full flex flex-col items-center justify-center">
-            <div className="text-6xl mb-6">🦎</div>
+            <img src="/chameleon.svg" alt="Chameleon" className="w-24 h-24 mb-6" />
             <h2 className="text-4xl font-black mb-2">{front}</h2>
             {subtitle && <p className="text-xl text-white/90">{subtitle}</p>}
             <p className="text-sm text-white/70 mt-8">Tap to reveal</p>

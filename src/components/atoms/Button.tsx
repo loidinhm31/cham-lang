@@ -22,9 +22,9 @@ const variantStyles: Record<ButtonVariant, string> = {
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: 'py-2 px-4 text-sm',
-  md: 'py-3 px-6 text-base',
-  lg: 'py-4 px-8 text-lg',
+  sm: 'py-1.5 px-3 text-sm',
+  md: 'py-2 px-4 text-base',
+  lg: 'py-2.5 px-6 text-base',
 };
 
 export const Button: React.FC<ButtonProps> = ({

@@ -79,7 +79,7 @@ export const HomePage: React.FC = () => {
       <div className="px-4 pt-6 space-y-6">
         {/* Hero Section */}
         <div className="text-center py-6">
-          <div className="text-6xl mb-4">🦎</div>
+          <img src="/chameleon.svg" alt="Chameleon" className="w-24 h-24 mx-auto mb-4" />
           <h1 className="text-4xl font-black text-gray-800 mb-2">{t('app.name').toUpperCase()}</h1>
           <p className="text-lg text-gray-700">{t('app.tagline')}</p>
         </div>

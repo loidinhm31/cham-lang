@@ -24,8 +24,8 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="max-w-2xl mx-auto px-4 pb-4">
-        <div className="grid grid-cols-4 gap-2 bg-white/60 backdrop-blur-lg rounded-2xl p-3 shadow-lg">
+      <div className="max-w-2xl mx-auto px-2 pb-12">
+        <div className="grid grid-cols-4 gap-1 bg-white/75 backdrop-blur-md rounded-2xl border-t border-gray-200 shadow-lg">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             const Icon = item.icon;
@@ -34,14 +34,14 @@ export const BottomNavigation: React.FC = () => {
               <button
                 key={item.id}
                 onClick={() => navigate(item.path)}
-                className={`flex flex-col items-center gap-1 py-3 rounded-xl transition ${
+                className={`flex flex-col items-center gap-0.5 py-2 rounded-xl transition ${
                   isActive
                     ? 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white'
-                    : 'text-gray-600 hover:bg-white/50'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <Icon className="w-6 h-6" />
-                <span className="text-xs font-semibold">{item.label}</span>
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{item.label}</span>
               </button>
             );
           })}

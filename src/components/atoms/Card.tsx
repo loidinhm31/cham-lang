@@ -27,7 +27,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div
-      className={`rounded-3xl p-6 shadow-xl ${variantStyles[variant]} ${hoverStyles} ${className}`}
+      className={`rounded-3xl p-4 shadow-xl ${variantStyles[variant]} ${hoverStyles} ${className}`}
       onClick={onClick}
     >
       {children}
