@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Check, X } from 'lucide-react';
-import { Card } from '../atoms';
+import { Card, Badge } from '../atoms';
 
 interface MultipleChoiceCardProps {
   question: string;
@@ -20,7 +20,7 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
 
-  const handleOptionClick = (option: string) => {
+  const handleOptionClick = useCallback((option: string) => {
     if (answered) {
       return;
     }
@@ -29,7 +29,28 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
     setAnswered(true);
     const isCorrect = option === correctAnswer;
     onAnswer(isCorrect, option);
-  };
+  }, [answered, correctAnswer, onAnswer]);
+
+  // Keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (answered) {
+        return;
+      }
+
+      const key = event.key;
+      const index = parseInt(key) - 1;
+
+      if (index >= 0 && index < options.length) {
+        handleOptionClick(options[index]);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [answered, options, handleOptionClick]);
 
   const getOptionStyle = (option: string) => {
     if (!answered) {
@@ -66,13 +87,18 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
                 option
               )}`}
             >
-              <div className="flex items-center justify-between">
-                <span>{option}</span>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3 flex-1">
+                  <Badge variant="glass" className="px-3 py-1 text-base font-bold shrink-0">
+                    {index + 1}
+                  </Badge>
+                  <span className="text-left">{option}</span>
+                </div>
                 {answered && option === correctAnswer && (
-                  <Check className="w-6 h-6" />
+                  <Check className="w-6 h-6 shrink-0" />
                 )}
                 {answered && option === selectedOption && option !== correctAnswer && (
-                  <X className="w-6 h-6" />
+                  <X className="w-6 h-6 shrink-0" />
                 )}
               </div>
             </button>

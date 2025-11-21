@@ -152,7 +152,7 @@ export const ProgressPage: React.FC = () => {
         {availableLanguages.length > 1 && (
           <Card variant="glass">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">{t('vocabulary.selectLanguage') || 'Select Language'}</label>
+              <label className="text-sm font-semibold text-gray-700">{t('vocabulary.language') || 'Select Language'}</label>
               <select
                 value={currentLanguage}
                 onChange={(e) => setCurrentLanguage(e.target.value)}
