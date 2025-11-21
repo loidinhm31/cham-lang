@@ -135,7 +135,7 @@ export class SessionManager {
   }
 
   /**
-   * Handle a correct answer
+   * Handle a correct answer with multi-mode completion tracking
    */
   handleCorrectAnswer(vocabulary: Vocabulary, timeSpentSeconds: number): ReviewResult {
     const vocabularyId = vocabulary.id || '';
@@ -148,8 +148,46 @@ export class SessionManager {
       this.state.wordProgressMap.set(vocabularyId, wordProgress);
     }
 
-    // Process the correct answer using the algorithm
-    const reviewResult = algorithm.processCorrectAnswer(wordProgress, this.settings);
+    // Add current mode to completed modes in cycle
+    const completedModes = wordProgress.completed_modes_in_cycle || [];
+    if (!completedModes.includes(this.state.mode)) {
+      completedModes.push(this.state.mode);
+    }
+
+    // Check if all three modes are completed
+    const allModesCompleted =
+      completedModes.includes('flashcard') &&
+      completedModes.includes('fillword') &&
+      completedModes.includes('multiplechoice');
+
+    let reviewResult: ReviewResult;
+
+    if (allModesCompleted) {
+      // All modes completed - advance the word (box, interval, etc.)
+      reviewResult = algorithm.processCorrectAnswer(wordProgress, this.settings);
+
+      // Reset completed modes for next cycle
+      reviewResult.updatedProgress.completed_modes_in_cycle = [];
+    } else {
+      // Not all modes completed yet - update mode list but don't advance
+      const updatedProgress = {
+        ...wordProgress,
+        completed_modes_in_cycle: completedModes,
+        correct_count: wordProgress.correct_count + 1,
+        last_practiced: new Date().toISOString(),
+        total_reviews: wordProgress.total_reviews + 1,
+      };
+
+      reviewResult = {
+        updatedProgress,
+        boxChanged: false,
+        previousBox: wordProgress.leitner_box,
+        newBox: wordProgress.leitner_box,
+        nextReviewDate: new Date(wordProgress.next_review_date),
+        intervalDays: wordProgress.interval_days,
+        message: `Mode completed! Complete ${3 - completedModes.length} more mode(s) to advance.`,
+      };
+    }
 
     // Update word progress in map
     this.state.wordProgressMap.set(vocabularyId, reviewResult.updatedProgress);
@@ -174,7 +212,7 @@ export class SessionManager {
   }
 
   /**
-   * Handle an incorrect answer
+   * Handle an incorrect answer with multi-mode completion tracking
    */
   handleIncorrectAnswer(vocabulary: Vocabulary, timeSpentSeconds: number): ReviewResult {
     const vocabularyId = vocabulary.id || '';
@@ -189,6 +227,10 @@ export class SessionManager {
 
     // Process the incorrect answer using the algorithm
     const reviewResult = algorithm.processIncorrectAnswer(wordProgress, this.settings);
+
+    // Reset completed modes in cycle since the word was answered incorrectly
+    // User must complete all modes correctly in the same review cycle
+    reviewResult.updatedProgress.completed_modes_in_cycle = [];
 
     // Update word progress in map
     this.state.wordProgressMap.set(vocabularyId, reviewResult.updatedProgress);
@@ -319,6 +361,7 @@ export class SessionManager {
       total_reviews: 0,
       failed_in_session: false,
       retry_count: 0,
+      completed_modes_in_cycle: [],
     };
   }
 

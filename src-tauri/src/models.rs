@@ -262,6 +262,10 @@ pub struct WordProgress {
     pub total_reviews: i32, // Total number of times this word has been reviewed
     pub failed_in_session: bool, // Flag to track if word failed in current session (for re-queuing)
     pub retry_count: i32, // Number of times word has been retried in current session
+
+    // Multi-Mode Completion Tracking
+    #[serde(default)] // Provides empty Vec for backward compatibility with old data
+    pub completed_modes_in_cycle: Vec<String>, // Tracks which modes (flashcard, fillword, multiplechoice) have been completed in current review cycle
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -45,6 +45,9 @@ export interface WordProgress {
   total_reviews: number; // Total number of times this word has been reviewed
   failed_in_session: boolean; // Flag to track if word failed in current session (for re-queuing)
   retry_count: number; // Number of times word has been retried in current session
+
+  // Multi-Mode Completion Tracking
+  completed_modes_in_cycle: string[]; // Tracks which modes (flashcard, fillword, multiplechoice) have been completed in current review cycle
 }
 
 export interface UserPracticeProgress {
@@ -111,5 +114,8 @@ export function createInitialWordProgress(vocabularyId: string, word: string): W
     total_reviews: 0,
     failed_in_session: false,
     retry_count: 0,
+
+    // Multi-mode completion tracking defaults
+    completed_modes_in_cycle: [],
   };
 }

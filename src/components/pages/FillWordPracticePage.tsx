@@ -57,7 +57,7 @@ export const FillWordPracticePage: React.FC = () => {
       const progressData = await PracticeService.getPracticeProgress(language);
       const wordsProgress = progressData?.words_progress || [];
 
-      // Select words using smart selection
+      // Select words using smart selection with mode-specific filtering
       const selectedWords = WordSelectionService.selectWordsForPractice(
         vocabData,
         wordsProgress,
@@ -67,6 +67,7 @@ export const FillWordPracticePage: React.FC = () => {
           includeNewWords: true,
           maxWords: 50,
           shuffle: true,
+          currentMode: 'fillword', // Filter to only include words not completed in fillword mode
         }
       );
 

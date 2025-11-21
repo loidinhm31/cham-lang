@@ -23,6 +23,9 @@ export interface WordSelectionOptions {
 
   // Random shuffle after selection
   shuffle: boolean;
+
+  // Current practice mode (for mode-specific filtering)
+  currentMode?: 'flashcard' | 'fillword' | 'multiplechoice';
 }
 
 export class WordSelectionService {
@@ -30,9 +33,13 @@ export class WordSelectionService {
    * Select words for a practice session using spaced repetition logic
    *
    * Priority order:
-   * 1. Words due for review (next_review_date <= today)
+   * 1. Words due for review (next_review_date <= today) AND not yet completed in current mode
    * 2. New words (never practiced)
-   * 3. Least recently practiced words
+   * 3. Least recently practiced words not completed in current mode
+   *
+   * Multi-Mode Filtering:
+   * - If currentMode is specified, only include words that haven't completed this mode in the current cycle
+   * - Words that completed all modes and advanced get new empty completed_modes_in_cycle
    */
   static selectWordsForPractice(
     vocabularies: Vocabulary[],
@@ -48,14 +55,28 @@ export class WordSelectionService {
     const vocabularyMap = new Map(vocabularies.map(v => [v.id || '', v]));
     const progressMap = new Map(wordsProgress.map(wp => [wp.vocabulary_id, wp]));
 
-    // 1. Add due words (highest priority)
+    // Helper function to check if a word is available for the current mode
+    const isAvailableForMode = (vocabularyId: string): boolean => {
+      if (!options.currentMode) return true; // No mode filtering
+
+      const progress = progressMap.get(vocabularyId);
+      if (!progress) return true; // New words are always available
+
+      // Check if this mode is already completed in the current cycle
+      const completedModes = progress.completed_modes_in_cycle || [];
+      return !completedModes.includes(options.currentMode);
+    };
+
+    // 1. Add due words (highest priority) that haven't completed current mode
     if (options.includeDueWords) {
       const dueWords = getWordsDueToday(wordsProgress);
       for (const wordProgress of dueWords) {
-        const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
-        if (vocab) {
-          selected.push(vocab);
-          vocabularyMap.delete(wordProgress.vocabulary_id); // Remove to avoid duplicates
+        if (isAvailableForMode(wordProgress.vocabulary_id)) {
+          const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
+          if (vocab) {
+            selected.push(vocab);
+            vocabularyMap.delete(wordProgress.vocabulary_id); // Remove to avoid duplicates
+          }
         }
       }
     }
@@ -81,10 +102,12 @@ export class WordSelectionService {
       newWordsToAdd.forEach(v => vocabularyMap.delete(v.id || ''));
     }
 
-    // 3. Fill remaining slots with least recently practiced words
+    // 3. Fill remaining slots with least recently practiced words not completed in current mode
     const maxWords = options.maxWords || settings.daily_review_limit || 100;
     if (selected.length < maxWords) {
-      const remaining = Array.from(vocabularyMap.values());
+      const remaining = Array.from(vocabularyMap.values()).filter(v =>
+        isAvailableForMode(v.id || '')
+      );
 
       // Sort by last practiced (oldest first)
       remaining.sort((a, b) => {

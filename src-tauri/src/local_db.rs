@@ -738,6 +738,8 @@ impl LocalDatabase {
                     total_reviews: 0,
                     failed_in_session: false,
                     retry_count: 0,
+                    // Multi-Mode Completion Tracking
+                    completed_modes_in_cycle: Vec::new(),
                 });
             }
 
@@ -775,9 +777,12 @@ impl LocalDatabase {
                 total_reviews: 0,
                 failed_in_session: false,
                 retry_count: 0,
+                // Multi-Mode Completion Tracking
+                completed_modes_in_cycle: Vec::new(),
             };
 
             let progress_id = Uuid::new_v4().to_string();
+            let now_dt = now.timestamp();
             conn.execute(
                 "INSERT INTO practice_progress
                  (id, user_id, language, words_progress, total_sessions, total_words_practiced,
@@ -788,9 +793,9 @@ impl LocalDatabase {
                     user_id,
                     request.language,
                     serde_json::to_string(&vec![word_progress]).unwrap(),
-                    now,
-                    now,
-                    now,
+                    now_dt,
+                    now_dt,
+                    now_dt,
                 ],
             )?;
         }
