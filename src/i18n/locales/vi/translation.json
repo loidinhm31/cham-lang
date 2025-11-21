@@ -82,6 +82,7 @@
   },
   "buttons": {
     "save": "Lưu",
+    "saving": "Đang lưu...",
     "cancel": "Hủy",
     "delete": "Xóa",
     "edit": "Sửa",
@@ -112,7 +113,25 @@
     "connect": "Kết Nối",
     "disconnect": "Ngắt Kết Nối",
     "connected": "Đã Kết Nối",
-    "disconnected": "Chưa Kết Nối"
+    "disconnected": "Chưa Kết Nối",
+    "learning": "Cài Đặt Học Tập",
+    "learningTitle": "Cài Đặt Lặp Lại Ngắt Quãng",
+    "learningDescription": "Tùy chỉnh cách bạn học từ vựng",
+    "configure": "Cấu Hình Cài Đặt Học Tập",
+    "algorithm": "Thuật Toán Học Tập",
+    "sm2Description": "Khoảng cách động dựa trên hiệu suất. Tốt nhất cho người học nâng cao.",
+    "modifiedSm2Description": "Khoảng cách cố định cho mỗi hộp. Dễ dự đoán và dễ hiểu.",
+    "simpleDescription": "Nhân đôi khoảng cách mỗi lần. Tuyệt vời cho người mới bắt đầu.",
+    "boxCount": "Số Lượng Hộp Leitner",
+    "intervalPreview": "Xem Trước Khoảng Cách",
+    "consecutiveCorrect": "Số Lần Đúng Liên Tiếp Để Thăng Tiến",
+    "consecutiveCorrectDescription": "Số câu trả lời đúng cần thiết để chuyển sang hộp tiếp theo",
+    "times": "lần",
+    "newWordsPerDay": "Từ Mới Mỗi Ngày",
+    "dailyReviewLimit": "Giới Hạn Ôn Tập Hàng Ngày",
+    "showFailedWords": "Hiện Từ Sai Trong Phiên",
+    "showFailedWordsDescription": "Thử lại ngay các từ sai trong cùng một phiên",
+    "saved": "Đã lưu cài đặt thành công!"
   },
   "stats": {
     "totalWords": "Tổng Số Từ",
@@ -124,6 +143,7 @@
     "title": "Luyện Tập",
     "selectMode": "Chọn Chế Độ Luyện Tập",
     "selectModeDescription": "Chọn cách bạn muốn luyện tập từ vựng",
+    "selectPracticeMode": "Chọn Chế Độ Luyện Tập",
     "selectCollection": "Chọn Bộ Sưu Tập",
     "selectCollectionDescription": "Chọn bộ sưu tập bạn muốn luyện tập",
     "noCollections": "Không Có Bộ Sưu Tập",
@@ -150,7 +170,9 @@
     "wellDone": "Làm Tốt Lắm!",
     "accuracy": "Độ Chính Xác",
     "tryAgain": "Thử Lại",
-    "startPractice": "Bắt Đầu Luyện Tập"
+    "startPractice": "Bắt Đầu Luyện Tập",
+    "dueForReview": "Cần Ôn Tập",
+    "words": "từ"
   },
   "auth": {
     "login": "Đăng Nhập",

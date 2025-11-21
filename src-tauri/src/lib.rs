@@ -95,6 +95,10 @@ pub fn run() {
             get_practice_sessions,
             update_practice_progress,
             get_practice_progress,
+            // Learning Settings (Spaced Repetition)
+            get_learning_settings,
+            get_or_create_learning_settings,
+            update_learning_settings,
             // Google Drive sync
             backup_to_gdrive,
             restore_from_gdrive,

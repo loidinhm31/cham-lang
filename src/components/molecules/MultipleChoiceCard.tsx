@@ -7,7 +7,7 @@ interface MultipleChoiceCardProps {
   subtitle?: string;
   options: string[];
   correctAnswer: string;
-  onAnswer: (correct: boolean, selectedAnswer: string) => void;
+  onAnswer: (correct: boolean, selectedAnswer?: string) => void;
 }
 
 export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
@@ -21,7 +21,9 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
   const [answered, setAnswered] = useState(false);
 
   const handleOptionClick = (option: string) => {
-    if (answered) return;
+    if (answered) {
+      return;
+    }
 
     setSelectedOption(option);
     setAnswered(true);

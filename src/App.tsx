@@ -11,6 +11,7 @@ import {
   FillWordPracticePage,
   FlashcardPracticePage,
   HomePage,
+  LearningSettingsPage,
   MultipleChoicePracticePage,
   PracticeModePage,
   ProfilePage,
@@ -40,6 +41,7 @@ const App: React.FC = () => {
             <Route path="/practice/flashcard" element={<FlashcardPracticePage />} />
             <Route path="/practice/fill-word" element={<FillWordPracticePage />} />
             <Route path="/practice/multiple-choice" element={<MultipleChoicePracticePage />} />
+            <Route path="/settings/learning" element={<LearningSettingsPage />} />
           </Route>
         </Routes>
       </SyncNotificationProvider>

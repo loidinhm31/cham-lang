@@ -1,10 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 import {useTranslation} from 'react-i18next';
-import {Brain, CheckSquare, Library, PenTool} from 'lucide-react';
+import {Brain, CheckSquare, Library, PenTool, Clock} from 'lucide-react';
 import {TopBar} from '../molecules';
 import {Button, Card, Select} from '../atoms';
 import {CollectionService} from '../../services/collection.service';
+import {VocabularyService} from '../../services/vocabulary.service';
+import {PracticeService} from '../../services/practice.service';
+import {LearningSettingsService} from '../../services/learningSettings.service';
+import {WordSelectionService} from '../../services/wordSelection.service';
 import type {Collection} from '../../types/collection';
 
 export const PracticeModePage: React.FC = () => {
@@ -19,10 +23,18 @@ export const PracticeModePage: React.FC = () => {
     const saved = localStorage.getItem('practiceContentMode');
     return (saved === 'concept' || saved === 'definition') ? saved : 'definition';
   });
+  const [dueWordsCount, setDueWordsCount] = useState<number>(0);
+  const [loadingStats, setLoadingStats] = useState(false);
 
   useEffect(() => {
     loadCollections();
   }, []);
+
+  useEffect(() => {
+    if (selectedCollection && step === 'mode') {
+      loadPracticeStats();
+    }
+  }, [selectedCollection, step]);
 
   const loadCollections = async () => {
     try {
@@ -32,6 +44,41 @@ export const PracticeModePage: React.FC = () => {
       console.error('Failed to load collections:', error);
     } finally {
       setLoadingCollections(false);
+    }
+  };
+
+  const loadPracticeStats = async () => {
+    if (!selectedCollection) return;
+
+    try {
+      setLoadingStats(true);
+
+      // Load settings
+      const settings = await LearningSettingsService.getOrCreateLearningSettings();
+
+      // Load vocabularies
+      const vocabData = await VocabularyService.getVocabulariesByCollection(selectedCollection);
+
+      if (vocabData.length === 0) {
+        setDueWordsCount(0);
+        setLoadingStats(false);
+        return;
+      }
+
+      const language = vocabData[0].language || 'en';
+
+      // Load practice progress
+      const progressData = await PracticeService.getPracticeProgress(language);
+      const wordsProgress = progressData?.words_progress || [];
+
+      // Calculate statistics
+      const stats = WordSelectionService.getWordStatistics(vocabData, wordsProgress, settings);
+      setDueWordsCount(stats.dueForReview);
+    } catch (error) {
+      console.error('Failed to load practice stats:', error);
+      setDueWordsCount(0);
+    } finally {
+      setLoadingStats(false);
     }
   };
 
@@ -171,6 +218,21 @@ export const PracticeModePage: React.FC = () => {
               <p className="text-lg text-gray-700">{t('practice.selectModeDescription')}</p>
             </div>
 
+            {/* Practice Stats Card */}
+            {!loadingStats && dueWordsCount > 0 && (
+              <Card variant="glass">
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-600">{t('practice.dueForReview') || 'Due for review'}</p>
+                    <p className="text-3xl font-black text-teal-600">{dueWordsCount} {t('practice.words') || 'words'}</p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
             {/* Content Mode Selection */}
             <Card variant="glass">
               <div className="space-y-4">
@@ -215,6 +277,11 @@ export const PracticeModePage: React.FC = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Mode Selection Label */}
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-800">{t('practice.selectPracticeMode') || 'Select Practice Mode'}</h3>
+            </div>
 
             <div className="space-y-4">
               {modes.map((mode) => {

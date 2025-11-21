@@ -5,9 +5,11 @@ import { RotateCcw } from 'lucide-react';
 import {FillWordCard, TopBar} from '../molecules';
 import { Card, Button } from '../atoms';
 import {Vocabulary} from "../../types/vocabulary.ts";
-import {PracticeResult} from "../../types/practice.ts";
 import {VocabularyService} from "../../services/vocabulary.service.ts";
 import {PracticeService} from "../../services/practice.service.ts";
+import { LearningSettingsService } from '../../services/learningSettings.service';
+import { WordSelectionService } from '../../services/wordSelection.service';
+import { SessionManager } from '../../utils/sessionManager';
 
 export const FillWordPracticePage: React.FC = () => {
   const { t } = useTranslation();
@@ -16,10 +18,8 @@ export const FillWordPracticePage: React.FC = () => {
   const collectionId = searchParams.get('collection');
   const contentMode = searchParams.get('contentMode') as 'concept' | 'definition' | null;
 
-  const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [results, setResults] = useState<PracticeResult[]>([]);
-  const [startTime] = useState(Date.now());
+  const [sessionManager, setSessionManager] = useState<SessionManager | null>(null);
+  const [currentVocab, setCurrentVocab] = useState<Vocabulary | null>(null);
   const [cardStartTime, setCardStartTime] = useState(Date.now());
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
@@ -39,9 +39,51 @@ export const FillWordPracticePage: React.FC = () => {
 
     try {
       setLoading(true);
-      const data = await VocabularyService.getVocabulariesByCollection(collectionId);
-      const shuffled = [...data].sort(() => Math.random() - 0.5);
-      setVocabularies(shuffled);
+
+      // Load learning settings
+      const userSettings = await LearningSettingsService.getOrCreateLearningSettings();
+
+      // Load vocabularies
+      const vocabData = await VocabularyService.getVocabulariesByCollection(collectionId);
+
+      if (vocabData.length === 0) {
+        setLoading(false);
+        return;
+      }
+
+      const language = vocabData[0].language || 'en';
+
+      // Load practice progress
+      const progressData = await PracticeService.getPracticeProgress(language);
+      const wordsProgress = progressData?.words_progress || [];
+
+      // Select words using smart selection
+      const selectedWords = WordSelectionService.selectWordsForPractice(
+        vocabData,
+        wordsProgress,
+        userSettings,
+        {
+          includeDueWords: true,
+          includeNewWords: true,
+          maxWords: 50,
+          shuffle: true,
+        }
+      );
+
+      // Initialize session manager
+      const manager = new SessionManager(
+        selectedWords,
+        wordsProgress,
+        userSettings,
+        'fillword',
+        collectionId,
+        language
+      );
+      setSessionManager(manager);
+
+      // Get first word
+      const firstWord = manager.getNextWord();
+      setCurrentVocab(firstWord);
     } catch (error) {
       console.error('Failed to load vocabularies:', error);
       alert(t('messages.error'));
@@ -49,8 +91,6 @@ export const FillWordPracticePage: React.FC = () => {
       setLoading(false);
     }
   };
-
-  const currentVocab = vocabularies[currentIndex];
 
   // Get content based on mode (concept or definition), with fallback
   const getContent = (vocab: Vocabulary): string => {
@@ -62,69 +102,94 @@ export const FillWordPracticePage: React.FC = () => {
     return vocab.definitions[0]?.meaning || 'No definition available';
   };
 
-  const handleAnswer = async (correct: boolean) => {
-    if (!currentVocab) return;
-
-    const timeSpent = Math.floor((Date.now() - cardStartTime) / 1000);
-
-    const result: PracticeResult = {
-      vocabulary_id: currentVocab.id || '',
-      word: currentVocab.word,
-      correct,
-      mode: 'fillword',
-      time_spent_seconds: timeSpent,
-    };
-
-    setResults([...results, result]);
-
-    // Update progress
-    try {
-      await PracticeService.updatePracticeProgress({
-        language: currentVocab.language || 'en',
-        vocabulary_id: currentVocab.id || '',
-        word: currentVocab.word,
-        correct,
-      });
-    } catch (error) {
-      console.error('Failed to update progress:', error);
+  const handleAnswer = (correct: boolean) => {
+    if (!sessionManager || !currentVocab) {
+      return;
     }
 
-    setShowNext(true);
+    try {
+      const timeSpent = Math.floor((Date.now() - cardStartTime) / 1000);
+
+      // Process answer using session manager
+      if (correct) {
+        sessionManager.handleCorrectAnswer(currentVocab, timeSpent);
+      } else {
+        sessionManager.handleIncorrectAnswer(currentVocab, timeSpent);
+      }
+
+      setShowNext(true);
+
+      // Auto-advance after 1.5 seconds to show feedback
+      setTimeout(() => {
+        handleNext();
+      }, 2000);
+    } catch (error) {
+      console.error('Error in handleAnswer:', error);
+      setShowNext(true); // Show next anyway to not block the user
+      // Auto-advance even on error
+      setTimeout(() => {
+        handleNext();
+      }, 2000);
+    }
   };
 
   const handleNext = () => {
-    if (currentIndex < vocabularies.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    if (!sessionManager) {
+      return;
+    }
+
+    // Check if session is complete
+    if (sessionManager.isSessionComplete()) {
+      completeSession();
+    } else {
+      // Get next word
+      const nextWord = sessionManager.getNextWord();
+      setCurrentVocab(nextWord);
       setShowNext(false);
       setCardStartTime(Date.now());
-    } else {
-      completeSession();
     }
   };
 
   const completeSession = async () => {
-    const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
+    if (!sessionManager || !collectionId || !currentVocab) {
+      setCompleted(true);
+      return;
+    }
 
-    if (collectionId && vocabularies[0]) {
-      try {
-        await PracticeService.createPracticeSession({
-          collection_id: collectionId,
-          mode: 'fillword',
-          language: vocabularies[0].language || 'en',
-          results: [...results],
-          duration_seconds: durationSeconds,
+    try {
+      const stats = sessionManager.getStatistics();
+      const results = sessionManager.getSessionResults();
+      const language = currentVocab.language || 'en';
+
+      // Save practice session
+      await PracticeService.createPracticeSession({
+        collection_id: collectionId,
+        mode: 'fillword',
+        language,
+        results,
+        duration_seconds: stats.durationSeconds,
+      });
+
+      // Save updated progress for all words
+      const updatedProgress = sessionManager.getUpdatedWordProgress();
+      for (const progress of updatedProgress) {
+        await PracticeService.updatePracticeProgress({
+          language,
+          vocabulary_id: progress.vocabulary_id,
+          word: progress.word,
+          correct: progress.correct_count > 0,
         });
-      } catch (error) {
-        console.error('Failed to save session:', error);
       }
+    } catch (error) {
+      console.error('Failed to save session:', error);
     }
 
     setCompleted(true);
   };
 
   const handleRestart = () => {
-    setCurrentIndex(0);
-    setResults([]);
+    setSessionManager(null);
+    setCurrentVocab(null);
     setShowNext(false);
     setCompleted(false);
     setCardStartTime(Date.now());
@@ -143,8 +208,12 @@ export const FillWordPracticePage: React.FC = () => {
   }
 
   if (completed) {
-    const correctCount = results.filter((r) => r.correct).length;
-    const accuracy = Math.round((correctCount / results.length) * 100);
+    const stats = sessionManager?.getStatistics() || {
+      totalQuestions: 0,
+      correctAnswers: 0,
+      incorrectAnswers: 0,
+      accuracy: 0,
+    };
 
     return (
       <>
@@ -155,10 +224,10 @@ export const FillWordPracticePage: React.FC = () => {
             <h2 className="text-3xl font-black mb-4">{t('practice.wellDone')}</h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
-                {correctCount} / {results.length} {t('practice.correct')}
+                {stats.correctAnswers} / {stats.totalQuestions} {t('practice.correct')}
               </p>
               <p className="text-xl text-white/80">
-                {accuracy}% {t('practice.accuracy')}
+                {stats.accuracy}% {t('practice.accuracy')}
               </p>
             </div>
           </Card>
@@ -204,30 +273,32 @@ export const FillWordPracticePage: React.FC = () => {
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-gray-700">{t('practice.progress')}</span>
             <span className="text-sm font-bold text-teal-600">
-              {currentIndex + 1} / {vocabularies.length}
+              {sessionManager ? !showNext && `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}` : '0 / 0'}
             </span>
           </div>
           <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-300"
-              style={{ width: `${((currentIndex + 1) / vocabularies.length) * 100}%` }}
+              style={{ width: `${sessionManager ? sessionManager.getProgressPercentage() : 0}%` }}
             ></div>
           </div>
         </Card>
 
         {/* Fill Word Card */}
         <FillWordCard
-          key={currentVocab.id || currentIndex}
+          key={currentVocab.id || currentVocab.word}
           definition={getContent(currentVocab)}
           correctAnswer={currentVocab.word}
           hint={hint}
           onAnswer={handleAnswer}
         />
 
-        {/* Next Button */}
+        {/* Next Button - shows while waiting for auto-advance */}
         {showNext && (
           <Button variant="primary" size="lg" fullWidth onClick={handleNext}>
-            {currentIndex < vocabularies.length - 1 ? t('practice.next') : t('practice.finish')}
+            {sessionManager && !sessionManager.isSessionComplete()
+              ? `${t('practice.next')} (auto)`
+              : t('practice.finish')}
           </Button>
         )}
       </div>

@@ -6,7 +6,7 @@ interface FillWordCardProps {
   definition: string;
   correctAnswer: string;
   hint?: string;
-  onAnswer: (correct: boolean, userAnswer: string) => void;
+  onAnswer: (correct: boolean, userAnswer?: string) => void;
 }
 
 export const FillWordCard: React.FC<FillWordCardProps> = ({
@@ -21,7 +21,9 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!answer.trim() || submitted) return;
+    if (!answer.trim() || submitted) {
+      return;
+    }
 
     const userAnswer = answer.trim().toLowerCase();
     const correct = userAnswer === correctAnswer.toLowerCase();

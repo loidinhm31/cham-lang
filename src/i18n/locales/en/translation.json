@@ -82,6 +82,7 @@
   },
   "buttons": {
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -112,7 +113,25 @@
     "connect": "Connect",
     "disconnect": "Disconnect",
     "connected": "Connected",
-    "disconnected": "Disconnected"
+    "disconnected": "Disconnected",
+    "learning": "Learning Settings",
+    "learningTitle": "Spaced Repetition Settings",
+    "learningDescription": "Customize how you learn vocabulary",
+    "configure": "Configure Learning Settings",
+    "algorithm": "Learning Algorithm",
+    "sm2Description": "Dynamic intervals based on performance. Best for advanced learners.",
+    "modifiedSm2Description": "Fixed intervals per box. Predictable and easy to understand.",
+    "simpleDescription": "Doubles interval each time. Great for beginners.",
+    "boxCount": "Number of Leitner Boxes",
+    "intervalPreview": "Interval Preview",
+    "consecutiveCorrect": "Consecutive Correct to Advance",
+    "consecutiveCorrectDescription": "How many correct answers needed to move to next box",
+    "times": "times",
+    "newWordsPerDay": "New Words Per Day",
+    "dailyReviewLimit": "Daily Review Limit",
+    "showFailedWords": "Show Failed Words in Session",
+    "showFailedWordsDescription": "Retry incorrect words immediately in the same session",
+    "saved": "Settings saved successfully!"
   },
   "stats": {
     "totalWords": "Total Words",
@@ -124,6 +143,7 @@
     "title": "Practice",
     "selectMode": "Select Practice Mode",
     "selectModeDescription": "Choose how you want to practice your vocabulary",
+    "selectPracticeMode": "Select Practice Mode",
     "selectCollection": "Select Collection",
     "selectCollectionDescription": "Choose which collection you want to practice",
     "noCollections": "No Collections Available",
@@ -150,7 +170,9 @@
     "wellDone": "Well Done!",
     "accuracy": "Accuracy",
     "tryAgain": "Try Again",
-    "startPractice": "Start Practice"
+    "startPractice": "Start Practice",
+    "dueForReview": "Due for Review",
+    "words": "words"
   },
   "auth": {
     "login": "Login",

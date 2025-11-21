@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Cloud, CloudOff, Upload, Download, LogIn, LogOut, Trash2 } from 'lucide-react';
+import { Cloud, CloudOff, Upload, Download, LogIn, LogOut, Trash2, Settings } from 'lucide-react';
 import { invoke } from '@tauri-apps/api/core';
 import { signIn, signOut, refreshToken } from '@choochmeque/tauri-plugin-google-auth-api';
 import { TopBar } from '../molecules';
@@ -13,6 +14,7 @@ const GOOGLE_CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || '';
 
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } = useSyncNotification();
   const [isConfigured, setIsConfigured] = useState(false);
   const [accessToken, setAccessToken] = useState<string>('');
@@ -350,6 +352,36 @@ export const ProfilePage: React.FC = () => {
               </p>
             </div>
           )}
+        </div>
+      </Card>
+
+      {/* Learning Settings Section */}
+      <Card variant="glass">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Settings className="w-6 h-6 text-purple-600" />
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">
+                  {t('settings.learning') || 'Learning Settings'}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {t('settings.learningDescription') || 'Customize spaced repetition and learning preferences'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-2">
+            <Button
+              onClick={() => navigate('/settings/learning')}
+              variant="primary"
+              fullWidth
+              icon={Settings}
+            >
+              {t('settings.configure') || 'Configure Learning Settings'}
+            </Button>
+          </div>
         </div>
       </Card>
 

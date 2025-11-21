@@ -4,7 +4,8 @@ use crate::local_db::LocalDatabase;
 use crate::models::{
     Vocabulary, CreateVocabularyRequest, UpdateVocabularyRequest,
     UserPreferences, PracticeSession, CreatePracticeSessionRequest,
-    UserPracticeProgress, UpdateProgressRequest
+    UserPracticeProgress, UpdateProgressRequest,
+    LearningSettings, UpdateLearningSettingsRequest
 };
 
 // Vocabulary CRUD commands
@@ -196,4 +197,36 @@ pub fn get_all_languages(
     local_db
         .get_all_languages(user_id)
         .map_err(|e| format!("Failed to get languages: {}", e))
+}
+
+// Learning Settings Commands (Spaced Repetition)
+#[tauri::command]
+pub fn get_learning_settings(
+    local_db: State<'_, LocalDatabase>,
+) -> Result<Option<LearningSettings>, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_learning_settings(user_id)
+        .map_err(|e| format!("Failed to get learning settings: {}", e))
+}
+
+#[tauri::command]
+pub fn get_or_create_learning_settings(
+    local_db: State<'_, LocalDatabase>,
+) -> Result<LearningSettings, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_or_create_learning_settings(user_id)
+        .map_err(|e| format!("Failed to get or create learning settings: {}", e))
+}
+
+#[tauri::command]
+pub fn update_learning_settings(
+    local_db: State<'_, LocalDatabase>,
+    request: UpdateLearningSettingsRequest,
+) -> Result<LearningSettings, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .update_learning_settings(user_id, &request)
+        .map_err(|e| format!("Failed to update learning settings: {}", e))
 }

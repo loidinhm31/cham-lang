@@ -12,3 +12,4 @@ export { CollectionsPage } from './CollectionsPage';
 export { CollectionDetailPage } from './CollectionDetailPage';
 export { CreateCollectionPage } from './CreateCollectionPage';
 export { EditCollectionPage } from './EditCollectionPage';
+export { LearningSettingsPage } from './LearningSettingsPage';

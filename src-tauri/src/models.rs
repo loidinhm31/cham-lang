@@ -246,7 +246,22 @@ pub struct WordProgress {
     pub correct_count: i32,
     pub incorrect_count: i32,
     pub last_practiced: DateTime<Utc>,
-    pub mastery_level: i32, // 0-5
+    pub mastery_level: i32, // 0-5 (legacy, kept for backward compatibility)
+
+    // Spaced Repetition Fields
+    pub next_review_date: DateTime<Utc>, // When this word should be reviewed next
+    pub interval_days: i32, // Current interval between reviews in days
+    pub easiness_factor: f32, // SM-2 easiness factor (1.3 - 2.5), default 2.5
+    pub consecutive_correct_count: i32, // Number of consecutive correct answers (resets to 0 on failure)
+
+    // Leitner System Fields
+    pub leitner_box: i32, // Current box number (1 to max_boxes)
+    pub last_interval_days: i32, // Previous interval for tracking progression
+
+    // Session Tracking
+    pub total_reviews: i32, // Total number of times this word has been reviewed
+    pub failed_in_session: bool, // Flag to track if word failed in current session (for re-queuing)
+    pub retry_count: i32, // Number of times word has been retried in current session
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -281,4 +296,47 @@ pub struct UpdateProgressRequest {
     pub vocabulary_id: String,
     pub word: String,
     pub correct: bool,
+}
+
+// Learning Settings for Spaced Repetition & Leitner System
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum SpacedRepetitionAlgorithm {
+    SM2,
+    ModifiedSM2,
+    Simple,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LearningSettings {
+    pub id: String,
+    pub user_id: String,
+
+    // Spaced Repetition Configuration
+    pub sr_algorithm: SpacedRepetitionAlgorithm,
+
+    // Leitner System Configuration
+    pub leitner_box_count: i32, // 3, 5, or 7
+
+    // Learning Rules
+    pub consecutive_correct_required: i32, // Number of consecutive correct answers to advance to next box
+    pub show_failed_words_in_session: bool, // Re-queue failed words in the same session
+
+    // Optional Advanced Settings
+    pub new_words_per_day: Option<i32>, // Limit new words introduced daily
+    pub daily_review_limit: Option<i32>, // Maximum reviews per day
+
+    // Timestamps
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UpdateLearningSettingsRequest {
+    pub sr_algorithm: Option<SpacedRepetitionAlgorithm>,
+    pub leitner_box_count: Option<i32>,
+    pub consecutive_correct_required: Option<i32>,
+    pub show_failed_words_in_session: Option<bool>,
+    pub new_words_per_day: Option<i32>,
+    pub daily_review_limit: Option<i32>,
 }
