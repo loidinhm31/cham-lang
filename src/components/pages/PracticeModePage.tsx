@@ -15,7 +15,10 @@ export const PracticeModePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [selectedCollection, setSelectedCollection] = useState<string>('');
+  const [selectedCollection, setSelectedCollection] = useState<string>(() => {
+    // Load from localStorage or default to ''
+    return localStorage.getItem('practiceSelectedCollection') || '';
+  });
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [step, setStep] = useState<'collection' | 'mode'>('collection');
   const [contentMode, setContentMode] = useState<'definition' | 'concept'>(() => {
@@ -40,6 +43,14 @@ export const PracticeModePage: React.FC = () => {
     try {
       const data = await CollectionService.getUserCollections();
       setCollections(data);
+
+      // Validate saved collection still exists
+      const savedCollection = localStorage.getItem('practiceSelectedCollection');
+      if (savedCollection && !data.some(c => c.id === savedCollection)) {
+        // Clear invalid saved collection
+        localStorage.removeItem('practiceSelectedCollection');
+        setSelectedCollection('');
+      }
     } catch (error) {
       console.error('Failed to load collections:', error);
     } finally {
@@ -116,6 +127,11 @@ export const PracticeModePage: React.FC = () => {
 
   const selectedCollectionData = collections.find(c => c.id === selectedCollection);
 
+  const handleCollectionChange = (collectionId: string) => {
+    setSelectedCollection(collectionId);
+    localStorage.setItem('practiceSelectedCollection', collectionId);
+  };
+
   const handleContentModeChange = (mode: 'definition' | 'concept') => {
     setContentMode(mode);
     localStorage.setItem('practiceContentMode', mode);
@@ -176,7 +192,7 @@ export const PracticeModePage: React.FC = () => {
                   label={t('vocabulary.collection')}
                   options={collectionOptions}
                   value={selectedCollection}
-                  onChange={(e) => setSelectedCollection(e.target.value)}
+                  onChange={(e) => handleCollectionChange(e.target.value)}
                   placeholder={t('practice.selectCollection')}
                 />
 
