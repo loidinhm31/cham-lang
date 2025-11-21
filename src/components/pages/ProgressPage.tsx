@@ -19,21 +19,41 @@ export const ProgressPage: React.FC = () => {
   const [practiceStreak, setPracticeStreak] = useState(0);
   const [wordsPracticed, setWordsPracticed] = useState(0);
   const [currentLanguage, setCurrentLanguage] = useState<string>('');
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [levelProgress, setLevelProgress] = useState<LevelProgress[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadStats();
+    loadAvailableLanguages();
   }, []);
 
-  const loadStats = async () => {
+  useEffect(() => {
+    if (currentLanguage) {
+      loadStats(currentLanguage);
+    }
+  }, [currentLanguage]);
+
+  const loadAvailableLanguages = async () => {
     try {
       setLoading(true);
-
       // Get all languages from user's collections
       const languages = await VocabularyService.getAllLanguages();
-      const language = languages.length > 0 ? languages[0] : 'en';
-      setCurrentLanguage(language);
+      setAvailableLanguages(languages);
+
+      // Set the first language as default if available
+      if (languages.length > 0) {
+        setCurrentLanguage(languages[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load languages:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadStats = async (language: string) => {
+    try {
+      setLoading(true);
 
       // Load all vocabularies for the selected language
       const vocabularies = await VocabularyService.getAllVocabularies(language);
@@ -41,6 +61,7 @@ export const ProgressPage: React.FC = () => {
 
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
+      console.log('pr', progress)
       if (progress) {
         setPracticeStreak(progress.current_streak);
         setWordsPracticed(progress.total_words_practiced);
@@ -49,7 +70,9 @@ export const ProgressPage: React.FC = () => {
         const levelStats = calculateLevelProgress(vocabularies, progress.words_progress);
         setLevelProgress(levelStats);
       } else {
-        // No progress yet, just show vocabulary distribution by level
+        setPracticeStreak(0);
+        setWordsPracticed(0);
+
         const levelStats = calculateLevelProgress(vocabularies, []);
         setLevelProgress(levelStats);
       }
@@ -125,7 +148,28 @@ export const ProgressPage: React.FC = () => {
       <TopBar title={t('nav.progress')} showBack={false} />
 
       <div className="px-4 pt-6 space-y-6">
-        {currentLanguage && (
+        {/* Language Selector */}
+        {availableLanguages.length > 1 && (
+          <Card variant="glass">
+            <div className="space-y-2">
+              <label className="text-sm font-semibold text-gray-700">{t('vocabulary.selectLanguage') || 'Select Language'}</label>
+              <select
+                value={currentLanguage}
+                onChange={(e) => setCurrentLanguage(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+              >
+                {availableLanguages.map((lang) => (
+                  <option key={lang} value={lang}>
+                    {lang.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </Card>
+        )}
+
+        {/* Current Language Display (for single language) */}
+        {availableLanguages.length === 1 && currentLanguage && (
           <div className="text-center">
             <p className="text-sm text-gray-600">Learning: <span className="font-semibold">{currentLanguage.toUpperCase()}</span></p>
           </div>
