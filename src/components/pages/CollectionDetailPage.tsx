@@ -92,7 +92,7 @@ export const CollectionDetailPage: React.FC = () => {
               </div>
               <Badge variant="glass" className="bg-white/20 text-white flex items-center gap-2">
                 <BookOpen className="w-4 h-4" />
-                <span className="font-bold">{collection.word_count} {t('collection.words')}</span>
+                <span className="font-bold">{collection.word_count} {t('collections.words')}</span>
               </Badge>
             </div>
             {collection.description && (

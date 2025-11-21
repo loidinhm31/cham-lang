@@ -4,7 +4,7 @@
  */
 
 import type { WordProgress } from '../../types/practice';
-import type { LearningSettings, LeitnerBoxCount } from '../../types/settings';
+import type { LearningSettings } from '../../types/settings';
 
 // Re-export box interval presets from settings
 export { BOX_INTERVAL_PRESETS } from '../../types/settings';

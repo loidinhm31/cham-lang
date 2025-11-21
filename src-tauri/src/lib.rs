@@ -1,5 +1,6 @@
 mod models;
 mod local_db;
+pub mod db;  // New modular database structure
 mod commands;
 mod collection_commands;
 mod gdrive;

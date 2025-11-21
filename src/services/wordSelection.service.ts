@@ -249,7 +249,7 @@ export class WordSelectionService {
   static getWordStatistics(
     vocabularies: Vocabulary[],
     wordsProgress: WordProgress[],
-    settings: LearningSettings
+    _settings: LearningSettings
   ): {
     total: number;
     dueForReview: number;

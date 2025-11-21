@@ -1,0 +1,352 @@
+use rusqlite::{Result as SqlResult, params};
+use chrono::Utc;
+use uuid::Uuid;
+
+use crate::models::{
+    LearningSettings, SpacedRepetitionAlgorithm, UpdateLearningSettingsRequest,
+    UserPreferences,
+};
+use super::LocalDatabase;
+use super::helpers::timestamp_to_datetime;
+
+impl LocalDatabase {
+    //==========================================================================
+    // LEARNING SETTINGS OPERATIONS
+    //==========================================================================
+
+    /// Get learning settings for a user
+    pub fn get_learning_settings(
+        &self,
+        user_id: &str,
+    ) -> SqlResult<Option<LearningSettings>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+                    show_failed_words_in_session, new_words_per_day, daily_review_limit,
+                    created_at, updated_at
+             FROM learning_settings
+             WHERE user_id = ?1"
+        )?;
+
+        let mut rows = stmt.query(params![user_id])?;
+
+        if let Some(row) = rows.next()? {
+            let sr_algorithm_str: String = row.get(1)?;
+            let sr_algorithm: SpacedRepetitionAlgorithm =
+                serde_json::from_str(&format!("\"{}\"", sr_algorithm_str))
+                    .unwrap_or(SpacedRepetitionAlgorithm::ModifiedSM2);
+
+            Ok(Some(LearningSettings {
+                id: row.get(0)?,
+                user_id: user_id.to_string(),
+                sr_algorithm,
+                leitner_box_count: row.get(2)?,
+                consecutive_correct_required: row.get(3)?,
+                show_failed_words_in_session: row.get::<_, i32>(4)? != 0,
+                new_words_per_day: row.get(5)?,
+                daily_review_limit: row.get(6)?,
+                created_at: timestamp_to_datetime(row.get(7)?),
+                updated_at: timestamp_to_datetime(row.get(8)?),
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Create new learning settings for a user
+    pub fn create_learning_settings(
+        &self,
+        user_id: &str,
+        sr_algorithm: &SpacedRepetitionAlgorithm,
+        leitner_box_count: i32,
+        consecutive_correct_required: i32,
+        show_failed_words_in_session: bool,
+        new_words_per_day: Option<i32>,
+        daily_review_limit: Option<i32>,
+    ) -> SqlResult<LearningSettings> {
+        let conn = self.conn.lock().unwrap();
+        let id = Uuid::new_v4().to_string();
+        let now = Utc::now();
+
+        let sr_algorithm_str = match sr_algorithm {
+            SpacedRepetitionAlgorithm::SM2 => "sm2",
+            SpacedRepetitionAlgorithm::ModifiedSM2 => "modifiedsm2",
+            SpacedRepetitionAlgorithm::Simple => "simple",
+        };
+
+        conn.execute(
+            "INSERT INTO learning_settings
+             (id, user_id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+              show_failed_words_in_session, new_words_per_day, daily_review_limit, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)",
+            params![
+                &id,
+                user_id,
+                sr_algorithm_str,
+                leitner_box_count,
+                consecutive_correct_required,
+                if show_failed_words_in_session { 1 } else { 0 },
+                new_words_per_day,
+                daily_review_limit,
+                now.timestamp(),
+                now.timestamp(),
+            ],
+        )?;
+
+        Ok(LearningSettings {
+            id,
+            user_id: user_id.to_string(),
+            sr_algorithm: sr_algorithm.clone(),
+            leitner_box_count,
+            consecutive_correct_required,
+            show_failed_words_in_session,
+            new_words_per_day,
+            daily_review_limit,
+            created_at: now,
+            updated_at: now,
+        })
+    }
+
+    /// Update learning settings for a user
+    pub fn update_learning_settings(
+        &self,
+        user_id: &str,
+        request: &UpdateLearningSettingsRequest,
+    ) -> SqlResult<LearningSettings> {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now();
+
+        // Get existing settings
+        let mut stmt = conn.prepare(
+            "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+                    show_failed_words_in_session, new_words_per_day, daily_review_limit,
+                    created_at
+             FROM learning_settings
+             WHERE user_id = ?1"
+        )?;
+
+        let mut rows = stmt.query(params![user_id])?;
+
+        if let Some(row) = rows.next()? {
+            let id: String = row.get(0)?;
+            let current_algorithm_str: String = row.get(1)?;
+            let current_algorithm: SpacedRepetitionAlgorithm =
+                serde_json::from_str(&format!("\"{}\"", current_algorithm_str))
+                    .unwrap_or(SpacedRepetitionAlgorithm::ModifiedSM2);
+
+            // Extract all values from the row before dropping
+            let current_leitner_box_count: i32 = row.get(2)?;
+            let current_consecutive_correct: i32 = row.get(3)?;
+            let current_show_failed: i32 = row.get(4)?;
+            let current_new_words: Option<i32> = row.get(5)?;
+            let current_review_limit: Option<i32> = row.get(6)?;
+            let created_at = timestamp_to_datetime(row.get(7)?);
+
+            drop(rows);
+            drop(stmt);
+
+            // Build update values
+            let sr_algorithm = request.sr_algorithm.as_ref().unwrap_or(&current_algorithm);
+            let leitner_box_count = request.leitner_box_count.unwrap_or(current_leitner_box_count);
+            let consecutive_correct_required = request.consecutive_correct_required.unwrap_or(current_consecutive_correct);
+            let show_failed_words_in_session = request.show_failed_words_in_session.unwrap_or(current_show_failed != 0);
+            let new_words_per_day = request.new_words_per_day.or(current_new_words);
+            let daily_review_limit = request.daily_review_limit.or(current_review_limit);
+
+            let sr_algorithm_str = match sr_algorithm {
+                SpacedRepetitionAlgorithm::SM2 => "sm2",
+                SpacedRepetitionAlgorithm::ModifiedSM2 => "modifiedsm2",
+                SpacedRepetitionAlgorithm::Simple => "simple",
+            };
+
+            conn.execute(
+                "UPDATE learning_settings
+                 SET sr_algorithm = ?1, leitner_box_count = ?2, consecutive_correct_required = ?3,
+                     show_failed_words_in_session = ?4, new_words_per_day = ?5, daily_review_limit = ?6,
+                     updated_at = ?7
+                 WHERE user_id = ?8",
+                params![
+                    sr_algorithm_str,
+                    leitner_box_count,
+                    consecutive_correct_required,
+                    if show_failed_words_in_session { 1 } else { 0 },
+                    new_words_per_day,
+                    daily_review_limit,
+                    now.timestamp(),
+                    user_id,
+                ],
+            )?;
+
+            Ok(LearningSettings {
+                id,
+                user_id: user_id.to_string(),
+                sr_algorithm: sr_algorithm.clone(),
+                leitner_box_count,
+                consecutive_correct_required,
+                show_failed_words_in_session,
+                new_words_per_day,
+                daily_review_limit,
+                created_at,
+                updated_at: now,
+            })
+        } else {
+            // If no settings exist, create default ones first
+            let default_algorithm = request.sr_algorithm.as_ref().unwrap_or(&SpacedRepetitionAlgorithm::ModifiedSM2);
+            self.create_learning_settings(
+                user_id,
+                default_algorithm,
+                request.leitner_box_count.unwrap_or(5),
+                request.consecutive_correct_required.unwrap_or(3),
+                request.show_failed_words_in_session.unwrap_or(true),
+                request.new_words_per_day.or(Some(20)),
+                request.daily_review_limit.or(Some(100)),
+            )
+        }
+    }
+
+    /// Get learning settings for a user, creating default settings if none exist
+    pub fn get_or_create_learning_settings(
+        &self,
+        user_id: &str,
+    ) -> SqlResult<LearningSettings> {
+        if let Some(settings) = self.get_learning_settings(user_id)? {
+            Ok(settings)
+        } else {
+            // Create default settings
+            self.create_learning_settings(
+                user_id,
+                &SpacedRepetitionAlgorithm::ModifiedSM2,
+                5, // 5 boxes
+                3, // 3 consecutive correct required
+                true, // show failed words in session
+                Some(20), // 20 new words per day
+                Some(100), // 100 daily review limit
+            )
+        }
+    }
+
+    //==========================================================================
+    // USER PREFERENCES OPERATIONS
+    //==========================================================================
+
+    /// Save user preferences (normalized version)
+    pub fn save_preferences(
+        &self,
+        user_id: &str,
+        preferences: &UserPreferences,
+    ) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        let now = Utc::now().timestamp();
+
+        // Check if preferences exist
+        let exists: bool = conn
+            .query_row(
+                "SELECT 1 FROM user_preferences WHERE user_id = ?1",
+                params![user_id],
+                |_| Ok(true),
+            )
+            .unwrap_or(false);
+
+        if exists {
+            // Update existing preferences
+            conn.execute(
+                "UPDATE user_preferences
+                 SET interface_language = ?1, native_language = ?2, theme = ?3, updated_at = ?4
+                 WHERE user_id = ?5",
+                params![
+                    preferences.interface_language,
+                    preferences.native_language,
+                    preferences.theme,
+                    now,
+                    user_id
+                ],
+            )?;
+
+            // Delete existing learning languages
+            conn.execute(
+                "DELETE FROM user_learning_languages WHERE user_id = ?1",
+                params![user_id],
+            )?;
+        } else {
+            // Create new preferences
+            let id = Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO user_preferences
+                 (id, user_id, interface_language, native_language, theme, created_at, updated_at)
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                params![
+                    id,
+                    user_id,
+                    preferences.interface_language,
+                    preferences.native_language,
+                    preferences.theme,
+                    now,
+                    now
+                ],
+            )?;
+        }
+
+        // Insert learning languages
+        for language in &preferences.learning_languages {
+            let id = Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO user_learning_languages
+                 (id, user_id, language, created_at)
+                 VALUES (?1, ?2, ?3, ?4)",
+                params![id, user_id, language, now],
+            )?;
+        }
+
+        Ok(())
+    }
+
+    /// Get user preferences (normalized version)
+    pub fn get_preferences(
+        &self,
+        user_id: &str,
+    ) -> SqlResult<Option<UserPreferences>> {
+        let conn = self.conn.lock().unwrap();
+
+        // Get user preferences header
+        let mut stmt = conn.prepare(
+            "SELECT id, interface_language, native_language, theme, created_at, updated_at
+             FROM user_preferences
+             WHERE user_id = ?1"
+        )?;
+
+        let mut rows = stmt.query(params![user_id])?;
+
+        if let Some(row) = rows.next()? {
+            let id: String = row.get(0)?;
+            let interface_language: Option<String> = row.get(1)?;
+            let native_language: Option<String> = row.get(2)?;
+            let theme: Option<String> = row.get(3)?;
+            let created_at = timestamp_to_datetime(row.get(4)?);
+            let updated_at = timestamp_to_datetime(row.get(5)?);
+
+            drop(rows);
+            drop(stmt);
+
+            // Fetch learning languages from normalized table
+            let mut lang_stmt = conn.prepare(
+                "SELECT language FROM user_learning_languages WHERE user_id = ?1"
+            )?;
+            let learning_languages: Vec<String> = lang_stmt
+                .query_map(params![user_id], |r| r.get(0))?
+                .collect::<Result<Vec<_>, _>>()?;
+
+            Ok(Some(UserPreferences {
+                id,
+                user_id: user_id.to_string(),
+                interface_language: interface_language.unwrap_or_default(),
+                native_language: native_language.unwrap_or_default(),
+                learning_languages,
+                theme: theme.unwrap_or_default(),
+                created_at,
+                updated_at,
+            }))
+        } else {
+            Ok(None)
+        }
+    }
+}

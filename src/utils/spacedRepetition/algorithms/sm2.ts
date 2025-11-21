@@ -17,7 +17,6 @@ import { addDays, BOX_INTERVAL_PRESETS } from '../types';
 
 const MIN_EASINESS_FACTOR = 1.3;
 const MAX_EASINESS_FACTOR = 2.5;
-const DEFAULT_EASINESS_FACTOR = 2.5;
 
 export class SM2Algorithm implements SpacedRepetitionAlgorithm {
   getName(): string {
@@ -159,7 +158,7 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
   /**
    * Calculate the next interval using SM-2 formula
    */
-  private calculateInterval(wordProgress: WordProgress, settings: LearningSettings): number {
+  private calculateInterval(wordProgress: WordProgress, _settings: LearningSettings): number {
     const { consecutive_correct_count, interval_days, easiness_factor, leitner_box } = wordProgress;
 
     // First review in current box

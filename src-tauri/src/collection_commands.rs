@@ -48,11 +48,12 @@ pub fn get_user_collections(
 
 #[tauri::command]
 pub fn get_public_collections(
-    _local_db: State<'_, LocalDatabase>,
-    _language: Option<String>,
+    local_db: State<'_, LocalDatabase>,
+    language: Option<String>,
 ) -> Result<Vec<Collection>, String> {
-    // TODO: Implement get_public_collections in local_db.rs
-    Ok(vec![])
+    local_db
+        .get_public_collections(language.as_deref())
+        .map_err(|e| format!("Database error: {}", e))
 }
 
 #[tauri::command]
@@ -92,20 +93,28 @@ pub fn delete_collection(
 
 #[tauri::command]
 pub fn share_collection(
-    _local_db: State<'_, LocalDatabase>,
-    _collection_id: String,
-    _user_id: String,
+    local_db: State<'_, LocalDatabase>,
+    collection_id: String,
+    user_id: String,
 ) -> Result<String, String> {
-    // TODO: Implement share_collection in local_db.rs
-    Err("Share collection not yet implemented".to_string())
+    local_db
+        .share_collection(&collection_id, &user_id)
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    println!("✓ Collection shared: {} with user {}", collection_id, user_id);
+    Ok("Collection shared successfully".to_string())
 }
 
 #[tauri::command]
 pub fn unshare_collection(
-    _local_db: State<'_, LocalDatabase>,
-    _collection_id: String,
-    _user_id: String,
+    local_db: State<'_, LocalDatabase>,
+    collection_id: String,
+    user_id: String,
 ) -> Result<String, String> {
-    // TODO: Implement unshare_collection in local_db.rs
-    Err("Unshare collection not yet implemented".to_string())
+    local_db
+        .unshare_collection(&collection_id, &user_id)
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    println!("✓ Collection unshared: {} from user {}", collection_id, user_id);
+    Ok("Collection unshared successfully".to_string())
 }

@@ -11,10 +11,10 @@
  * This is the easiest algorithm to understand and explain to users.
  */
 
-import type { SpacedRepetitionAlgorithm, ReviewResult } from '../types';
-import type { WordProgress } from '../../../types/practice';
-import type { LearningSettings } from '../../../types/settings';
-import { addDays, BOX_INTERVAL_PRESETS } from '../types';
+import type {ReviewResult, SpacedRepetitionAlgorithm} from '../types';
+import {addDays} from '../types';
+import type {WordProgress} from '../../../types/practice';
+import type {LearningSettings} from '../../../types/settings';
 
 const DEFAULT_EASINESS_FACTOR = 2.5;
 const INITIAL_INTERVAL = 1; // Start with 1 day
@@ -144,7 +144,6 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
 
   calculateNextReviewDate(
     wordProgress: WordProgress,
-    settings: LearningSettings
   ): Date {
     // Next interval will be double the current (or initial if current is 0)
     const interval = wordProgress.interval_days === 0
@@ -153,7 +152,7 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
     return addDays(new Date(), interval);
   }
 
-  getBoxInterval(boxNumber: number, settings: LearningSettings): number {
+  getBoxInterval(boxNumber: number, _settings: LearningSettings): number {
     // For the simple algorithm, we show reference intervals based on doubling
     // Box 1: 1d, Box 2: 2d, Box 3: 4d, Box 4: 8d, Box 5: 16d, etc.
     const interval = Math.pow(2, boxNumber - 1);

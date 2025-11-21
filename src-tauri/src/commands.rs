@@ -120,19 +120,26 @@ pub fn delete_vocabulary(
 
 #[tauri::command]
 pub fn save_preferences(
-    _local_db: State<'_, LocalDatabase>,
-    _preferences: UserPreferences,
+    local_db: State<'_, LocalDatabase>,
+    preferences: UserPreferences,
 ) -> Result<String, String> {
-    // TODO: Implement save_preferences in local_db.rs
-    Err("Save preferences not yet implemented".to_string())
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .save_preferences(user_id, &preferences)
+        .map_err(|e| format!("Database error: {}", e))?;
+
+    println!("✓ User preferences saved");
+    Ok("Preferences saved successfully".to_string())
 }
 
 #[tauri::command]
 pub fn get_preferences(
-    _local_db: State<'_, LocalDatabase>,
+    local_db: State<'_, LocalDatabase>,
 ) -> Result<Option<UserPreferences>, String> {
-    // TODO: Implement get_preferences in local_db.rs
-    Ok(None)
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_preferences(user_id)
+        .map_err(|e| format!("Database error: {}", e))
 }
 
 // Practice commands
