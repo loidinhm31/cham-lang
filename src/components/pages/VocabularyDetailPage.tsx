@@ -94,6 +94,16 @@ export const VocabularyDetailPage: React.FC = () => {
           </div>
         </Card>
 
+        {/* Concept */}
+        {vocabulary.concept && (
+          <Card variant="glass">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('vocabulary.concept') || 'Concept'}</h2>
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+              <p className="text-lg text-gray-800 leading-relaxed">💡 {vocabulary.concept}</p>
+            </div>
+          </Card>
+        )}
+
         {/* Definitions */}
         <Card variant="glass">
           <h2 className="text-2xl font-bold text-gray-800 mb-4">{t('vocabulary.definitions')}</h2>

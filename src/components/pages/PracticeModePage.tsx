@@ -14,6 +14,11 @@ export const PracticeModePage: React.FC = () => {
   const [selectedCollection, setSelectedCollection] = useState<string>('');
   const [loadingCollections, setLoadingCollections] = useState(true);
   const [step, setStep] = useState<'collection' | 'mode'>('collection');
+  const [contentMode, setContentMode] = useState<'definition' | 'concept'>(() => {
+    // Load from localStorage or default to 'definition'
+    const saved = localStorage.getItem('practiceContentMode');
+    return (saved === 'concept' || saved === 'definition') ? saved : 'definition';
+  });
 
   useEffect(() => {
     loadCollections();
@@ -63,6 +68,11 @@ export const PracticeModePage: React.FC = () => {
   }));
 
   const selectedCollectionData = collections.find(c => c.id === selectedCollection);
+
+  const handleContentModeChange = (mode: 'definition' | 'concept') => {
+    setContentMode(mode);
+    localStorage.setItem('practiceContentMode', mode);
+  };
 
   if (loadingCollections) {
     return (
@@ -161,6 +171,51 @@ export const PracticeModePage: React.FC = () => {
               <p className="text-lg text-gray-700">{t('practice.selectModeDescription')}</p>
             </div>
 
+            {/* Content Mode Selection */}
+            <Card variant="glass">
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-gray-700">
+                  {t('practice.contentMode') || 'Content to Display'}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleContentModeChange('definition')}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      contentMode === 'definition'
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 bg-white/40 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">📖</div>
+                    <div className={`font-semibold ${contentMode === 'definition' ? 'text-purple-700' : 'text-gray-700'}`}>
+                      {t('practice.useDefinition') || 'Definition'}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {t('practice.useDefinitionDescription') || 'Standard meaning'}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleContentModeChange('concept')}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      contentMode === 'concept'
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-gray-200 bg-white/40 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">💡</div>
+                    <div className={`font-semibold ${contentMode === 'concept' ? 'text-purple-700' : 'text-gray-700'}`}>
+                      {t('practice.useConcept') || 'Concept'}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {t('practice.useConceptDescription') || 'Core idea'}
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </Card>
+
             <div className="space-y-4">
               {modes.map((mode) => {
                 const Icon = mode.icon;
@@ -169,7 +224,7 @@ export const PracticeModePage: React.FC = () => {
                     key={mode.id}
                     variant="default"
                     hover
-                    onClick={() => navigate(`${mode.path}?collection=${selectedCollection}`)}
+                    onClick={() => navigate(`${mode.path}?collection=${selectedCollection}&contentMode=${contentMode}`)}
                     className="cursor-pointer"
                   >
                     <div className="flex items-center gap-6">

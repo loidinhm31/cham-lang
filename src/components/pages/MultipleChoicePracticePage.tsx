@@ -15,6 +15,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const collectionId = searchParams.get('collection');
+  const contentMode = searchParams.get('contentMode') as 'concept' | 'definition' | null;
 
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -57,6 +58,16 @@ export const MultipleChoicePracticePage: React.FC = () => {
     }
   };
 
+  // Get content based on mode (concept or definition), with fallback
+  const getContent = (vocab: Vocabulary): string => {
+    if (contentMode === 'concept') {
+      // If concept mode is selected, use concept if available, otherwise fallback to definition
+      return vocab.concept || vocab.definitions[0]?.meaning || 'No content available';
+    }
+    // Default to definition
+    return vocab.definitions[0]?.meaning || 'No definition available';
+  };
+
   const generateOptions = () => {
     const currentVocab = vocabularies[currentIndex];
     if (!currentVocab) return;
@@ -66,11 +77,11 @@ export const MultipleChoicePracticePage: React.FC = () => {
     const wrongAnswers = otherVocabs
       .sort(() => Math.random() - 0.5)
       .slice(0, 3)
-      .map((v) => v.definitions[0]?.meaning || 'Definition unavailable');
+      .map((v) => getContent(v));
 
     // Combine with correct answer and shuffle
     const allOptions = [
-      currentVocab.definitions[0]?.meaning || 'Definition unavailable',
+      getContent(currentVocab),
       ...wrongAnswers,
     ].sort(() => Math.random() - 0.5);
 
@@ -237,7 +248,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
           question={currentVocab.word}
           subtitle={currentVocab.ipa}
           options={options}
-          correctAnswer={currentVocab.definitions[0]?.meaning || ''}
+          correctAnswer={getContent(currentVocab)}
           onAnswer={handleAnswer}
         />
 

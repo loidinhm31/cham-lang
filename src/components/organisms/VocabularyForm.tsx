@@ -31,6 +31,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     word_type: initialData?.word_type || 'noun',
     level: initialData?.level || 'A1',
     ipa: initialData?.ipa || '',
+    concept: initialData?.concept || '',
     definitions: initialData?.definitions || [{ meaning: '', translation: '', example: '' }],
     example_sentences: initialData?.example_sentences || [''],
     topics: initialData?.topics || [''],
@@ -130,6 +131,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     // Filter out empty values
     const cleanedData = {
       ...formData,
+      concept: formData.concept?.trim() || undefined,
       definitions: formData.definitions.filter(d => d.meaning.trim() !== ''),
       example_sentences: formData.example_sentences.filter(s => s.trim() !== ''),
       topics: formData.topics.filter(t => t.trim() !== ''),
@@ -247,6 +249,14 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
             value={formData.ipa}
             onChange={(e) => setFormData({ ...formData, ipa: e.target.value })}
             placeholder="/həˈloʊ/"
+          />
+
+          <TextArea
+            label={t('vocabulary.concept') || 'Concept (Optional)'}
+            value={formData.concept || ''}
+            onChange={(e) => setFormData({ ...formData, concept: e.target.value })}
+            placeholder={t('vocabulary.conceptPlaceholder') || 'Core idea or concept behind the word...'}
+            rows={3}
           />
         </div>
       </Card>

@@ -98,6 +98,7 @@ impl LocalDatabase {
                 word_type TEXT NOT NULL,
                 level TEXT NOT NULL,
                 ipa TEXT,
+                concept TEXT,
                 definitions TEXT NOT NULL,
                 example_sentences TEXT,
                 topics TEXT,
@@ -113,6 +114,12 @@ impl LocalDatabase {
             )",
             [],
         )?;
+
+        // Migration: Add concept column if it doesn't exist (for existing databases)
+        let _ = conn.execute(
+            "ALTER TABLE vocabularies ADD COLUMN concept TEXT",
+            [],
+        );
 
         // User preferences table
         conn.execute(
@@ -399,15 +406,16 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         conn.execute(
             "INSERT INTO vocabularies
-             (id, word, word_type, level, ipa, definitions, example_sentences, topics,
+             (id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
               related_words, language, collection_id, user_id, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15)",
             params![
                 id,
                 vocab.word,
                 serde_json::to_string(&vocab.word_type).unwrap(),
                 vocab.level,
                 vocab.ipa,
+                vocab.concept,
                 serde_json::to_string(&vocab.definitions).unwrap(),
                 serde_json::to_string(&vocab.example_sentences).unwrap(),
                 serde_json::to_string(&vocab.topics).unwrap(),
@@ -426,7 +434,7 @@ impl LocalDatabase {
     pub fn get_vocabulary(&self, vocab_id: &str) -> SqlResult<Option<Vocabulary>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
-            "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+            "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                     related_words, language, collection_id, user_id, created_at, updated_at
              FROM vocabularies WHERE id = ?1 AND deleted_at IS NULL"
         )?;
@@ -451,7 +459,7 @@ impl LocalDatabase {
         let (sql, params_vec): (String, Vec<Box<dyn rusqlite::ToSql>>) = if let Some(lang) = language {
             (
                 format!(
-                    "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+                    "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                             related_words, language, collection_id, user_id, created_at, updated_at
                      FROM vocabularies
                      WHERE user_id = ?1 AND language = ?2 AND deleted_at IS NULL
@@ -464,7 +472,7 @@ impl LocalDatabase {
         } else {
             (
                 format!(
-                    "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+                    "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                             related_words, language, collection_id, user_id, created_at, updated_at
                      FROM vocabularies
                      WHERE user_id = ?1 AND deleted_at IS NULL
@@ -489,7 +497,7 @@ impl LocalDatabase {
     ) -> SqlResult<Vec<Vocabulary>> {
         let conn = self.conn.lock().unwrap();
         let sql = format!(
-            "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+            "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                     related_words, language, collection_id, user_id, created_at, updated_at
              FROM vocabularies
              WHERE collection_id = ?1 AND deleted_at IS NULL
@@ -506,14 +514,14 @@ impl LocalDatabase {
     pub fn search_vocabularies(&self, query: &str, language: Option<&str>) -> SqlResult<Vec<Vocabulary>> {
         let conn = self.conn.lock().unwrap();
         let sql = if let Some(_lang) = language {
-            "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+            "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                     related_words, language, collection_id, user_id, created_at, updated_at
              FROM vocabularies
              WHERE word LIKE ?1 AND language = ?2 AND deleted_at IS NULL
              ORDER BY word
              LIMIT 50"
         } else {
-            "SELECT id, word, word_type, level, ipa, definitions, example_sentences, topics,
+            "SELECT id, word, word_type, level, ipa, concept, definitions, example_sentences, topics,
                     related_words, language, collection_id, user_id, created_at, updated_at
              FROM vocabularies
              WHERE word LIKE ?1 AND deleted_at IS NULL
@@ -560,6 +568,10 @@ impl LocalDatabase {
         if let Some(ref ipa) = request.ipa {
             updates.push("ipa = ?");
             params.push(Box::new(ipa.clone()));
+        }
+        if let Some(ref concept) = request.concept {
+            updates.push("concept = ?");
+            params.push(Box::new(concept.clone()));
         }
         if let Some(ref definitions) = request.definitions {
             updates.push("definitions = ?");
@@ -854,10 +866,11 @@ fn timestamp_to_datetime(timestamp: i64) -> DateTime<Utc> {
 
 fn row_to_vocabulary(row: &rusqlite::Row) -> SqlResult<Vocabulary> {
     let word_type_str: String = row.get(2)?;
-    let definitions_str: String = row.get(5)?;
-    let example_sentences_str: String = row.get(6)?;
-    let topics_str: String = row.get(7)?;
-    let related_words_str: String = row.get(8)?;
+    let concept: Option<String> = row.get(5)?;
+    let definitions_str: String = row.get(6)?;
+    let example_sentences_str: String = row.get(7)?;
+    let topics_str: String = row.get(8)?;
+    let related_words_str: String = row.get(9)?;
 
     Ok(Vocabulary {
         id: row.get(0)?,
@@ -865,14 +878,15 @@ fn row_to_vocabulary(row: &rusqlite::Row) -> SqlResult<Vocabulary> {
         word_type: serde_json::from_str(&word_type_str).unwrap_or(WordType::Noun),
         level: row.get(3)?,
         ipa: row.get(4)?,
+        concept,
         definitions: serde_json::from_str(&definitions_str).unwrap_or_else(|_| Vec::new()),
         example_sentences: serde_json::from_str(&example_sentences_str).unwrap_or_else(|_| Vec::new()),
         topics: serde_json::from_str(&topics_str).unwrap_or_else(|_| Vec::new()),
         related_words: serde_json::from_str(&related_words_str).unwrap_or_else(|_| Vec::new()),
-        language: row.get(9)?,
-        collection_id: row.get(10)?,
-        user_id: row.get(11)?,
-        created_at: timestamp_to_datetime(row.get(12)?),
-        updated_at: timestamp_to_datetime(row.get(13)?),
+        language: row.get(10)?,
+        collection_id: row.get(11)?,
+        user_id: row.get(12)?,
+        created_at: timestamp_to_datetime(row.get(13)?),
+        updated_at: timestamp_to_datetime(row.get(14)?),
     })
 }

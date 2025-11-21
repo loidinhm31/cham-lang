@@ -21,6 +21,7 @@ pub fn create_vocabulary(
         word_type: request.word_type,
         level: request.level,
         ipa: request.ipa,
+        concept: request.concept,
         definitions: request.definitions,
         example_sentences: request.example_sentences,
         topics: request.topics,

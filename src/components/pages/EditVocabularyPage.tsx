@@ -31,6 +31,7 @@ export const EditVocabularyPage: React.FC = () => {
         word_type: vocabulary.word_type,
         level: vocabulary.level,
         ipa: vocabulary.ipa,
+        concept: vocabulary.concept,
         definitions: vocabulary.definitions,
         example_sentences: vocabulary.example_sentences,
         topics: vocabulary.topics,

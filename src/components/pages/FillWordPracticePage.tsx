@@ -14,6 +14,7 @@ export const FillWordPracticePage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const collectionId = searchParams.get('collection');
+  const contentMode = searchParams.get('contentMode') as 'concept' | 'definition' | null;
 
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -50,6 +51,16 @@ export const FillWordPracticePage: React.FC = () => {
   };
 
   const currentVocab = vocabularies[currentIndex];
+
+  // Get content based on mode (concept or definition), with fallback
+  const getContent = (vocab: Vocabulary): string => {
+    if (contentMode === 'concept') {
+      // If concept mode is selected, use concept if available, otherwise fallback to definition
+      return vocab.concept || vocab.definitions[0]?.meaning || 'No content available';
+    }
+    // Default to definition
+    return vocab.definitions[0]?.meaning || 'No definition available';
+  };
 
   const handleAnswer = async (correct: boolean) => {
     if (!currentVocab) return;
@@ -207,7 +218,7 @@ export const FillWordPracticePage: React.FC = () => {
         {/* Fill Word Card */}
         <FillWordCard
           key={currentVocab.id || currentIndex}
-          definition={currentVocab.definitions[0]?.meaning || 'No definition'}
+          definition={getContent(currentVocab)}
           correctAnswer={currentVocab.word}
           hint={hint}
           onAnswer={handleAnswer}

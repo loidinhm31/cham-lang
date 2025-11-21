@@ -38,6 +38,7 @@ export interface Vocabulary {
   word_type: WordType;
   level: LanguageLevel;
   ipa: string;
+  concept?: string; // Optional concept field for alternative learning mode
   definitions: Definition[];
   example_sentences: string[];
   topics: string[];
@@ -61,6 +62,7 @@ export interface CreateVocabularyRequest {
   word_type: WordType;
   level: LanguageLevel;
   ipa: string;
+  concept?: string;
   definitions: Definition[];
   example_sentences: string[];
   topics: string[];
@@ -75,6 +77,7 @@ export interface UpdateVocabularyRequest {
   word_type?: WordType;
   level?: LanguageLevel;
   ipa?: string;
+  concept?: string;
   definitions?: Definition[];
   example_sentences?: string[];
   topics?: string[];
