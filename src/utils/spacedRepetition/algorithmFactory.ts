@@ -4,11 +4,14 @@
  * based on user settings
  */
 
-import type { SpacedRepetitionAlgorithm } from './types';
-import type { LearningSettings, SpacedRepetitionAlgorithm as AlgorithmType } from '../../types/settings';
-import { SM2Algorithm } from './algorithms/sm2';
-import { ModifiedSM2Algorithm } from './algorithms/modifiedSm2';
-import { SimpleAlgorithm } from './algorithms/simple';
+import type { SpacedRepetitionAlgorithm } from "./types";
+import type {
+  LearningSettings,
+  SpacedRepetitionAlgorithm as AlgorithmType,
+} from "../../types/settings";
+import { SM2Algorithm } from "./algorithms/sm2";
+import { ModifiedSM2Algorithm } from "./algorithms/modifiedSm2";
+import { SimpleAlgorithm } from "./algorithms/simple";
 
 // Singleton instances for each algorithm
 let sm2Instance: SM2Algorithm | null = null;
@@ -19,21 +22,23 @@ let simpleInstance: SimpleAlgorithm | null = null;
  * Get the algorithm instance based on settings
  * Uses singleton pattern to avoid creating multiple instances
  */
-export function getAlgorithm(settings: LearningSettings): SpacedRepetitionAlgorithm {
+export function getAlgorithm(
+  settings: LearningSettings,
+): SpacedRepetitionAlgorithm {
   switch (settings.sr_algorithm) {
-    case 'sm2':
+    case "sm2":
       if (!sm2Instance) {
         sm2Instance = new SM2Algorithm();
       }
       return sm2Instance;
 
-    case 'modifiedsm2':
+    case "modifiedsm2":
       if (!modifiedSm2Instance) {
         modifiedSm2Instance = new ModifiedSM2Algorithm();
       }
       return modifiedSm2Instance;
 
-    case 'simple':
+    case "simple":
       if (!simpleInstance) {
         simpleInstance = new SimpleAlgorithm();
       }
@@ -41,7 +46,9 @@ export function getAlgorithm(settings: LearningSettings): SpacedRepetitionAlgori
 
     default:
       // Default to Modified SM-2 if unknown algorithm
-      console.warn(`Unknown algorithm: ${settings.sr_algorithm}, defaulting to modifiedsm2`);
+      console.warn(
+        `Unknown algorithm: ${settings.sr_algorithm}, defaulting to modifiedsm2`,
+      );
       if (!modifiedSm2Instance) {
         modifiedSm2Instance = new ModifiedSM2Algorithm();
       }
@@ -52,21 +59,23 @@ export function getAlgorithm(settings: LearningSettings): SpacedRepetitionAlgori
 /**
  * Get algorithm instance by type (without needing full settings)
  */
-export function getAlgorithmByType(algorithmType: AlgorithmType): SpacedRepetitionAlgorithm {
+export function getAlgorithmByType(
+  algorithmType: AlgorithmType,
+): SpacedRepetitionAlgorithm {
   switch (algorithmType) {
-    case 'sm2':
+    case "sm2":
       if (!sm2Instance) {
         sm2Instance = new SM2Algorithm();
       }
       return sm2Instance;
 
-    case 'modifiedsm2':
+    case "modifiedsm2":
       if (!modifiedSm2Instance) {
         modifiedSm2Instance = new ModifiedSM2Algorithm();
       }
       return modifiedSm2Instance;
 
-    case 'simple':
+    case "simple":
       if (!simpleInstance) {
         simpleInstance = new SimpleAlgorithm();
       }

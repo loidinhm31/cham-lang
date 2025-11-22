@@ -1,19 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Plus, Brain } from 'lucide-react';
-import { TopBar, SearchBar } from '../molecules';
-import { CollectionList } from '../organisms';
-import { Button } from '../atoms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import { CollectionService } from '../../services/collection.service';
-import type { Collection } from '../../types/collection';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Brain, Plus } from "lucide-react";
+import { SearchBar, TopBar } from "@/components/molecules";
+import { CollectionList } from "@/components/organisms";
+import { Button } from "@/components/atoms";
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import { CollectionService } from "@/services/collection.service.ts";
+import type { Collection } from "@/types/collection.ts";
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export const HomePage: React.FC = () => {
       const data = await CollectionService.getUserCollections();
       setCollections(data);
     } catch (error) {
-      console.error('Failed to load collections:', error);
+      console.error("Failed to load collections:", error);
     } finally {
       setLoading(false);
     }
@@ -47,22 +47,20 @@ export const HomePage: React.FC = () => {
 
       // Extract unique collection IDs from matching vocabularies
       const collectionIds = new Set(
-        matchingVocabularies
-          .map(v => v.collection_id)
-          .filter(id => id) // Filter out undefined/null values
+        matchingVocabularies.map((v) => v.collection_id).filter((id) => id), // Filter out undefined/null values
       );
 
       // Get all user collections
       const allCollections = await CollectionService.getUserCollections();
 
       // Filter collections to only show those with matching words
-      const filteredCollections = allCollections.filter(collection =>
-        collectionIds.has(collection.id || '')
+      const filteredCollections = allCollections.filter((collection) =>
+        collectionIds.has(collection.id || ""),
       );
 
       setCollections(filteredCollections);
     } catch (error) {
-      console.error('Search failed:', error);
+      console.error("Search failed:", error);
     } finally {
       setLoading(false);
     }
@@ -74,14 +72,20 @@ export const HomePage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t('app.name')} showBack={false} />
+      <TopBar title={t("app.name")} showBack={false} />
 
       <div className="px-4 pt-6 space-y-6">
         {/* Hero Section */}
         <div className="text-center py-6">
-          <img src="/chameleon.svg" alt="Chameleon" className="w-24 h-24 mx-auto mb-4" />
-          <h1 className="text-4xl font-black text-gray-800 mb-2">{t('app.name').toUpperCase()}</h1>
-          <p className="text-lg text-gray-700">{t('app.tagline')}</p>
+          <img
+            src="/chameleon.svg"
+            alt="Chameleon"
+            className="w-24 h-24 mx-auto mb-4"
+          />
+          <h1 className="text-4xl font-black text-gray-800 mb-2">
+            {t("app.name").toUpperCase()}
+          </h1>
+          <p className="text-lg text-gray-700">{t("app.tagline")}</p>
         </div>
 
         {/* Search Bar */}
@@ -89,7 +93,7 @@ export const HomePage: React.FC = () => {
           value={searchQuery}
           onChange={setSearchQuery}
           onSearch={handleSearch}
-          placeholder={t('vocabulary.search')}
+          placeholder={t("vocabulary.search")}
         />
 
         {/* Action Buttons */}
@@ -99,18 +103,18 @@ export const HomePage: React.FC = () => {
             size="lg"
             icon={Brain}
             fullWidth
-            onClick={() => navigate('/practice')}
+            onClick={() => navigate("/practice")}
           >
-            {t('practice.title')}
+            {t("practice.title")}
           </Button>
           <Button
             variant="primary"
             size="lg"
             icon={Plus}
             fullWidth
-            onClick={() => navigate('/vocabulary/add')}
+            onClick={() => navigate("/vocabulary/add")}
           >
-            {t('vocabulary.add')}
+            {t("vocabulary.add")}
           </Button>
         </div>
 

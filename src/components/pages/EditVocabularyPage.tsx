@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { TopBar } from '../molecules';
-import { VocabularyForm } from '../organisms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import type { CreateVocabularyRequest, Vocabulary } from '../../types/vocabulary';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { TopBar } from "@/components/molecules";
+import { VocabularyForm } from "@/components/organisms";
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import type {
+  CreateVocabularyRequest,
+  Vocabulary,
+} from "@/types/vocabulary.ts";
 
 export const EditVocabularyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -12,7 +15,9 @@ export const EditVocabularyPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
-  const [initialData, setInitialData] = useState<Partial<CreateVocabularyRequest> | undefined>();
+  const [initialData, setInitialData] = useState<
+    Partial<CreateVocabularyRequest> | undefined
+  >();
 
   useEffect(() => {
     if (id) {
@@ -23,7 +28,8 @@ export const EditVocabularyPage: React.FC = () => {
   const loadVocabulary = async (vocabId: string) => {
     try {
       setLoadingData(true);
-      const vocabulary: Vocabulary = await VocabularyService.getVocabulary(vocabId);
+      const vocabulary: Vocabulary =
+        await VocabularyService.getVocabulary(vocabId);
 
       // Convert Vocabulary to CreateVocabularyRequest format
       setInitialData({
@@ -40,9 +46,9 @@ export const EditVocabularyPage: React.FC = () => {
         collection_id: vocabulary.collection_id,
       });
     } catch (error) {
-      console.error('Failed to load vocabulary:', error);
-      alert(t('messages.error'));
-      navigate('/');
+      console.error("Failed to load vocabulary:", error);
+      alert(t("messages.error"));
+      navigate("/");
     } finally {
       setLoadingData(false);
     }
@@ -57,11 +63,11 @@ export const EditVocabularyPage: React.FC = () => {
         id,
         ...data,
       });
-      alert(t('messages.saveSuccess'));
+      alert(t("messages.saveSuccess"));
       navigate(`/vocabulary/${id}`);
     } catch (error) {
-      console.error('Failed to update vocabulary:', error);
-      alert(t('messages.error'));
+      console.error("Failed to update vocabulary:", error);
+      alert(t("messages.error"));
     } finally {
       setLoading(false);
     }
@@ -71,16 +77,16 @@ export const EditVocabularyPage: React.FC = () => {
     if (id) {
       navigate(`/vocabulary/${id}`);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   if (loadingData) {
     return (
       <>
-        <TopBar title={t('vocabulary.edit')} showBack />
+        <TopBar title={t("vocabulary.edit")} showBack />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('app.loading')}</div>
+          <div className="text-gray-600">{t("app.loading")}</div>
         </div>
       </>
     );
@@ -88,7 +94,7 @@ export const EditVocabularyPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t('vocabulary.edit')} showBack />
+      <TopBar title={t("vocabulary.edit")} showBack />
 
       <div className="px-4 pt-6">
         <VocabularyForm

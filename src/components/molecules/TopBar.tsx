@@ -1,7 +1,7 @@
-import React from 'react';
-import { Menu, Bell, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useSyncNotification } from '../../contexts';
+import React from "react";
+import { ArrowLeft, Bell, Menu } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { useSyncNotification } from "@/contexts";
 
 interface TopBarProps {
   title?: string;
@@ -12,7 +12,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  title = 'Chameleon',
+  title = "Chameleon",
   showBack = false,
   showMenu = true,
   showNotifications = true,
@@ -22,7 +22,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { hasSyncNotification } = useSyncNotification();
 
   const handleNotificationClick = () => {
-    navigate('/profile');
+    navigate("/profile");
   };
 
   return (
@@ -53,9 +53,15 @@ export const TopBar: React.FC<TopBarProps> = ({
             <button
               onClick={handleNotificationClick}
               className="p-2 hover:bg-white/50 rounded-xl transition relative"
-              title={hasSyncNotification ? "Cloud backup version is different from local" : "Notifications"}
+              title={
+                hasSyncNotification
+                  ? "Cloud backup version is different from local"
+                  : "Notifications"
+              }
             >
-              <Bell className={`w-6 h-6 ${hasSyncNotification ? 'text-blue-600' : 'text-gray-800'}`} />
+              <Bell
+                className={`w-6 h-6 ${hasSyncNotification ? "text-blue-600" : "text-gray-800"}`}
+              />
               {hasSyncNotification && (
                 <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
               )}

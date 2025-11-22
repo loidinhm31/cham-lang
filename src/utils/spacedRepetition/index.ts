@@ -4,17 +4,14 @@
  */
 
 // Types
-export type {
-  SpacedRepetitionAlgorithm,
-  ReviewResult,
-} from './types';
+export type { SpacedRepetitionAlgorithm, ReviewResult } from "./types";
 
 export {
   addDays,
   isDueForReview,
   getDaysUntilReview,
   BOX_INTERVAL_PRESETS,
-} from './types';
+} from "./types";
 
 // Algorithm Factory
 export {
@@ -22,19 +19,15 @@ export {
   getAlgorithmByType,
   getAllAlgorithms,
   resetAlgorithmInstances,
-} from './algorithmFactory';
+} from "./algorithmFactory";
 
 // Individual Algorithms
-export { SM2Algorithm } from './algorithms/sm2';
-export { ModifiedSM2Algorithm } from './algorithms/modifiedSm2';
-export { SimpleAlgorithm } from './algorithms/simple';
+export { SM2Algorithm } from "./algorithms/sm2";
+export { ModifiedSM2Algorithm } from "./algorithms/modifiedSm2";
+export { SimpleAlgorithm } from "./algorithms/simple";
 
 // Leitner Box Utilities
-export type {
-  BoxInfo,
-  BoxDistribution,
-  LearningStats,
-} from './leitnerBoxes';
+export type { BoxInfo, BoxDistribution, LearningStats } from "./leitnerBoxes";
 
 export {
   getBoxInfo,
@@ -46,4 +39,4 @@ export {
   getDueWordsByBox,
   calculateMasteryPercentage,
   getLearningStats,
-} from './leitnerBoxes';
+} from "./leitnerBoxes";

@@ -1,7 +1,7 @@
-import React from 'react';
-import { useTranslation } from 'react-i18next';
-import { VocabularyCard } from '../molecules';
-import type { Vocabulary } from '../../types/vocabulary';
+import React from "react";
+import { useTranslation } from "react-i18next";
+import { VocabularyCard } from "@/components/molecules";
+import type { Vocabulary } from "@/types/vocabulary.ts";
 
 interface VocabularyListProps {
   vocabularies: Vocabulary[];
@@ -19,7 +19,7 @@ export const VocabularyList: React.FC<VocabularyListProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">{t('app.loading')}</div>
+        <div className="text-gray-600">{t("app.loading")}</div>
       </div>
     );
   }
@@ -28,8 +28,12 @@ export const VocabularyList: React.FC<VocabularyListProps> = ({
     return (
       <div className="flex items-center justify-center py-12">
         <div className="text-center">
-          <img src="/chameleon.svg" alt="Chameleon" className="w-24 h-24 mx-auto mb-4" />
-          <p className="text-gray-600">{t('vocabulary.noResults')}</p>
+          <img
+            src="/chameleon.svg"
+            alt="Chameleon"
+            className="w-24 h-24 mx-auto mb-4"
+          />
+          <p className="text-gray-600">{t("vocabulary.noResults")}</p>
         </div>
       </div>
     );

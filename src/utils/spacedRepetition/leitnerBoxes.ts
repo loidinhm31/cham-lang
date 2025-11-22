@@ -3,9 +3,9 @@
  * Utilities for working with Leitner boxes
  */
 
-import type { WordProgress } from '../../types/practice';
-import type { LearningSettings } from '../../types/settings';
-import { BOX_INTERVAL_PRESETS } from '../../types/settings';
+import type { WordProgress } from "../../types/practice";
+import type { LearningSettings } from "../../types/settings";
+import { BOX_INTERVAL_PRESETS } from "../../types/settings";
 
 /**
  * Box metadata for UI display
@@ -30,27 +30,27 @@ export function getBoxInfo(settings: LearningSettings): BoxInfo[] {
     return [
       {
         boxNumber: 1,
-        name: 'Learning',
-        description: 'New and difficult words',
+        name: "Learning",
+        description: "New and difficult words",
         intervalDays: intervals[0],
-        color: 'bg-red-500',
-        icon: '📚',
+        color: "bg-red-500",
+        icon: "📚",
       },
       {
         boxNumber: 2,
-        name: 'Review',
-        description: 'Words in progress',
+        name: "Review",
+        description: "Words in progress",
         intervalDays: intervals[1],
-        color: 'bg-yellow-500',
-        icon: '📖',
+        color: "bg-yellow-500",
+        icon: "📖",
       },
       {
         boxNumber: 3,
-        name: 'Mastered',
-        description: 'Well-known words',
+        name: "Mastered",
+        description: "Well-known words",
         intervalDays: intervals[2],
-        color: 'bg-green-500',
-        icon: '✅',
+        color: "bg-green-500",
+        icon: "✅",
       },
     ];
   }
@@ -60,43 +60,43 @@ export function getBoxInfo(settings: LearningSettings): BoxInfo[] {
     return [
       {
         boxNumber: 1,
-        name: 'New',
-        description: 'Brand new words',
+        name: "New",
+        description: "Brand new words",
         intervalDays: intervals[0],
-        color: 'bg-red-500',
-        icon: '🆕',
+        color: "bg-red-500",
+        icon: "🆕",
       },
       {
         boxNumber: 2,
-        name: 'Learning',
-        description: 'Getting familiar',
+        name: "Learning",
+        description: "Getting familiar",
         intervalDays: intervals[1],
-        color: 'bg-orange-500',
-        icon: '📚',
+        color: "bg-orange-500",
+        icon: "📚",
       },
       {
         boxNumber: 3,
-        name: 'Review',
-        description: 'Regular practice',
+        name: "Review",
+        description: "Regular practice",
         intervalDays: intervals[2],
-        color: 'bg-yellow-500',
-        icon: '📖',
+        color: "bg-yellow-500",
+        icon: "📖",
       },
       {
         boxNumber: 4,
-        name: 'Familiar',
-        description: 'Almost mastered',
+        name: "Familiar",
+        description: "Almost mastered",
         intervalDays: intervals[3],
-        color: 'bg-blue-500',
-        icon: '👍',
+        color: "bg-blue-500",
+        icon: "👍",
       },
       {
         boxNumber: 5,
-        name: 'Mastered',
-        description: 'Well-known words',
+        name: "Mastered",
+        description: "Well-known words",
         intervalDays: intervals[4],
-        color: 'bg-green-500',
-        icon: '✅',
+        color: "bg-green-500",
+        icon: "✅",
       },
     ];
   }
@@ -105,59 +105,59 @@ export function getBoxInfo(settings: LearningSettings): BoxInfo[] {
   return [
     {
       boxNumber: 1,
-      name: 'New',
-      description: 'Brand new words',
+      name: "New",
+      description: "Brand new words",
       intervalDays: intervals[0],
-      color: 'bg-red-600',
-      icon: '🆕',
+      color: "bg-red-600",
+      icon: "🆕",
     },
     {
       boxNumber: 2,
-      name: 'Beginning',
-      description: 'First attempts',
+      name: "Beginning",
+      description: "First attempts",
       intervalDays: intervals[1],
-      color: 'bg-red-400',
-      icon: '🌱',
+      color: "bg-red-400",
+      icon: "🌱",
     },
     {
       boxNumber: 3,
-      name: 'Learning',
-      description: 'Getting familiar',
+      name: "Learning",
+      description: "Getting familiar",
       intervalDays: intervals[2],
-      color: 'bg-orange-500',
-      icon: '📚',
+      color: "bg-orange-500",
+      icon: "📚",
     },
     {
       boxNumber: 4,
-      name: 'Review',
-      description: 'Regular practice',
+      name: "Review",
+      description: "Regular practice",
       intervalDays: intervals[3],
-      color: 'bg-yellow-500',
-      icon: '📖',
+      color: "bg-yellow-500",
+      icon: "📖",
     },
     {
       boxNumber: 5,
-      name: 'Familiar',
-      description: 'Comfortable',
+      name: "Familiar",
+      description: "Comfortable",
       intervalDays: intervals[4],
-      color: 'bg-blue-500',
-      icon: '👍',
+      color: "bg-blue-500",
+      icon: "👍",
     },
     {
       boxNumber: 6,
-      name: 'Strong',
-      description: 'Almost mastered',
+      name: "Strong",
+      description: "Almost mastered",
       intervalDays: intervals[5],
-      color: 'bg-green-500',
-      icon: '💪',
+      color: "bg-green-500",
+      icon: "💪",
     },
     {
       boxNumber: 7,
-      name: 'Mastered',
-      description: 'Fully mastered',
+      name: "Mastered",
+      description: "Fully mastered",
       intervalDays: intervals[6],
-      color: 'bg-green-700',
-      icon: '✅',
+      color: "bg-green-700",
+      icon: "✅",
     },
   ];
 }
@@ -173,13 +173,19 @@ export interface BoxDistribution {
 
 export function getBoxDistribution(
   wordsProgress: WordProgress[],
-  settings: LearningSettings
+  settings: LearningSettings,
 ): BoxDistribution[] {
   const total = wordsProgress.length;
   const distribution: BoxDistribution[] = [];
 
-  for (let boxNumber = 1; boxNumber <= settings.leitner_box_count; boxNumber++) {
-    const wordCount = wordsProgress.filter(wp => wp.leitner_box === boxNumber).length;
+  for (
+    let boxNumber = 1;
+    boxNumber <= settings.leitner_box_count;
+    boxNumber++
+  ) {
+    const wordCount = wordsProgress.filter(
+      (wp) => wp.leitner_box === boxNumber,
+    ).length;
     distribution.push({
       boxNumber,
       wordCount,
@@ -195,10 +201,11 @@ export function getBoxDistribution(
  */
 export function shouldAdvanceBox(
   wordProgress: WordProgress,
-  settings: LearningSettings
+  settings: LearningSettings,
 ): boolean {
   return (
-    wordProgress.consecutive_correct_count >= settings.consecutive_correct_required &&
+    wordProgress.consecutive_correct_count >=
+      settings.consecutive_correct_required &&
     wordProgress.leitner_box < settings.leitner_box_count
   );
 }
@@ -208,7 +215,7 @@ export function shouldAdvanceBox(
  */
 export function isWordMastered(
   wordProgress: WordProgress,
-  settings: LearningSettings
+  settings: LearningSettings,
 ): boolean {
   return wordProgress.leitner_box === settings.leitner_box_count;
 }
@@ -218,9 +225,9 @@ export function isWordMastered(
  */
 export function getWordsInBox(
   wordsProgress: WordProgress[],
-  boxNumber: number
+  boxNumber: number,
 ): WordProgress[] {
-  return wordsProgress.filter(wp => wp.leitner_box === boxNumber);
+  return wordsProgress.filter((wp) => wp.leitner_box === boxNumber);
 }
 
 /**
@@ -228,12 +235,12 @@ export function getWordsInBox(
  */
 export function getWordsDueToday(
   wordsProgress: WordProgress[],
-  currentDate: Date = new Date()
+  currentDate: Date = new Date(),
 ): WordProgress[] {
   const today = new Date(currentDate);
   today.setHours(0, 0, 0, 0);
 
-  return wordsProgress.filter(wp => {
+  return wordsProgress.filter((wp) => {
     const reviewDate = new Date(wp.next_review_date);
     reviewDate.setHours(0, 0, 0, 0);
     return reviewDate <= today;
@@ -246,13 +253,17 @@ export function getWordsDueToday(
 export function getDueWordsByBox(
   wordsProgress: WordProgress[],
   settings: LearningSettings,
-  currentDate: Date = new Date()
+  currentDate: Date = new Date(),
 ): Map<number, WordProgress[]> {
   const dueWords = getWordsDueToday(wordsProgress, currentDate);
   const byBox = new Map<number, WordProgress[]>();
 
-  for (let boxNumber = 1; boxNumber <= settings.leitner_box_count; boxNumber++) {
-    const wordsInBox = dueWords.filter(wp => wp.leitner_box === boxNumber);
+  for (
+    let boxNumber = 1;
+    boxNumber <= settings.leitner_box_count;
+    boxNumber++
+  ) {
+    const wordsInBox = dueWords.filter((wp) => wp.leitner_box === boxNumber);
     byBox.set(boxNumber, wordsInBox);
   }
 
@@ -264,12 +275,15 @@ export function getDueWordsByBox(
  */
 export function calculateMasteryPercentage(
   wordsProgress: WordProgress[],
-  settings: LearningSettings
+  settings: LearningSettings,
 ): number {
   if (wordsProgress.length === 0) return 0;
 
   const totalBoxes = settings.leitner_box_count;
-  const sumOfBoxLevels = wordsProgress.reduce((sum, wp) => sum + wp.leitner_box, 0);
+  const sumOfBoxLevels = wordsProgress.reduce(
+    (sum, wp) => sum + wp.leitner_box,
+    0,
+  );
   const maxPossible = wordsProgress.length * totalBoxes;
 
   return Math.round((sumOfBoxLevels / maxPossible) * 100);
@@ -291,14 +305,14 @@ export interface LearningStats {
 export function getLearningStats(
   wordsProgress: WordProgress[],
   settings: LearningSettings,
-  currentDate: Date = new Date()
+  currentDate: Date = new Date(),
 ): LearningStats {
   const totalWords = wordsProgress.length;
   const wordsDueToday = getWordsDueToday(wordsProgress, currentDate).length;
-  const masteredWords = wordsProgress.filter(wp =>
-    isWordMastered(wp, settings)
+  const masteredWords = wordsProgress.filter((wp) =>
+    isWordMastered(wp, settings),
   ).length;
-  const newWords = wordsProgress.filter(wp => wp.leitner_box === 1).length;
+  const newWords = wordsProgress.filter((wp) => wp.leitner_box === 1).length;
   const learningWords = totalWords - masteredWords - newWords;
 
   const sumOfBoxes = wordsProgress.reduce((sum, wp) => sum + wp.leitner_box, 0);

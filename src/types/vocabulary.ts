@@ -1,23 +1,23 @@
 export type WordType =
-  | 'noun'
-  | 'verb'
-  | 'adjective'
-  | 'adverb'
-  | 'pronoun'
-  | 'preposition'
-  | 'conjunction'
-  | 'interjection'
-  | 'phrase';
+  | "noun"
+  | "verb"
+  | "adjective"
+  | "adverb"
+  | "pronoun"
+  | "preposition"
+  | "conjunction"
+  | "interjection"
+  | "phrase";
 
 // Level is now flexible based on language - stored as string
 export type LanguageLevel = string;
 
 export type WordRelationship =
-  | 'synonym'
-  | 'antonym'
-  | 'similar'
-  | 'related'
-  | 'derivative';
+  | "synonym"
+  | "antonym"
+  | "similar"
+  | "related"
+  | "derivative";
 
 export interface Definition {
   meaning: string;

@@ -11,10 +11,10 @@
  * This is the easiest algorithm to understand and explain to users.
  */
 
-import type {ReviewResult, SpacedRepetitionAlgorithm} from '../types';
-import {addDays} from '../types';
-import type {WordProgress} from '../../../types/practice';
-import type {LearningSettings} from '../../../types/settings';
+import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
+import { addDays } from "../types";
+import type { WordProgress } from "../../../types/practice";
+import type { LearningSettings } from "../../../types/settings";
 
 const DEFAULT_EASINESS_FACTOR = 2.5;
 const INITIAL_INTERVAL = 1; // Start with 1 day
@@ -22,16 +22,16 @@ const MAX_INTERVAL = 120; // Cap at ~4 months
 
 export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
   getName(): string {
-    return 'Simple Doubling';
+    return "Simple Doubling";
   }
 
   getDescription(): string {
-    return 'Each success doubles the interval (1d → 2d → 4d). Very simple approach.';
+    return "Each success doubles the interval (1d → 2d → 4d). Very simple approach.";
   }
 
   processCorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -48,7 +48,9 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
     }
 
     // Check if should advance to next box
-    const shouldAdvance = updated.consecutive_correct_count >= settings.consecutive_correct_required;
+    const shouldAdvance =
+      updated.consecutive_correct_count >=
+      settings.consecutive_correct_required;
 
     if (shouldAdvance && updated.leitner_box < settings.leitner_box_count) {
       // Advance to next box
@@ -87,15 +89,16 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
       newBox: updated.leitner_box,
       nextReviewDate,
       intervalDays: interval,
-      message: shouldAdvance && updated.leitner_box !== previousBox
-        ? `Excellent! Advanced to Box ${updated.leitner_box}! Next review in ${interval} day${interval !== 1 ? 's' : ''}`
-        : `Correct! Interval doubled to ${interval} day${interval !== 1 ? 's' : ''}. ${updated.consecutive_correct_count}/${settings.consecutive_correct_required} towards next box.`,
+      message:
+        shouldAdvance && updated.leitner_box !== previousBox
+          ? `Excellent! Advanced to Box ${updated.leitner_box}! Next review in ${interval} day${interval !== 1 ? "s" : ""}`
+          : `Correct! Interval doubled to ${interval} day${interval !== 1 ? "s" : ""}. ${updated.consecutive_correct_count}/${settings.consecutive_correct_required} towards next box.`,
     };
   }
 
   processIncorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -127,7 +130,9 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
 
     // Set session flags for re-queuing
     updated.failed_in_session = settings.show_failed_words_in_session;
-    updated.retry_count = settings.show_failed_words_in_session ? updated.retry_count + 1 : 0;
+    updated.retry_count = settings.show_failed_words_in_session
+      ? updated.retry_count + 1
+      : 0;
 
     return {
       updatedProgress: updated,
@@ -137,18 +142,17 @@ export class SimpleAlgorithm implements SpacedRepetitionAlgorithm {
       nextReviewDate,
       intervalDays: INITIAL_INTERVAL,
       message: settings.show_failed_words_in_session
-        ? 'Incorrect. Let\'s try this one again!'
+        ? "Incorrect. Let's try this one again!"
         : `Incorrect. Reset to Box 1. Review again tomorrow.`,
     };
   }
 
-  calculateNextReviewDate(
-    wordProgress: WordProgress,
-  ): Date {
+  calculateNextReviewDate(wordProgress: WordProgress): Date {
     // Next interval will be double the current (or initial if current is 0)
-    const interval = wordProgress.interval_days === 0
-      ? INITIAL_INTERVAL
-      : Math.min(wordProgress.interval_days * 2, MAX_INTERVAL);
+    const interval =
+      wordProgress.interval_days === 0
+        ? INITIAL_INTERVAL
+        : Math.min(wordProgress.interval_days * 2, MAX_INTERVAL);
     return addDays(new Date(), interval);
   }
 

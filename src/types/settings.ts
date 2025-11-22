@@ -3,7 +3,7 @@
  * Configuration for Spaced Repetition and Leitner System
  */
 
-export type SpacedRepetitionAlgorithm = 'sm2' | 'modifiedsm2' | 'simple';
+export type SpacedRepetitionAlgorithm = "sm2" | "modifiedsm2" | "simple";
 export type LeitnerBoxCount = 3 | 5 | 7;
 
 export interface LearningSettings {
@@ -30,8 +30,11 @@ export interface LearningSettings {
 }
 
 // Default settings
-export const DEFAULT_LEARNING_SETTINGS: Omit<LearningSettings, 'id' | 'user_id' | 'created_at' | 'updated_at'> = {
-  sr_algorithm: 'modifiedsm2',
+export const DEFAULT_LEARNING_SETTINGS: Omit<
+  LearningSettings,
+  "id" | "user_id" | "created_at" | "updated_at"
+> = {
+  sr_algorithm: "modifiedsm2",
   leitner_box_count: 5,
   consecutive_correct_required: 3,
   show_failed_words_in_session: true,
@@ -47,17 +50,23 @@ export const BOX_INTERVAL_PRESETS: Record<LeitnerBoxCount, number[]> = {
 };
 
 // Algorithm descriptions for UI
-export const SR_ALGORITHM_INFO: Record<SpacedRepetitionAlgorithm, { name: string; description: string }> = {
-  'sm2': {
-    name: 'SM-2 (SuperMemo 2)',
-    description: 'Classic algorithm with dynamic easiness factor. Intervals adapt based on your performance.',
+export const SR_ALGORITHM_INFO: Record<
+  SpacedRepetitionAlgorithm,
+  { name: string; description: string }
+> = {
+  sm2: {
+    name: "SM-2 (SuperMemo 2)",
+    description:
+      "Classic algorithm with dynamic easiness factor. Intervals adapt based on your performance.",
   },
-  'modifiedsm2': {
-    name: 'Modified SM-2',
-    description: 'Simplified SM-2 with fixed intervals per box. Predictable and easy to understand.',
+  modifiedsm2: {
+    name: "Modified SM-2",
+    description:
+      "Simplified SM-2 with fixed intervals per box. Predictable and easy to understand.",
   },
-  'simple': {
-    name: 'Simple Doubling',
-    description: 'Each success doubles the interval (1d → 2d → 4d). Very simple approach.',
+  simple: {
+    name: "Simple Doubling",
+    description:
+      "Each success doubles the interval (1d → 2d → 4d). Very simple approach.",
   },
 };

@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { TopBar, StatsCard } from '../molecules';
-import { Card } from '../atoms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import { PracticeService } from '../../services/practice.service';
-import type { Vocabulary } from '../../types/vocabulary';
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { StatsCard, TopBar } from "@/components/molecules";
+import { Card } from "@/components/atoms";
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import { PracticeService } from "@/services/practice.service.ts";
+import type { Vocabulary } from "@/types/vocabulary.ts";
 
 interface LevelProgress {
   level: string;
@@ -18,7 +18,7 @@ export const ProgressPage: React.FC = () => {
   const [totalWords, setTotalWords] = useState(0);
   const [practiceStreak, setPracticeStreak] = useState(0);
   const [wordsPracticed, setWordsPracticed] = useState(0);
-  const [currentLanguage, setCurrentLanguage] = useState<string>('');
+  const [currentLanguage, setCurrentLanguage] = useState<string>("");
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [levelProgress, setLevelProgress] = useState<LevelProgress[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export const ProgressPage: React.FC = () => {
         setCurrentLanguage(languages[0]);
       }
     } catch (error) {
-      console.error('Failed to load languages:', error);
+      console.error("Failed to load languages:", error);
     } finally {
       setLoading(false);
     }
@@ -61,13 +61,16 @@ export const ProgressPage: React.FC = () => {
 
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
-      console.log('pr', progress)
+      console.log("pr", progress);
       if (progress) {
         setPracticeStreak(progress.current_streak);
         setWordsPracticed(progress.total_words_practiced);
 
         // Calculate level progress
-        const levelStats = calculateLevelProgress(vocabularies, progress.words_progress);
+        const levelStats = calculateLevelProgress(
+          vocabularies,
+          progress.words_progress,
+        );
         setLevelProgress(levelStats);
       } else {
         setPracticeStreak(0);
@@ -77,7 +80,7 @@ export const ProgressPage: React.FC = () => {
         setLevelProgress(levelStats);
       }
     } catch (error) {
-      console.error('Failed to load stats:', error);
+      console.error("Failed to load stats:", error);
     } finally {
       setLoading(false);
     }
@@ -85,18 +88,20 @@ export const ProgressPage: React.FC = () => {
 
   const calculateLevelProgress = (
     vocabularies: Vocabulary[],
-    wordsProgress: Array<{ vocabulary_id: string; mastery_level: number }>
+    wordsProgress: Array<{ vocabulary_id: string; mastery_level: number }>,
   ): LevelProgress[] => {
     // Get all unique levels from vocabularies
     const levelMap = new Map<string, { total: number; practiced: number }>();
 
-    vocabularies.forEach(vocab => {
-      const level = vocab.level || 'Unknown';
+    vocabularies.forEach((vocab) => {
+      const level = vocab.level || "Unknown";
       const current = levelMap.get(level) || { total: 0, practiced: 0 };
       current.total += 1;
 
       // Check if this word has been practiced
-      const wordProg = wordsProgress.find(wp => wp.vocabulary_id === vocab.id);
+      const wordProg = wordsProgress.find(
+        (wp) => wp.vocabulary_id === vocab.id,
+      );
       if (wordProg && wordProg.mastery_level > 0) {
         current.practiced += 1;
       }
@@ -105,15 +110,20 @@ export const ProgressPage: React.FC = () => {
     });
 
     // Convert to array and calculate percentages
-    const levels: LevelProgress[] = Array.from(levelMap.entries()).map(([level, stats]) => ({
-      level,
-      total: stats.total,
-      practiced: stats.practiced,
-      percentage: stats.total > 0 ? Math.round((stats.practiced / stats.total) * 100) : 0,
-    }));
+    const levels: LevelProgress[] = Array.from(levelMap.entries()).map(
+      ([level, stats]) => ({
+        level,
+        total: stats.total,
+        practiced: stats.practiced,
+        percentage:
+          stats.total > 0
+            ? Math.round((stats.practiced / stats.total) * 100)
+            : 0,
+      }),
+    );
 
     // Sort by common CEFR order if applicable
-    const levelOrder = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+    const levelOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
     levels.sort((a, b) => {
       const aIndex = levelOrder.indexOf(a.level);
       const bIndex = levelOrder.indexOf(b.level);
@@ -127,17 +137,25 @@ export const ProgressPage: React.FC = () => {
   };
 
   const stats = [
-    { value: totalWords, label: t('stats.totalWords'), color: 'text-teal-600' },
-    { value: practiceStreak, label: t('stats.streak'), color: 'text-amber-600' },
-    { value: wordsPracticed, label: t('stats.wordsLearned'), color: 'text-orange-600' },
+    { value: totalWords, label: t("stats.totalWords"), color: "text-teal-600" },
+    {
+      value: practiceStreak,
+      label: t("stats.streak"),
+      color: "text-amber-600",
+    },
+    {
+      value: wordsPracticed,
+      label: t("stats.wordsLearned"),
+      color: "text-orange-600",
+    },
   ];
 
   if (loading) {
     return (
       <>
-        <TopBar title={t('nav.progress')} showBack={false} />
+        <TopBar title={t("nav.progress")} showBack={false} />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('app.loading')}</div>
+          <div className="text-gray-600">{t("app.loading")}</div>
         </div>
       </>
     );
@@ -145,14 +163,16 @@ export const ProgressPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t('nav.progress')} showBack={false} />
+      <TopBar title={t("nav.progress")} showBack={false} />
 
       <div className="px-4 pt-6 space-y-6">
         {/* Language Selector */}
         {availableLanguages.length > 1 && (
           <Card variant="glass">
             <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">{t('vocabulary.language') || 'Select Language'}</label>
+              <label className="text-sm font-semibold text-gray-700">
+                {t("vocabulary.language") || "Select Language"}
+              </label>
               <select
                 value={currentLanguage}
                 onChange={(e) => setCurrentLanguage(e.target.value)}
@@ -171,26 +191,39 @@ export const ProgressPage: React.FC = () => {
         {/* Current Language Display (for single language) */}
         {availableLanguages.length === 1 && currentLanguage && (
           <div className="text-center">
-            <p className="text-sm text-gray-600">Learning: <span className="font-semibold">{currentLanguage.toUpperCase()}</span></p>
+            <p className="text-sm text-gray-600">
+              Learning:{" "}
+              <span className="font-semibold">
+                {currentLanguage.toUpperCase()}
+              </span>
+            </p>
           </div>
         )}
 
         {/* Stats Overview */}
-        <StatsCard stats={stats} title={t('nav.progress')} />
+        <StatsCard stats={stats} title={t("nav.progress")} />
 
         {/* Progress Chart - Real Data */}
         {levelProgress.length > 0 ? (
           <Card variant="glass">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">{t('vocabulary.level')} {t('nav.progress')}</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              {t("vocabulary.level")} {t("nav.progress")}
+            </h3>
             <div className="space-y-3">
               {levelProgress.map((level) => (
                 <div key={level.level}>
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-700">{level.level}</span>
-                      <span className="text-xs text-gray-500">({level.practiced}/{level.total})</span>
+                      <span className="text-sm font-semibold text-gray-700">
+                        {level.level}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        ({level.practiced}/{level.total})
+                      </span>
                     </div>
-                    <span className="text-sm font-bold text-teal-600">{level.percentage}%</span>
+                    <span className="text-sm font-bold text-teal-600">
+                      {level.percentage}%
+                    </span>
                   </div>
                   <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
                     <div
@@ -205,7 +238,10 @@ export const ProgressPage: React.FC = () => {
         ) : (
           <Card variant="glass">
             <div className="text-center p-8">
-              <p className="text-gray-600">No vocabulary data yet. Start adding words to see progress by level!</p>
+              <p className="text-gray-600">
+                No vocabulary data yet. Start adding words to see progress by
+                level!
+              </p>
             </div>
           </Card>
         )}
@@ -215,7 +251,9 @@ export const ProgressPage: React.FC = () => {
           <Card variant="gradient">
             <div className="text-center">
               <div className="text-6xl mb-4">🏆</div>
-              <h3 className="text-2xl font-bold mb-2">{practiceStreak} Day {t('stats.streak')}!</h3>
+              <h3 className="text-2xl font-bold mb-2">
+                {practiceStreak} Day {t("stats.streak")}!
+              </h3>
               <p className="text-white/90 mb-4">Keep learning every day 🔥</p>
             </div>
           </Card>

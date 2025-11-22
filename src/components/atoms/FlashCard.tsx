@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Card } from './Card';
+import React, { useState } from "react";
+import { Card } from "./Card";
 
 interface FlashCardProps {
   front: string;
@@ -52,11 +52,18 @@ export const FlashCard: React.FC<FlashCardProps> = ({
         }
       `}</style>
 
-      <div className={`flip-card-inner ${isFlipped ? 'flipped' : ''}`}>
+      <div className={`flip-card-inner ${isFlipped ? "flipped" : ""}`}>
         {/* Front */}
         <div className="flip-card-front">
-          <Card variant="gradient" className="h-full flex flex-col items-center justify-center">
-            <img src="/chameleon.svg" alt="Chameleon" className="w-24 h-24 mb-6" />
+          <Card
+            variant="gradient"
+            className="h-full flex flex-col items-center justify-center"
+          >
+            <img
+              src="/chameleon.svg"
+              alt="Chameleon"
+              className="w-24 h-24 mb-6"
+            />
             <h2 className="text-4xl font-black mb-2">{front}</h2>
             {subtitle && <p className="text-xl text-white/90">{subtitle}</p>}
             <p className="text-sm text-white/70 mt-8">Tap to reveal</p>
@@ -65,7 +72,10 @@ export const FlashCard: React.FC<FlashCardProps> = ({
 
         {/* Back */}
         <div className="flip-card-back">
-          <Card variant="glass" className="h-full flex items-center justify-center">
+          <Card
+            variant="glass"
+            className="h-full flex items-center justify-center"
+          >
             <div className="text-center px-6">
               <div className="text-5xl mb-4">✨</div>
               <p className="text-2xl font-bold text-gray-800 mb-4">{back}</p>

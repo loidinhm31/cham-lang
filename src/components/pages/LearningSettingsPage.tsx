@@ -1,12 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Save, Info } from 'lucide-react';
-import { TopBar } from '../molecules';
-import { Button, Card, Select } from '../atoms';
-import { LearningSettingsService } from '../../services/learningSettings.service';
-import type { SpacedRepetitionAlgorithm, LeitnerBoxCount } from '../../types/settings';
-import { BOX_INTERVAL_PRESETS } from '../../utils/spacedRepetition';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Info, Save } from "lucide-react";
+import { TopBar } from "@/components/molecules";
+import { Button, Card, Select } from "@/components/atoms";
+import { LearningSettingsService } from "@/services/learningSettings.service.ts";
+import type {
+  LeitnerBoxCount,
+  SpacedRepetitionAlgorithm,
+} from "@/types/settings.ts";
+import { BOX_INTERVAL_PRESETS } from "@/types/settings.ts";
 
 export const LearningSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -15,7 +18,8 @@ export const LearningSettingsPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   // Form state
-  const [algorithm, setAlgorithm] = useState<SpacedRepetitionAlgorithm>('modifiedsm2');
+  const [algorithm, setAlgorithm] =
+    useState<SpacedRepetitionAlgorithm>("modifiedsm2");
   const [boxCount, setBoxCount] = useState<LeitnerBoxCount>(5);
   const [consecutiveCorrect, setConsecutiveCorrect] = useState(3);
   const [showFailedWords, setShowFailedWords] = useState(true);
@@ -39,8 +43,8 @@ export const LearningSettingsPage: React.FC = () => {
       setNewWordsPerDay(data.new_words_per_day || 20);
       setDailyReviewLimit(data.daily_review_limit || 100);
     } catch (error) {
-      console.error('Failed to load settings:', error);
-      alert(t('messages.error'));
+      console.error("Failed to load settings:", error);
+      alert(t("messages.error"));
     } finally {
       setLoading(false);
     }
@@ -57,11 +61,11 @@ export const LearningSettingsPage: React.FC = () => {
         new_words_per_day: newWordsPerDay,
         daily_review_limit: dailyReviewLimit,
       });
-      alert(t('settings.saved') || 'Settings saved successfully!');
+      alert(t("settings.saved") || "Settings saved successfully!");
       navigate(-1);
     } catch (error) {
-      console.error('Failed to save settings:', error);
-      alert(t('messages.error'));
+      console.error("Failed to save settings:", error);
+      alert(t("messages.error"));
     } finally {
       setSaving(false);
     }
@@ -69,23 +73,23 @@ export const LearningSettingsPage: React.FC = () => {
 
   const algorithmOptions = [
     {
-      value: 'sm2',
-      label: 'SM-2 (Advanced)',
+      value: "sm2",
+      label: "SM-2 (Advanced)",
     },
     {
-      value: 'modifiedsm2',
-      label: 'Modified SM-2 (Recommended)',
+      value: "modifiedsm2",
+      label: "Modified SM-2 (Recommended)",
     },
     {
-      value: 'simple',
-      label: 'Simple Doubling (Beginner)',
+      value: "simple",
+      label: "Simple Doubling (Beginner)",
     },
   ];
 
   const boxCountOptions = [
-    { value: '3', label: '3 Boxes (Simple)' },
-    { value: '5', label: '5 Boxes (Balanced)' },
-    { value: '7', label: '7 Boxes (Advanced)' },
+    { value: "3", label: "3 Boxes (Simple)" },
+    { value: "5", label: "5 Boxes (Balanced)" },
+    { value: "7", label: "7 Boxes (Advanced)" },
   ];
 
   const getIntervalPreview = () => {
@@ -93,7 +97,9 @@ export const LearningSettingsPage: React.FC = () => {
     return intervals.map((days, index) => (
       <div key={index} className="flex justify-between text-sm">
         <span className="text-gray-600">Box {index + 1}:</span>
-        <span className="font-semibold text-gray-800">{days} {days === 1 ? 'day' : 'days'}</span>
+        <span className="font-semibold text-gray-800">
+          {days} {days === 1 ? "day" : "days"}
+        </span>
       </div>
     ));
   };
@@ -101,9 +107,12 @@ export const LearningSettingsPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t('settings.learning') || 'Learning Settings'} showBack />
+        <TopBar
+          title={t("settings.learning") || "Learning Settings"}
+          showBack
+        />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('app.loading')}</div>
+          <div className="text-gray-600">{t("app.loading")}</div>
         </div>
       </>
     );
@@ -111,17 +120,18 @@ export const LearningSettingsPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t('settings.learning') || 'Learning Settings'} showBack />
+      <TopBar title={t("settings.learning") || "Learning Settings"} showBack />
 
       <div className="px-4 pt-6 space-y-6 pb-20">
         {/* Header */}
         <div className="text-center py-4">
           <div className="text-5xl mb-3">⚙️</div>
           <h1 className="text-3xl font-black text-gray-800 mb-2">
-            {t('settings.learningTitle') || 'Spaced Repetition Settings'}
+            {t("settings.learningTitle") || "Spaced Repetition Settings"}
           </h1>
           <p className="text-gray-600">
-            {t('settings.learningDescription') || 'Customize how you learn vocabulary'}
+            {t("settings.learningDescription") ||
+              "Customize how you learn vocabulary"}
           </p>
         </div>
 
@@ -129,19 +139,27 @@ export const LearningSettingsPage: React.FC = () => {
         <Card variant="glass">
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-700">
-              {t('settings.algorithm') || 'Learning Algorithm'}
+              {t("settings.algorithm") || "Learning Algorithm"}
             </label>
             <Select
               options={algorithmOptions}
               value={algorithm}
-              onChange={(e) => setAlgorithm(e.target.value as SpacedRepetitionAlgorithm)}
+              onChange={(e) =>
+                setAlgorithm(e.target.value as SpacedRepetitionAlgorithm)
+              }
             />
             <div className="flex gap-2 p-3 bg-blue-50 rounded-xl">
               <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
               <p className="text-sm text-blue-900">
-                {algorithm === 'sm2' && (t('settings.sm2Description') || 'Dynamic intervals based on performance. Best for advanced learners.')}
-                {algorithm === 'modifiedsm2' && (t('settings.modifiedSm2Description') || 'Fixed intervals per box. Predictable and easy to understand.')}
-                {algorithm === 'simple' && (t('settings.simpleDescription') || 'Doubles interval each time. Great for beginners.')}
+                {algorithm === "sm2" &&
+                  (t("settings.sm2Description") ||
+                    "Dynamic intervals based on performance. Best for advanced learners.")}
+                {algorithm === "modifiedsm2" &&
+                  (t("settings.modifiedSm2Description") ||
+                    "Fixed intervals per box. Predictable and easy to understand.")}
+                {algorithm === "simple" &&
+                  (t("settings.simpleDescription") ||
+                    "Doubles interval each time. Great for beginners.")}
               </p>
             </div>
           </div>
@@ -151,16 +169,18 @@ export const LearningSettingsPage: React.FC = () => {
         <Card variant="glass">
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-700">
-              {t('settings.boxCount') || 'Number of Leitner Boxes'}
+              {t("settings.boxCount") || "Number of Leitner Boxes"}
             </label>
             <Select
               options={boxCountOptions}
               value={String(boxCount)}
-              onChange={(e) => setBoxCount(Number(e.target.value) as LeitnerBoxCount)}
+              onChange={(e) =>
+                setBoxCount(Number(e.target.value) as LeitnerBoxCount)
+              }
             />
             <div className="p-3 bg-gray-50 rounded-xl space-y-2">
               <p className="text-xs font-semibold text-gray-600 uppercase">
-                {t('settings.intervalPreview') || 'Interval Preview'}
+                {t("settings.intervalPreview") || "Interval Preview"}
               </p>
               {getIntervalPreview()}
             </div>
@@ -171,7 +191,8 @@ export const LearningSettingsPage: React.FC = () => {
         <Card variant="glass">
           <div className="space-y-3">
             <label className="block text-sm font-semibold text-gray-700">
-              {t('settings.consecutiveCorrect') || 'Consecutive Correct to Advance'}
+              {t("settings.consecutiveCorrect") ||
+                "Consecutive Correct to Advance"}
             </label>
             <input
               type="range"
@@ -182,11 +203,16 @@ export const LearningSettingsPage: React.FC = () => {
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
             <div className="text-center">
-              <span className="text-3xl font-black text-teal-600">{consecutiveCorrect}</span>
-              <span className="text-sm text-gray-600 ml-2">{t('settings.times') || 'times'}</span>
+              <span className="text-3xl font-black text-teal-600">
+                {consecutiveCorrect}
+              </span>
+              <span className="text-sm text-gray-600 ml-2">
+                {t("settings.times") || "times"}
+              </span>
             </div>
             <p className="text-xs text-gray-600 text-center">
-              {t('settings.consecutiveCorrectDescription') || 'How many correct answers needed to move to next box'}
+              {t("settings.consecutiveCorrectDescription") ||
+                "How many correct answers needed to move to next box"}
             </p>
           </div>
         </Card>
@@ -196,7 +222,7 @@ export const LearningSettingsPage: React.FC = () => {
           <div className="space-y-4">
             <div className="space-y-3">
               <label className="block text-sm font-semibold text-gray-700">
-                {t('settings.newWordsPerDay') || 'New Words Per Day'}
+                {t("settings.newWordsPerDay") || "New Words Per Day"}
               </label>
               <input
                 type="number"
@@ -209,7 +235,7 @@ export const LearningSettingsPage: React.FC = () => {
             </div>
             <div className="space-y-3">
               <label className="block text-sm font-semibold text-gray-700">
-                {t('settings.dailyReviewLimit') || 'Daily Review Limit'}
+                {t("settings.dailyReviewLimit") || "Daily Review Limit"}
               </label>
               <input
                 type="number"
@@ -228,22 +254,24 @@ export const LearningSettingsPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <label className="block text-sm font-semibold text-gray-700 mb-1">
-                {t('settings.showFailedWords') || 'Show Failed Words in Session'}
+                {t("settings.showFailedWords") ||
+                  "Show Failed Words in Session"}
               </label>
               <p className="text-xs text-gray-600">
-                {t('settings.showFailedWordsDescription') || 'Retry incorrect words immediately in the same session'}
+                {t("settings.showFailedWordsDescription") ||
+                  "Retry incorrect words immediately in the same session"}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setShowFailedWords(!showFailedWords)}
               className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                showFailedWords ? 'bg-teal-600' : 'bg-gray-300'
+                showFailedWords ? "bg-teal-600" : "bg-gray-300"
               }`}
             >
               <span
                 className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
-                  showFailedWords ? 'translate-x-7' : 'translate-x-1'
+                  showFailedWords ? "translate-x-7" : "translate-x-1"
                 }`}
               />
             </button>
@@ -259,7 +287,7 @@ export const LearningSettingsPage: React.FC = () => {
             onClick={() => navigate(-1)}
             disabled={saving}
           >
-            {t('buttons.cancel')}
+            {t("buttons.cancel")}
           </Button>
           <Button
             variant="primary"
@@ -269,7 +297,7 @@ export const LearningSettingsPage: React.FC = () => {
             onClick={handleSave}
             disabled={saving}
           >
-            {saving ? t('buttons.saving') || 'Saving...' : t('buttons.save')}
+            {saving ? t("buttons.saving") || "Saving..." : t("buttons.save")}
           </Button>
         </div>
       </div>

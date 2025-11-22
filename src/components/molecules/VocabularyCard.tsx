@@ -1,8 +1,8 @@
-import React from 'react';
-import { ChevronRight } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { Card, Badge } from '../atoms';
-import type { Vocabulary, LanguageLevel } from '../../types/vocabulary';
+import React from "react";
+import { ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Badge, Card } from "@/components/atoms";
+import type { LanguageLevel, Vocabulary } from "@/types/vocabulary.ts";
 
 interface VocabularyCardProps {
   vocabulary: Vocabulary;
@@ -10,12 +10,12 @@ interface VocabularyCardProps {
 }
 
 const levelColors: Record<LanguageLevel, string> = {
-  A1: 'bg-emerald-500',
-  A2: 'bg-teal-500',
-  B1: 'bg-cyan-500',
-  B2: 'bg-blue-500',
-  C1: 'bg-amber-500',
-  C2: 'bg-orange-500',
+  A1: "bg-emerald-500",
+  A2: "bg-teal-500",
+  B1: "bg-cyan-500",
+  B2: "bg-blue-500",
+  C1: "bg-amber-500",
+  C2: "bg-orange-500",
 };
 
 export const VocabularyCard: React.FC<VocabularyCardProps> = ({
@@ -28,10 +28,14 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
     <Card variant="glass" hover onClick={onClick}>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-1">{vocabulary.word}</h3>
+          <h3 className="text-xl font-bold text-gray-800 mb-1">
+            {vocabulary.word}
+          </h3>
           <p className="text-sm text-teal-700">{vocabulary.ipa}</p>
         </div>
-        <span className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-3 py-1 rounded-full`}>
+        <span
+          className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-3 py-1 rounded-full`}
+        >
           {vocabulary.level}
         </span>
       </div>
@@ -56,7 +60,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
           )}
         </div>
         <button className="text-teal-600 font-semibold text-sm flex items-center">
-          {t('buttons.viewDetails')} <ChevronRight className="w-4 h-4 ml-1" />
+          {t("buttons.viewDetails")} <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>
     </Card>

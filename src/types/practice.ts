@@ -1,4 +1,4 @@
-export type PracticeMode = 'flashcard' | 'fillword' | 'multiplechoice';
+export type PracticeMode = "flashcard" | "fillword" | "multiplechoice";
 
 export interface PracticeResult {
   vocabulary_id: string;
@@ -90,7 +90,10 @@ export interface PracticeQuestion {
 }
 
 // Helper function to create initial WordProgress for new words
-export function createInitialWordProgress(vocabularyId: string, word: string): WordProgress {
+export function createInitialWordProgress(
+  vocabularyId: string,
+  word: string,
+): WordProgress {
   const now = new Date().toISOString();
   return {
     vocabulary_id: vocabularyId,

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Edit, Trash2, Globe, BookOpen, Plus } from 'lucide-react';
-import { TopBar } from '../molecules';
-import { VocabularyList } from '../organisms';
-import { Card, Badge, Button } from '../atoms';
-import { CollectionService } from '../../services/collection.service';
-import { VocabularyService } from '../../services/vocabulary.service';
-import type { Collection } from '../../types/collection';
-import type { Vocabulary } from '../../types/vocabulary';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { BookOpen, Edit, Globe, Plus, Trash2 } from "lucide-react";
+import { TopBar } from "@/components/molecules";
+import { VocabularyList } from "@/components/organisms";
+import { Badge, Button, Card } from "@/components/atoms";
+import { CollectionService } from "@/services/collection.service.ts";
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import type { Collection } from "@/types/collection.ts";
+import type { Vocabulary } from "@/types/vocabulary.ts";
 
 export const CollectionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,26 +34,26 @@ export const CollectionDetailPage: React.FC = () => {
       setCollection(collectionData);
       setVocabularies(vocabData);
     } catch (error) {
-      console.error('Failed to load collection:', error);
-      alert(t('messages.error'));
-      navigate('/');
+      console.error("Failed to load collection:", error);
+      alert(t("messages.error"));
+      navigate("/");
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!collection?.id || !confirm(t('messages.confirmDelete'))) {
+    if (!collection?.id || !confirm(t("messages.confirmDelete"))) {
       return;
     }
 
     try {
       await CollectionService.deleteCollection(collection.id);
-      alert(t('messages.deleteSuccess'));
-      navigate('/');
+      alert(t("messages.deleteSuccess"));
+      navigate("/");
     } catch (error) {
-      console.error('Failed to delete collection:', error);
-      alert(t('messages.error'));
+      console.error("Failed to delete collection:", error);
+      alert(t("messages.error"));
     }
   };
 
@@ -64,9 +64,9 @@ export const CollectionDetailPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t('collection.title')} showBack />
+        <TopBar title={t("collection.title")} showBack />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('app.loading')}</div>
+          <div className="text-gray-600">{t("app.loading")}</div>
         </div>
       </>
     );
@@ -88,11 +88,18 @@ export const CollectionDetailPage: React.FC = () => {
             <div className="flex items-center justify-center gap-4 mb-4">
               <div className="flex items-center gap-2 text-white/90">
                 <Globe className="w-5 h-5" />
-                <span className="capitalize text-lg">{collection.language}</span>
+                <span className="capitalize text-lg">
+                  {collection.language}
+                </span>
               </div>
-              <Badge variant="glass" className="bg-white/20 text-white flex items-center gap-2">
+              <Badge
+                variant="glass"
+                className="bg-white/20 text-white flex items-center gap-2"
+              >
                 <BookOpen className="w-4 h-4" />
-                <span className="font-bold">{collection.word_count} {t('collections.words')}</span>
+                <span className="font-bold">
+                  {collection.word_count} {t("collections.words")}
+                </span>
               </Badge>
             </div>
             {collection.description && (
@@ -108,9 +115,9 @@ export const CollectionDetailPage: React.FC = () => {
             size="lg"
             icon={Plus}
             fullWidth
-            onClick={() => navigate('/vocabulary/add')}
+            onClick={() => navigate("/vocabulary/add")}
           >
-            {t('vocabulary.add')}
+            {t("vocabulary.add")}
           </Button>
           <Button
             variant="outline"
@@ -118,7 +125,7 @@ export const CollectionDetailPage: React.FC = () => {
             icon={Edit}
             onClick={() => navigate(`/collections/${collection.id}/edit`)}
           >
-            {t('buttons.edit')}
+            {t("buttons.edit")}
           </Button>
           <Button
             variant="danger"
@@ -126,14 +133,14 @@ export const CollectionDetailPage: React.FC = () => {
             icon={Trash2}
             onClick={handleDelete}
           >
-            {t('buttons.delete')}
+            {t("buttons.delete")}
           </Button>
         </div>
 
         {/* Vocabulary List */}
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            {t('vocabulary.title')}
+            {t("vocabulary.title")}
           </h2>
           <VocabularyList
             vocabularies={vocabularies}

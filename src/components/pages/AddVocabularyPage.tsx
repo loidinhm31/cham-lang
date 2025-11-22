@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { TopBar } from '../molecules';
-import { VocabularyForm } from '../organisms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import type { CreateVocabularyRequest } from '../../types/vocabulary';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import type { CreateVocabularyRequest } from "@/types/vocabulary.ts";
+import {TopBar} from "@/components/molecules";
+import {VocabularyForm} from "@/components/organisms";
 
 export const AddVocabularyPage: React.FC = () => {
   const { t } = useTranslation();
@@ -15,23 +16,23 @@ export const AddVocabularyPage: React.FC = () => {
     try {
       setLoading(true);
       await VocabularyService.createVocabulary(data);
-      alert(t('messages.saveSuccess'));
-      navigate('/');
+      alert(t("messages.saveSuccess"));
+      navigate("/");
     } catch (error) {
-      console.error('Failed to create vocabulary:', error);
-      alert(t('messages.error'));
+      console.error("Failed to create vocabulary:", error);
+      alert(t("messages.error"));
     } finally {
       setLoading(false);
     }
   };
 
   const handleCancel = () => {
-    navigate('/');
+    navigate("/");
   };
 
   return (
     <>
-      <TopBar title={t('vocabulary.add')} showBack />
+      <TopBar title={t("vocabulary.add")} showBack />
 
       <div className="px-4 pt-6">
         <VocabularyForm

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
@@ -12,7 +12,7 @@ export const Select: React.FC<SelectProps> = ({
   error,
   options,
   placeholder,
-  className = '',
+  className = "",
   ...props
 }) => {
   return (
@@ -23,7 +23,7 @@ export const Select: React.FC<SelectProps> = ({
         </label>
       )}
       <select
-        className={`w-full py-3 px-4 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-800 ${error ? 'ring-2 ring-red-500' : ''} ${className}`}
+        className={`w-full py-3 px-4 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-800 ${error ? "ring-2 ring-red-500" : ""} ${className}`}
         {...props}
       >
         {placeholder && (
@@ -37,9 +37,7 @@ export const Select: React.FC<SelectProps> = ({
           </option>
         ))}
       </select>
-      {error && (
-        <p className="mt-1 text-sm text-red-600">{error}</p>
-      )}
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
   );
 };

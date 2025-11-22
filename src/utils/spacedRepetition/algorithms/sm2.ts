@@ -10,26 +10,26 @@
  * - Intervals: 1 day, 6 days, then multiply by EF
  */
 
-import type { SpacedRepetitionAlgorithm, ReviewResult } from '../types';
-import type { WordProgress } from '../../../types/practice';
-import type { LearningSettings } from '../../../types/settings';
-import { addDays, BOX_INTERVAL_PRESETS } from '../types';
+import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
+import { addDays, BOX_INTERVAL_PRESETS } from "../types";
+import type { WordProgress } from "../../../types/practice";
+import type { LearningSettings } from "../../../types/settings";
 
 const MIN_EASINESS_FACTOR = 1.3;
 const MAX_EASINESS_FACTOR = 2.5;
 
 export class SM2Algorithm implements SpacedRepetitionAlgorithm {
   getName(): string {
-    return 'SM-2 (SuperMemo 2)';
+    return "SM-2 (SuperMemo 2)";
   }
 
   getDescription(): string {
-    return 'Classic algorithm with dynamic easiness factor. Intervals adapt based on your performance.';
+    return "Classic algorithm with dynamic easiness factor. Intervals adapt based on your performance.";
   }
 
   processCorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -43,11 +43,13 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     // Update easiness factor (increase slightly for correct answer)
     updated.easiness_factor = this.calculateEasinessFactor(
       updated.easiness_factor,
-      5 // Quality 5 = perfect response
+      5, // Quality 5 = perfect response
     );
 
     // Check if should advance to next box
-    const shouldAdvance = updated.consecutive_correct_count >= settings.consecutive_correct_required;
+    const shouldAdvance =
+      updated.consecutive_correct_count >=
+      settings.consecutive_correct_required;
 
     if (shouldAdvance && updated.leitner_box < settings.leitner_box_count) {
       // Advance to next box
@@ -80,15 +82,16 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
       newBox: updated.leitner_box,
       nextReviewDate,
       intervalDays: interval,
-      message: shouldAdvance && updated.leitner_box !== previousBox
-        ? `Excellent! Advanced to Box ${updated.leitner_box}!`
-        : `Correct! Next review in ${interval} day${interval !== 1 ? 's' : ''}`,
+      message:
+        shouldAdvance && updated.leitner_box !== previousBox
+          ? `Excellent! Advanced to Box ${updated.leitner_box}!`
+          : `Correct! Next review in ${interval} day${interval !== 1 ? "s" : ""}`,
     };
   }
 
   processIncorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -102,7 +105,7 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     // Update easiness factor (decrease for incorrect answer)
     updated.easiness_factor = this.calculateEasinessFactor(
       updated.easiness_factor,
-      0 // Quality 0 = complete blackout
+      0, // Quality 0 = complete blackout
     );
 
     // Move back to box 1
@@ -126,7 +129,9 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
 
     // Set session flags for re-queuing
     updated.failed_in_session = settings.show_failed_words_in_session;
-    updated.retry_count = settings.show_failed_words_in_session ? updated.retry_count + 1 : 0;
+    updated.retry_count = settings.show_failed_words_in_session
+      ? updated.retry_count + 1
+      : 0;
 
     return {
       updatedProgress: updated,
@@ -136,14 +141,14 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
       nextReviewDate,
       intervalDays: updated.interval_days,
       message: settings.show_failed_words_in_session
-        ? 'Incorrect. Let\'s try this one again!'
-        : 'Incorrect. Moved to Box 1. Review again tomorrow.',
+        ? "Incorrect. Let's try this one again!"
+        : "Incorrect. Moved to Box 1. Review again tomorrow.",
     };
   }
 
   calculateNextReviewDate(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): Date {
     const interval = this.calculateInterval(wordProgress, settings);
     return addDays(new Date(), interval);
@@ -158,8 +163,16 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
   /**
    * Calculate the next interval using SM-2 formula
    */
-  private calculateInterval(wordProgress: WordProgress, _settings: LearningSettings): number {
-    const { consecutive_correct_count, interval_days, easiness_factor, leitner_box } = wordProgress;
+  private calculateInterval(
+    wordProgress: WordProgress,
+    _settings: LearningSettings,
+  ): number {
+    const {
+      consecutive_correct_count,
+      interval_days,
+      easiness_factor,
+      leitner_box,
+    } = wordProgress;
 
     // First review in current box
     if (consecutive_correct_count === 0) {
@@ -174,7 +187,9 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     // Subsequent reviews: multiply previous interval by easiness factor
     // Also consider the Leitner box as a multiplier
     const boxMultiplier = Math.pow(1.5, leitner_box - 1);
-    const newInterval = Math.round(interval_days * easiness_factor * boxMultiplier);
+    const newInterval = Math.round(
+      interval_days * easiness_factor * boxMultiplier,
+    );
 
     // Ensure minimum interval of 1 day
     return Math.max(1, newInterval);
@@ -190,7 +205,8 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
    * - 5 = perfect response, 0 = complete blackout
    */
   private calculateEasinessFactor(currentEF: number, quality: number): number {
-    const newEF = currentEF + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+    const newEF =
+      currentEF + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
 
     // Clamp between MIN and MAX
     return Math.max(MIN_EASINESS_FACTOR, Math.min(MAX_EASINESS_FACTOR, newEF));

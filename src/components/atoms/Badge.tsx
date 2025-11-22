@@ -1,6 +1,12 @@
-import React from 'react';
+import React from "react";
 
-export type BadgeVariant = 'primary' | 'secondary' | 'success' | 'warning' | 'info' | 'glass';
+export type BadgeVariant =
+  | "primary"
+  | "secondary"
+  | "success"
+  | "warning"
+  | "info"
+  | "glass";
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -9,18 +15,18 @@ interface BadgeProps {
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
-  primary: 'bg-teal-500 text-white',
-  secondary: 'bg-amber-500 text-white',
-  success: 'bg-emerald-500 text-white',
-  warning: 'bg-orange-500 text-white',
-  info: 'bg-cyan-500 text-white',
-  glass: 'bg-white/60 backdrop-blur-lg text-gray-800 shadow',
+  primary: "bg-teal-500 text-white",
+  secondary: "bg-amber-500 text-white",
+  success: "bg-emerald-500 text-white",
+  warning: "bg-orange-500 text-white",
+  info: "bg-cyan-500 text-white",
+  glass: "bg-white/60 backdrop-blur-lg text-gray-800 shadow",
 };
 
 export const Badge: React.FC<BadgeProps> = ({
-  variant = 'primary',
+  variant = "primary",
   children,
-  className = '',
+  className = "",
 }) => {
   return (
     <span

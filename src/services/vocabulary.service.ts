@@ -1,88 +1,93 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 import type {
-  Vocabulary,
   CreateVocabularyRequest,
-  UpdateVocabularyRequest,
   SearchQuery,
+  UpdateVocabularyRequest,
   UserPreferences,
-} from '../types/vocabulary';
+  Vocabulary,
+} from "@/types/vocabulary";
 
 export class VocabularyService {
   // Database connection
   static async connectDatabase(connectionString: string): Promise<string> {
-    return invoke('connect_database', { connectionString });
+    return invoke("connect_database", { connectionString });
   }
 
   static async disconnectDatabase(): Promise<string> {
-    return invoke('disconnect_database');
+    return invoke("disconnect_database");
   }
 
   static async isDatabaseConnected(): Promise<boolean> {
-    return invoke('is_database_connected');
+    return invoke("is_database_connected");
   }
 
   // Vocabulary CRUD
   static async createVocabulary(
-    request: CreateVocabularyRequest
+    request: CreateVocabularyRequest,
   ): Promise<string> {
-    return invoke('create_vocabulary', { request });
+    return invoke("create_vocabulary", { request });
   }
 
   static async getVocabulary(id: string): Promise<Vocabulary> {
-    return invoke('get_vocabulary', { id });
+    return invoke("get_vocabulary", { id });
   }
 
   static async getAllVocabularies(
     language?: string,
-    limit?: number
+    limit?: number,
   ): Promise<Vocabulary[]> {
-    return invoke('get_all_vocabularies', { language, limit });
+    return invoke("get_all_vocabularies", { language, limit });
   }
 
-  static async updateVocabulary(request: UpdateVocabularyRequest): Promise<string> {
-    return invoke('update_vocabulary', { request });
+  static async updateVocabulary(
+    request: UpdateVocabularyRequest,
+  ): Promise<string> {
+    return invoke("update_vocabulary", { request });
   }
 
   static async deleteVocabulary(id: string): Promise<string> {
-    return invoke('delete_vocabulary', { id });
+    return invoke("delete_vocabulary", { id });
   }
 
   static async searchVocabularies(query: SearchQuery): Promise<Vocabulary[]> {
-    return invoke('search_vocabularies', { query: query.query, language: query.language });
+    return invoke("search_vocabularies", {
+      query: query.query,
+      language: query.language,
+    });
   }
 
   static async getVocabulariesByTopic(
     topic: string,
-    language?: string
+    language?: string,
   ): Promise<Vocabulary[]> {
-    return invoke('get_vocabularies_by_topic', { topic, language });
+    return invoke("get_vocabularies_by_topic", { topic, language });
   }
 
   static async getVocabulariesByLevel(
     level: string,
-    language?: string
+    language?: string,
   ): Promise<Vocabulary[]> {
-    return invoke('get_vocabularies_by_level', { level, language });
+    return invoke("get_vocabularies_by_level", { level, language });
   }
 
   static async getVocabulariesByCollection(
     collectionId: string,
-    limit?: number
+    limit?: number,
   ): Promise<Vocabulary[]> {
-    return invoke('get_vocabularies_by_collection', { collectionId, limit });
+    return invoke("get_vocabularies_by_collection", { collectionId, limit });
   }
 
   // User preferences
   static async savePreferences(preferences: UserPreferences): Promise<string> {
-    return invoke('save_preferences', { preferences });
+    return invoke("save_preferences", { preferences });
   }
 
   static async getPreferences(): Promise<UserPreferences | null> {
-    return invoke('get_preferences');
+    return invoke("get_preferences");
   }
 
   // Language management
   static async getAllLanguages(): Promise<string[]> {
-    return invoke('get_all_languages');
+    return invoke("get_all_languages");
   }
 }

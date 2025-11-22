@@ -11,25 +11,25 @@
  * - 7 boxes: [1d, 2d, 4d, 7d, 14d, 30d, 60d]
  */
 
-import type { SpacedRepetitionAlgorithm, ReviewResult } from '../types';
-import type { WordProgress } from '../../../types/practice';
-import type { LearningSettings } from '../../../types/settings';
-import { addDays, BOX_INTERVAL_PRESETS } from '../types';
+import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
+import { addDays, BOX_INTERVAL_PRESETS } from "../types";
+import type { WordProgress } from "../../../types/practice";
+import type { LearningSettings } from "../../../types/settings";
 
 const DEFAULT_EASINESS_FACTOR = 2.5;
 
 export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
   getName(): string {
-    return 'Modified SM-2';
+    return "Modified SM-2";
   }
 
   getDescription(): string {
-    return 'Simplified SM-2 with fixed intervals per box. Predictable and easy to understand.';
+    return "Simplified SM-2 with fixed intervals per box. Predictable and easy to understand.";
   }
 
   processCorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -46,7 +46,9 @@ export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
     }
 
     // Check if should advance to next box
-    const shouldAdvance = updated.consecutive_correct_count >= settings.consecutive_correct_required;
+    const shouldAdvance =
+      updated.consecutive_correct_count >=
+      settings.consecutive_correct_required;
 
     if (shouldAdvance && updated.leitner_box < settings.leitner_box_count) {
       // Advance to next box
@@ -79,15 +81,16 @@ export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
       newBox: updated.leitner_box,
       nextReviewDate,
       intervalDays: interval,
-      message: shouldAdvance && updated.leitner_box !== previousBox
-        ? `Excellent! Advanced to Box ${updated.leitner_box}! Next review in ${interval} day${interval !== 1 ? 's' : ''}`
-        : `Correct! ${updated.consecutive_correct_count}/${settings.consecutive_correct_required} towards next box. Review in ${interval} day${interval !== 1 ? 's' : ''}`,
+      message:
+        shouldAdvance && updated.leitner_box !== previousBox
+          ? `Excellent! Advanced to Box ${updated.leitner_box}! Next review in ${interval} day${interval !== 1 ? "s" : ""}`
+          : `Correct! ${updated.consecutive_correct_count}/${settings.consecutive_correct_required} towards next box. Review in ${interval} day${interval !== 1 ? "s" : ""}`,
     };
   }
 
   processIncorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
     const previousBox = updated.leitner_box;
@@ -120,7 +123,9 @@ export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
 
     // Set session flags for re-queuing
     updated.failed_in_session = settings.show_failed_words_in_session;
-    updated.retry_count = settings.show_failed_words_in_session ? updated.retry_count + 1 : 0;
+    updated.retry_count = settings.show_failed_words_in_session
+      ? updated.retry_count + 1
+      : 0;
 
     return {
       updatedProgress: updated,
@@ -130,14 +135,14 @@ export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
       nextReviewDate,
       intervalDays: interval,
       message: settings.show_failed_words_in_session
-        ? 'Incorrect. Let\'s try this one again!'
-        : `Incorrect. Moved to Box 1. Review again in ${interval} day${interval !== 1 ? 's' : ''}.`,
+        ? "Incorrect. Let's try this one again!"
+        : `Incorrect. Moved to Box 1. Review again in ${interval} day${interval !== 1 ? "s" : ""}.`,
     };
   }
 
   calculateNextReviewDate(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): Date {
     const interval = this.getBoxInterval(wordProgress.leitner_box, settings);
     return addDays(new Date(), interval);
@@ -148,6 +153,8 @@ export class ModifiedSM2Algorithm implements SpacedRepetitionAlgorithm {
     const index = boxNumber - 1; // Convert to 0-indexed
 
     // Return the interval for this box, or the last interval if box number exceeds array
-    return presets[index] !== undefined ? presets[index] : presets[presets.length - 1];
+    return presets[index] !== undefined
+      ? presets[index]
+      : presets[presets.length - 1];
   }
 }

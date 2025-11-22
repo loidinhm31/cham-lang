@@ -3,10 +3,10 @@
  * Smart word selection for practice sessions using Spaced Repetition logic
  */
 
-import type { Vocabulary } from '../types/vocabulary';
-import type { WordProgress } from '../types/practice';
-import type { LearningSettings } from '../types/settings';
-import { getWordsDueToday, getWordsInBox } from '../utils/spacedRepetition';
+import type { Vocabulary } from "@/types/vocabulary";
+import type { WordProgress } from "@/types/practice";
+import type { LearningSettings } from "@/types/settings";
+import { getWordsDueToday, getWordsInBox } from "@/utils/spacedRepetition";
 
 export interface WordSelectionOptions {
   // Include words due for review
@@ -25,7 +25,7 @@ export interface WordSelectionOptions {
   shuffle: boolean;
 
   // Current practice mode (for mode-specific filtering)
-  currentMode?: 'flashcard' | 'fillword' | 'multiplechoice';
+  currentMode?: "flashcard" | "fillword" | "multiplechoice";
 }
 
 export class WordSelectionService {
@@ -49,11 +49,13 @@ export class WordSelectionService {
       includeDueWords: true,
       includeNewWords: true,
       shuffle: true,
-    }
+    },
   ): Vocabulary[] {
     const selected: Vocabulary[] = [];
-    const vocabularyMap = new Map(vocabularies.map(v => [v.id || '', v]));
-    const progressMap = new Map(wordsProgress.map(wp => [wp.vocabulary_id, wp]));
+    const vocabularyMap = new Map(vocabularies.map((v) => [v.id || "", v]));
+    const progressMap = new Map(
+      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+    );
 
     // Helper function to check if a word is available for the current mode
     const isAvailableForMode = (vocabularyId: string): boolean => {
@@ -87,7 +89,7 @@ export class WordSelectionService {
       const newWords: Vocabulary[] = [];
 
       for (const vocab of vocabularyMap.values()) {
-        const hasProgress = progressMap.has(vocab.id || '');
+        const hasProgress = progressMap.has(vocab.id || "");
         if (!hasProgress) {
           newWords.push(vocab);
         }
@@ -99,20 +101,20 @@ export class WordSelectionService {
       selected.push(...newWordsToAdd);
 
       // Remove added words from map
-      newWordsToAdd.forEach(v => vocabularyMap.delete(v.id || ''));
+      newWordsToAdd.forEach((v) => vocabularyMap.delete(v.id || ""));
     }
 
     // 3. Fill remaining slots with least recently practiced words not completed in current mode
     const maxWords = options.maxWords || settings.daily_review_limit || 100;
     if (selected.length < maxWords) {
-      const remaining = Array.from(vocabularyMap.values()).filter(v =>
-        isAvailableForMode(v.id || '')
+      const remaining = Array.from(vocabularyMap.values()).filter((v) =>
+        isAvailableForMode(v.id || ""),
       );
 
       // Sort by last practiced (oldest first)
       remaining.sort((a, b) => {
-        const progressA = progressMap.get(a.id || '');
-        const progressB = progressMap.get(b.id || '');
+        const progressA = progressMap.get(a.id || "");
+        const progressB = progressMap.get(b.id || "");
 
         if (!progressA && !progressB) return 0;
         if (!progressA) return 1; // New words at the end
@@ -140,9 +142,9 @@ export class WordSelectionService {
    */
   static selectDueWords(
     vocabularies: Vocabulary[],
-    wordsProgress: WordProgress[]
+    wordsProgress: WordProgress[],
   ): Vocabulary[] {
-    const vocabularyMap = new Map(vocabularies.map(v => [v.id || '', v]));
+    const vocabularyMap = new Map(vocabularies.map((v) => [v.id || "", v]));
     const dueWords = getWordsDueToday(wordsProgress);
 
     const selected: Vocabulary[] = [];
@@ -162,13 +164,15 @@ export class WordSelectionService {
   static selectNewWords(
     vocabularies: Vocabulary[],
     wordsProgress: WordProgress[],
-    maxWords: number = 20
+    maxWords: number = 20,
   ): Vocabulary[] {
-    const progressMap = new Map(wordsProgress.map(wp => [wp.vocabulary_id, wp]));
+    const progressMap = new Map(
+      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+    );
     const newWords: Vocabulary[] = [];
 
     for (const vocab of vocabularies) {
-      const hasProgress = progressMap.has(vocab.id || '');
+      const hasProgress = progressMap.has(vocab.id || "");
       if (!hasProgress) {
         newWords.push(vocab);
       }
@@ -185,9 +189,9 @@ export class WordSelectionService {
     vocabularies: Vocabulary[],
     wordsProgress: WordProgress[],
     boxNumber: number,
-    maxWords?: number
+    maxWords?: number,
   ): Vocabulary[] {
-    const vocabularyMap = new Map(vocabularies.map(v => [v.id || '', v]));
+    const vocabularyMap = new Map(vocabularies.map((v) => [v.id || "", v]));
     const wordsInBox = getWordsInBox(wordsProgress, boxNumber);
 
     const selected: Vocabulary[] = [];
@@ -206,10 +210,8 @@ export class WordSelectionService {
   /**
    * Filter failed words from a practice session that need to be retried
    */
-  static filterFailedWords(
-    wordsProgress: WordProgress[]
-  ): WordProgress[] {
-    return wordsProgress.filter(wp => wp.failed_in_session);
+  static filterFailedWords(wordsProgress: WordProgress[]): WordProgress[] {
+    return wordsProgress.filter((wp) => wp.failed_in_session);
   }
 
   /**
@@ -217,9 +219,9 @@ export class WordSelectionService {
    */
   static reQueueFailedWords(
     vocabularies: Vocabulary[],
-    wordsProgress: WordProgress[]
+    wordsProgress: WordProgress[],
   ): Vocabulary[] {
-    const vocabularyMap = new Map(vocabularies.map(v => [v.id || '', v]));
+    const vocabularyMap = new Map(vocabularies.map((v) => [v.id || "", v]));
     const failedWords = this.filterFailedWords(wordsProgress);
 
     const reQueued: Vocabulary[] = [];
@@ -234,34 +236,26 @@ export class WordSelectionService {
   }
 
   /**
-   * Shuffle an array in place (Fisher-Yates algorithm)
-   */
-  private static shuffleArray<T>(array: T[]): void {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-  }
-
-  /**
    * Get statistics about available words
    */
   static getWordStatistics(
     vocabularies: Vocabulary[],
     wordsProgress: WordProgress[],
-    _settings: LearningSettings
+    _settings: LearningSettings,
   ): {
     total: number;
     dueForReview: number;
     newWords: number;
     practicedWords: number;
   } {
-    const progressMap = new Map(wordsProgress.map(wp => [wp.vocabulary_id, wp]));
+    const progressMap = new Map(
+      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+    );
     const dueWords = getWordsDueToday(wordsProgress);
 
     let newWords = 0;
     for (const vocab of vocabularies) {
-      if (!progressMap.has(vocab.id || '')) {
+      if (!progressMap.has(vocab.id || "")) {
         newWords++;
       }
     }
@@ -272,5 +266,15 @@ export class WordSelectionService {
       newWords,
       practicedWords: wordsProgress.length,
     };
+  }
+
+  /**
+   * Shuffle an array in place (Fisher-Yates algorithm)
+   */
+  private static shuffleArray<T>(array: T[]): void {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
   }
 }

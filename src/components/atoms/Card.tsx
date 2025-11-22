@@ -1,6 +1,6 @@
-import React from 'react';
+import React from "react";
 
-export type CardVariant = 'default' | 'glass' | 'gradient';
+export type CardVariant = "default" | "glass" | "gradient";
 
 interface CardProps {
   variant?: CardVariant;
@@ -11,19 +11,21 @@ interface CardProps {
 }
 
 const variantStyles: Record<CardVariant, string> = {
-  default: 'bg-white/40 backdrop-blur-lg',
-  glass: 'bg-white/60 backdrop-blur-lg',
-  gradient: 'bg-gradient-to-br from-cyan-500 to-teal-600 text-white',
+  default: "bg-white/40 backdrop-blur-lg",
+  glass: "bg-white/60 backdrop-blur-lg",
+  gradient: "bg-gradient-to-br from-cyan-500 to-teal-600 text-white",
 };
 
 export const Card: React.FC<CardProps> = ({
-  variant = 'default',
+  variant = "default",
   children,
-  className = '',
+  className = "",
   onClick,
   hover = false,
 }) => {
-  const hoverStyles = hover ? 'transform transition hover:scale-105 hover:shadow-2xl cursor-pointer' : '';
+  const hoverStyles = hover
+    ? "transform transition hover:scale-105 hover:shadow-2xl cursor-pointer"
+    : "";
 
   return (
     <div

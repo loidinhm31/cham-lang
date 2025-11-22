@@ -1,24 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { Check, X, RotateCcw } from 'lucide-react';
-import { TopBar } from '../molecules';
-import { FlashCard, Button, Card } from '../atoms';
-import { VocabularyService } from '../../services/vocabulary.service';
-import { PracticeService } from '../../services/practice.service';
-import { LearningSettingsService } from '../../services/learningSettings.service';
-import { WordSelectionService } from '../../services/wordSelection.service';
-import { SessionManager } from '../../utils/sessionManager';
-import type { Vocabulary } from '../../types/vocabulary';
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { Check, RotateCcw, X } from "lucide-react";
+import { TopBar } from "@/components/molecules";
+import { Button, Card, FlashCard } from "@/components/atoms";
+import { VocabularyService } from "@/services/vocabulary.service.ts";
+import { PracticeService } from "@/services/practice.service.ts";
+import { LearningSettingsService } from "@/services/learningSettings.service.ts";
+import { WordSelectionService } from "@/services/wordSelection.service.ts";
+import { SessionManager } from "@/utils/sessionManager.ts";
+import type { Vocabulary } from "@/types/vocabulary.ts";
 
 export const FlashcardPracticePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const collectionId = searchParams.get('collection');
-  const contentMode = searchParams.get('contentMode') as 'concept' | 'definition' | null;
+  const collectionId = searchParams.get("collection");
+  const contentMode = searchParams.get("contentMode") as
+    | "concept"
+    | "definition"
+    | null;
 
-  const [sessionManager, setSessionManager] = useState<SessionManager | null>(null);
+  const [sessionManager, setSessionManager] = useState<SessionManager | null>(
+    null,
+  );
   const [currentVocab, setCurrentVocab] = useState<Vocabulary | null>(null);
   const [cardStartTime, setCardStartTime] = useState(Date.now());
   const [isFlipped, setIsFlipped] = useState(false);
@@ -33,7 +38,7 @@ export const FlashcardPracticePage: React.FC = () => {
 
   const loadVocabularies = async () => {
     if (!collectionId) {
-      console.error('No collection ID provided');
+      console.error("No collection ID provided");
       return;
     }
 
@@ -41,17 +46,19 @@ export const FlashcardPracticePage: React.FC = () => {
       setLoading(true);
 
       // Load learning settings
-      const userSettings = await LearningSettingsService.getOrCreateLearningSettings();
+      const userSettings =
+        await LearningSettingsService.getOrCreateLearningSettings();
 
       // Load vocabularies
-      const vocabData = await VocabularyService.getVocabulariesByCollection(collectionId);
+      const vocabData =
+        await VocabularyService.getVocabulariesByCollection(collectionId);
 
       if (vocabData.length === 0) {
         setLoading(false);
         return;
       }
 
-      const language = vocabData[0].language || 'en';
+      const language = vocabData[0].language || "en";
 
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
@@ -67,8 +74,8 @@ export const FlashcardPracticePage: React.FC = () => {
           includeNewWords: true,
           maxWords: 50,
           shuffle: true,
-          currentMode: 'flashcard', // Filter to only include words not completed in flashcard mode
-        }
+          currentMode: "flashcard", // Filter to only include words not completed in flashcard mode
+        },
       );
 
       // Initialize session manager
@@ -76,9 +83,9 @@ export const FlashcardPracticePage: React.FC = () => {
         selectedWords,
         wordsProgress,
         userSettings,
-        'flashcard',
+        "flashcard",
         collectionId,
-        language
+        language,
       );
       setSessionManager(manager);
 
@@ -86,8 +93,8 @@ export const FlashcardPracticePage: React.FC = () => {
       const firstWord = manager.getNextWord();
       setCurrentVocab(firstWord);
     } catch (error) {
-      console.error('Failed to load vocabularies:', error);
-      alert(t('messages.error'));
+      console.error("Failed to load vocabularies:", error);
+      alert(t("messages.error"));
     } finally {
       setLoading(false);
     }
@@ -95,12 +102,14 @@ export const FlashcardPracticePage: React.FC = () => {
 
   // Get content based on mode (concept or definition), with fallback
   const getContent = (vocab: Vocabulary): string => {
-    if (contentMode === 'concept') {
+    if (contentMode === "concept") {
       // If concept mode is selected, use concept if available, otherwise fallback to definition
-      return vocab.concept || vocab.definitions[0]?.meaning || 'No content available';
+      return (
+        vocab.concept || vocab.definitions[0]?.meaning || "No content available"
+      );
     }
     // Default to definition
-    return vocab.definitions[0]?.meaning || 'No definition available';
+    return vocab.definitions[0]?.meaning || "No definition available";
   };
 
   const handleAnswer = (correct: boolean) => {
@@ -136,12 +145,12 @@ export const FlashcardPracticePage: React.FC = () => {
     try {
       const stats = sessionManager.getStatistics();
       const results = sessionManager.getSessionResults();
-      const language = currentVocab.language || 'en';
+      const language = currentVocab.language || "en";
 
       // Save practice session
       await PracticeService.createPracticeSession({
         collection_id: collectionId,
-        mode: 'flashcard',
+        mode: "flashcard",
         language,
         results,
         duration_seconds: stats.durationSeconds,
@@ -158,7 +167,7 @@ export const FlashcardPracticePage: React.FC = () => {
         });
       }
     } catch (error) {
-      console.error('Failed to save session:', error);
+      console.error("Failed to save session:", error);
     }
 
     setCompleted(true);
@@ -176,9 +185,9 @@ export const FlashcardPracticePage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t('practice.flashcardMode')} showBack />
+        <TopBar title={t("practice.flashcardMode")} showBack />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t('app.loading')}</div>
+          <div className="text-gray-600">{t("app.loading")}</div>
         </div>
       </>
     );
@@ -194,25 +203,41 @@ export const FlashcardPracticePage: React.FC = () => {
 
     return (
       <>
-        <TopBar title={t('practice.completed')} showBack />
+        <TopBar title={t("practice.completed")} showBack />
         <div className="px-4 pt-6 space-y-6">
           <Card variant="gradient" className="text-center">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-black mb-4">{t('practice.wellDone')}</h2>
+            <h2 className="text-3xl font-black mb-4">
+              {t("practice.wellDone")}
+            </h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
-                {stats.correctAnswers} / {stats.totalQuestions} {t('practice.correct')}
+                {stats.correctAnswers} / {stats.totalQuestions}{" "}
+                {t("practice.correct")}
               </p>
-              <p className="text-xl text-white/80">{stats.accuracy}% {t('practice.accuracy')}</p>
+              <p className="text-xl text-white/80">
+                {stats.accuracy}% {t("practice.accuracy")}
+              </p>
             </div>
           </Card>
 
           <div className="flex gap-3">
-            <Button variant="glass" size="lg" fullWidth icon={RotateCcw} onClick={handleRestart}>
-              {t('practice.tryAgain')}
+            <Button
+              variant="glass"
+              size="lg"
+              fullWidth
+              icon={RotateCcw}
+              onClick={handleRestart}
+            >
+              {t("practice.tryAgain")}
             </Button>
-            <Button variant="primary" size="lg" fullWidth onClick={() => navigate('/practice')}>
-              {t('buttons.close')}
+            <Button
+              variant="primary"
+              size="lg"
+              fullWidth
+              onClick={() => navigate("/practice")}
+            >
+              {t("buttons.close")}
             </Button>
           </div>
         </div>
@@ -223,17 +248,17 @@ export const FlashcardPracticePage: React.FC = () => {
   if (!currentVocab) {
     return (
       <>
-        <TopBar title={t('practice.flashcardMode')} showBack />
+        <TopBar title={t("practice.flashcardMode")} showBack />
         <div className="px-4 pt-6">
           <Card variant="glass" className="text-center p-8">
-            <p className="text-gray-600">{t('vocabulary.noResults')}</p>
+            <p className="text-gray-600">{t("vocabulary.noResults")}</p>
             <Button
               variant="primary"
               size="lg"
               className="mt-4"
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
             >
-              {t('nav.home')}
+              {t("nav.home")}
             </Button>
           </Card>
         </div>
@@ -243,23 +268,27 @@ export const FlashcardPracticePage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t('practice.flashcardMode')} showBack />
+      <TopBar title={t("practice.flashcardMode")} showBack />
 
       <div className="px-4 pt-6 space-y-6">
         {/* Progress */}
         <Card variant="glass">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-gray-700">
-              {t('practice.progress')}
+              {t("practice.progress")}
             </span>
             <span className="text-sm font-bold text-teal-600">
-              {sessionManager ? `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}` : '0 / 0'}
+              {sessionManager
+                ? `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
+                : "0 / 0"}
             </span>
           </div>
           <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-300"
-              style={{ width: `${sessionManager ? sessionManager.getProgressPercentage() : 0}%` }}
+              style={{
+                width: `${sessionManager ? sessionManager.getProgressPercentage() : 0}%`,
+              }}
             ></div>
           </div>
         </Card>
@@ -282,7 +311,7 @@ export const FlashcardPracticePage: React.FC = () => {
               icon={X}
               onClick={() => handleAnswer(false)}
             >
-              {t('practice.incorrect')}
+              {t("practice.incorrect")}
             </Button>
             <Button
               variant="success"
@@ -291,7 +320,7 @@ export const FlashcardPracticePage: React.FC = () => {
               icon={Check}
               onClick={() => handleAnswer(true)}
             >
-              {t('practice.correct')}
+              {t("practice.correct")}
             </Button>
           </div>
         )}

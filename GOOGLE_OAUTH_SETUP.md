@@ -28,12 +28,12 @@ This guide will help you set up Google OAuth authentication for Google Drive syn
 1. Go to "APIs & Services" → "Credentials"
 2. Click "Create Credentials" → "OAuth 2.0 Client ID"
 3. If prompted, configure the OAuth consent screen:
-   - Choose "External" user type
-   - Fill in the app name (e.g., "Cham Lang")
-   - Add your email as support email
-   - Add scopes: `drive.file`, `openid`, `email`, `profile`
-   - Add test users (your email)
-   - Save and continue
+    - Choose "External" user type
+    - Fill in the app name (e.g., "Cham Lang")
+    - Add your email as support email
+    - Add scopes: `drive.file`, `openid`, `email`, `profile`
+    - Add test users (your email)
+    - Save and continue
 4. For application type, choose **"Web application"**
 5. Give it a name (e.g., "Cham Lang Desktop")
 6. Under "Authorized redirect URIs", add:
@@ -73,11 +73,13 @@ Navigate to Profile page and click "Sign in with Google". A browser window shoul
 #### For Debug Build:
 
 On macOS/Linux:
+
 ```bash
 keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
 ```
 
 On Windows:
+
 ```bash
 keytool -list -v -keystore "%USERPROFILE%\.android\debug.keystore" -alias androiddebugkey -storepass android -keypass android
 ```
@@ -87,25 +89,30 @@ Copy the **SHA-1** fingerprint from the output.
 #### For Release Build:
 
 Use your release keystore:
+
 ```bash
 keytool -list -v -keystore /path/to/your/release.keystore -alias your_alias
 ```
 
 ### 2. Create Android OAuth Credentials
+
 Use the same as Desktop
 
 ### 3. Configure Android Build
 
-The Android Client ID is automatically used by the plugin on Android devices. You can optionally set it explicitly in your Tauri configuration if needed.
+The Android Client ID is automatically used by the plugin on Android devices. You can optionally set it explicitly in
+your Tauri configuration if needed.
 
 ### 4. Build and Test Android App
 
 Build the APK:
+
 ```bash
 pnpm tauri android build
 ```
 
 Or run in dev mode:
+
 ```bash
 pnpm tauri android dev
 ```
@@ -119,33 +126,39 @@ Install on your device/emulator and test the "Sign in with Google" flow.
 ### Desktop Issues
 
 **Error: "redirect_uri_mismatch"**
+
 - Make sure `http://localhost` is added to authorized redirect URIs in Google Cloud Console
 - The URI must be exactly `http://localhost` (no port, no trailing slash)
 
 **Error: "invalid_client"**
+
 - Double-check your Client ID and Client Secret in `.env`
 - Make sure there are no extra spaces or quotes
 
 ### Android Issues
 
 **Error: "Sign in failed" or "10: Developer Error"**
+
 - Verify the SHA-1 fingerprint is correct
 - Make sure the package name matches exactly
 - Try cleaning and rebuilding the app
 - Check that Google Drive API is enabled
 
 **Error: "Access blocked: This app's request is invalid"**
+
 - Add your Google account as a test user in OAuth consent screen
 - Or publish your app (only for production)
 
 ### General Issues
 
 **Token expired errors**
+
 - OAuth access tokens expire after 1 hour
 - The plugin handles refresh tokens automatically
 - If you get persistent auth errors, sign out and sign in again
 
 **No backup found**
+
 - Make sure you've clicked "Backup Now" at least once
 - Check your Google Drive for `chamlang_backup.db` file
 

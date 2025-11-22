@@ -1,8 +1,8 @@
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 import type {
   LearningSettings,
   SpacedRepetitionAlgorithm,
-} from '../types/settings';
+} from "@/types/settings";
 
 /**
  * Update Learning Settings Request
@@ -22,31 +22,33 @@ export class LearningSettingsService {
    * Get the user's learning settings (returns null if not set)
    */
   static async getLearningSettings(): Promise<LearningSettings | null> {
-    return invoke('get_learning_settings');
+    return invoke("get_learning_settings");
   }
 
   /**
    * Get the user's learning settings, or create default settings if none exist
    */
   static async getOrCreateLearningSettings(): Promise<LearningSettings> {
-    return invoke('get_or_create_learning_settings');
+    return invoke("get_or_create_learning_settings");
   }
 
   /**
    * Update the user's learning settings
    */
   static async updateLearningSettings(
-    request: UpdateLearningSettingsRequest
+    request: UpdateLearningSettingsRequest,
   ): Promise<LearningSettings> {
-    return invoke('update_learning_settings', { request });
+    return invoke("update_learning_settings", { request });
   }
 
   /**
    * Helper: Update a single setting field
    */
-  static async updateSingleSetting<K extends keyof UpdateLearningSettingsRequest>(
+  static async updateSingleSetting<
+    K extends keyof UpdateLearningSettingsRequest,
+  >(
     field: K,
-    value: UpdateLearningSettingsRequest[K]
+    value: UpdateLearningSettingsRequest[K],
   ): Promise<LearningSettings> {
     const request: UpdateLearningSettingsRequest = { [field]: value };
     return this.updateLearningSettings(request);

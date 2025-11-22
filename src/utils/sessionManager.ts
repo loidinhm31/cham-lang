@@ -3,11 +3,15 @@
  * Manages the state of a practice session including word queue and progress tracking
  */
 
-import type { Vocabulary } from '../types/vocabulary';
-import type { WordProgress, PracticeResult, PracticeMode } from '../types/practice';
-import type { LearningSettings } from '../types/settings';
-import { getAlgorithm } from './spacedRepetition';
-import type { ReviewResult } from './spacedRepetition/types';
+import type { Vocabulary } from "../types/vocabulary";
+import type {
+  PracticeMode,
+  PracticeResult,
+  WordProgress,
+} from "../types/practice";
+import type { LearningSettings } from "../types/settings";
+import { getAlgorithm } from "./spacedRepetition";
+import type { ReviewResult } from "./spacedRepetition/types";
 
 export interface SessionState {
   // Word queues
@@ -42,13 +46,13 @@ export class SessionManager {
     settings: LearningSettings,
     mode: PracticeMode,
     collectionId: string,
-    language: string
+    language: string,
   ) {
     this.settings = settings;
 
     // Initialize word progress map
     const progressMap = new Map<string, WordProgress>();
-    wordsProgress.forEach(wp => {
+    wordsProgress.forEach((wp) => {
       progressMap.set(wp.vocabulary_id, { ...wp });
     });
 
@@ -75,7 +79,7 @@ export class SessionManager {
    * Skips the current word to avoid showing the same word twice in a row
    */
   getNextWord(): Vocabulary | null {
-    const currentWordId = this.state.currentWord?.id || '';
+    const currentWordId = this.state.currentWord?.id || "";
 
     // Helper function to get next word from a queue, skipping the current word
     const getFromQueue = (queue: Vocabulary[]): Vocabulary | null => {
@@ -86,7 +90,7 @@ export class SessionManager {
 
       while (attempts < maxAttempts && queue.length > 0) {
         const word = queue.shift();
-        if (word && (word.id || '') !== currentWordId) {
+        if (word && (word.id || "") !== currentWordId) {
           nextWord = word;
           break;
         } else if (word) {
@@ -137,14 +141,20 @@ export class SessionManager {
   /**
    * Handle a correct answer with multi-mode completion tracking
    */
-  handleCorrectAnswer(vocabulary: Vocabulary, timeSpentSeconds: number): ReviewResult {
-    const vocabularyId = vocabulary.id || '';
+  handleCorrectAnswer(
+    vocabulary: Vocabulary,
+    timeSpentSeconds: number,
+  ): ReviewResult {
+    const vocabularyId = vocabulary.id || "";
     const algorithm = getAlgorithm(this.settings);
 
     // Get or create word progress
     let wordProgress = this.state.wordProgressMap.get(vocabularyId);
     if (!wordProgress) {
-      wordProgress = this.createInitialWordProgress(vocabularyId, vocabulary.word);
+      wordProgress = this.createInitialWordProgress(
+        vocabularyId,
+        vocabulary.word,
+      );
       this.state.wordProgressMap.set(vocabularyId, wordProgress);
     }
 
@@ -156,15 +166,18 @@ export class SessionManager {
 
     // Check if all three modes are completed
     const allModesCompleted =
-      completedModes.includes('flashcard') &&
-      completedModes.includes('fillword') &&
-      completedModes.includes('multiplechoice');
+      completedModes.includes("flashcard") &&
+      completedModes.includes("fillword") &&
+      completedModes.includes("multiplechoice");
 
     let reviewResult: ReviewResult;
 
     if (allModesCompleted) {
       // All modes completed - advance the word (box, interval, etc.)
-      reviewResult = algorithm.processCorrectAnswer(wordProgress, this.settings);
+      reviewResult = algorithm.processCorrectAnswer(
+        wordProgress,
+        this.settings,
+      );
 
       // Reset completed modes for next cycle
       reviewResult.updatedProgress.completed_modes_in_cycle = [];
@@ -214,19 +227,28 @@ export class SessionManager {
   /**
    * Handle an incorrect answer with multi-mode completion tracking
    */
-  handleIncorrectAnswer(vocabulary: Vocabulary, timeSpentSeconds: number): ReviewResult {
-    const vocabularyId = vocabulary.id || '';
+  handleIncorrectAnswer(
+    vocabulary: Vocabulary,
+    timeSpentSeconds: number,
+  ): ReviewResult {
+    const vocabularyId = vocabulary.id || "";
     const algorithm = getAlgorithm(this.settings);
 
     // Get or create word progress
     let wordProgress = this.state.wordProgressMap.get(vocabularyId);
     if (!wordProgress) {
-      wordProgress = this.createInitialWordProgress(vocabularyId, vocabulary.word);
+      wordProgress = this.createInitialWordProgress(
+        vocabularyId,
+        vocabulary.word,
+      );
       this.state.wordProgressMap.set(vocabularyId, wordProgress);
     }
 
     // Process the incorrect answer using the algorithm
-    const reviewResult = algorithm.processIncorrectAnswer(wordProgress, this.settings);
+    const reviewResult = algorithm.processIncorrectAnswer(
+      wordProgress,
+      this.settings,
+    );
 
     // Reset completed modes in cycle since the word was answered incorrectly
     // User must complete all modes correctly in the same review cycle
@@ -252,7 +274,7 @@ export class SessionManager {
     if (this.settings.show_failed_words_in_session) {
       // Check if already in failed queue to avoid duplicates
       const alreadyInQueue = this.state.failedWordsQueue.some(
-        w => (w.id || '') === vocabularyId
+        (w) => (w.id || "") === vocabularyId,
       );
 
       if (!alreadyInQueue) {
@@ -279,7 +301,10 @@ export class SessionManager {
    * Check if session is complete
    */
   isSessionComplete(): boolean {
-    return this.state.activeQueue.length === 0 && this.state.failedWordsQueue.length === 0;
+    return (
+      this.state.activeQueue.length === 0 &&
+      this.state.failedWordsQueue.length === 0
+    );
   }
 
   /**
@@ -290,12 +315,18 @@ export class SessionManager {
       totalQuestions: this.state.totalQuestions,
       correctAnswers: this.state.correctAnswers,
       incorrectAnswers: this.state.incorrectAnswers,
-      accuracy: this.state.totalQuestions > 0
-        ? Math.round((this.state.correctAnswers / this.state.totalQuestions) * 100)
-        : 0,
+      accuracy:
+        this.state.totalQuestions > 0
+          ? Math.round(
+              (this.state.correctAnswers / this.state.totalQuestions) * 100,
+            )
+          : 0,
       wordsCompleted: this.state.completedWords.length,
-      wordsRemaining: this.state.activeQueue.length + this.state.failedWordsQueue.length,
-      durationSeconds: Math.floor((Date.now() - this.state.startTime.getTime()) / 1000),
+      wordsRemaining:
+        this.state.activeQueue.length + this.state.failedWordsQueue.length,
+      durationSeconds: Math.floor(
+        (Date.now() - this.state.startTime.getTime()) / 1000,
+      ),
     };
   }
 
@@ -341,9 +372,19 @@ export class SessionManager {
   }
 
   /**
+   * Get current session state (for debugging)
+   */
+  getState(): SessionState {
+    return { ...this.state };
+  }
+
+  /**
    * Create initial word progress for new words
    */
-  private createInitialWordProgress(vocabularyId: string, word: string): WordProgress {
+  private createInitialWordProgress(
+    vocabularyId: string,
+    word: string,
+  ): WordProgress {
     const now = new Date().toISOString();
     return {
       vocabulary_id: vocabularyId,
@@ -363,12 +404,5 @@ export class SessionManager {
       retry_count: 0,
       completed_modes_in_cycle: [],
     };
-  }
-
-  /**
-   * Get current session state (for debugging)
-   */
-  getState(): SessionState {
-    return { ...this.state };
   }
 }

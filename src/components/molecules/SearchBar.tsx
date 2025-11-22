@@ -1,6 +1,6 @@
-import React from 'react';
-import { Search } from 'lucide-react';
-import { Input } from '../atoms';
+import React from "react";
+import { Search } from "lucide-react";
+import { Input } from "@/components/atoms";
 
 interface SearchBarProps {
   value: string;
@@ -12,11 +12,11 @@ interface SearchBarProps {
 export const SearchBar: React.FC<SearchBarProps> = ({
   value,
   onChange,
-  placeholder = 'Search...',
+  placeholder = "Search...",
   onSearch,
 }) => {
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && onSearch) {
+    if (e.key === "Enter" && onSearch) {
       onSearch();
     }
   };

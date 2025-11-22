@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { X } from 'lucide-react';
-import { Input, TextArea, Select, Button, Card } from '../atoms';
-import type { Collection, CreateCollectionRequest } from '../../types/collection';
+import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { X } from "lucide-react";
+import { Button, Card, Input, Select, TextArea } from "@/components/atoms";
+import type {
+  Collection,
+  CreateCollectionRequest,
+} from "@/types/collection";
 
 interface CollectionModalProps {
   isOpen: boolean;
@@ -22,9 +25,9 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState<CreateCollectionRequest>({
-    name: initialData?.name || '',
-    description: initialData?.description || '',
-    language: initialData?.language || 'en',
+    name: initialData?.name || "",
+    description: initialData?.description || "",
+    language: initialData?.language || "en",
     is_public: initialData?.is_public || false,
   });
 
@@ -46,7 +49,7 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
       await onSubmit(formData);
       onClose();
     } catch (error) {
-      console.error('Failed to submit collection:', error);
+      console.error("Failed to submit collection:", error);
     } finally {
       setLoading(false);
     }
@@ -55,19 +58,19 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
   if (!isOpen) return null;
 
   const languageOptions = [
-    { value: 'en', label: 'English' },
-    { value: 'vi', label: 'Tiếng Việt' },
-    { value: 'ko', label: '한국어 (Korean)' },
-    { value: 'ja', label: '日本語 (Japanese)' },
-    { value: 'zh', label: '中文 (Chinese)' },
-    { value: 'es', label: 'Español (Spanish)' },
-    { value: 'fr', label: 'Français (French)' },
-    { value: 'de', label: 'Deutsch (German)' },
+    { value: "en", label: "English" },
+    { value: "vi", label: "Tiếng Việt" },
+    { value: "ko", label: "한국어 (Korean)" },
+    { value: "ja", label: "日本語 (Japanese)" },
+    { value: "zh", label: "中文 (Chinese)" },
+    { value: "es", label: "Español (Spanish)" },
+    { value: "fr", label: "Français (French)" },
+    { value: "de", label: "Deutsch (German)" },
   ];
 
   const visibilityOptions = [
-    { value: 'false', label: t('collections.private') },
-    { value: 'true', label: t('collections.public') },
+    { value: "false", label: t("collections.private") },
+    { value: "true", label: t("collections.public") },
   ];
 
   return (
@@ -84,41 +87,57 @@ export const CollectionModal: React.FC<CollectionModalProps> = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label={t('collections.name')}
+            label={t("collections.name")}
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            placeholder={t('collections.name')}
+            placeholder={t("collections.name")}
             required
           />
 
           <TextArea
-            label={t('collections.description')}
+            label={t("collections.description")}
             value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            placeholder={t('collections.description')}
+            onChange={(e) =>
+              setFormData({ ...formData, description: e.target.value })
+            }
+            placeholder={t("collections.description")}
             rows={3}
           />
 
           <Select
-            label={t('collections.language')}
+            label={t("collections.language")}
             options={languageOptions}
             value={formData.language}
-            onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, language: e.target.value })
+            }
           />
 
           <Select
-            label={t('collections.visibility')}
+            label={t("collections.visibility")}
             options={visibilityOptions}
             value={formData.is_public.toString()}
-            onChange={(e) => setFormData({ ...formData, is_public: e.target.value === 'true' })}
+            onChange={(e) =>
+              setFormData({ ...formData, is_public: e.target.value === "true" })
+            }
           />
 
           <div className="flex gap-3 pt-4">
-            <Button type="button" variant="secondary" fullWidth onClick={onClose}>
-              {t('common.cancel')}
+            <Button
+              type="button"
+              variant="secondary"
+              fullWidth
+              onClick={onClose}
+            >
+              {t("common.cancel")}
             </Button>
-            <Button type="submit" variant="primary" fullWidth disabled={loading}>
-              {loading ? t('common.loading') : t('common.save')}
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              disabled={loading}
+            >
+              {loading ? t("common.loading") : t("common.save")}
             </Button>
           </div>
         </form>

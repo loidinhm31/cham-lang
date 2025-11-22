@@ -1,7 +1,7 @@
-import React from 'react';
-import {Award, BookOpen, Library, LucideIcon, User} from 'lucide-react';
-import {useTranslation} from 'react-i18next';
-import {useLocation, useNavigate} from 'react-router-dom';
+import React from "react";
+import { Award, BookOpen, Library, LucideIcon, User } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface NavItem {
   id: string;
@@ -16,10 +16,20 @@ export const BottomNavigation: React.FC = () => {
   const location = useLocation();
 
   const navItems: NavItem[] = [
-    { id: 'learn', icon: BookOpen, label: t('nav.learn'), path: '/' },
-    { id: 'collections', icon: Library, label: t('nav.collections'), path: '/collections' },
-    { id: 'progress', icon: Award, label: t('nav.progress'), path: '/progress' },
-    { id: 'profile', icon: User, label: t('nav.profile'), path: '/profile' },
+    { id: "learn", icon: BookOpen, label: t("nav.learn"), path: "/" },
+    {
+      id: "collections",
+      icon: Library,
+      label: t("nav.collections"),
+      path: "/collections",
+    },
+    {
+      id: "progress",
+      icon: Award,
+      label: t("nav.progress"),
+      path: "/progress",
+    },
+    { id: "profile", icon: User, label: t("nav.profile"), path: "/profile" },
   ];
 
   return (
@@ -36,8 +46,8 @@ export const BottomNavigation: React.FC = () => {
                 onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center gap-0.5 py-2 rounded-xl transition ${
                   isActive
-                    ? 'bg-gradient-to-br from-teal-500 to-cyan-600 text-white'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? "bg-gradient-to-br from-teal-500 to-cyan-600 text-white"
+                    : "text-gray-500 hover:text-gray-700"
                 }`}
               >
                 <Icon className="w-5 h-5" />

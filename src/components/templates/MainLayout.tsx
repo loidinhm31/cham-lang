@@ -1,7 +1,6 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
-import { BottomNavigation } from '../molecules';
-
+import React from "react";
+import { Outlet } from "react-router-dom";
+import { BottomNavigation } from "@/components/molecules";
 
 export const MainLayout: React.FC = () => {
   return (

@@ -1,20 +1,23 @@
 # 🦎 Chameleon - Language Learning App
 
-A modern, beautiful vocabulary management application built with Tauri, React, TypeScript, and MongoDB. Designed with an atomic design pattern and mobile-first responsive UI.
+A modern, beautiful vocabulary management application built with Tauri, React, TypeScript, and MongoDB. Designed with an
+atomic design pattern and mobile-first responsive UI.
 
 ## ✨ Features
 
 ### 📚 Vocabulary Management
+
 - **Comprehensive Word Information**
-  - Word definitions with translations
-  - IPA pronunciation guide
-  - Example sentences
-  - Word types (noun, verb, adjective, etc.)
-  - Language levels (A1-C2 CEFR)
-  - Topic categorization
-  - Related words (synonyms, antonyms, derivatives)
+    - Word definitions with translations
+    - IPA pronunciation guide
+    - Example sentences
+    - Word types (noun, verb, adjective, etc.)
+    - Language levels (A1-C2 CEFR)
+    - Topic categorization
+    - Related words (synonyms, antonyms, derivatives)
 
 ### 🎨 Beautiful UI/UX
+
 - **Chameleon Theme**: Colorful, adaptive design inspired by the chameleon's ability to adapt
 - **Glassmorphism Effects**: Modern frosted glass aesthetic
 - **Smooth Animations**: Floating background elements and transitions
@@ -22,19 +25,22 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 - **Bottom Navigation**: Easy thumb-accessible navigation
 
 ### 🌍 Multi-language Support
+
 - **Interface Languages**: English (default) and Vietnamese
 - **Extensible i18n System**: Easy to add more languages
 - **Preference Storage**: User language preferences saved to MongoDB
 
 ### 🏗️ Architecture
+
 - **Atomic Design Pattern**:
-  - **Atoms**: Button, Input, TextArea, Select, Badge, Card
-  - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
-  - **Organisms**: VocabularyList, VocabularyForm
-  - **Templates**: MainLayout
-  - **Pages**: Home, AddVocabulary, VocabularyDetail, Progress, Profile
+    - **Atoms**: Button, Input, TextArea, Select, Badge, Card
+    - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
+    - **Organisms**: VocabularyList, VocabularyForm
+    - **Templates**: MainLayout
+    - **Pages**: Home, AddVocabulary, VocabularyDetail, Progress, Profile
 
 ### 💾 Database
+
 - **MongoDB Backend**: Full-featured NoSQL database
 - **Rust Integration**: Native MongoDB driver with async/await support
 - **Schema Design**: Structured data models for vocabularies and user preferences
@@ -42,6 +48,7 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 ## 🛠️ Tech Stack
 
 ### Frontend
+
 - **React 19** - UI library
 - **TypeScript** - Type safety
 - **Tailwind CSS 4** - Styling
@@ -50,6 +57,7 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 - **Lucide React** - Icon library
 
 ### Backend
+
 - **Tauri 2** - Desktop/mobile app framework
 - **Rust** - Backend language
 - **MongoDB 3.x** - Database
@@ -59,6 +67,7 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 ## 📦 Installation
 
 ### Prerequisites
+
 - Node.js 18+ and pnpm
 - Rust 1.70+
 - MongoDB (local or cloud instance)
@@ -77,9 +86,9 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
    ```
 
 3. **Set up MongoDB**
-   - Install MongoDB locally or use MongoDB Atlas
-   - Default connection: `mongodb://localhost:27017`
-   - Database name: `cham_lang`
+    - Install MongoDB locally or use MongoDB Atlas
+    - Default connection: `mongodb://localhost:27017`
+    - Database name: `cham_lang`
 
 4. **Build Rust backend**
    ```bash
@@ -94,29 +103,33 @@ A modern, beautiful vocabulary management application built with Tauri, React, T
 ## 🚀 Usage
 
 ### First Run
+
 1. Launch the application
 2. Go to Profile page (bottom navigation)
 3. Enter your MongoDB connection string
 4. Click "Connect" to establish database connection
 
 ### Adding Vocabulary
+
 1. Click "Add Word" button on home page
 2. Fill in word details:
-   - Word text
-   - Word type
-   - Level (A1-C2)
-   - IPA pronunciation
-   - Definitions (with translations)
-   - Example sentences
-   - Topics
+    - Word text
+    - Word type
+    - Level (A1-C2)
+    - IPA pronunciation
+    - Definitions (with translations)
+    - Example sentences
+    - Topics
 3. Click "Save"
 
 ### Exploring Vocabulary
+
 - **Home**: Browse all words with search functionality
 - **Progress**: Track your learning statistics
 - **Profile**: Manage settings and database connection
 
 ### Searching
+
 - Use the search bar on home page
 - Filter by word type, level, or topics
 - Real-time search results
@@ -153,13 +166,17 @@ cham-lang/
 ## 🔧 Configuration
 
 ### Tailwind CSS
+
 The project uses Tailwind CSS 4 with custom chameleon theme colors:
+
 - Primary: Teal/Cyan gradient
 - Secondary: Amber/Orange gradient
 - Accent colors: Emerald, Orange, Pink
 
 ### i18n
+
 Add new languages by:
+
 1. Creating a new locale folder in `src/i18n/locales/`
 2. Adding translation JSON file
 3. Importing in `src/i18n/config.ts`
@@ -168,15 +185,19 @@ Add new languages by:
 ## 📱 Mobile/Android Support
 
 ### Current Status
-The app is built with Tauri 2, which supports Android development. However, MongoDB integration requires testing on Android platform.
+
+The app is built with Tauri 2, which supports Android development. However, MongoDB integration requires testing on
+Android platform.
 
 ### Known Considerations
+
 - MongoDB connection on mobile may require:
-  - Cloud MongoDB Atlas instance
-  - Network permissions configuration
-  - Connection string adjustments for mobile networks
+    - Cloud MongoDB Atlas instance
+    - Network permissions configuration
+    - Connection string adjustments for mobile networks
 
 ### Building for Android
+
 ```bash
 pnpm tauri android init
 pnpm tauri android dev
@@ -185,17 +206,20 @@ pnpm tauri android dev
 ## 🐛 Troubleshooting
 
 ### MongoDB Connection Issues
+
 - Ensure MongoDB is running: `mongod`
 - Check connection string format
 - Verify network accessibility
 - Check firewall settings
 
 ### TypeScript Errors
+
 ```bash
 pnpm tsc --noEmit
 ```
 
 ### Rust Compilation Errors
+
 ```bash
 cargo check --manifest-path=src-tauri/Cargo.toml
 ```
@@ -203,6 +227,7 @@ cargo check --manifest-path=src-tauri/Cargo.toml
 ## 🤝 Contributing
 
 Contributions are welcome! Please follow these steps:
+
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
@@ -223,6 +248,7 @@ Contributions are welcome! Please follow these steps:
 ## 📞 Support
 
 For issues and questions:
+
 - Open an issue on GitHub
 - Check existing documentation
 - Review MongoDB connection guides

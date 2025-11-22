@@ -3,11 +3,11 @@
  * All SR algorithms must implement this interface for consistency
  */
 
-import type { WordProgress } from '../../types/practice';
-import type { LearningSettings } from '../../types/settings';
+import type { WordProgress } from "../../types/practice";
+import type { LearningSettings } from "../../types/settings";
 
 // Re-export box interval presets from settings
-export { BOX_INTERVAL_PRESETS } from '../../types/settings';
+export { BOX_INTERVAL_PRESETS } from "../../types/settings";
 
 /**
  * Result of processing an answer
@@ -49,7 +49,7 @@ export interface SpacedRepetitionAlgorithm {
    */
   processCorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult;
 
   /**
@@ -60,7 +60,7 @@ export interface SpacedRepetitionAlgorithm {
    */
   processIncorrectAnswer(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): ReviewResult;
 
   /**
@@ -71,7 +71,7 @@ export interface SpacedRepetitionAlgorithm {
    */
   calculateNextReviewDate(
     wordProgress: WordProgress,
-    settings: LearningSettings
+    settings: LearningSettings,
   ): Date;
 
   /**
@@ -95,7 +95,10 @@ export function addDays(date: Date, days: number): Date {
 /**
  * Helper function to check if a word is due for review
  */
-export function isDueForReview(wordProgress: WordProgress, currentDate: Date = new Date()): boolean {
+export function isDueForReview(
+  wordProgress: WordProgress,
+  currentDate: Date = new Date(),
+): boolean {
   const reviewDate = new Date(wordProgress.next_review_date);
   return reviewDate <= currentDate;
 }
@@ -103,7 +106,10 @@ export function isDueForReview(wordProgress: WordProgress, currentDate: Date = n
 /**
  * Helper function to get days until next review
  */
-export function getDaysUntilReview(wordProgress: WordProgress, currentDate: Date = new Date()): number {
+export function getDaysUntilReview(
+  wordProgress: WordProgress,
+  currentDate: Date = new Date(),
+): number {
   const reviewDate = new Date(wordProgress.next_review_date);
   const diffTime = reviewDate.getTime() - currentDate.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
