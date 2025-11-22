@@ -13,3 +13,5 @@ export { CollectionDetailPage } from "./CollectionDetailPage";
 export { CreateCollectionPage } from "./CreateCollectionPage";
 export { EditCollectionPage } from "./EditCollectionPage";
 export { LearningSettingsPage } from "./LearningSettingsPage";
+export { CSVExportPage } from "./CSVExportPage";
+export { CSVImportPage } from "./CSVImportPage";

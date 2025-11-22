@@ -2,10 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { Button, Card, Input, Select, TextArea } from "@/components/atoms";
-import type {
-  Collection,
-  CreateCollectionRequest,
-} from "@/types/collection";
+import type { Collection, CreateCollectionRequest } from "@/types/collection";
 
 interface CollectionModalProps {
   isOpen: boolean;

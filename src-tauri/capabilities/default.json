@@ -8,6 +8,10 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "google-auth:default"
+    "google-auth:default",
+    "dialog:default",
+    "dialog:allow-save",
+    "dialog:allow-open",
+    "dialog:allow-message"
   ]
 }

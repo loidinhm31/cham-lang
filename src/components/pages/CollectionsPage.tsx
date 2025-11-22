@@ -1,7 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Edit, Globe, Lock, Plus, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Edit,
+  Globe,
+  Lock,
+  Plus,
+  Trash2,
+  Upload,
+  Download,
+} from "lucide-react";
 import { CollectionService } from "@/services/collection.service.ts";
 import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
@@ -49,14 +58,32 @@ export const CollectionsPage: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-800">
             {t("collections.myCollections")}
           </h2>
-          <Button
-            variant="primary"
-            onClick={() => navigate("/collections/new")}
-            className="flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            {t("collections.create")}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => navigate("/csv/import")}
+              className="flex items-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              {t("csv.import")}
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => navigate("/csv/export")}
+              className="flex items-center gap-2"
+            >
+              <Download className="w-4 h-4" />
+              {t("csv.export")}
+            </Button>
+            <Button
+              variant="primary"
+              onClick={() => navigate("/collections/new")}
+              className="flex items-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              {t("collections.create")}
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (

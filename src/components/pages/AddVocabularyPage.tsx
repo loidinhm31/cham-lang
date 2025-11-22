@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { CreateVocabularyRequest } from "@/types/vocabulary.ts";
-import {TopBar} from "@/components/molecules";
-import {VocabularyForm} from "@/components/organisms";
+import { TopBar } from "@/components/molecules";
+import { VocabularyForm } from "@/components/organisms";
 
 export const AddVocabularyPage: React.FC = () => {
   const { t } = useTranslation();

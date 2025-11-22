@@ -16,10 +16,12 @@ import {
   ProfilePage,
   ProgressPage,
   VocabularyDetailPage,
+  CSVExportPage,
+  CSVImportPage,
 } from "./components/pages";
 import { SyncNotificationProvider } from "./contexts";
 import "./i18n/config";
-import {MainLayout} from "@/components/templates/MainLayout.tsx";
+import { MainLayout } from "@/components/templates/MainLayout.tsx";
 
 const App: React.FC = () => {
   return (
@@ -43,6 +45,8 @@ const App: React.FC = () => {
               element={<EditCollectionPage />}
             />
             <Route path="/collections/:id" element={<CollectionDetailPage />} />
+            <Route path="/csv/export" element={<CSVExportPage />} />
+            <Route path="/csv/import" element={<CSVImportPage />} />
             <Route path="/practice" element={<PracticeModePage />} />
             <Route
               path="/practice/flashcard"

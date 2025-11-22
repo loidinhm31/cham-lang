@@ -4,11 +4,15 @@ pub mod db;  // New modular database structure
 mod commands;
 mod collection_commands;
 mod gdrive;
+mod csv_export;
+mod csv_import;
 
 use local_db::LocalDatabase;
 use commands::*;
 use collection_commands::*;
 use gdrive::*;
+use csv_export::*;
+use csv_import::*;
 use tauri::Manager;
 
 
@@ -41,6 +45,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_google_auth::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Get application data directory using Tauri's API (works on all platforms including Android)
             let app_data_dir = app.path().app_data_dir()
@@ -106,6 +111,11 @@ pub fn run() {
             get_gdrive_backup_info,
             clear_local_database,
             check_version_difference,
+            // CSV Import/Export
+            export_collections_csv,
+            choose_csv_save_location,
+            import_vocabularies_csv,
+            generate_csv_template,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
