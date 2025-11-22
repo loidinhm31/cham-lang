@@ -10,11 +10,6 @@ mod collections;
 mod practice;
 mod settings;
 
-// Re-export for convenience
-pub use collections::*;
-pub use practice::*;
-pub use settings::*;
-
 /// Local SQLite database manager for offline-first functionality
 #[derive(Clone)]
 pub struct LocalDatabase {

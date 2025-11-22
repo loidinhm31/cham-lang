@@ -35,13 +35,6 @@ pub enum WordType {
     Phrase,
 }
 
-// Language level configurations
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct LevelConfig {
-    pub language: String,
-    pub levels: Vec<String>,
-}
-
 // Common level systems
 pub fn get_level_config(language: &str) -> Vec<String> {
     match language {
@@ -88,37 +81,6 @@ pub enum WordRelationship {
     Similar,
     Related,
     Derivative,
-}
-
-// User Authentication
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct User {
-    pub id: String,
-    pub username: String,
-    pub email: String,
-    pub password_hash: String, // bcrypt hash
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct RegisterRequest {
-    pub username: String,
-    pub email: String,
-    pub password: String,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct LoginRequest {
-    pub username: String,
-    pub password: String,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UserSession {
-    pub user_id: String,
-    pub username: String,
-    pub email: String,
 }
 
 // Collection Model
@@ -192,16 +154,6 @@ pub struct UpdateVocabularyRequest {
     pub example_sentences: Option<Vec<String>>,
     pub topics: Option<Vec<String>>,
     pub related_words: Option<Vec<RelatedWord>>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct SearchQuery {
-    pub query: String,
-    pub word_type: Option<WordType>,
-    pub level: Option<String>,
-    pub topics: Option<Vec<String>>,
-    pub language: Option<String>,
-    pub collection_id: Option<String>,
 }
 
 // Practice Models
