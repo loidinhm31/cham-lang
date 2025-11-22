@@ -261,179 +261,182 @@ export const ProfilePage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
-      <TopBar title={t('nav.profile')} showBack={false} />
+      <>
+        <TopBar title={t('nav.profile')} showBack={false} />
 
-      {/* Google Drive Sync Section */}
-      <Card variant="glass">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {isConfigured ? (
-                <Cloud className="w-6 h-6 text-green-600" />
-              ) : (
-                <CloudOff className="w-6 h-6 text-gray-400" />
-              )}
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  Google Drive Sync
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {isConfigured ? `Connected as ${userEmail}` : 'Not connected'}
-                </p>
+        <div className="min-h-screen p-6 space-y-6">
+
+          {/* Google Drive Sync Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isConfigured ? (
+                      <Cloud className="w-6 h-6 text-green-600" />
+                  ) : (
+                      <CloudOff className="w-6 h-6 text-gray-400" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      Google Drive Sync
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {isConfigured ? `Connected as ${userEmail}` : 'Not connected'}
+                    </p>
+                  </div>
+                </div>
+                {isConfigured && (
+                    <Button
+                        onClick={handleSignOut}
+                        disabled={loading}
+                        variant="secondary"
+                        icon={LogOut}
+                    >
+                      Sign Out
+                    </Button>
+                )}
               </div>
-            </div>
-            {isConfigured && (
-              <Button
-                onClick={handleSignOut}
-                disabled={loading}
-                variant="secondary"
-                icon={LogOut}
-              >
-                Sign Out
-              </Button>
-            )}
-          </div>
 
-          {!isConfigured && (
-            <div className="space-y-3 pt-4 border-t border-gray-200">
-              <p className="text-sm text-gray-600">
-                Sign in with your Google account to automatically sync your database to Google Drive.
-              </p>
-              <p className="text-xs text-gray-500">
-                This will request access to create and manage files in your Google Drive (drive.file scope).
-              </p>
-              <Button
-                onClick={handleSignIn}
-                disabled={loading}
-                variant="primary"
-                fullWidth
-                icon={LogIn}
-              >
-                {loading ? 'Signing in...' : 'Sign in with Google'}
-              </Button>
-            </div>
-          )}
+              {!isConfigured && (
+                  <div className="space-y-3 pt-4 border-t border-gray-200">
+                    <p className="text-sm text-gray-600">
+                      Sign in with your Google account to automatically sync your database to Google Drive.
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      This will request access to create and manage files in your Google Drive (drive.file scope).
+                    </p>
+                    <Button
+                        onClick={handleSignIn}
+                        disabled={loading}
+                        variant="primary"
+                        fullWidth
+                        icon={LogIn}
+                    >
+                      {loading ? 'Signing in...' : 'Sign in with Google'}
+                    </Button>
+                  </div>
+              )}
 
-          {isConfigured && (
-            <div className="space-y-3 pt-4 border-t border-gray-200">
-              {backupInfo && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <p className="text-sm text-green-800 font-medium">
-                    ✓ Backup found on Google Drive
-                  </p>
-                  <pre className="text-xs text-green-700 mt-1 overflow-auto">
+              {isConfigured && (
+                  <div className="space-y-3 pt-4 border-t border-gray-200">
+                    {backupInfo && (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                          <p className="text-sm text-green-800 font-medium">
+                            ✓ Backup found on Google Drive
+                          </p>
+                          <pre className="text-xs text-green-700 mt-1 overflow-auto">
                     {backupInfo}
                   </pre>
-                </div>
-              )}
+                        </div>
+                    )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={handleBackup}
-                  disabled={loading}
-                  variant="primary"
-                  icon={Upload}
-                >
-                  {loading ? 'Processing...' : 'Backup Now'}
-                </Button>
-                <Button
-                  onClick={handleRestore}
-                  disabled={loading}
-                  variant="secondary"
-                  icon={Download}
-                >
-                  {loading ? 'Processing...' : 'Restore'}
-                </Button>
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                          onClick={handleBackup}
+                          disabled={loading}
+                          variant="primary"
+                          icon={Upload}
+                      >
+                        {loading ? 'Processing...' : 'Backup Now'}
+                      </Button>
+                      <Button
+                          onClick={handleRestore}
+                          disabled={loading}
+                          variant="secondary"
+                          icon={Download}
+                      >
+                        {loading ? 'Processing...' : 'Restore'}
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 text-center">
+                      Last sync info will appear above after successful backup
+                    </p>
+                  </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Learning Settings Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-6 h-6 text-purple-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {t('settings.learning') || 'Learning Settings'}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {t('settings.learningDescription') || 'Customize spaced repetition and learning preferences'}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <p className="text-xs text-gray-500 text-center">
-                Last sync info will appear above after successful backup
-              </p>
+              <div className="pt-2">
+                <Button
+                    onClick={() => navigate('/settings/learning')}
+                    variant="primary"
+                    fullWidth
+                    icon={Settings}
+                >
+                  {t('settings.configure') || 'Configure Learning Settings'}
+                </Button>
+              </div>
             </div>
-          )}
-        </div>
-      </Card>
+          </Card>
 
-      {/* Learning Settings Section */}
-      <Card variant="glass">
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Settings className="w-6 h-6 text-purple-600" />
+          {/* App Info Section */}
+          <Card variant="glass">
+            <div className="space-y-2">
+              <h3 className="text-lg font-bold text-gray-800">App Information</h3>
+              <div className="text-sm text-gray-600 space-y-1">
+                <p><strong>Version:</strong> 0.1.0</p>
+                <p><strong>Mode:</strong> Local-first (offline)</p>
+                <p><strong>Database:</strong> SQLite</p>
+                <p><strong>Sync:</strong> Google Drive (optional)</p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card variant="glass">
+            <div className="space-y-4">
               <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {t('settings.learning') || 'Learning Settings'}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {t('settings.learningDescription') || 'Customize spaced repetition and learning preferences'}
+                <h3 className="text-lg font-bold text-red-600">Danger Zone</h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Irreversible and destructive actions
+                </p>
+              </div>
+
+              <div className="border-t border-red-200 pt-4 space-y-3">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-800 font-medium">
+                    Clear Local Database
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    This will permanently delete all your local data including collections, vocabularies, and practice history. Make sure you have a backup on Google Drive before proceeding. The database will be cleared immediately and you can start fresh or restore from backup.
+                  </p>
+                </div>
+
+                <Button
+                    onClick={handleClearDatabase}
+                    disabled={loading}
+                    variant="secondary"
+                    fullWidth
+                    icon={Trash2}
+                >
+                  {loading ? 'Clearing...' : 'Clear Local Database'}
+                </Button>
+
+                <p className="text-xs text-gray-500 text-center">
+                  Recommended workflow: Backup → Clear → Restore
                 </p>
               </div>
             </div>
-          </div>
-
-          <div className="pt-2">
-            <Button
-              onClick={() => navigate('/settings/learning')}
-              variant="primary"
-              fullWidth
-              icon={Settings}
-            >
-              {t('settings.configure') || 'Configure Learning Settings'}
-            </Button>
-          </div>
+          </Card>
         </div>
-      </Card>
-
-      {/* App Info Section */}
-      <Card variant="glass">
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold text-gray-800">App Information</h3>
-          <div className="text-sm text-gray-600 space-y-1">
-            <p><strong>Version:</strong> 0.1.0</p>
-            <p><strong>Mode:</strong> Local-first (offline)</p>
-            <p><strong>Database:</strong> SQLite</p>
-            <p><strong>Sync:</strong> Google Drive (optional)</p>
-          </div>
-        </div>
-      </Card>
-
-      {/* Danger Zone */}
-      <Card variant="glass">
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-lg font-bold text-red-600">Danger Zone</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Irreversible and destructive actions
-            </p>
-          </div>
-
-          <div className="border-t border-red-200 pt-4 space-y-3">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-              <p className="text-sm text-red-800 font-medium">
-                Clear Local Database
-              </p>
-              <p className="text-xs text-red-700 mt-1">
-                This will permanently delete all your local data including collections, vocabularies, and practice history. Make sure you have a backup on Google Drive before proceeding. The database will be cleared immediately and you can start fresh or restore from backup.
-              </p>
-            </div>
-
-            <Button
-              onClick={handleClearDatabase}
-              disabled={loading}
-              variant="secondary"
-              fullWidth
-              icon={Trash2}
-            >
-              {loading ? 'Clearing...' : 'Clear Local Database'}
-            </Button>
-
-            <p className="text-xs text-gray-500 text-center">
-              Recommended workflow: Backup → Clear → Restore
-            </p>
-          </div>
-        </div>
-      </Card>
-    </div>
+      </>
   );
 };
