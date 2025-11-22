@@ -24,3 +24,17 @@ dist-ssr
 *.sw?
 
 .env
+
+# Android signing
+*.jks
+*.keystore
+keystore.properties
+src-tauri/gen/android/keystore.properties
+src-tauri/gen/android/keystore.jks
+src-tauri/gen/android/*.keystore
+
+# Android build artifacts
+src-tauri/gen/android/.gradle/
+src-tauri/gen/android/app/build/
+src-tauri/gen/android/buildSrc/.gradle/
+src-tauri/gen/android/buildSrc/build/
