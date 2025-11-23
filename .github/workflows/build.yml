@@ -1,4 +1,4 @@
-name: Build Chameleon App
+name: Build Cham Lang App
 
 on:
   push:
@@ -93,7 +93,7 @@ jobs:
           VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: "Chameleon v__VERSION__"
+          releaseName: "Cham Lang v__VERSION__"
           releaseBody: "See the assets to download and install this version."
           releaseDraft: true
           prerelease: false

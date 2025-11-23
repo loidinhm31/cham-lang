@@ -79,7 +79,7 @@ export const HomePage: React.FC = () => {
         <div className="text-center py-6">
           <img
             src="/chameleon.svg"
-            alt="Chameleon"
+            alt="Cham Lang"
             className="w-24 h-24 mx-auto mb-4"
           />
           <h1 className="text-4xl font-black text-gray-800 mb-2">

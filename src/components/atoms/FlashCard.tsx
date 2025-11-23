@@ -61,7 +61,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
           >
             <img
               src="/chameleon.svg"
-              alt="Chameleon"
+              alt="Cham Lang"
               className="w-24 h-24 mb-6"
             />
             <h2 className="text-4xl font-black mb-2">{front}</h2>

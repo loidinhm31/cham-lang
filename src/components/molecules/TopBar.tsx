@@ -12,7 +12,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  title = "Chameleon",
+  title = "Cham Lang",
   showBack = false,
   showMenu = true,
   showNotifications = true,
@@ -27,7 +27,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
   return (
     <div className="sticky top-0 z-40 pt-safe">
-      <div className="max-w-2xl mx-auto px-4 pt-4">
+      <div className="max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 pt-4">
         <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-2xl p-4 shadow-lg">
           {showBack ? (
             <button
