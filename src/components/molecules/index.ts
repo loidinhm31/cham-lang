@@ -6,4 +6,4 @@ export { CollectionCard } from "./CollectionCard";
 export { StatsCard } from "./StatsCard";
 export { FillWordCard } from "./FillWordCard";
 export { MultipleChoiceCard } from "./MultipleChoiceCard";
-export { CollectionModal } from "./CollectionModal";
+export { BulkActionToolbar } from "./BulkActionToolbar";

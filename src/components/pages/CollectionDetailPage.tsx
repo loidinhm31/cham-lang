@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Edit, Globe, Plus, Trash2 } from "lucide-react";
-import { TopBar } from "@/components/molecules";
-import { VocabularyList } from "@/components/organisms";
+import { BookOpen, Edit, Globe, Plus, Trash2, CheckSquare } from "lucide-react";
+import { TopBar, BulkActionToolbar } from "@/components/molecules";
+import { VocabularyList, CollectionSelectorDialog } from "@/components/organisms";
 import { Badge, Button, Card } from "@/components/atoms";
 import { CollectionService } from "@/services/collection.service.ts";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { Collection } from "@/types/collection.ts";
 import type { Vocabulary } from "@/types/vocabulary.ts";
+import { getVocabularyId } from "@/types/vocabulary.ts";
 import { useDialog } from "@/contexts";
 
 export const CollectionDetailPage: React.FC = () => {
@@ -19,6 +20,9 @@ export const CollectionDetailPage: React.FC = () => {
   const [collection, setCollection] = useState<Collection | null>(null);
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -80,6 +84,69 @@ export const CollectionDetailPage: React.FC = () => {
     });
   };
 
+  const handleToggleSelection = (vocabId: string) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(vocabId)) {
+        newSet.delete(vocabId);
+      } else {
+        newSet.add(vocabId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === vocabularies.length) {
+      setSelectedIds(new Set());
+    } else {
+      const allIds = vocabularies
+        .map((v) => getVocabularyId(v))
+        .filter((id): id is string => id !== undefined);
+      setSelectedIds(new Set(allIds));
+    }
+  };
+
+  const handleEnterSelectionMode = () => {
+    setSelectionMode(true);
+    setSelectedIds(new Set());
+  };
+
+  const handleCancelSelection = () => {
+    setSelectionMode(false);
+    setSelectedIds(new Set());
+  };
+
+  const handleMoveClick = () => {
+    if (selectedIds.size === 0) return;
+    setShowMoveDialog(true);
+  };
+
+  const handleBulkMove = async (targetCollectionId: string) => {
+    if (!id) return;
+
+    try {
+      const result = await VocabularyService.bulkMoveVocabularies(
+        Array.from(selectedIds),
+        targetCollectionId
+      );
+
+      showAlert(
+        t("collection.moveSuccess", { count: result.moved_count }),
+        { variant: "success" }
+      );
+
+      // Reset selection and reload data
+      setSelectionMode(false);
+      setSelectedIds(new Set());
+      setShowMoveDialog(false);
+      await loadCollectionData(id);
+    } catch (error) {
+      console.error("Failed to move vocabularies:", error);
+      showAlert(t("messages.error"), { variant: "error" });
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -98,6 +165,17 @@ export const CollectionDetailPage: React.FC = () => {
   return (
     <>
       <TopBar title={collection.name} showBack />
+
+      {/* Bulk Action Toolbar */}
+      {selectionMode && (
+        <BulkActionToolbar
+          selectedCount={selectedIds.size}
+          totalCount={vocabularies.length}
+          onSelectAll={handleSelectAll}
+          onMove={handleMoveClick}
+          onCancel={handleCancelSelection}
+        />
+      )}
 
       <div className="px-4 pt-6 space-y-6">
         {/* Collection Header */}
@@ -128,33 +206,45 @@ export const CollectionDetailPage: React.FC = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
-          <Button
-            variant="primary"
-            size="lg"
-            icon={Plus}
-            fullWidth
-            onClick={() => navigate("/vocabulary/add")}
-          >
-            {t("vocabulary.add")}
-          </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            icon={Edit}
-            onClick={() => navigate(`/collections/${collection.id}/edit`)}
-          >
-            {t("buttons.edit")}
-          </Button>
-          <Button
-            variant="danger"
-            size="lg"
-            icon={Trash2}
-            onClick={handleDelete}
-          >
-            {t("buttons.delete")}
-          </Button>
-        </div>
+        {!selectionMode ? (
+          <div className="flex gap-3">
+            <Button
+              variant="primary"
+              size="lg"
+              icon={Plus}
+              fullWidth
+              onClick={() => navigate("/vocabulary/add")}
+            >
+              {t("vocabulary.add")}
+            </Button>
+            {vocabularies.length > 0 && (
+              <Button
+                variant="secondary"
+                size="lg"
+                icon={CheckSquare}
+                onClick={handleEnterSelectionMode}
+              >
+                {t("collection.select")}
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="lg"
+              icon={Edit}
+              onClick={() => navigate(`/collections/${collection.id}/edit`)}
+            >
+              {t("buttons.edit")}
+            </Button>
+            <Button
+              variant="danger"
+              size="lg"
+              icon={Trash2}
+              onClick={handleDelete}
+            >
+              {t("buttons.delete")}
+            </Button>
+          </div>
+        ) : null}
 
         {/* Vocabulary List */}
         <div>
@@ -165,9 +255,20 @@ export const CollectionDetailPage: React.FC = () => {
             vocabularies={vocabularies}
             onVocabularyClick={handleVocabularyClick}
             loading={false}
+            selectionMode={selectionMode}
+            selectedIds={selectedIds}
+            onToggleSelection={handleToggleSelection}
           />
         </div>
       </div>
+
+      {/* Collection Selector Dialog */}
+      <CollectionSelectorDialog
+        isOpen={showMoveDialog}
+        onClose={() => setShowMoveDialog(false)}
+        onConfirm={handleBulkMove}
+        currentCollectionId={collection.id || ""}
+      />
     </>
   );
 };

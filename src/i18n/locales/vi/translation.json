@@ -230,6 +230,19 @@
     "createSuccess": "Đã tạo bộ sưu tập thành công",
     "updateSuccess": "Đã cập nhật bộ sưu tập thành công"
   },
+  "collection": {
+    "title": "Chi Tiết Bộ Sưu Tập",
+    "select": "Chọn",
+    "selectAll": "Chọn Tất Cả",
+    "deselectAll": "Bỏ Chọn Tất Cả",
+    "selectedCount": "Đã chọn {{count}}",
+    "moveSelected": "Di Chuyển Đã Chọn",
+    "moveToCollection": "Di Chuyển Đến Bộ Sưu Tập",
+    "noOtherCollections": "Không có bộ sưu tập nào khác",
+    "move": "Di Chuyển",
+    "moveSuccess": "Đã di chuyển {{count}} từ thành công",
+    "wordCount": "{{count}} từ"
+  },
   "csv": {
     "import": "Nhập",
     "export": "Xuất",

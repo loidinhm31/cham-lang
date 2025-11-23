@@ -82,6 +82,17 @@ export interface UpdateVocabularyRequest {
   example_sentences?: string[];
   topics?: string[];
   related_words?: RelatedWord[];
+  collection_id?: string;
+}
+
+export interface BulkMoveRequest {
+  vocabulary_ids: string[];
+  target_collection_id: string;
+}
+
+export interface BulkMoveResult {
+  moved_count: number;
+  skipped_count: number;
 }
 
 export interface SearchQuery {

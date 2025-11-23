@@ -154,6 +154,19 @@ pub struct UpdateVocabularyRequest {
     pub example_sentences: Option<Vec<String>>,
     pub topics: Option<Vec<String>>,
     pub related_words: Option<Vec<RelatedWord>>,
+    pub collection_id: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BulkMoveRequest {
+    pub vocabulary_ids: Vec<String>,
+    pub target_collection_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct BulkMoveResult {
+    pub moved_count: usize,
+    pub skipped_count: usize,
 }
 
 // Practice Models

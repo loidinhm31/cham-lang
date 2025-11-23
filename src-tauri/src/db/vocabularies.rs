@@ -1,4 +1,4 @@
-use rusqlite::{Result as SqlResult, params};
+use rusqlite::{Result as SqlResult, params, OptionalExtension};
 use chrono::Utc;
 use uuid::Uuid;
 
@@ -366,6 +366,17 @@ impl LocalDatabase {
         let tx = conn.transaction()?;
         let now = Utc::now().timestamp();
 
+        // Get old collection_id before updating (if collection_id is changing)
+        let old_collection_id: Option<String> = if request.collection_id.is_some() {
+            tx.query_row(
+                "SELECT collection_id FROM vocabularies WHERE id = ?1",
+                params![vocab_id],
+                |row| row.get(0),
+            ).optional()?
+        } else {
+            None
+        };
+
         // Build dynamic SQL for main vocabulary table
         let mut updates = Vec::new();
         let mut params: Vec<Box<dyn rusqlite::ToSql>> = Vec::new();
@@ -389,6 +400,10 @@ impl LocalDatabase {
         if let Some(ref concept) = request.concept {
             updates.push("concept = ?");
             params.push(Box::new(concept.clone()));
+        }
+        if let Some(ref collection_id) = request.collection_id {
+            updates.push("collection_id = ?");
+            params.push(Box::new(collection_id.clone()));
         }
 
         // Always update the updated_at timestamp
@@ -502,6 +517,33 @@ impl LocalDatabase {
             }
         }
 
+        // Update word counts if collection_id changed
+        if let (Some(old_coll_id), Some(new_coll_id)) = (old_collection_id, &request.collection_id) {
+            if &old_coll_id != new_coll_id {
+                // Update old collection word count
+                let old_count: i32 = tx.query_row(
+                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1 AND deleted_at IS NULL",
+                    params![old_coll_id],
+                    |row| row.get(0),
+                )?;
+                tx.execute(
+                    "UPDATE collections SET word_count = ?1, updated_at = ?2 WHERE id = ?3",
+                    params![old_count, now, old_coll_id],
+                )?;
+
+                // Update new collection word count
+                let new_count: i32 = tx.query_row(
+                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1 AND deleted_at IS NULL",
+                    params![new_coll_id],
+                    |row| row.get(0),
+                )?;
+                tx.execute(
+                    "UPDATE collections SET word_count = ?1, updated_at = ?2 WHERE id = ?3",
+                    params![new_count, now, new_coll_id],
+                )?;
+            }
+        }
+
         tx.commit()?;
         Ok(())
     }
@@ -518,5 +560,113 @@ impl LocalDatabase {
         )?;
 
         Ok(())
+    }
+
+    /// Bulk move vocabularies to a different collection
+    pub fn bulk_move_vocabularies(
+        &self,
+        vocab_ids: &[String],
+        target_collection_id: &str,
+        user_id: &str,
+    ) -> SqlResult<crate::models::BulkMoveResult> {
+        use std::collections::HashSet;
+
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        let now = Utc::now().timestamp();
+
+        // Verify target collection exists and belongs to user
+        let target_exists: bool = tx
+            .query_row(
+                "SELECT 1 FROM collections
+                 WHERE id = ?1 AND owner_id = ?2 AND deleted_at IS NULL",
+                params![target_collection_id, user_id],
+                |_row| Ok(true),
+            )
+            .optional()?
+            .unwrap_or(false);
+
+        if !target_exists {
+            return Err(rusqlite::Error::QueryReturnedNoRows);
+        }
+
+        // Get target collection language
+        let target_language: String = tx.query_row(
+            "SELECT language FROM collections WHERE id = ?1",
+            params![target_collection_id],
+            |row| row.get(0),
+        )?;
+
+        // Collect source collection IDs and validate vocabularies
+        let mut source_collections = HashSet::new();
+        let mut moved_count = 0;
+
+        for vocab_id in vocab_ids {
+            // Get vocabulary info (collection_id and language) if it exists and belongs to user
+            let vocab_info: Option<(String, String)> = tx
+                .query_row(
+                    "SELECT collection_id, language FROM vocabularies
+                     WHERE id = ?1 AND user_id = ?2 AND deleted_at IS NULL",
+                    params![vocab_id, user_id],
+                    |row| Ok((row.get(0)?, row.get(1)?)),
+                )
+                .optional()?;
+
+            if let Some((source_collection_id, vocab_language)) = vocab_info {
+                // Only move if language matches and not already in target collection
+                if vocab_language == target_language && source_collection_id != target_collection_id {
+                    source_collections.insert(source_collection_id);
+
+                    // Update vocabulary collection_id
+                    tx.execute(
+                        "UPDATE vocabularies
+                         SET collection_id = ?1, updated_at = ?2
+                         WHERE id = ?3",
+                        params![target_collection_id, now, vocab_id],
+                    )?;
+
+                    moved_count += 1;
+                }
+            }
+        }
+
+        // Update word counts for all affected collections
+        for collection_id in source_collections.iter() {
+            let count: i32 = tx.query_row(
+                "SELECT COUNT(*) FROM vocabularies
+                 WHERE collection_id = ?1 AND deleted_at IS NULL",
+                params![collection_id],
+                |row| row.get(0),
+            )?;
+
+            tx.execute(
+                "UPDATE collections
+                 SET word_count = ?1, updated_at = ?2
+                 WHERE id = ?3",
+                params![count, now, collection_id],
+            )?;
+        }
+
+        // Update target collection word count
+        let target_count: i32 = tx.query_row(
+            "SELECT COUNT(*) FROM vocabularies
+             WHERE collection_id = ?1 AND deleted_at IS NULL",
+            params![target_collection_id],
+            |row| row.get(0),
+        )?;
+
+        tx.execute(
+            "UPDATE collections
+             SET word_count = ?1, updated_at = ?2
+             WHERE id = ?3",
+            params![target_count, now, target_collection_id],
+        )?;
+
+        tx.commit()?;
+
+        Ok(crate::models::BulkMoveResult {
+            moved_count,
+            skipped_count: vocab_ids.len() - moved_count,
+        })
     }
 }

@@ -93,6 +93,7 @@ pub fn run() {
             search_vocabularies,
             update_vocabulary,
             delete_vocabulary,
+            bulk_move_vocabularies,
             // User preferences
             save_preferences,
             get_preferences,

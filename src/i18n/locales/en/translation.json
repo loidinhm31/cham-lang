@@ -230,6 +230,19 @@
     "createSuccess": "Collection created successfully",
     "updateSuccess": "Collection updated successfully"
   },
+  "collection": {
+    "title": "Collection Details",
+    "select": "Select",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "selectedCount": "{{count}} selected",
+    "moveSelected": "Move Selected",
+    "moveToCollection": "Move to Collection",
+    "noOtherCollections": "No other collections available",
+    "move": "Move",
+    "moveSuccess": "{{count}} word(s) moved successfully",
+    "wordCount": "{{count}} word"
+  },
   "csv": {
     "import": "Import",
     "export": "Export",

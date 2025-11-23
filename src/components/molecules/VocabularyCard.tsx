@@ -7,6 +7,9 @@ import type { LanguageLevel, Vocabulary } from "@/types/vocabulary.ts";
 interface VocabularyCardProps {
   vocabulary: Vocabulary;
   onClick?: () => void;
+  selectionMode?: boolean;
+  isSelected?: boolean;
+  onToggleSelection?: (e: React.MouseEvent) => void;
 }
 
 const levelColors: Record<LanguageLevel, string> = {
@@ -21,20 +24,42 @@ const levelColors: Record<LanguageLevel, string> = {
 export const VocabularyCard: React.FC<VocabularyCardProps> = ({
   vocabulary,
   onClick,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection,
 }) => {
   const { t } = useTranslation();
 
   return (
-    <Card variant="glass" hover onClick={onClick}>
+    <Card
+      variant="glass"
+      hover
+      onClick={onClick}
+      className={selectionMode && isSelected ? "ring-2 ring-amber-500 bg-amber-50/50" : ""}
+    >
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-xl font-bold text-gray-800 mb-1">
-            {vocabulary.word}
-          </h3>
-          <p className="text-sm text-teal-700">{vocabulary.ipa}</p>
+        <div className="flex items-start gap-3 flex-1">
+          {selectionMode && onToggleSelection && (
+            <input
+              type="checkbox"
+              checked={isSelected}
+              onChange={() => {}}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleSelection(e);
+              }}
+              className="w-6 h-6 rounded-lg border-2 border-gray-300 text-amber-500 focus:ring-2 focus:ring-amber-500 cursor-pointer mt-1 flex-shrink-0"
+            />
+          )}
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-gray-800 mb-1">
+              {vocabulary.word}
+            </h3>
+            <p className="text-sm text-teal-700">{vocabulary.ipa}</p>
+          </div>
         </div>
         <span
-          className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-3 py-1 rounded-full`}
+          className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-3 py-1 rounded-full flex-shrink-0 ml-2`}
         >
           {vocabulary.level}
         </span>

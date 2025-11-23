@@ -3,6 +3,8 @@ import type {
   CreateVocabularyRequest,
   SearchQuery,
   UpdateVocabularyRequest,
+  BulkMoveRequest,
+  BulkMoveResult,
   UserPreferences,
   Vocabulary,
 } from "@/types/vocabulary";
@@ -47,6 +49,17 @@ export class VocabularyService {
 
   static async deleteVocabulary(id: string): Promise<string> {
     return invoke("delete_vocabulary", { id });
+  }
+
+  static async bulkMoveVocabularies(
+    vocabularyIds: string[],
+    targetCollectionId: string,
+  ): Promise<BulkMoveResult> {
+    const request: BulkMoveRequest = {
+      vocabulary_ids: vocabularyIds,
+      target_collection_id: targetCollectionId,
+    };
+    return invoke("bulk_move_vocabularies", { request });
   }
 
   static async searchVocabularies(query: SearchQuery): Promise<Vocabulary[]> {

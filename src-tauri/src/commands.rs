@@ -3,6 +3,7 @@ use tauri::State;
 use crate::local_db::LocalDatabase;
 use crate::models::{
     Vocabulary, CreateVocabularyRequest, UpdateVocabularyRequest,
+    BulkMoveRequest, BulkMoveResult,
     UserPreferences, PracticeSession, CreatePracticeSessionRequest,
     UserPracticeProgress, UpdateProgressRequest,
     LearningSettings, UpdateLearningSettingsRequest
@@ -114,6 +115,28 @@ pub fn delete_vocabulary(
 
     println!("✓ Vocabulary deleted: {}", id);
     Ok("Deleted successfully".to_string())
+}
+
+#[tauri::command]
+pub fn bulk_move_vocabularies(
+    local_db: State<'_, LocalDatabase>,
+    request: BulkMoveRequest,
+) -> Result<BulkMoveResult, String> {
+    let user_id = local_db.get_local_user_id();
+
+    let result = local_db
+        .bulk_move_vocabularies(
+            &request.vocabulary_ids,
+            &request.target_collection_id,
+            user_id,
+        )
+        .map_err(|e| format!("Failed to move vocabularies: {}", e))?;
+
+    println!(
+        "✓ Bulk move completed: {} moved, {} skipped",
+        result.moved_count, result.skipped_count
+    );
+    Ok(result)
 }
 
 // User preferences commands
