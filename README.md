@@ -1,51 +1,91 @@
-# 🦎 Chameleon - Language Learning App
+# Cham Lang - Language Learning App
 
-A modern, beautiful vocabulary management application built with Tauri, React, TypeScript, and MongoDB. Designed with an
-atomic design pattern and mobile-first responsive UI.
+A modern, offline-first vocabulary learning application built with Tauri 2, React, TypeScript, and SQLite. Features spaced repetition learning, multiple practice modes, and optional Google Drive sync. Supports both desktop and Android platforms.
 
-## ✨ Features
+## Features
 
-### 📚 Vocabulary Management
+### Vocabulary Management
 
 - **Comprehensive Word Information**
     - Word definitions with translations
     - IPA pronunciation guide
     - Example sentences
     - Word types (noun, verb, adjective, etc.)
-    - Language levels (A1-C2 CEFR)
+    - Language-specific proficiency levels (CEFR for European languages, Basic/Intermediate/Advanced for Asian languages)
     - Topic categorization
     - Related words (synonyms, antonyms, derivatives)
+    - Optional concept field for alternative learning prompts
 
-### 🎨 Beautiful UI/UX
+### Collection-Based Organization
 
-- **Chameleon Theme**: Colorful, adaptive design inspired by the chameleon's ability to adapt
-- **Glassmorphism Effects**: Modern frosted glass aesthetic
+- **Collections**: Organize vocabularies into language-specific collections
+- **Word Count Tracking**: Automatic word count per collection
+- **Import/Export**: CSV and plain text CSV support
+- **Soft Deletion**: Collections and words use soft delete for data recovery
+
+### Practice Modes
+
+Three comprehensive practice modes with spaced repetition:
+
+1. **Flashcard Practice**: See definition/concept, recall the word
+2. **Fill Word Practice**: Fill in missing word from example sentence
+3. **Multiple Choice Practice**: Choose correct definition from options
+
+### Spaced Repetition Learning
+
+- **Three Algorithm Options**:
+    - SM-2 (SuperMemo 2) with dynamic easiness factor
+    - Modified SM-2 with fixed intervals per Leitner box
+    - Simple Doubling (interval doubles on each success)
+
+- **Leitner Box System**: Configurable 3, 5, or 7 boxes with progressive review intervals
+- **Smart Word Selection**: Prioritizes due words, limits new words per session
+- **Progress Tracking**: Per-word statistics including streak, interval, easiness factor
+- **Customizable Settings**: Configure thresholds, intervals, new word limits
+
+### Google Drive Backup
+
+- **Optional Cloud Sync**: Backup entire database to Google Drive
+- **Conflict Detection**: Version tracking prevents data loss
+- **Easy Restore**: One-click restore from cloud backup
+- **Privacy**: Works completely offline if you prefer
+
+### Beautiful UI/UX
+
+- **Chameleon Theme**: Colorful, adaptive design with glassmorphism effects
 - **Smooth Animations**: Floating background elements and transitions
 - **Mobile-First Design**: Responsive layout optimized for all screen sizes
 - **Bottom Navigation**: Easy thumb-accessible navigation
 
-### 🌍 Multi-language Support
+### Multi-language Support
 
-- **Interface Languages**: English (default) and Vietnamese
-- **Extensible i18n System**: Easy to add more languages
-- **Preference Storage**: User language preferences saved to MongoDB
+- **Interface Languages**: English and Vietnamese (extensible i18n system)
+- **Learning Languages**: Supports English, Vietnamese, Spanish, French, German, Korean, Japanese, Chinese
+- **Language-Specific Levels**:
+    - CEFR (A1-C2) for European languages
+    - Basic/Intermediate/Advanced for Asian languages
 
-### 🏗️ Architecture
+### Architecture
 
 - **Atomic Design Pattern**:
-    - **Atoms**: Button, Input, TextArea, Select, Badge, Card
+    - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal
     - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
-    - **Organisms**: VocabularyList, VocabularyForm
+    - **Organisms**: VocabularyList, VocabularyForm, CollectionList, PracticeModeSelector
     - **Templates**: MainLayout
-    - **Pages**: Home, AddVocabulary, VocabularyDetail, Progress, Profile
+    - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes, Settings, Profile
 
-### 💾 Database
+- **Offline-First**: All data stored locally in SQLite
+- **Service Layer**: Clean separation between frontend and Tauri backend
+- **Type Safety**: Full TypeScript coverage with shared types
 
-- **MongoDB Backend**: Full-featured NoSQL database
-- **Rust Integration**: Native MongoDB driver with async/await support
-- **Schema Design**: Structured data models for vocabularies and user preferences
+### Database
 
-## 🛠️ Tech Stack
+- **SQLite Backend**: Lightweight, embedded database
+- **Cross-Platform**: Works on desktop and Android
+- **Platform-Specific Storage**: Automatic app data directory selection
+- **Schema Versioning**: Migration system for database updates
+
+## Tech Stack
 
 ### Frontend
 
@@ -60,17 +100,17 @@ atomic design pattern and mobile-first responsive UI.
 
 - **Tauri 2** - Desktop/mobile app framework
 - **Rust** - Backend language
-- **MongoDB 3.x** - Database
-- **Tokio** - Async runtime
+- **SQLite** - Embedded database (via rusqlite)
+- **tauri-plugin-google-auth** - Google Drive authentication
 - **Serde** - Serialization/deserialization
 
-## 📦 Installation
+## Installation
 
 ### Prerequisites
 
 - Node.js 18+ and pnpm
 - Rust 1.70+
-- MongoDB (local or cloud instance)
+- For Android: Android SDK and NDK
 
 ### Setup Steps
 
@@ -85,56 +125,84 @@ atomic design pattern and mobile-first responsive UI.
    pnpm install
    ```
 
-3. **Set up MongoDB**
-    - Install MongoDB locally or use MongoDB Atlas
-    - Default connection: `mongodb://localhost:27017`
-    - Database name: `cham_lang`
-
-4. **Build Rust backend**
+3. **Run in development mode**
    ```bash
-   cargo build --manifest-path=src-tauri/Cargo.toml
-   ```
-
-5. **Run in development mode**
-   ```bash
+   # Desktop
    pnpm tauri dev
+
+   # Android (requires Android SDK)
+   pnpm tauri android dev
    ```
 
-## 🚀 Usage
+## Usage
 
-### First Run
+### Getting Started
 
 1. Launch the application
-2. Go to Profile page (bottom navigation)
-3. Enter your MongoDB connection string
-4. Click "Connect" to establish database connection
+2. The app creates a local SQLite database automatically
+3. Create your first collection from the Collections page
+4. Start adding vocabulary words
+
+### Creating Collections
+
+1. Navigate to Collections page
+2. Click "Add Collection"
+3. Enter collection name and select language
+4. Start adding words to your collection
 
 ### Adding Vocabulary
 
-1. Click "Add Word" button on home page
-2. Fill in word details:
+1. Select a collection
+2. Click "Add Word" button
+3. Fill in word details:
     - Word text
     - Word type
-    - Level (A1-C2)
+    - Proficiency level
     - IPA pronunciation
     - Definitions (with translations)
+    - Optional concept (alternative learning prompt)
     - Example sentences
     - Topics
-3. Click "Save"
+    - Related words
+4. Click "Save"
 
-### Exploring Vocabulary
+### Practicing Vocabulary
 
-- **Home**: Browse all words with search functionality
-- **Progress**: Track your learning statistics
-- **Profile**: Manage settings and database connection
+1. Navigate to Practice page
+2. Select a collection
+3. Choose practice mode (Flashcard, Fill Word, or Multiple Choice)
+4. Toggle between Concept Mode and Definition Mode (if concept exists)
+5. Complete the session
+6. Review your results and progress
 
-### Searching
+### Configuring Spaced Repetition
 
-- Use the search bar on home page
-- Filter by word type, level, or topics
-- Real-time search results
+1. Go to Settings page
+2. Choose spaced repetition algorithm (SM-2, Modified SM-2, or Simple Doubling)
+3. Configure Leitner box count (3, 5, or 7 boxes)
+4. Set consecutive correct threshold
+5. Adjust review intervals per box
+6. Set daily new word limit
 
-## 📁 Project Structure
+### Google Drive Backup
+
+1. Go to Profile page
+2. Click "Backup to Google Drive"
+3. Authenticate with Google account
+4. Database is uploaded to your Google Drive
+
+To restore:
+1. Click "Restore from Google Drive"
+2. System checks for version conflicts
+3. Confirm restore operation
+
+### Import/Export
+
+- **Export Collection**: Export vocabulary to CSV format
+- **Import from CSV**: Import words from CSV file (with or without headers)
+- **Plain Text Import**: Import simple word lists
+
+## Project Structure
 
 ```
 cham-lang/
@@ -151,19 +219,21 @@ cham-lang/
 │   │       ├── en/
 │   │       └── vi/
 │   ├── types/              # TypeScript types
-│   ├── hooks/              # Custom React hooks
-│   ├── services/           # API services
+│   ├── services/           # Tauri command wrappers
 │   └── utils/              # Utility functions
+│       └── spacedRepetition/  # SR algorithms
 ├── src-tauri/
 │   └── src/
 │       ├── models.rs       # Data models
-│       ├── database.rs     # Database manager
-│       ├── commands.rs     # Tauri commands
+│       ├── local_db.rs     # SQLite operations
+│       ├── commands.rs     # Vocabulary commands
+│       ├── collection_commands.rs  # Collection commands
+│       ├── gdrive.rs       # Google Drive sync
 │       └── lib.rs          # Main entry point
 └── README.md
 ```
 
-## 🔧 Configuration
+## Configuration
 
 ### Tailwind CSS
 
@@ -173,44 +243,80 @@ The project uses Tailwind CSS 4 with custom chameleon theme colors:
 - Secondary: Amber/Orange gradient
 - Accent colors: Emerald, Orange, Pink
 
-### i18n
+### Internationalization
 
-Add new languages by:
+Add new interface languages by:
 
 1. Creating a new locale folder in `src/i18n/locales/`
-2. Adding translation JSON file
+2. Adding translation JSON files
 3. Importing in `src/i18n/config.ts`
-4. Adding to language selector in Profile page
+4. Adding to language selector
 
-## 📱 Mobile/Android Support
+Add new learning languages by:
 
-### Current Status
+1. Update `get_level_config()` in `src-tauri/src/models.rs`
+2. Add language-specific level options
+3. Update TypeScript types if needed
 
-The app is built with Tauri 2, which supports Android development. However, MongoDB integration requires testing on
-Android platform.
+## Development Commands
 
-### Known Considerations
+### Type Checking
 
-- MongoDB connection on mobile may require:
-    - Cloud MongoDB Atlas instance
-    - Network permissions configuration
-    - Connection string adjustments for mobile networks
+```bash
+# Frontend
+pnpm tsc --noEmit
+
+# Backend
+cargo check --manifest-path=src-tauri/Cargo.toml
+```
+
+### Building
+
+```bash
+# Production build
+pnpm build
+
+# Android APK
+pnpm tauri android build --apk true
+```
+
+### Android Development
+
+```bash
+# Initialize Android (first time only)
+pnpm tauri android init
+
+# Run on Android
+pnpm tauri android dev
+
+# View Android logs
+timeout 10 /home/loidinh/Android/Sdk/platform-tools/adb logcat
+```
+
+## Mobile/Android Support
+
+The app fully supports Android with:
+
+- SQLite database (platform-specific storage)
+- Google Drive sync (OAuth authentication)
+- Touch-optimized UI
+- Bottom navigation for easy thumb access
 
 ### Building for Android
 
-```bash
-pnpm tauri android init
-pnpm tauri android dev
-```
+1. Ensure Android SDK is installed
+2. Run `pnpm tauri android init` (first time only)
+3. Connect device or start emulator
+4. Run `pnpm tauri android dev` for development
+5. Run `pnpm tauri android build --apk true` for production
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-### MongoDB Connection Issues
+### Database Issues
 
-- Ensure MongoDB is running: `mongod`
-- Check connection string format
-- Verify network accessibility
-- Check firewall settings
+- Database is created automatically in app data directory
+- Check logs for SQLite errors
+- Use Google Drive backup/restore for data recovery
 
 ### TypeScript Errors
 
@@ -224,35 +330,20 @@ pnpm tsc --noEmit
 cargo check --manifest-path=src-tauri/Cargo.toml
 ```
 
-## 🤝 Contributing
+### Android Debugging
 
-Contributions are welcome! Please follow these steps:
+```bash
+# Monitor Android logs
+adb logcat
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
+# Filter for app logs
+adb logcat | grep -i chameleon
+```
 
-## 📄 License
+### Anti-Patterns to Avoid
 
-[Add your license here]
-
-## 🙏 Acknowledgments
-
-- **Tauri Team** - For the amazing cross-platform framework
-- **MongoDB** - For the flexible NoSQL database
-- **React Team** - For the UI library
-- **Tailwind CSS** - For the utility-first CSS framework
-
-## 📞 Support
-
-For issues and questions:
-
-- Open an issue on GitHub
-- Check existing documentation
-- Review MongoDB connection guides
-
----
-
-Made with 🦎 by the Chameleon Team
+- Don't use `invoke()` directly in components - use service layer
+- Don't modify database from frontend - use Tauri commands
+- Don't create global state unnecessarily
+- Don't bypass SessionManager in practice pages
+- Don't hard-code language levels - use backend configuration
