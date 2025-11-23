@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Badge, Button, Card } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
@@ -17,13 +17,25 @@ const levelColors: Record<LanguageLevel, string> = {
   C2: "bg-orange-500",
 };
 
+interface LocationState {
+  collectionId?: string;
+  vocabularyIds?: string[];
+  currentIndex?: number;
+}
+
 export const VocabularyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { showAlert, showConfirm } = useDialog();
   const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
   const [loading, setLoading] = useState(true);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  const state = location.state as LocationState;
+  const { collectionId, vocabularyIds, currentIndex } = state || {};
 
   useEffect(() => {
     if (id) {
@@ -63,10 +75,88 @@ export const VocabularyDetailPage: React.FC = () => {
     try {
       await VocabularyService.deleteVocabulary(vocabulary.id);
       showAlert(t("messages.deleteSuccess"), { variant: "success" });
-      navigate("/");
+
+      // If in collection context, go to collection page; otherwise go home
+      if (collectionId) {
+        navigate(`/collections/${collectionId}`);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Failed to delete vocabulary:", error);
       showAlert(t("messages.error"), { variant: "error" });
+    }
+  };
+
+  const goToNext = useCallback(() => {
+    if (
+      vocabularyIds &&
+      currentIndex !== undefined &&
+      currentIndex < vocabularyIds.length - 1
+    ) {
+      const nextId = vocabularyIds[currentIndex + 1];
+      navigate(`/vocabulary/${nextId}`, {
+        state: {
+          collectionId,
+          vocabularyIds,
+          currentIndex: currentIndex + 1,
+        },
+      });
+    }
+  }, [vocabularyIds, currentIndex, collectionId, navigate]);
+
+  const goToPrevious = useCallback(() => {
+    if (vocabularyIds && currentIndex !== undefined && currentIndex > 0) {
+      const prevId = vocabularyIds[currentIndex - 1];
+      navigate(`/vocabulary/${prevId}`, {
+        state: {
+          collectionId,
+          vocabularyIds,
+          currentIndex: currentIndex - 1,
+        },
+      });
+    }
+  }, [vocabularyIds, currentIndex, collectionId, navigate]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    if (!vocabularyIds) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "ArrowRight") {
+        goToNext();
+      } else if (e.key === "ArrowLeft") {
+        goToPrevious();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [vocabularyIds, goToNext, goToPrevious]);
+
+  // Swipe gesture detection
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+
+    if (isLeftSwipe) {
+      goToNext();
+    } else if (isRightSwipe) {
+      goToPrevious();
     }
   };
 
@@ -89,7 +179,42 @@ export const VocabularyDetailPage: React.FC = () => {
     <>
       <TopBar title={vocabulary.word} showBack />
 
-      <div className="px-4 pt-6 space-y-6">
+      <div
+        className="px-4 pt-6 pb-6 space-y-6 relative"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Navigation Arrows - Only show if in collection context */}
+        {vocabularyIds && currentIndex !== undefined && (
+          <>
+            {/* Progress Indicator */}
+            <div className="text-center text-sm text-gray-500 mb-4">
+              {currentIndex + 1} / {vocabularyIds.length}
+            </div>
+
+            {/* Navigation Buttons */}
+            <div className="fixed top-1/2 left-0 right-0 -translate-y-1/2 flex justify-between px-2 pointer-events-none z-10">
+              {currentIndex > 0 && (
+                <button
+                  onClick={goToPrevious}
+                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all"
+                >
+                  <ChevronLeft className="w-8 h-8 text-gray-700" />
+                </button>
+              )}
+              <div className="flex-1" />
+              {currentIndex < vocabularyIds.length - 1 && (
+                <button
+                  onClick={goToNext}
+                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all"
+                >
+                  <ChevronRight className="w-8 h-8 text-gray-700" />
+                </button>
+              )}
+            </div>
+          </>
+        )}
         {/* Word Header */}
         <Card variant="gradient">
           <div className="text-center">
@@ -205,7 +330,7 @@ export const VocabularyDetailPage: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 pb-4">
+        <div className="flex gap-3">
           <Button
             variant="outline"
             size="lg"

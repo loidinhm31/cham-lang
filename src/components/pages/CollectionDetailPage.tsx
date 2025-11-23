@@ -70,7 +70,14 @@ export const CollectionDetailPage: React.FC = () => {
   };
 
   const handleVocabularyClick = (vocabulary: Vocabulary) => {
-    navigate(`/vocabulary/${vocabulary.id}`);
+    const index = vocabularies.findIndex((v) => v.id === vocabulary.id);
+    navigate(`/vocabulary/${vocabulary.id}`, {
+      state: {
+        collectionId: id,
+        vocabularyIds: vocabularies.map((v) => v.id),
+        currentIndex: index,
+      },
+    });
   };
 
   if (loading) {
