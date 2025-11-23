@@ -9,11 +9,13 @@ import { CollectionService } from "@/services/collection.service.ts";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { Collection } from "@/types/collection.ts";
 import type { Vocabulary } from "@/types/vocabulary.ts";
+import { useDialog } from "@/contexts";
 
 export const CollectionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { showAlert, showConfirm } = useDialog();
   const [collection, setCollection] = useState<Collection | null>(null);
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ export const CollectionDetailPage: React.FC = () => {
       setVocabularies(vocabData);
     } catch (error) {
       console.error("Failed to load collection:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
       navigate("/");
     } finally {
       setLoading(false);
@@ -43,17 +45,27 @@ export const CollectionDetailPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!collection?.id || !confirm(t("messages.confirmDelete"))) {
+    if (!collection?.id) {
+      return;
+    }
+
+    const confirmed = await showConfirm(t("messages.confirmDelete"), {
+      variant: "warning",
+      confirmText: t("buttons.delete"),
+      cancelText: t("buttons.cancel"),
+    });
+
+    if (!confirmed) {
       return;
     }
 
     try {
       await CollectionService.deleteCollection(collection.id);
-      alert(t("messages.deleteSuccess"));
+      showAlert(t("messages.deleteSuccess"), { variant: "success" });
       navigate("/");
     } catch (error) {
       console.error("Failed to delete collection:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     }
   };
 

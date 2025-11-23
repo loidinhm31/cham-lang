@@ -10,10 +10,12 @@ import { LearningSettingsService } from "@/services/learningSettings.service.ts"
 import { WordSelectionService } from "@/services/wordSelection.service.ts";
 import { SessionManager } from "@/utils/sessionManager.ts";
 import type { Vocabulary } from "@/types/vocabulary.ts";
+import { useDialog } from "@/contexts";
 
 export const FlashcardPracticePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const [searchParams] = useSearchParams();
   const collectionId = searchParams.get("collection");
   const contentMode = searchParams.get("contentMode") as
@@ -94,7 +96,7 @@ export const FlashcardPracticePage: React.FC = () => {
       setCurrentVocab(firstWord);
     } catch (error) {
       console.error("Failed to load vocabularies:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setLoading(false);
     }

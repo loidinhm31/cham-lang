@@ -5,21 +5,23 @@ import { CollectionService } from "@/services/collection.service.ts";
 import { TopBar } from "@/components/molecules";
 import { CollectionForm } from "@/components/organisms";
 import type { CreateCollectionRequest } from "@/types/collection.ts";
+import { useDialog } from "@/contexts";
 
 export const CreateCollectionPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (data: CreateCollectionRequest) => {
     try {
       setLoading(true);
       await CollectionService.createCollection(data);
-      alert(t("collections.createSuccess"));
+      showAlert(t("collections.createSuccess"), { variant: "success" });
       navigate("/collections");
     } catch (error) {
       console.error("Failed to create collection:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setLoading(false);
     }

@@ -19,7 +19,7 @@ import {
 } from "@choochmeque/tauri-plugin-google-auth-api";
 import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
-import { useSyncNotification } from "@/contexts";
+import { useSyncNotification, useDialog } from "@/contexts";
 
 // OAuth configuration - these should be environment variables in production
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -28,6 +28,7 @@ const GOOGLE_CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "";
 export const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert, showConfirm } = useDialog();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } =
     useSyncNotification();
   const [isConfigured, setIsConfigured] = useState(false);
@@ -86,7 +87,9 @@ export const ProfilePage: React.FC = () => {
       return response.accessToken;
     } catch (error) {
       console.error("Token refresh failed:", error);
-      alert("Session expired. Please sign in again.");
+      showAlert("Session expired. Please sign in again.", {
+        variant: "warning",
+      });
 
       // Clear tokens and sign out
       localStorage.removeItem("gdrive_access_token");
@@ -101,8 +104,9 @@ export const ProfilePage: React.FC = () => {
 
   const handleSignIn = async () => {
     if (!GOOGLE_CLIENT_ID) {
-      alert(
+      showAlert(
         "Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID in your .env file.",
+        { variant: "error" },
       );
       return;
     }
@@ -140,11 +144,11 @@ export const ProfilePage: React.FC = () => {
 
       setAccessToken(response.accessToken);
       setIsConfigured(true);
-      alert("Successfully signed in with Google!");
+      showAlert("Successfully signed in with Google!", { variant: "success" });
       loadBackupInfo(response.accessToken);
     } catch (error) {
       console.error("Sign in failed:", error);
-      alert(`Sign in failed: ${error}`);
+      showAlert(`Sign in failed: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -163,17 +167,26 @@ export const ProfilePage: React.FC = () => {
       setUserEmail("");
       setIsConfigured(false);
       setBackupInfo(null);
-      alert("Signed out successfully");
+      showAlert("Signed out successfully", { variant: "success" });
     } catch (error) {
       console.error("Sign out failed:", error);
-      alert(`Sign out failed: ${error}`);
+      showAlert(`Sign out failed: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleBackup = async () => {
-    if (!confirm("Backup your database to Google Drive?")) return;
+    const confirmed = await showConfirm(
+      "Backup your database to Google Drive?",
+      {
+        variant: "info",
+        confirmText: "Backup",
+        cancelText: "Cancel",
+      },
+    );
+
+    if (!confirmed) return;
 
     try {
       setLoading(true);
@@ -183,7 +196,7 @@ export const ProfilePage: React.FC = () => {
         const result = await invoke<string>("backup_to_gdrive", {
           accessToken: currentToken,
         });
-        alert(result);
+        showAlert(result, { variant: "success" });
         loadBackupInfo(currentToken);
         // Recheck sync status after backup
         await checkSyncStatus();
@@ -204,7 +217,7 @@ export const ProfilePage: React.FC = () => {
             const result = await invoke<string>("backup_to_gdrive", {
               accessToken: newToken,
             });
-            alert(result);
+            showAlert(result, { variant: "success" });
             loadBackupInfo(newToken);
             await checkSyncStatus();
           }
@@ -214,19 +227,23 @@ export const ProfilePage: React.FC = () => {
       }
     } catch (error) {
       console.error("Backup failed:", error);
-      alert(`Backup failed: ${error}`);
+      showAlert(`Backup failed: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleRestore = async () => {
-    if (
-      !confirm(
-        "⚠️  WARNING: This will replace your current data with the backup from Google Drive. Continue?",
-      )
-    )
-      return;
+    const confirmed = await showConfirm(
+      "⚠️  WARNING: This will replace your current data with the backup from Google Drive. Continue?",
+      {
+        variant: "warning",
+        confirmText: "Restore",
+        cancelText: "Cancel",
+      },
+    );
+
+    if (!confirmed) return;
 
     try {
       setLoading(true);
@@ -236,9 +253,10 @@ export const ProfilePage: React.FC = () => {
         const result = await invoke<string>("restore_from_gdrive", {
           accessToken: currentToken,
         });
-        alert(
+        showAlert(
           result +
             "\n\nPlease restart the application to see the restored data.",
+          { variant: "success" },
         );
         // Recheck sync status after restore
         await checkSyncStatus();
@@ -259,9 +277,10 @@ export const ProfilePage: React.FC = () => {
             const result = await invoke<string>("restore_from_gdrive", {
               accessToken: newToken,
             });
-            alert(
+            showAlert(
               result +
                 "\n\nPlease restart the application to see the restored data.",
+              { variant: "success" },
             );
             await checkSyncStatus();
           }
@@ -271,30 +290,43 @@ export const ProfilePage: React.FC = () => {
       }
     } catch (error) {
       console.error("Restore failed:", error);
-      alert(`Restore failed: ${error}`);
+      showAlert(`Restore failed: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleClearDatabase = async () => {
-    if (
-      !confirm(
-        "🚨 DANGER: This will PERMANENTLY DELETE all local data!\n\nThis action cannot be undone. Make sure you have a backup on Google Drive before proceeding.\n\nAre you absolutely sure?",
-      )
-    )
-      return;
+    const confirmed = await showConfirm(
+      "🚨 DANGER: This will PERMANENTLY DELETE all local data!\n\nThis action cannot be undone. Make sure you have a backup on Google Drive before proceeding.\n\nAre you absolutely sure?",
+      {
+        variant: "error",
+        confirmText: "Yes, Delete All",
+        cancelText: "Cancel",
+      },
+    );
+
+    if (!confirmed) return;
 
     // Second confirmation
-    if (!confirm("Final confirmation: Delete all local data?")) return;
+    const finalConfirmed = await showConfirm(
+      "Final confirmation: Delete all local data?",
+      {
+        variant: "error",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+      },
+    );
+
+    if (!finalConfirmed) return;
 
     try {
       setLoading(true);
       const result = await invoke<string>("clear_local_database");
-      alert(result);
+      showAlert(result, { variant: "success" });
     } catch (error) {
       console.error("Clear database failed:", error);
-      alert(`Clear database failed: ${error}`);
+      showAlert(`Clear database failed: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }

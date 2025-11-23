@@ -8,10 +8,12 @@ import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
 import type { Collection } from "@/types/collection.ts";
 import { getCollectionId } from "@/types/collection.ts";
+import { useDialog } from "@/contexts";
 
 export const CSVExportPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
@@ -27,7 +29,7 @@ export const CSVExportPage: React.FC = () => {
       setCollections(data);
     } catch (error) {
       console.error("Failed to load collections:", error);
-      alert(t("csv.loadCollectionsFailed"));
+      showAlert(t("csv.loadCollectionsFailed"), { variant: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +58,7 @@ export const CSVExportPage: React.FC = () => {
 
   const handleExport = async () => {
     if (selectedIds.size === 0) {
-      alert(t("csv.noCollectionsSelected"));
+      showAlert(t("csv.noCollectionsSelected"), { variant: "warning" });
       return;
     }
 
@@ -76,11 +78,15 @@ export const CSVExportPage: React.FC = () => {
         filePath,
       );
 
-      alert(t("csv.exportSuccess", { message: result }));
+      showAlert(t("csv.exportSuccess", { message: result }), {
+        variant: "success",
+      });
       navigate("/collections");
     } catch (error) {
       console.error("Export failed:", error);
-      alert(t("csv.exportFailed", { error: String(error) }));
+      showAlert(t("csv.exportFailed", { error: String(error) }), {
+        variant: "error",
+      });
     } finally {
       setIsExporting(false);
     }

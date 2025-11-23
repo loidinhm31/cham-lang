@@ -17,10 +17,12 @@ import { Button, Card } from "@/components/atoms";
 import type { Collection } from "@/types/collection.ts";
 import type { CsvImportResult } from "@/types/csv.ts";
 import { getCollectionId } from "@/types/collection.ts";
+import { useDialog } from "@/contexts";
 
 export const CSVImportPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [csvText, setCsvText] = useState<string>("");
@@ -44,7 +46,7 @@ export const CSVImportPage: React.FC = () => {
       setCollections(data);
     } catch (error) {
       console.error("Failed to load collections:", error);
-      alert(t("csv.loadCollectionsFailed"));
+      showAlert(t("csv.loadCollectionsFailed"), { variant: "error" });
     } finally {
       setIsLoading(false);
     }
@@ -59,7 +61,7 @@ export const CSVImportPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Failed to choose file:", error);
-      alert(t("csv.chooseFileFailed"));
+      showAlert(t("csv.chooseFileFailed"), { variant: "error" });
     }
   };
 
@@ -67,11 +69,13 @@ export const CSVImportPage: React.FC = () => {
     try {
       setIsDownloadingTemplate(true);
       await CsvService.generateTemplate();
-      alert(t("csv.templateDownloaded"));
+      showAlert(t("csv.templateDownloaded"), { variant: "success" });
     } catch (error) {
       console.error("Template download failed:", error);
       if (String(error) !== "No file path selected") {
-        alert(t("csv.templateDownloadFailed", { error: String(error) }));
+        showAlert(t("csv.templateDownloadFailed", { error: String(error) }), {
+          variant: "error",
+        });
       }
     } finally {
       setIsDownloadingTemplate(false);
@@ -81,11 +85,11 @@ export const CSVImportPage: React.FC = () => {
   const handleImport = async () => {
     // Validate input based on mode
     if (importMode === "file" && !selectedFile) {
-      alert(t("csv.noFileSelected"));
+      showAlert(t("csv.noFileSelected"), { variant: "warning" });
       return;
     }
     if (importMode === "text" && !csvText.trim()) {
-      alert(t("csv.noCsvText"));
+      showAlert(t("csv.noCsvText"), { variant: "warning" });
       return;
     }
 
@@ -110,7 +114,9 @@ export const CSVImportPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Import failed:", error);
-      alert(t("csv.importFailed", { error: String(error) }));
+      showAlert(t("csv.importFailed", { error: String(error) }), {
+        variant: "error",
+      });
     } finally {
       setIsImporting(false);
     }

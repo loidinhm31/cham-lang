@@ -5,6 +5,8 @@ export { Select } from "./Select";
 export { Badge } from "./Badge";
 export { Card } from "./Card";
 export { FlashCard } from "./FlashCard";
+export { Dialog } from "./Dialog";
 export type { ButtonVariant, ButtonSize } from "./Button";
 export type { BadgeVariant } from "./Badge";
 export type { CardVariant } from "./Card";
+export type { DialogType, DialogVariant } from "./Dialog";

@@ -6,6 +6,7 @@ import { TopBar } from "@/components/molecules";
 import { Badge, Button, Card } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { LanguageLevel, Vocabulary } from "@/types/vocabulary.ts";
+import { useDialog } from "@/contexts";
 
 const levelColors: Record<LanguageLevel, string> = {
   A1: "bg-emerald-500",
@@ -20,6 +21,7 @@ export const VocabularyDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { showAlert, showConfirm } = useDialog();
   const [vocabulary, setVocabulary] = useState<Vocabulary | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +38,7 @@ export const VocabularyDetailPage: React.FC = () => {
       setVocabulary(data);
     } catch (error) {
       console.error("Failed to load vocabulary:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
       navigate("/");
     } finally {
       setLoading(false);
@@ -44,17 +46,27 @@ export const VocabularyDetailPage: React.FC = () => {
   };
 
   const handleDelete = async () => {
-    if (!vocabulary?.id || !confirm(t("messages.confirmDelete"))) {
+    if (!vocabulary?.id) {
+      return;
+    }
+
+    const confirmed = await showConfirm(t("messages.confirmDelete"), {
+      variant: "error",
+      confirmText: t("common.delete"),
+      cancelText: t("common.cancel"),
+    });
+
+    if (!confirmed) {
       return;
     }
 
     try {
       await VocabularyService.deleteVocabulary(vocabulary.id);
-      alert(t("messages.deleteSuccess"));
+      showAlert(t("messages.deleteSuccess"), { variant: "success" });
       navigate("/");
     } catch (error) {
       console.error("Failed to delete vocabulary:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     }
   };
 

@@ -8,11 +8,13 @@ import type {
   CreateVocabularyRequest,
   Vocabulary,
 } from "@/types/vocabulary.ts";
+import { useDialog } from "@/contexts";
 
 export const EditVocabularyPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
+  const { showAlert } = useDialog();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [initialData, setInitialData] = useState<
@@ -47,7 +49,7 @@ export const EditVocabularyPage: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to load vocabulary:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
       navigate("/");
     } finally {
       setLoadingData(false);
@@ -63,11 +65,11 @@ export const EditVocabularyPage: React.FC = () => {
         id,
         ...data,
       });
-      alert(t("messages.saveSuccess"));
+      showAlert(t("messages.saveSuccess"), { variant: "success" });
       navigate(`/vocabulary/${id}`);
     } catch (error) {
       console.error("Failed to update vocabulary:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import { Info, Save } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
 import { LearningSettingsService } from "@/services/learningSettings.service.ts";
+import { useDialog } from "@/contexts";
 import type {
   LeitnerBoxCount,
   SpacedRepetitionAlgorithm,
@@ -14,6 +15,7 @@ import { BOX_INTERVAL_PRESETS } from "@/types/settings.ts";
 export const LearningSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -44,7 +46,7 @@ export const LearningSettingsPage: React.FC = () => {
       setDailyReviewLimit(data.daily_review_limit || 100);
     } catch (error) {
       console.error("Failed to load settings:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -61,11 +63,13 @@ export const LearningSettingsPage: React.FC = () => {
         new_words_per_day: newWordsPerDay,
         daily_review_limit: dailyReviewLimit,
       });
-      alert(t("settings.saved") || "Settings saved successfully!");
+      showAlert(t("settings.saved") || "Settings saved successfully!", {
+        variant: "success",
+      });
       navigate(-1);
     } catch (error) {
       console.error("Failed to save settings:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setSaving(false);
     }

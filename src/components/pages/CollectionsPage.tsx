@@ -16,10 +16,12 @@ import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
 import type { Collection } from "@/types/collection.ts";
 import { getCollectionId } from "@/types/collection.ts";
+import { useDialog } from "@/contexts";
 
 export const CollectionsPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert, showConfirm } = useDialog();
   const [collections, setCollections] = useState<Collection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,14 +41,20 @@ export const CollectionsPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t("collections.confirmDelete"))) return;
+    const confirmed = await showConfirm(t("collections.confirmDelete"), {
+      variant: "error",
+      confirmText: t("common.delete"),
+      cancelText: t("common.cancel"),
+    });
+
+    if (!confirmed) return;
 
     try {
       await CollectionService.deleteCollection(id);
       setCollections(collections.filter((c) => getCollectionId(c) !== id));
     } catch (error) {
       console.error("Failed to delete collection:", error);
-      alert(t("collections.deleteFailed"));
+      showAlert(t("collections.deleteFailed"), { variant: "error" });
     }
   };
 

@@ -9,10 +9,12 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@/types/collection.ts";
+import { useDialog } from "@/contexts";
 
 export const EditCollectionPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { showAlert } = useDialog();
   const { id } = useParams<{ id: string }>();
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -38,7 +40,7 @@ export const EditCollectionPage: React.FC = () => {
       });
     } catch (error) {
       console.error("Failed to load collection:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
       navigate("/collections");
     } finally {
       setLoadingData(false);
@@ -56,11 +58,11 @@ export const EditCollectionPage: React.FC = () => {
         id,
         ...data,
       } as UpdateCollectionRequest);
-      alert(t("collections.updateSuccess"));
+      showAlert(t("collections.updateSuccess"), { variant: "success" });
       navigate("/collections");
     } catch (error) {
       console.error("Failed to update collection:", error);
-      alert(t("messages.error"));
+      showAlert(t("messages.error"), { variant: "error" });
     } finally {
       setLoading(false);
     }
