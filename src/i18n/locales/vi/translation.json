@@ -2,7 +2,15 @@
   "app": {
     "name": "Cham Lang",
     "tagline": "Thích Nghi Để Học",
-    "loading": "Đang tải..."
+    "loading": "Đang tải...",
+    "information": "Thông Tin Ứng Dụng",
+    "version": "Phiên Bản",
+    "mode": "Chế Độ",
+    "modeValue": "Ưu tiên offline",
+    "database": "Cơ Sở Dữ Liệu",
+    "databaseValue": "SQLite",
+    "sync": "Đồng Bộ",
+    "syncValue": "Google Drive (tùy chọn)"
   },
   "nav": {
     "learn": "Học",
@@ -85,13 +93,16 @@
     "saving": "Đang lưu...",
     "cancel": "Hủy",
     "delete": "Xóa",
+    "deleteConfirm": "Có, Xóa Tất Cả",
     "edit": "Sửa",
     "add": "Thêm",
     "search": "Tìm Kiếm",
     "filter": "Lọc",
     "clear": "Xóa",
     "viewDetails": "Xem Chi Tiết",
-    "close": "Đóng"
+    "close": "Đóng",
+    "backup": "Sao Lưu",
+    "restore": "Khôi Phục"
   },
   "messages": {
     "saveSuccess": "Đã lưu thành công!",
@@ -105,6 +116,7 @@
   "settings": {
     "title": "Cài Đặt",
     "language": "Ngôn Ngữ Giao Diện",
+    "languageDescription": "Chọn ngôn ngữ bạn muốn sử dụng cho ứng dụng",
     "nativeLanguage": "Ngôn Ngữ Mẹ Đẻ",
     "learningLanguages": "Ngôn Ngữ Đang Học",
     "theme": "Giao Diện",
@@ -131,7 +143,9 @@
     "dailyReviewLimit": "Giới Hạn Ôn Tập Hàng Ngày",
     "showFailedWords": "Hiện Từ Sai Trong Phiên",
     "showFailedWordsDescription": "Thử lại ngay các từ sai trong cùng một phiên",
-    "saved": "Đã lưu cài đặt thành công!"
+    "saved": "Đã lưu cài đặt thành công!",
+    "dangerZone": "Vùng Nguy Hiểm",
+    "dangerZoneDescription": "Các hành động không thể hoàn tác và phá hủy"
   },
   "stats": {
     "totalWords": "Tổng Số Từ",
@@ -197,7 +211,44 @@
     "changePassword": "Đổi Mật Khẩu",
     "oldPassword": "Mật Khẩu Cũ",
     "newPassword": "Mật Khẩu Mới",
-    "passwordChanged": "Đã đổi mật khẩu thành công"
+    "passwordChanged": "Đã đổi mật khẩu thành công",
+    "sessionExpired": "Phiên đã hết hạn. Vui lòng đăng nhập lại.",
+    "oauthNotConfigured": "Google OAuth chưa được cấu hình. Vui lòng thiết lập VITE_GOOGLE_CLIENT_ID trong tệp .env của bạn.",
+    "signInSuccess": "Đã đăng nhập Google thành công!",
+    "signOutSuccess": "Đã đăng xuất thành công",
+    "signInFailed": "Đăng nhập thất bại"
+  },
+  "gdrive": {
+    "title": "Đồng Bộ Google Drive",
+    "connected": "Đã kết nối với",
+    "notConnected": "Chưa kết nối",
+    "signInDescription": "Đăng nhập với tài khoản Google của bạn để tự động đồng bộ cơ sở dữ liệu lên Google Drive.",
+    "scopeDescription": "Ứng dụng sẽ yêu cầu quyền tạo và quản lý tệp trong Google Drive của bạn (phạm vi drive.file).",
+    "signIn": "Đăng nhập bằng Google",
+    "signingIn": "Đang đăng nhập...",
+    "signOut": "Đăng Xuất",
+    "backupFound": "✓ Đã tìm thấy bản sao lưu trên Google Drive",
+    "backupNow": "Sao Lưu Ngay",
+    "restore": "Khôi Phục",
+    "processing": "Đang xử lý...",
+    "lastSyncInfo": "Thông tin đồng bộ gần nhất sẽ hiển thị ở đây sau khi sao lưu thành công",
+    "confirmBackup": "Sao lưu cơ sở dữ liệu của bạn lên Google Drive?",
+    "confirmRestore": "⚠️ CẢNH BÁO: Thao tác này sẽ thay thế dữ liệu hiện tại của bạn bằng bản sao lưu từ Google Drive. Tiếp tục?",
+    "restartPrompt": "\n\nVui lòng khởi động lại ứng dụng để xem dữ liệu đã khôi phục.",
+    "backupSuccess": "Sao lưu hoàn tất thành công",
+    "restoreSuccess": "Khôi phục hoàn tất thành công",
+    "backupFailed": "Sao lưu thất bại",
+    "restoreFailed": "Khôi phục thất bại"
+  },
+  "database": {
+    "clearLocalDatabase": "Xóa Cơ Sở Dữ Liệu Cục Bộ",
+    "clearDatabaseWarning": "Thao tác này sẽ xóa vĩnh viễn tất cả dữ liệu cục bộ của bạn bao gồm bộ sưu tập, từ vựng và lịch sử luyện tập. Đảm bảo bạn có bản sao lưu trên Google Drive trước khi thực hiện. Cơ sở dữ liệu sẽ được xóa ngay lập tức và bạn có thể bắt đầu lại hoặc khôi phục từ bản sao lưu.",
+    "dangerZoneWarning": "🚨 NGUY HIỂM: Thao tác này sẽ XÓA VĨNH VIỄN tất cả dữ liệu cục bộ!\n\nHành động này không thể hoàn tác. Đảm bảo bạn có bản sao lưu trên Google Drive trước khi thực hiện.\n\nBạn có chắc chắn không?",
+    "finalConfirmation": "Xác nhận cuối cùng: Xóa tất cả dữ liệu cục bộ?",
+    "recommendedWorkflow": "Quy trình khuyến nghị: Sao Lưu → Xóa → Khôi Phục",
+    "clearing": "Đang xóa...",
+    "clearSuccess": "Đã xóa cơ sở dữ liệu thành công",
+    "clearFailed": "Xóa cơ sở dữ liệu thất bại"
   },
   "collections": {
     "title": "Bộ Sưu Tập",

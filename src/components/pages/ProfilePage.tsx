@@ -5,6 +5,7 @@ import {
   Cloud,
   CloudOff,
   Download,
+  Languages,
   LogIn,
   LogOut,
   Settings,
@@ -18,7 +19,7 @@ import {
   signOut,
 } from "@choochmeque/tauri-plugin-google-auth-api";
 import { TopBar } from "@/components/molecules";
-import { Button, Card } from "@/components/atoms";
+import { Button, Card, Select } from "@/components/atoms";
 import { useSyncNotification, useDialog } from "@/contexts";
 
 // OAuth configuration - these should be environment variables in production
@@ -26,7 +27,7 @@ const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "";
 
 export const ProfilePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { showAlert, showConfirm } = useDialog();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } =
@@ -36,6 +37,9 @@ export const ProfilePage: React.FC = () => {
   const [userEmail, setUserEmail] = useState<string>("");
   const [backupInfo, setBackupInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<string>(
+    i18n.language || "en",
+  );
 
   useEffect(() => {
     checkGDriveConfig();
@@ -87,7 +91,7 @@ export const ProfilePage: React.FC = () => {
       return response.accessToken;
     } catch (error) {
       console.error("Token refresh failed:", error);
-      showAlert("Session expired. Please sign in again.", {
+      showAlert(t("auth.sessionExpired"), {
         variant: "warning",
       });
 
@@ -104,10 +108,7 @@ export const ProfilePage: React.FC = () => {
 
   const handleSignIn = async () => {
     if (!GOOGLE_CLIENT_ID) {
-      showAlert(
-        "Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID in your .env file.",
-        { variant: "error" },
-      );
+      showAlert(t("auth.oauthNotConfigured"), { variant: "error" });
       return;
     }
 
@@ -144,11 +145,11 @@ export const ProfilePage: React.FC = () => {
 
       setAccessToken(response.accessToken);
       setIsConfigured(true);
-      showAlert("Successfully signed in with Google!", { variant: "success" });
+      showAlert(t("auth.signInSuccess"), { variant: "success" });
       loadBackupInfo(response.accessToken);
     } catch (error) {
       console.error("Sign in failed:", error);
-      showAlert(`Sign in failed: ${error}`, { variant: "error" });
+      showAlert(`${t("auth.signInFailed")}: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
@@ -167,24 +168,21 @@ export const ProfilePage: React.FC = () => {
       setUserEmail("");
       setIsConfigured(false);
       setBackupInfo(null);
-      showAlert("Signed out successfully", { variant: "success" });
+      showAlert(t("auth.signOutSuccess"), { variant: "success" });
     } catch (error) {
       console.error("Sign out failed:", error);
-      showAlert(`Sign out failed: ${error}`, { variant: "error" });
+      showAlert(`${t("auth.signInFailed")}: ${error}`, { variant: "error" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleBackup = async () => {
-    const confirmed = await showConfirm(
-      "Backup your database to Google Drive?",
-      {
-        variant: "info",
-        confirmText: "Backup",
-        cancelText: "Cancel",
-      },
-    );
+    const confirmed = await showConfirm(t("gdrive.confirmBackup"), {
+      variant: "info",
+      confirmText: t("buttons.backup"),
+      cancelText: t("buttons.cancel"),
+    });
 
     if (!confirmed) return;
 
@@ -234,14 +232,11 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleRestore = async () => {
-    const confirmed = await showConfirm(
-      "⚠️  WARNING: This will replace your current data with the backup from Google Drive. Continue?",
-      {
-        variant: "warning",
-        confirmText: "Restore",
-        cancelText: "Cancel",
-      },
-    );
+    const confirmed = await showConfirm(t("gdrive.confirmRestore"), {
+      variant: "warning",
+      confirmText: t("buttons.restore"),
+      cancelText: t("buttons.cancel"),
+    });
 
     if (!confirmed) return;
 
@@ -253,11 +248,7 @@ export const ProfilePage: React.FC = () => {
         const result = await invoke<string>("restore_from_gdrive", {
           accessToken: currentToken,
         });
-        showAlert(
-          result +
-            "\n\nPlease restart the application to see the restored data.",
-          { variant: "success" },
-        );
+        showAlert(result + t("gdrive.restartPrompt"), { variant: "success" });
         // Recheck sync status after restore
         await checkSyncStatus();
       } catch (error) {
@@ -277,11 +268,9 @@ export const ProfilePage: React.FC = () => {
             const result = await invoke<string>("restore_from_gdrive", {
               accessToken: newToken,
             });
-            showAlert(
-              result +
-                "\n\nPlease restart the application to see the restored data.",
-              { variant: "success" },
-            );
+            showAlert(result + t("gdrive.restartPrompt"), {
+              variant: "success",
+            });
             await checkSyncStatus();
           }
         } else {
@@ -297,26 +286,20 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleClearDatabase = async () => {
-    const confirmed = await showConfirm(
-      "🚨 DANGER: This will PERMANENTLY DELETE all local data!\n\nThis action cannot be undone. Make sure you have a backup on Google Drive before proceeding.\n\nAre you absolutely sure?",
-      {
-        variant: "error",
-        confirmText: "Yes, Delete All",
-        cancelText: "Cancel",
-      },
-    );
+    const confirmed = await showConfirm(t("database.dangerZoneWarning"), {
+      variant: "error",
+      confirmText: t("buttons.deleteConfirm"),
+      cancelText: t("buttons.cancel"),
+    });
 
     if (!confirmed) return;
 
     // Second confirmation
-    const finalConfirmed = await showConfirm(
-      "Final confirmation: Delete all local data?",
-      {
-        variant: "error",
-        confirmText: "Delete",
-        cancelText: "Cancel",
-      },
-    );
+    const finalConfirmed = await showConfirm(t("database.finalConfirmation"), {
+      variant: "error",
+      confirmText: t("buttons.delete"),
+      cancelText: t("buttons.cancel"),
+    });
 
     if (!finalConfirmed) return;
 
@@ -332,11 +315,54 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleLanguageChange = async (language: string) => {
+    try {
+      await i18n.changeLanguage(language);
+      localStorage.setItem("app_language", language);
+      setCurrentLanguage(language);
+      showAlert(t("settings.saved") || "Language changed successfully!", {
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Failed to change language:", error);
+      showAlert("Failed to change language", { variant: "error" });
+    }
+  };
+
   return (
     <>
       <TopBar title={t("nav.profile")} showBack={false} />
 
       <div className="min-h-screen p-6 space-y-6">
+        {/* Language Settings Section */}
+        <Card variant="glass">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Languages className="w-6 h-6 text-blue-600" />
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">
+                  {t("settings.language") || "Interface Language"}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {t("settings.languageDescription") ||
+                    "Choose your preferred language for the app"}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Select
+                options={[
+                  { value: "en", label: "English" },
+                  { value: "vi", label: "Tiếng Việt" },
+                ]}
+                value={currentLanguage}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+              />
+            </div>
+          </div>
+        </Card>
+
         {/* Google Drive Sync Section */}
         <Card variant="glass">
           <div className="space-y-4">
@@ -349,12 +375,12 @@ export const ProfilePage: React.FC = () => {
                 )}
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">
-                    Google Drive Sync
+                    {t("gdrive.title")}
                   </h3>
                   <p className="text-sm text-gray-600">
                     {isConfigured
-                      ? `Connected as ${userEmail}`
-                      : "Not connected"}
+                      ? `${t("gdrive.connected")} ${userEmail}`
+                      : t("gdrive.notConnected")}
                   </p>
                 </div>
               </div>
@@ -365,7 +391,7 @@ export const ProfilePage: React.FC = () => {
                   variant="secondary"
                   icon={LogOut}
                 >
-                  Sign Out
+                  {t("gdrive.signOut")}
                 </Button>
               )}
             </div>
@@ -373,12 +399,10 @@ export const ProfilePage: React.FC = () => {
             {!isConfigured && (
               <div className="space-y-3 pt-4 border-t border-gray-200">
                 <p className="text-sm text-gray-600">
-                  Sign in with your Google account to automatically sync your
-                  database to Google Drive.
+                  {t("gdrive.signInDescription")}
                 </p>
                 <p className="text-xs text-gray-500">
-                  This will request access to create and manage files in your
-                  Google Drive (drive.file scope).
+                  {t("gdrive.scopeDescription")}
                 </p>
                 <Button
                   onClick={handleSignIn}
@@ -387,7 +411,7 @@ export const ProfilePage: React.FC = () => {
                   fullWidth
                   icon={LogIn}
                 >
-                  {loading ? "Signing in..." : "Sign in with Google"}
+                  {loading ? t("gdrive.signingIn") : t("gdrive.signIn")}
                 </Button>
               </div>
             )}
@@ -397,7 +421,7 @@ export const ProfilePage: React.FC = () => {
                 {backupInfo && (
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                     <p className="text-sm text-green-800 font-medium">
-                      ✓ Backup found on Google Drive
+                      {t("gdrive.backupFound")}
                     </p>
                     <pre className="text-xs text-green-700 mt-1 overflow-auto">
                       {backupInfo}
@@ -412,7 +436,7 @@ export const ProfilePage: React.FC = () => {
                     variant="primary"
                     icon={Upload}
                   >
-                    {loading ? "Processing..." : "Backup Now"}
+                    {loading ? t("gdrive.processing") : t("gdrive.backupNow")}
                   </Button>
                   <Button
                     onClick={handleRestore}
@@ -420,12 +444,12 @@ export const ProfilePage: React.FC = () => {
                     variant="secondary"
                     icon={Download}
                   >
-                    {loading ? "Processing..." : "Restore"}
+                    {loading ? t("gdrive.processing") : t("gdrive.restore")}
                   </Button>
                 </div>
 
                 <p className="text-xs text-gray-500 text-center">
-                  Last sync info will appear above after successful backup
+                  {t("gdrive.lastSyncInfo")}
                 </p>
               </div>
             )}
@@ -463,48 +487,25 @@ export const ProfilePage: React.FC = () => {
           </div>
         </Card>
 
-        {/* App Info Section */}
-        <Card variant="glass">
-          <div className="space-y-2">
-            <h3 className="text-lg font-bold text-gray-800">App Information</h3>
-            <div className="text-sm text-gray-600 space-y-1">
-              <p>
-                <strong>Version:</strong> 0.1.0
-              </p>
-              <p>
-                <strong>Mode:</strong> Local-first (offline)
-              </p>
-              <p>
-                <strong>Database:</strong> SQLite
-              </p>
-              <p>
-                <strong>Sync:</strong> Google Drive (optional)
-              </p>
-            </div>
-          </div>
-        </Card>
-
         {/* Danger Zone */}
         <Card variant="glass">
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-bold text-red-600">Danger Zone</h3>
+              <h3 className="text-lg font-bold text-red-600">
+                {t("settings.dangerZone")}
+              </h3>
               <p className="text-sm text-gray-600 mt-1">
-                Irreversible and destructive actions
+                {t("settings.dangerZoneDescription")}
               </p>
             </div>
 
             <div className="border-t border-red-200 pt-4 space-y-3">
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-800 font-medium">
-                  Clear Local Database
+                  {t("database.clearLocalDatabase")}
                 </p>
                 <p className="text-xs text-red-700 mt-1">
-                  This will permanently delete all your local data including
-                  collections, vocabularies, and practice history. Make sure you
-                  have a backup on Google Drive before proceeding. The database
-                  will be cleared immediately and you can start fresh or restore
-                  from backup.
+                  {t("database.clearDatabaseWarning")}
                 </p>
               </div>
 
@@ -515,11 +516,13 @@ export const ProfilePage: React.FC = () => {
                 fullWidth
                 icon={Trash2}
               >
-                {loading ? "Clearing..." : "Clear Local Database"}
+                {loading
+                  ? t("database.clearing")
+                  : t("database.clearLocalDatabase")}
               </Button>
 
               <p className="text-xs text-gray-500 text-center">
-                Recommended workflow: Backup → Clear → Restore
+                {t("database.recommendedWorkflow")}
               </p>
             </div>
           </div>

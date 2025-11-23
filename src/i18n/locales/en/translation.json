@@ -2,7 +2,15 @@
   "app": {
     "name": "Cham Lang",
     "tagline": "Adapt to Learn",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "information": "App Information",
+    "version": "Version",
+    "mode": "Mode",
+    "modeValue": "Local-first (offline)",
+    "database": "Database",
+    "databaseValue": "SQLite",
+    "sync": "Sync",
+    "syncValue": "Google Drive (optional)"
   },
   "nav": {
     "learn": "Learn",
@@ -85,13 +93,16 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
+    "deleteConfirm": "Yes, Delete All",
     "edit": "Edit",
     "add": "Add",
     "search": "Search",
     "filter": "Filter",
     "clear": "Clear",
     "viewDetails": "View Details",
-    "close": "Close"
+    "close": "Close",
+    "backup": "Backup",
+    "restore": "Restore"
   },
   "messages": {
     "saveSuccess": "Saved successfully!",
@@ -105,6 +116,7 @@
   "settings": {
     "title": "Settings",
     "language": "Interface Language",
+    "languageDescription": "Choose your preferred language for the app",
     "nativeLanguage": "Native Language",
     "learningLanguages": "Learning Languages",
     "theme": "Theme",
@@ -131,7 +143,9 @@
     "dailyReviewLimit": "Daily Review Limit",
     "showFailedWords": "Show Failed Words in Session",
     "showFailedWordsDescription": "Retry incorrect words immediately in the same session",
-    "saved": "Settings saved successfully!"
+    "saved": "Settings saved successfully!",
+    "dangerZone": "Danger Zone",
+    "dangerZoneDescription": "Irreversible and destructive actions"
   },
   "stats": {
     "totalWords": "Total Words",
@@ -197,7 +211,44 @@
     "changePassword": "Change Password",
     "oldPassword": "Old Password",
     "newPassword": "New Password",
-    "passwordChanged": "Password changed successfully"
+    "passwordChanged": "Password changed successfully",
+    "sessionExpired": "Session expired. Please sign in again.",
+    "oauthNotConfigured": "Google OAuth is not configured. Please set VITE_GOOGLE_CLIENT_ID in your .env file.",
+    "signInSuccess": "Successfully signed in with Google!",
+    "signOutSuccess": "Signed out successfully",
+    "signInFailed": "Sign in failed"
+  },
+  "gdrive": {
+    "title": "Google Drive Sync",
+    "connected": "Connected as",
+    "notConnected": "Not connected",
+    "signInDescription": "Sign in with your Google account to automatically sync your database to Google Drive.",
+    "scopeDescription": "This will request access to create and manage files in your Google Drive (drive.file scope).",
+    "signIn": "Sign in with Google",
+    "signingIn": "Signing in...",
+    "signOut": "Sign Out",
+    "backupFound": "✓ Backup found on Google Drive",
+    "backupNow": "Backup Now",
+    "restore": "Restore",
+    "processing": "Processing...",
+    "lastSyncInfo": "Last sync info will appear above after successful backup",
+    "confirmBackup": "Backup your database to Google Drive?",
+    "confirmRestore": "⚠️ WARNING: This will replace your current data with the backup from Google Drive. Continue?",
+    "restartPrompt": "\n\nPlease restart the application to see the restored data.",
+    "backupSuccess": "Backup completed successfully",
+    "restoreSuccess": "Restore completed successfully",
+    "backupFailed": "Backup failed",
+    "restoreFailed": "Restore failed"
+  },
+  "database": {
+    "clearLocalDatabase": "Clear Local Database",
+    "clearDatabaseWarning": "This will permanently delete all your local data including collections, vocabularies, and practice history. Make sure you have a backup on Google Drive before proceeding. The database will be cleared immediately and you can start fresh or restore from backup.",
+    "dangerZoneWarning": "🚨 DANGER: This will PERMANENTLY DELETE all local data!\n\nThis action cannot be undone. Make sure you have a backup on Google Drive before proceeding.\n\nAre you absolutely sure?",
+    "finalConfirmation": "Final confirmation: Delete all local data?",
+    "recommendedWorkflow": "Recommended workflow: Backup → Clear → Restore",
+    "clearing": "Clearing...",
+    "clearSuccess": "Database cleared successfully",
+    "clearFailed": "Failed to clear database"
   },
   "collections": {
     "title": "Collections",
