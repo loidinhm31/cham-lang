@@ -68,7 +68,6 @@ export const ProgressPage: React.FC = () => {
 
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
-      console.log("pr", progress);
       if (progress) {
         setPracticeStreak(progress.current_streak);
         setWordsPracticed(progress.total_words_practiced);

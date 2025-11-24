@@ -29,6 +29,7 @@ export interface SessionState {
   collectionId: string;
   language: string;
   startTime: Date;
+  firstPassComplete: boolean; // Track if we've gone through all initial words once
 
   // Statistics
   totalQuestions: number;
@@ -70,6 +71,7 @@ export class SessionManager {
       collectionId,
       language,
       startTime: new Date(),
+      firstPassComplete: false,
       totalQuestions: 0,
       correctAnswers: 0,
       incorrectAnswers: 0,
@@ -80,13 +82,22 @@ export class SessionManager {
    * Get the next word to practice
    * Returns null if no more words available
    * Skips the current word to avoid showing the same word twice in a row
+   * Failed words only come back after completing first pass through all initial words
    */
   getNextWord(): Vocabulary | null {
     const currentWordId = this.state.currentWord?.id || "";
 
-    // Helper function to get next word from a queue, skipping the current word
-    const getFromQueue = (queue: Vocabulary[]): Vocabulary | null => {
-      // If current word is in this queue, find the next different word
+    // Helper function to get next word from a queue, skipping the current word if possible
+    const getFromQueue = (queue: Vocabulary[], allowSameWord: boolean = false): Vocabulary | null => {
+      if (queue.length === 0) return null;
+
+      // If only one word and it's the current word, return it if allowed
+      if (allowSameWord && queue.length === 1) {
+        const word = queue.shift();
+        return word || null;
+      }
+
+      // Try to find a different word than current
       let nextWord: Vocabulary | null = null;
       let attempts = 0;
       const maxAttempts = queue.length;
@@ -106,36 +117,46 @@ export class SessionManager {
       return nextWord;
     };
 
-    // First, check failed words queue (higher priority)
-    if (this.state.failedWordsQueue.length > 0) {
-      const nextWord = getFromQueue(this.state.failedWordsQueue);
+    // Priority 1: Active queue (initial words) if first pass not complete
+    if (!this.state.firstPassComplete && this.state.activeQueue.length > 0) {
+      const nextWord = getFromQueue(this.state.activeQueue, false);
+      if (nextWord) {
+        this.state.currentWord = nextWord;
+        return nextWord;
+      }
+
+      // If we can't get a different word but queue is not empty, take it anyway
+      if (this.state.activeQueue.length > 0) {
+        const word = this.state.activeQueue.shift() || null;
+        this.state.currentWord = word;
+        return word;
+      }
+    }
+
+    // Check if active queue is now empty for the first time
+    if (!this.state.firstPassComplete && this.state.activeQueue.length === 0) {
+      this.state.firstPassComplete = true;
+    }
+
+    // Priority 2: Failed words queue (only after first pass is complete)
+    if (this.state.firstPassComplete && this.state.failedWordsQueue.length > 0) {
+      // Allow returning the same word if it's the only one left
+      const nextWord = getFromQueue(this.state.failedWordsQueue, true);
+
       if (nextWord) {
         this.state.currentWord = nextWord;
         return nextWord;
       }
     }
 
-    // Then, check active queue
-    if (this.state.activeQueue.length > 0) {
-      const nextWord = getFromQueue(this.state.activeQueue);
+    // Priority 3: Continue with active queue if we're on second+ pass
+    if (this.state.firstPassComplete && this.state.activeQueue.length > 0) {
+      const nextWord = getFromQueue(this.state.activeQueue, true);
+
       if (nextWord) {
         this.state.currentWord = nextWord;
         return nextWord;
       }
-    }
-
-    // If we only have the current word left, return it anyway
-    // (This handles the case where there's only one word in the session)
-    if (this.state.failedWordsQueue.length > 0) {
-      const word = this.state.failedWordsQueue.shift() || null;
-      this.state.currentWord = word;
-      return word;
-    }
-
-    if (this.state.activeQueue.length > 0) {
-      const word = this.state.activeQueue.shift() || null;
-      this.state.currentWord = word;
-      return word;
     }
 
     return null;

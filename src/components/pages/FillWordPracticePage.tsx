@@ -46,6 +46,7 @@ export const FillWordPracticePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [showNext, setShowNext] = useState(false);
+  const [questionCounter, setQuestionCounter] = useState(0);
 
   useEffect(() => {
     if (collectionId) {
@@ -126,6 +127,7 @@ export const FillWordPracticePage: React.FC = () => {
       // Get first word
       const firstWord = manager.getNextWord();
       setCurrentVocab(firstWord);
+      setQuestionCounter(0); // Reset counter for new session
     } catch (error) {
       console.error("Failed to load vocabularies:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -191,6 +193,7 @@ export const FillWordPracticePage: React.FC = () => {
       setCurrentVocab(nextWord);
       setShowNext(false);
       setCardStartTime(Date.now());
+      setQuestionCounter(prev => prev + 1); // Increment counter to force re-render even for same word
     }
   };
 
@@ -240,6 +243,7 @@ export const FillWordPracticePage: React.FC = () => {
     setShowNext(false);
     setCompleted(false);
     setCardStartTime(Date.now());
+    setQuestionCounter(0);
     loadVocabularies();
   };
 
@@ -398,7 +402,7 @@ export const FillWordPracticePage: React.FC = () => {
 
         {/* Fill Word Card */}
         <FillWordCard
-          key={currentVocab.id || currentVocab.word}
+          key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           definition={getContent(currentVocab)}
           correctAnswer={currentVocab.word}
           hint={hint}

@@ -46,6 +46,7 @@ export const FlashcardPracticePage: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
+  const [questionCounter, setQuestionCounter] = useState(0);
 
   useEffect(() => {
     if (collectionId) {
@@ -126,6 +127,7 @@ export const FlashcardPracticePage: React.FC = () => {
       // Get first word
       const firstWord = manager.getNextWord();
       setCurrentVocab(firstWord);
+      setQuestionCounter(0); // Reset counter for new session
     } catch (error) {
       console.error("Failed to load vocabularies:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -167,6 +169,7 @@ export const FlashcardPracticePage: React.FC = () => {
       setCurrentVocab(nextWord);
       setIsFlipped(false);
       setCardStartTime(Date.now());
+      setQuestionCounter(prev => prev + 1); // Increment counter to force re-render even for same word
     }
   };
 
@@ -216,6 +219,7 @@ export const FlashcardPracticePage: React.FC = () => {
     setIsFlipped(false);
     setCompleted(false);
     setCardStartTime(Date.now());
+    setQuestionCounter(0);
     loadVocabularies();
   };
 
@@ -371,6 +375,7 @@ export const FlashcardPracticePage: React.FC = () => {
 
         {/* Flashcard */}
         <FlashCard
+          key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           front={currentVocab.word}
           subtitle={currentVocab.ipa}
           back={getContent(currentVocab)}

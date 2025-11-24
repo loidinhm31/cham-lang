@@ -2,7 +2,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { VocabularyCard } from "@/components/molecules";
 import type { Vocabulary } from "@/types/vocabulary.ts";
-import { getVocabularyId } from "@/types/vocabulary.ts";
 
 interface VocabularyListProps {
   vocabularies: Vocabulary[];
@@ -49,7 +48,7 @@ export const VocabularyList: React.FC<VocabularyListProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {vocabularies.map((vocabulary) => {
-        const vocabId = getVocabularyId(vocabulary);
+        const vocabId = vocabulary.id;
         const isSelected = vocabId ? selectedIds.has(vocabId) : false;
 
         return (

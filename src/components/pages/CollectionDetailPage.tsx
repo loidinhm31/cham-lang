@@ -9,7 +9,6 @@ import { CollectionService } from "@/services/collection.service.ts";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { Collection } from "@/types/collection.ts";
 import type { Vocabulary } from "@/types/vocabulary.ts";
-import { getVocabularyId } from "@/types/vocabulary.ts";
 import { useDialog } from "@/contexts";
 
 export const CollectionDetailPage: React.FC = () => {
@@ -101,7 +100,7 @@ export const CollectionDetailPage: React.FC = () => {
       setSelectedIds(new Set());
     } else {
       const allIds = vocabularies
-        .map((v) => getVocabularyId(v))
+        .map((v) => v.id)
         .filter((id): id is string => id !== undefined);
       setSelectedIds(new Set(allIds));
     }

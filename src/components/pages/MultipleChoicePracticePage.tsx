@@ -48,6 +48,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
   const [completed, setCompleted] = useState(false);
   const [showNext, setShowNext] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
+  const [questionCounter, setQuestionCounter] = useState(0);
 
   useEffect(() => {
     if (collectionId) {
@@ -59,7 +60,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
     if (currentVocab && allVocabularies.length > 0) {
       generateOptions();
     }
-  }, [currentVocab, allVocabularies]);
+  }, [currentVocab, allVocabularies, questionCounter]);
 
   const loadVocabularies = async () => {
     if (!collectionId) {
@@ -74,10 +75,14 @@ export const MultipleChoicePracticePage: React.FC = () => {
       const userSettings =
         await LearningSettingsService.getOrCreateLearningSettings();
 
+      console.log("userSettings", userSettings);
+
       // Load vocabularies
       const vocabData =
         await VocabularyService.getVocabulariesByCollection(collectionId);
       setAllVocabularies(vocabData); // Store all vocabularies for generating options
+
+      console.log("vocabData", vocabData);
 
       if (vocabData.length === 0) {
         setLoading(false);
@@ -89,6 +94,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
       const wordsProgress = progressData?.words_progress || [];
+
+      console.log("progressData", progressData);
+      console.log("wordsProgress", wordsProgress);
 
       let selectedWords: Vocabulary[];
 
@@ -134,7 +142,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
       // Get first word
       const firstWord = manager.getNextWord();
+      console.log("firstWord", firstWord)
       setCurrentVocab(firstWord);
+      setQuestionCounter(0); // Reset counter for new session
     } catch (error) {
       console.error("Failed to load vocabularies:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -162,15 +172,13 @@ export const MultipleChoicePracticePage: React.FC = () => {
     const otherVocabs = allVocabularies.filter(
       (v) => (v.id || v.word) !== (currentVocab.id || currentVocab.word),
     );
-    const wrongAnswers = otherVocabs
-      .sort(() => Math.random() - 0.5)
+    const shuffledOthers = shuffleArray(otherVocabs);
+    const wrongAnswers = shuffledOthers
       .slice(0, 3)
       .map((v) => getContent(v));
 
-    // Combine with correct answer and shuffle
-    const allOptions = [getContent(currentVocab), ...wrongAnswers].sort(
-      () => Math.random() - 0.5,
-    );
+    // Combine with correct answer and shuffle using Fisher-Yates
+    const allOptions = shuffleArray([getContent(currentVocab), ...wrongAnswers]);
 
     setOptions(allOptions);
   };
@@ -220,6 +228,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
       setCurrentVocab(nextWord);
       setShowNext(false);
       setCardStartTime(Date.now());
+      setQuestionCounter(prev => prev + 1); // Increment counter to force re-render even for same word
     }
   };
 
@@ -269,6 +278,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
     setShowNext(false);
     setCompleted(false);
     setCardStartTime(Date.now());
+    setQuestionCounter(0);
     loadVocabularies();
   };
 
@@ -425,7 +435,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
         {/* Multiple Choice Card */}
         <MultipleChoiceCard
-          key={currentVocab.id || currentVocab.word}
+          key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           question={currentVocab.word}
           subtitle={currentVocab.ipa}
           options={options}
