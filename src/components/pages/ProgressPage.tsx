@@ -4,7 +4,18 @@ import { StatsCard, TopBar } from "@/components/molecules";
 import { Card } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import { PracticeService } from "@/services/practice.service.ts";
+import { LearningSettingsService } from "@/services/learningSettings.service.ts";
 import type { Vocabulary } from "@/types/vocabulary.ts";
+import type { LearningSettings } from "@/types/settings.ts";
+import type { WordProgress } from "@/types/practice.ts";
+import {
+  getLearningStats,
+  getBoxDistribution,
+  getBoxInfo,
+  type LearningStats,
+  type BoxDistribution,
+  type BoxInfo,
+} from "@/utils/spacedRepetition/leitnerBoxes.ts";
 
 interface LevelProgress {
   level: string;
@@ -22,6 +33,11 @@ export const ProgressPage: React.FC = () => {
   const [availableLanguages, setAvailableLanguages] = useState<string[]>([]);
   const [levelProgress, setLevelProgress] = useState<LevelProgress[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Spaced Repetition State
+  const [learningStats, setLearningStats] = useState<LearningStats | null>(null);
+  const [boxDistribution, setBoxDistribution] = useState<BoxDistribution[]>([]);
+  const [boxInfo, setBoxInfo] = useState<BoxInfo[]>([]);
 
   useEffect(() => {
     loadAvailableLanguages();
@@ -66,6 +82,9 @@ export const ProgressPage: React.FC = () => {
       const vocabularies = await VocabularyService.getAllVocabularies(language);
       setTotalWords(vocabularies.length);
 
+      // Load learning settings
+      const settings = await LearningSettingsService.getOrCreateLearningSettings();
+
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
       if (progress) {
@@ -78,12 +97,18 @@ export const ProgressPage: React.FC = () => {
           progress.words_progress,
         );
         setLevelProgress(levelStats);
+
+        // Calculate spaced repetition statistics
+        calculateSpacedRepetitionStats(progress.words_progress, settings);
       } else {
         setPracticeStreak(0);
         setWordsPracticed(0);
 
         const levelStats = calculateLevelProgress(vocabularies, []);
         setLevelProgress(levelStats);
+
+        // Calculate empty stats
+        calculateSpacedRepetitionStats([], settings);
       }
     } catch (error) {
       console.error("Failed to load stats:", error);
@@ -140,6 +165,23 @@ export const ProgressPage: React.FC = () => {
     });
 
     return levels;
+  };
+
+  const calculateSpacedRepetitionStats = (
+    wordsProgress: WordProgress[],
+    settings: LearningSettings,
+  ) => {
+    // Calculate learning stats
+    const stats = getLearningStats(wordsProgress, settings);
+    setLearningStats(stats);
+
+    // Calculate box distribution
+    const distribution = getBoxDistribution(wordsProgress, settings);
+    setBoxDistribution(distribution);
+
+    // Get box info
+    const info = getBoxInfo(settings);
+    setBoxInfo(info);
   };
 
   const stats = [
@@ -273,6 +315,130 @@ export const ProgressPage: React.FC = () => {
                 </Card>
               )}
             </div>
+
+            {/* Spaced Repetition Section - Only show if there are words practiced */}
+            {learningStats && learningStats.totalWords > 0 && (
+              <>
+                {/* Mastery Overview Card */}
+                <Card variant="glass">
+                  <h3 className="text-base font-bold text-gray-800 mb-3">
+                    {t("learningProgress.overview")}
+                  </h3>
+                  <div className="space-y-3">
+                    {/* Mastery Percentage - Large Display */}
+                    <div className="text-center py-2">
+                      <div className="text-5xl font-bold text-teal-600 mb-1">
+                        {learningStats.masteryPercentage}%
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        {t("learningProgress.overallMastery")}
+                      </p>
+                    </div>
+
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                          {learningStats.masteredWords}
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          {t("learningProgress.mastered")}
+                        </p>
+                      </div>
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-yellow-600">
+                          {learningStats.learningWords}
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          {t("learningProgress.learning")}
+                        </p>
+                      </div>
+                      <div className="text-center p-2 bg-white/60 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {learningStats.newWords}
+                        </div>
+                        <p className="text-xs text-gray-600">
+                          {t("learningProgress.new")}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Review Queue Card */}
+                <Card variant="glass">
+                  <h3 className="text-base font-bold text-gray-800 mb-3">
+                    {t("learningProgress.reviewQueue")}
+                  </h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 rounded-lg border border-orange-200">
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl">📅</span>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-800">
+                            {t("learningProgress.dueToday")}
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {t("learningProgress.readyForReview")}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-3xl font-bold text-orange-600">
+                        {learningStats.wordsDueToday}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-2 bg-white/60 rounded-lg">
+                      <p className="text-sm text-gray-700">
+                        {t("learningProgress.averageBoxLevel")}
+                      </p>
+                      <p className="text-lg font-bold text-teal-600">
+                        {learningStats.averageBox.toFixed(1)}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Leitner Box Distribution Card */}
+                <Card variant="glass">
+                  <h3 className="text-base font-bold text-gray-800 mb-3">
+                    {t("learningProgress.progressByStage")}
+                  </h3>
+                  <div className="space-y-2.5">
+                    {boxDistribution.map((box) => {
+                      const info = boxInfo.find((b) => b.boxNumber === box.boxNumber);
+                      if (!info) return null;
+
+                      return (
+                        <div key={box.boxNumber}>
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{info.icon}</span>
+                              <div>
+                                <span className="text-sm font-semibold text-gray-800">
+                                  {info.name}
+                                </span>
+                                <p className="text-xs text-gray-500">
+                                  {box.wordCount} {t("learningProgress.words")}
+                                </p>
+                              </div>
+                            </div>
+                            <span className="text-sm font-bold text-teal-600">
+                              {box.percentage}%
+                            </span>
+                          </div>
+                          <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${info.color} rounded-full transition-all duration-500`}
+                              style={{ width: `${box.percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              </>
+            )}
           </>
         )}
       </div>

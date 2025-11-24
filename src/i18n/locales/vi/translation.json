@@ -154,6 +154,19 @@
     "streak": "Chuỗi Ngày",
     "lessonsCompleted": "Bài Học Hoàn Thành"
   },
+  "learningProgress": {
+    "overview": "Tổng Quan Học Tập",
+    "overallMastery": "Mức Độ Thành Thạo Tổng Thể",
+    "mastered": "Đã Thành Thạo",
+    "learning": "Đang Học",
+    "new": "Mới",
+    "reviewQueue": "Danh Sách Ôn Tập",
+    "dueToday": "Cần Ôn Hôm Nay",
+    "readyForReview": "Sẵn sàng ôn tập",
+    "averageBoxLevel": "Mức Độ Hộp Trung Bình",
+    "progressByStage": "Tiến Độ Học Theo Giai Đoạn",
+    "words": "từ"
+  },
   "practice": {
     "title": "Luyện Tập",
     "selectMode": "Chọn Chế Độ Luyện Tập",

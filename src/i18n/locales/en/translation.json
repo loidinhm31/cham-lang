@@ -154,6 +154,19 @@
     "streak": "Day Streak",
     "lessonsCompleted": "Lessons Completed"
   },
+  "learningProgress": {
+    "overview": "Learning Overview",
+    "overallMastery": "Overall Mastery",
+    "mastered": "Mastered",
+    "learning": "Learning",
+    "new": "New",
+    "reviewQueue": "Review Queue",
+    "dueToday": "Due Today",
+    "readyForReview": "Ready for review",
+    "averageBoxLevel": "Average Box Level",
+    "progressByStage": "Learning Progress by Stage",
+    "words": "words"
+  },
   "practice": {
     "title": "Practice",
     "selectMode": "Select Practice Mode",
