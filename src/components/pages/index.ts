@@ -5,6 +5,7 @@ export { VocabularyDetailPage } from "./VocabularyDetailPage";
 export { ProgressPage } from "./ProgressPage";
 export { ProfilePage } from "./ProfilePage";
 export { PracticeModePage } from "./PracticeModePage";
+export { StudyModePage } from "./StudyModePage";
 export { FlashcardPracticePage } from "./FlashcardPracticePage";
 export { FillWordPracticePage } from "./FillWordPracticePage";
 export { MultipleChoicePracticePage } from "./MultipleChoicePracticePage";

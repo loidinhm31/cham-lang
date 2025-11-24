@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, BookOpen } from "lucide-react";
 import { FillWordCard, TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
 import { Vocabulary } from "@/types/vocabulary.ts";
@@ -12,16 +12,31 @@ import { WordSelectionService } from "@/services/wordSelection.service.ts";
 import { SessionManager } from "@/utils/sessionManager.ts";
 import { useDialog } from "@/contexts";
 
+// Helper function to shuffle array
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 export const FillWordPracticePage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { showAlert } = useDialog();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const collectionId = searchParams.get("collection");
   const contentMode = searchParams.get("contentMode") as
     | "concept"
     | "definition"
     | null;
+  const wordLimit = searchParams.get("wordLimit") || "50";
+
+  // Check if this is study mode (URL path includes /practice/study/)
+  const isStudyMode = location.pathname.includes("/practice/study/");
 
   const [sessionManager, setSessionManager] = useState<SessionManager | null>(
     null,
@@ -66,19 +81,35 @@ export const FillWordPracticePage: React.FC = () => {
       const progressData = await PracticeService.getPracticeProgress(language);
       const wordsProgress = progressData?.words_progress || [];
 
-      // Select words using smart selection with mode-specific filtering
-      const selectedWords = WordSelectionService.selectWordsForPractice(
-        vocabData,
-        wordsProgress,
-        userSettings,
-        {
-          includeDueWords: true,
-          includeNewWords: true,
-          maxWords: 50,
-          shuffle: true,
-          currentMode: "fillword", // Filter to only include words not completed in fillword mode
-        },
-      );
+      let selectedWords: Vocabulary[];
+
+      if (isStudyMode) {
+        // Study mode: Simple selection without smart algorithm
+        selectedWords = [...vocabData];
+
+        // Apply word limit
+        if (wordLimit !== "all") {
+          const limit = parseInt(wordLimit, 10);
+          selectedWords = selectedWords.slice(0, limit);
+        }
+
+        // Shuffle
+        selectedWords = shuffleArray(selectedWords);
+      } else {
+        // Normal practice mode: Use smart selection with mode-specific filtering
+        selectedWords = WordSelectionService.selectWordsForPractice(
+          vocabData,
+          wordsProgress,
+          userSettings,
+          {
+            includeDueWords: true,
+            includeNewWords: true,
+            maxWords: 50,
+            shuffle: true,
+            currentMode: "fillword", // Filter to only include words not completed in fillword mode
+          },
+        );
+      }
 
       // Initialize session manager
       const manager = new SessionManager(
@@ -88,6 +119,7 @@ export const FillWordPracticePage: React.FC = () => {
         "fillword",
         collectionId,
         language,
+        !isStudyMode, // trackProgress: true for normal mode, false for study mode
       );
       setSessionManager(manager);
 
@@ -168,32 +200,35 @@ export const FillWordPracticePage: React.FC = () => {
       return;
     }
 
-    try {
-      const stats = sessionManager.getStatistics();
-      const results = sessionManager.getSessionResults();
-      const language = currentVocab.language || "en";
+    // In study mode, skip saving progress
+    if (!isStudyMode) {
+      try {
+        const stats = sessionManager.getStatistics();
+        const results = sessionManager.getSessionResults();
+        const language = currentVocab.language || "en";
 
-      // Save practice session
-      await PracticeService.createPracticeSession({
-        collection_id: collectionId,
-        mode: "fillword",
-        language,
-        results,
-        duration_seconds: stats.durationSeconds,
-      });
-
-      // Save updated progress for all words
-      const updatedProgress = sessionManager.getUpdatedWordProgress();
-      for (const progress of updatedProgress) {
-        await PracticeService.updatePracticeProgress({
+        // Save practice session
+        await PracticeService.createPracticeSession({
+          collection_id: collectionId,
+          mode: "fillword",
           language,
-          vocabulary_id: progress.vocabulary_id,
-          word: progress.word,
-          correct: progress.correct_count > 0,
+          results,
+          duration_seconds: stats.durationSeconds,
         });
+
+        // Save updated progress for all words
+        const updatedProgress = sessionManager.getUpdatedWordProgress();
+        for (const progress of updatedProgress) {
+          await PracticeService.updatePracticeProgress({
+            language,
+            vocabulary_id: progress.vocabulary_id,
+            word: progress.word,
+            correct: progress.correct_count > 0,
+          });
+        }
+      } catch (error) {
+        console.error("Failed to save session:", error);
       }
-    } catch (error) {
-      console.error("Failed to save session:", error);
     }
 
     setCompleted(true);
@@ -211,7 +246,10 @@ export const FillWordPracticePage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t("practice.fillWordMode")} showBack />
+        <TopBar
+          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.fillWordMode")}
+          showBack
+        />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -229,12 +267,28 @@ export const FillWordPracticePage: React.FC = () => {
 
     return (
       <>
-        <TopBar title={t("practice.completed")} showBack />
+        <TopBar
+          title={isStudyMode ? (t("study.completed") || "Study Complete") : t("practice.completed")}
+          showBack
+        />
         <div className="px-4 pt-6 space-y-6">
+          {isStudyMode && (
+            <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+              <div className="text-center">
+                <p className="font-semibold text-blue-900">
+                  {t("study.progressNotTracked") || "Progress was not tracked for this session"}
+                </p>
+                <p className="text-sm text-blue-700">
+                  {t("study.studyCompleteDescription") || "This was a study session"}
+                </p>
+              </div>
+            </Card>
+          )}
+
           <Card variant="gradient" className="text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-black mb-4">
-              {t("practice.wellDone")}
+              {isStudyMode ? (t("study.wellDone") || "Great Job!") : t("practice.wellDone")}
             </h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
@@ -261,7 +315,7 @@ export const FillWordPracticePage: React.FC = () => {
               variant="primary"
               size="lg"
               fullWidth
-              onClick={() => navigate("/practice")}
+              onClick={() => navigate(isStudyMode ? "/collections" : "/practice")}
             >
               {t("buttons.close")}
             </Button>
@@ -274,7 +328,10 @@ export const FillWordPracticePage: React.FC = () => {
   if (!currentVocab) {
     return (
       <>
-        <TopBar title={t("practice.fillWordMode")} showBack />
+        <TopBar
+          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.fillWordMode")}
+          showBack
+        />
         <div className="px-4 pt-6">
           <Card variant="glass" className="text-center p-8">
             <p className="text-gray-600">{t("vocabulary.noResults")}</p>
@@ -296,16 +353,33 @@ export const FillWordPracticePage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("practice.fillWordMode")} showBack />
+      <TopBar
+        title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.fillWordMode")}
+        showBack
+      />
 
       <div className="px-4 pt-6 space-y-6">
+        {/* Study Mode Banner */}
+        {isStudyMode && (
+          <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-blue-600" />
+              <div className="flex-1">
+                <p className="font-semibold text-blue-900 text-sm">
+                  {t("study.banner") || "Study Mode - Progress Not Tracked"}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Progress */}
         <Card variant="glass">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-gray-700">
               {t("practice.progress")}
             </span>
-            <span className="text-sm font-bold text-teal-600">
+            <span className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}>
               {sessionManager
                 ? !showNext &&
                   `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
@@ -314,7 +388,7 @@ export const FillWordPracticePage: React.FC = () => {
           </div>
           <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-300"
+              className={`h-full rounded-full transition-all duration-300 ${isStudyMode ? "bg-gradient-to-r from-blue-500 to-cyan-600" : "bg-gradient-to-r from-teal-500 to-cyan-600"}`}
               style={{
                 width: `${sessionManager ? sessionManager.getProgressPercentage() : 0}%`,
               }}

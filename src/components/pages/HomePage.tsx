@@ -74,9 +74,9 @@ export const HomePage: React.FC = () => {
     <>
       <TopBar title={t("app.name")} showBack={false} />
 
-      <div className="px-4 pt-6 space-y-6">
+      <div className="px-4 pt-6 space-y-2">
         {/* Hero Section */}
-        <div className="text-center py-6">
+        <div className="text-center py-3">
           <img
             src="/chameleon.svg"
             alt="Cham Lang"

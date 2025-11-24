@@ -122,11 +122,14 @@ export const CollectionsPage: React.FC = () => {
             {collections.map((collection) => (
               <Card
                 key={getCollectionId(collection)}
-                className="p-6 hover:shadow-xl transition-shadow"
+                className="p-6 hover:shadow-xl transition-shadow cursor-pointer"
+                onClick={() =>
+                  navigate(`/collections/${getCollectionId(collection)}`)
+                }
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 mb-1">
+                    <h3 className="text-xl font-bold text-gray-800 mb-1 hover:text-teal-600 transition-colors">
                       {collection.name}
                     </h3>
                     <p className="text-gray-600 text-sm mb-2">
@@ -154,7 +157,7 @@ export const CollectionsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="secondary"
                     size="sm"
@@ -166,7 +169,7 @@ export const CollectionsPage: React.FC = () => {
                     className="flex items-center gap-1"
                   >
                     <Edit className="w-4 h-4" />
-                    {t("common.edit")}
+                    <span className="hidden sm:inline">{t("common.edit")}</span>
                   </Button>
                   <Button
                     variant="danger"
@@ -175,7 +178,7 @@ export const CollectionsPage: React.FC = () => {
                     className="flex items-center gap-1"
                   >
                     <Trash2 className="w-4 h-4" />
-                    {t("common.delete")}
+                    <span className="hidden sm:inline">{t("common.delete")}</span>
                   </Button>
                 </div>
               </Card>

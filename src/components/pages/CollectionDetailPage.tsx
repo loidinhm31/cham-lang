@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Edit, Globe, Plus, Trash2, CheckSquare } from "lucide-react";
+import { BookOpen, Edit, Globe, Plus, Trash2, CheckSquare, GraduationCap } from "lucide-react";
 import { TopBar, BulkActionToolbar } from "@/components/molecules";
 import { VocabularyList, CollectionSelectorDialog } from "@/components/organisms";
 import { Badge, Button, Card } from "@/components/atoms";
@@ -204,6 +204,33 @@ export const CollectionDetailPage: React.FC = () => {
             )}
           </div>
         </Card>
+
+        {/* Study Mode Button */}
+        {!selectionMode && vocabularies.length > 0 && (
+          <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+                <GraduationCap className="w-8 h-8 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-blue-900 mb-1">
+                  {t("study.studyMode") || "Study Mode"}
+                </h3>
+                <p className="text-sm text-blue-700">
+                  {t("study.practiceWithoutTracking") || "Practice all words without tracking progress"}
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                onClick={() => navigate(`/practice/study?collection=${collection.id}`)}
+                className="bg-blue-600 hover:bg-blue-700"
+              >
+                {t("study.start") || "Start"}
+              </Button>
+            </div>
+          </Card>
+        )}
 
         {/* Action Buttons */}
         {!selectionMode ? (

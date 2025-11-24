@@ -189,6 +189,24 @@
     "dueForReview": "Cần Ôn Tập",
     "words": "từ"
   },
+  "study": {
+    "title": "Chế Độ Ôn Tập",
+    "studyMode": "Chế Độ Ôn Tập",
+    "description": "Luyện tập mà không ghi nhận tiến độ",
+    "banner": "Chế Độ Ôn Tập - Không Ghi Nhận Tiến Độ",
+    "bannerDescription": "Luyện tập tự do mà không ảnh hưởng đến thống kê học tập của bạn",
+    "wordLimit": "Bao nhiêu từ?",
+    "allWords": "Tất Cả Từ",
+    "selectModeDescription": "Chọn cách bạn muốn ôn tập",
+    "studying": "Đang Ôn Tập",
+    "progressNotTracked": "Tiến độ sẽ không được ghi nhận",
+    "completed": "Hoàn Thành Ôn Tập",
+    "wellDone": "Làm Tuyệt Vời!",
+    "studyCompleteDescription": "Đây là phiên ôn tập",
+    "collectionNotFound": "Không tìm thấy bộ sưu tập",
+    "practiceWithoutTracking": "Luyện tập tất cả từ mà không ghi nhận tiến độ",
+    "start": "Bắt Đầu"
+  },
   "auth": {
     "login": "Đăng Nhập",
     "register": "Đăng Ký",

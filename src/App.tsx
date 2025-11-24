@@ -18,6 +18,7 @@ import {
   VocabularyDetailPage,
   CSVExportPage,
   CSVImportPage,
+  StudyModePage,
 } from "./components/pages";
 import { SyncNotificationProvider, DialogProvider } from "./contexts";
 import "./i18n/config";
@@ -68,6 +69,20 @@ const App: React.FC = () => {
               />
               <Route
                 path="/practice/multiple-choice"
+                element={<MultipleChoicePracticePage />}
+              />
+              {/* Study Mode Routes */}
+              <Route path="/practice/study" element={<StudyModePage />} />
+              <Route
+                path="/practice/study/flashcard"
+                element={<FlashcardPracticePage />}
+              />
+              <Route
+                path="/practice/study/fill-word"
+                element={<FillWordPracticePage />}
+              />
+              <Route
+                path="/practice/study/multiple-choice"
                 element={<MultipleChoicePracticePage />}
               />
               <Route

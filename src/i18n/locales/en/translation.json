@@ -189,6 +189,24 @@
     "dueForReview": "Due for Review",
     "words": "words"
   },
+  "study": {
+    "title": "Study Mode",
+    "studyMode": "Study Mode",
+    "description": "Practice without tracking progress",
+    "banner": "Study Mode - Progress Not Tracked",
+    "bannerDescription": "Practice freely without affecting your learning statistics",
+    "wordLimit": "How many words?",
+    "allWords": "All Words",
+    "selectModeDescription": "Choose how you want to study",
+    "studying": "Studying",
+    "progressNotTracked": "Progress will not be tracked",
+    "completed": "Study Complete",
+    "wellDone": "Great Job!",
+    "studyCompleteDescription": "This was a study session",
+    "collectionNotFound": "Collection not found",
+    "practiceWithoutTracking": "Practice all words without tracking progress",
+    "start": "Start"
+  },
   "auth": {
     "login": "Login",
     "register": "Register",

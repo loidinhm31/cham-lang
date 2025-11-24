@@ -39,6 +39,7 @@ export interface SessionState {
 export class SessionManager {
   private state: SessionState;
   private settings: LearningSettings;
+  private trackProgress: boolean;
 
   constructor(
     words: Vocabulary[],
@@ -47,7 +48,9 @@ export class SessionManager {
     mode: PracticeMode,
     collectionId: string,
     language: string,
+    trackProgress: boolean = true,
   ) {
+    this.trackProgress = trackProgress;
     this.settings = settings;
 
     // Initialize word progress map
@@ -146,6 +149,40 @@ export class SessionManager {
     timeSpentSeconds: number,
   ): ReviewResult {
     const vocabularyId = vocabulary.id || "";
+
+    // Update statistics (always track stats)
+    this.state.totalQuestions++;
+    this.state.correctAnswers++;
+
+    // Add to session results (always track session results)
+    this.state.sessionResults.push({
+      vocabulary_id: vocabularyId,
+      word: vocabulary.word,
+      correct: true,
+      mode: this.state.mode,
+      time_spent_seconds: timeSpentSeconds,
+    });
+
+    // Move to completed
+    this.state.completedWords.push(vocabulary);
+
+    // If not tracking progress, return a simple result without updating progress
+    if (!this.trackProgress) {
+      const wordProgress = this.state.wordProgressMap.get(vocabularyId) ||
+        this.createInitialWordProgress(vocabularyId, vocabulary.word);
+
+      return {
+        updatedProgress: wordProgress,
+        boxChanged: false,
+        previousBox: wordProgress.leitner_box,
+        newBox: wordProgress.leitner_box,
+        nextReviewDate: new Date(wordProgress.next_review_date),
+        intervalDays: wordProgress.interval_days,
+        message: "Study mode - progress not tracked",
+      };
+    }
+
+    // Normal progress tracking logic
     const algorithm = getAlgorithm(this.settings);
 
     // Get or create word progress
@@ -205,22 +242,6 @@ export class SessionManager {
     // Update word progress in map
     this.state.wordProgressMap.set(vocabularyId, reviewResult.updatedProgress);
 
-    // Add to session results
-    this.state.sessionResults.push({
-      vocabulary_id: vocabularyId,
-      word: vocabulary.word,
-      correct: true,
-      mode: this.state.mode,
-      time_spent_seconds: timeSpentSeconds,
-    });
-
-    // Update statistics
-    this.state.totalQuestions++;
-    this.state.correctAnswers++;
-
-    // Move to completed
-    this.state.completedWords.push(vocabulary);
-
     return reviewResult;
   }
 
@@ -232,6 +253,52 @@ export class SessionManager {
     timeSpentSeconds: number,
   ): ReviewResult {
     const vocabularyId = vocabulary.id || "";
+
+    // Update statistics (always track stats)
+    this.state.totalQuestions++;
+    this.state.incorrectAnswers++;
+
+    // Add to session results (always track session results)
+    this.state.sessionResults.push({
+      vocabulary_id: vocabularyId,
+      word: vocabulary.word,
+      correct: false,
+      mode: this.state.mode,
+      time_spent_seconds: timeSpentSeconds,
+    });
+
+    // Re-queue if settings allow
+    if (this.settings.show_failed_words_in_session) {
+      // Check if already in failed queue to avoid duplicates
+      const alreadyInQueue = this.state.failedWordsQueue.some(
+        (w) => (w.id || "") === vocabularyId,
+      );
+
+      if (!alreadyInQueue) {
+        this.state.failedWordsQueue.push(vocabulary);
+      }
+    } else {
+      // Move to completed even though failed
+      this.state.completedWords.push(vocabulary);
+    }
+
+    // If not tracking progress, return a simple result without updating progress
+    if (!this.trackProgress) {
+      const wordProgress = this.state.wordProgressMap.get(vocabularyId) ||
+        this.createInitialWordProgress(vocabularyId, vocabulary.word);
+
+      return {
+        updatedProgress: wordProgress,
+        boxChanged: false,
+        previousBox: wordProgress.leitner_box,
+        newBox: wordProgress.leitner_box,
+        nextReviewDate: new Date(wordProgress.next_review_date),
+        intervalDays: wordProgress.interval_days,
+        message: "Study mode - progress not tracked",
+      };
+    }
+
+    // Normal progress tracking logic
     const algorithm = getAlgorithm(this.settings);
 
     // Get or create word progress
@@ -256,34 +323,6 @@ export class SessionManager {
 
     // Update word progress in map
     this.state.wordProgressMap.set(vocabularyId, reviewResult.updatedProgress);
-
-    // Add to session results
-    this.state.sessionResults.push({
-      vocabulary_id: vocabularyId,
-      word: vocabulary.word,
-      correct: false,
-      mode: this.state.mode,
-      time_spent_seconds: timeSpentSeconds,
-    });
-
-    // Update statistics
-    this.state.totalQuestions++;
-    this.state.incorrectAnswers++;
-
-    // Re-queue if settings allow
-    if (this.settings.show_failed_words_in_session) {
-      // Check if already in failed queue to avoid duplicates
-      const alreadyInQueue = this.state.failedWordsQueue.some(
-        (w) => (w.id || "") === vocabularyId,
-      );
-
-      if (!alreadyInQueue) {
-        this.state.failedWordsQueue.push(vocabulary);
-      }
-    } else {
-      // Move to completed even though failed
-      this.state.completedWords.push(vocabulary);
-    }
 
     return reviewResult;
   }
@@ -322,8 +361,7 @@ export class SessionManager {
             )
           : 0,
       wordsCompleted: this.state.completedWords.length,
-      wordsRemaining:
-        this.state.activeQueue.length + this.state.failedWordsQueue.length,
+      wordsRemaining: this.getRemainingWordsCount(),
       durationSeconds: Math.floor(
         (Date.now() - this.state.startTime.getTime()) / 1000,
       ),
@@ -348,17 +386,24 @@ export class SessionManager {
    * Get remaining words count
    */
   getRemainingWordsCount(): number {
-    return this.state.activeQueue.length + this.state.failedWordsQueue.length;
+    const currentWordCount = this.state.currentWord ? 1 : 0;
+    return (
+      this.state.activeQueue.length +
+      this.state.failedWordsQueue.length +
+      currentWordCount
+    );
   }
 
   /**
    * Get total words in session
    */
   getTotalWordsCount(): number {
+    const currentWordCount = this.state.currentWord ? 1 : 0;
     return (
       this.state.activeQueue.length +
       this.state.failedWordsQueue.length +
-      this.state.completedWords.length
+      this.state.completedWords.length +
+      currentWordCount
     );
   }
 
