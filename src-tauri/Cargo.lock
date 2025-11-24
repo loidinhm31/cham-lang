@@ -546,7 +546,7 @@ checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
 name = "cham-lang"
-version = "0.0.4-alpha"
+version = "0.0.5"
 dependencies = [
  "android_logger",
  "chrono",
