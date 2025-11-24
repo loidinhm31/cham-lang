@@ -40,9 +40,16 @@ export const ProgressPage: React.FC = () => {
       const languages = await VocabularyService.getAllLanguages();
       setAvailableLanguages(languages);
 
-      // Set the first language as default if available
+      // Try to restore last selected language from localStorage
+      const savedLanguage = localStorage.getItem("progress_selected_language");
+
       if (languages.length > 0) {
-        setCurrentLanguage(languages[0]);
+        // Use saved language if it's still available, otherwise use first language
+        if (savedLanguage && languages.includes(savedLanguage)) {
+          setCurrentLanguage(savedLanguage);
+        } else {
+          setCurrentLanguage(languages[0]);
+        }
       }
     } catch (error) {
       console.error("Failed to load languages:", error);
@@ -123,7 +130,7 @@ export const ProgressPage: React.FC = () => {
     );
 
     // Sort by common CEFR order if applicable
-    const levelOrder = ["A1", "A2", "B1", "B2", "C1", "C2"];
+    const levelOrder = ["N/A", "A1", "A2", "B1", "B2", "C1", "C2", "Basic", "Intermediate", "Advanced", "Beginner"];
     levels.sort((a, b) => {
       const aIndex = levelOrder.indexOf(a.level);
       const bIndex = levelOrder.indexOf(b.level);
@@ -165,98 +172,109 @@ export const ProgressPage: React.FC = () => {
     <>
       <TopBar title={t("nav.progress")} showBack={false} />
 
-      <div className="px-4 pt-6 space-y-6">
-        {/* Language Selector */}
-        {availableLanguages.length > 1 && (
-          <Card variant="glass">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">
-                {t("vocabulary.language") || "Select Language"}
-              </label>
-              <select
-                value={currentLanguage}
-                onChange={(e) => setCurrentLanguage(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
-              >
-                {availableLanguages.map((lang) => (
-                  <option key={lang} value={lang}>
-                    {lang.toUpperCase()}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </Card>
-        )}
-
-        {/* Current Language Display (for single language) */}
-        {availableLanguages.length === 1 && currentLanguage && (
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Learning:{" "}
-              <span className="font-semibold">
-                {currentLanguage.toUpperCase()}
-              </span>
-            </p>
+      <div className="px-3 pt-4 space-y-3">
+        {loading && (
+          <div className="text-center py-8 text-gray-600">
+            {t("common.loading")}
           </div>
         )}
-
-        {/* Stats Overview */}
-        <StatsCard stats={stats} title={t("nav.progress")} />
-
-        {/* Progress Chart - Real Data */}
-        {levelProgress.length > 0 ? (
+        {/* Language Selector - Always show if there's at least one language */}
+        {availableLanguages.length > 0 && currentLanguage && (
           <Card variant="glass">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {t("vocabulary.level")} {t("nav.progress")}
-            </h3>
-            <div className="space-y-3">
-              {levelProgress.map((level) => (
-                <div key={level.level}>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-gray-700">
-                        {level.level}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        ({level.practiced}/{level.total})
-                      </span>
-                    </div>
-                    <span className="text-sm font-bold text-teal-600">
-                      {level.percentage}%
-                    </span>
-                  </div>
-                  <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-500"
-                      style={{ width: `${level.percentage}%` }}
-                    ></div>
-                  </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-gray-700">
+                {t("vocabulary.language") || "Language"}
+              </label>
+              {availableLanguages.length > 1 ? (
+                <select
+                  value={currentLanguage}
+                  onChange={(e) => {
+                    const newLang = e.target.value;
+                    setCurrentLanguage(newLang);
+                    // Persist selection to localStorage
+                    localStorage.setItem("progress_selected_language", newLang);
+                  }}
+                  className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-white"
+                >
+                  {availableLanguages.map((lang) => (
+                    <option key={lang} value={lang}>
+                      {lang.toUpperCase()}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="px-3 py-1.5 text-sm font-semibold text-gray-700 bg-white rounded-lg border border-gray-200">
+                  {currentLanguage.toUpperCase()}
                 </div>
-              ))}
-            </div>
-          </Card>
-        ) : (
-          <Card variant="glass">
-            <div className="text-center p-8">
-              <p className="text-gray-600">
-                No vocabulary data yet. Start adding words to see progress by
-                level!
-              </p>
+              )}
             </div>
           </Card>
         )}
 
-        {/* Achievement Card */}
-        {practiceStreak > 0 && (
-          <Card variant="gradient">
-            <div className="text-center">
-              <div className="text-6xl mb-4">🏆</div>
-              <h3 className="text-2xl font-bold mb-2">
-                {practiceStreak} Day {t("stats.streak")}!
-              </h3>
-              <p className="text-white/90 mb-4">Keep learning every day 🔥</p>
+        {!loading && (
+          <>
+            {/* Stats Overview */}
+            <StatsCard stats={stats} title={t("nav.progress")} />
+
+            {/* Progress Chart and Achievement */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Progress Chart - Real Data */}
+              {levelProgress.length > 0 ? (
+                <Card variant="glass">
+                  <h3 className="text-base font-bold text-gray-800 mb-2">
+                    {t("vocabulary.level")} {t("nav.progress")}
+                  </h3>
+                  <div className="space-y-2">
+                    {levelProgress.map((level) => (
+                      <div key={level.level}>
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold text-gray-700">
+                              {level.level}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({level.practiced}/{level.total})
+                            </span>
+                          </div>
+                          <span className="text-xs font-bold text-teal-600">
+                            {level.percentage}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-white/60 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-500"
+                            style={{ width: `${level.percentage}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ) : (
+                <Card variant="glass">
+                  <div className="text-center py-6">
+                    <p className="text-sm text-gray-600">
+                      No vocabulary data yet. Start adding words to see progress by
+                      level!
+                    </p>
+                  </div>
+                </Card>
+              )}
+
+              {/* Achievement Card */}
+              {practiceStreak > 0 && (
+                <Card variant="gradient">
+                  <div className="text-center py-1">
+                    <div className="text-4xl mb-2">🏆</div>
+                    <h3 className="text-lg font-bold mb-1">
+                      {practiceStreak} Day {t("stats.streak")}!
+                    </h3>
+                    <p className="text-sm text-white/90">Keep learning every day 🔥</p>
+                  </div>
+                </Card>
+              )}
             </div>
-          </Card>
+          </>
         )}
       </div>
     </>

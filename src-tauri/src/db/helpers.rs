@@ -9,6 +9,7 @@ pub fn timestamp_to_datetime(timestamp: i64) -> DateTime<Utc> {
 /// Parse string to WordType enum
 pub fn parse_word_type(s: &str) -> WordType {
     match s {
+        "n/a" => WordType::NA,
         "noun" => WordType::Noun,
         "verb" => WordType::Verb,
         "adjective" => WordType::Adjective,
@@ -18,13 +19,14 @@ pub fn parse_word_type(s: &str) -> WordType {
         "conjunction" => WordType::Conjunction,
         "interjection" => WordType::Interjection,
         "phrase" => WordType::Phrase,
-        _ => WordType::Noun, // Default
+        _ => WordType::NA, // Default to N/A
     }
 }
 
 /// Convert WordType enum to lowercase string
 pub fn word_type_to_string(word_type: &WordType) -> &'static str {
     match word_type {
+        WordType::NA => "n/a",
         WordType::Noun => "noun",
         WordType::Verb => "verb",
         WordType::Adjective => "adjective",

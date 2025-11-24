@@ -49,6 +49,7 @@
     "updatedAt": "Last Updated"
   },
   "wordTypes": {
+    "n/a": "N/A",
     "noun": "Noun",
     "verb": "Verb",
     "adjective": "Adjective",

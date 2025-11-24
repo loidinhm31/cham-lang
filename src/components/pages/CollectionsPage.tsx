@@ -62,34 +62,37 @@ export const CollectionsPage: React.FC = () => {
     <>
       <TopBar title={t("collections.title")} showBack={false} />
       <div className="min-h-screen p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
             {t("collections.myCollections")}
           </h2>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="secondary"
+              size="sm"
               onClick={() => navigate("/csv/import")}
-              className="flex items-center gap-2"
+              className="flex items-center flex-1 sm:flex-none justify-center"
             >
               <Upload className="w-4 h-4" />
-              {t("csv.import")}
+              <span className="hidden xs:inline sm:inline">{t("csv.import")}</span>
             </Button>
             <Button
               variant="secondary"
+              size="sm"
               onClick={() => navigate("/csv/export")}
-              className="flex items-center gap-2"
+              className="flex items-center flex-1 sm:flex-none justify-center"
             >
               <Download className="w-4 h-4" />
-              {t("csv.export")}
+              <span className="hidden xs:inline sm:inline">{t("csv.export")}</span>
             </Button>
             <Button
               variant="primary"
+              size="sm"
               onClick={() => navigate("/collections/new")}
-              className="flex items-center gap-2"
+              className="flex items-center flex-1 sm:flex-none justify-center"
             >
-              <Plus className="w-5 h-5" />
-              {t("collections.create")}
+              <Plus className="w-4 h-4" />
+              <span className="sm:inline">{t("collections.create")}</span>
             </Button>
           </div>
         </div>

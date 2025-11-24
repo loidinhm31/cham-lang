@@ -100,7 +100,7 @@ export const HomePage: React.FC = () => {
         <div className="flex gap-3">
           <Button
             variant="secondary"
-            size="lg"
+            size="md"
             icon={Brain}
             fullWidth
             onClick={() => navigate("/practice")}
@@ -109,7 +109,7 @@ export const HomePage: React.FC = () => {
           </Button>
           <Button
             variant="primary"
-            size="lg"
+            size="md"
             icon={Plus}
             fullWidth
             onClick={() => navigate("/vocabulary/add")}

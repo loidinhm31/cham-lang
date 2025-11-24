@@ -1,4 +1,5 @@
 export type WordType =
+  | "n/a"
   | "noun"
   | "verb"
   | "adjective"

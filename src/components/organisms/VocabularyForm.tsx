@@ -33,8 +33,8 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
 
   const [formData, setFormData] = useState<CreateVocabularyRequest>({
     word: initialData?.word || "",
-    word_type: initialData?.word_type || "noun",
-    level: initialData?.level || "A1",
+    word_type: initialData?.word_type || "n/a",
+    level: initialData?.level || "N/A",
     ipa: initialData?.ipa || "",
     concept: initialData?.concept || "",
     definitions: initialData?.definitions || [
@@ -104,6 +104,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
   };
 
   const wordTypeOptions = [
+    "n/a",
     "noun",
     "verb",
     "adjective",

@@ -1,6 +1,6 @@
 [package]
 name = "cham-lang"
-version = "0.0.3-alpha"
+version = "0.0.4-alpha"
 description = "Cham Lang App"
 authors = ["you"]
 edition = "2021"

@@ -49,6 +49,7 @@
     "updatedAt": "Cập Nhật Lần Cuối"
   },
   "wordTypes": {
+    "n/a": "N/A",
     "noun": "Danh Từ",
     "verb": "Động Từ",
     "adjective": "Tính Từ",

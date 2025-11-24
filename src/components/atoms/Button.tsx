@@ -8,7 +8,7 @@ export type ButtonVariant =
   | "outline"
   | "success"
   | "danger";
-export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonSize = "xs" | "sm" | "md" | "lg";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -20,19 +20,20 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-2xl",
-  secondary: "text-white bg-gradient-to-r from-teal-500 to-cyan-600 shadow-2xl",
+    "text-white bg-gradient-to-r from-amber-500 to-orange-600 shadow-lg",
+  secondary: "text-white bg-gradient-to-r from-teal-500 to-cyan-600 shadow-lg",
   glass:
-    "text-gray-800 bg-white/60 backdrop-blur-lg shadow-lg hover:bg-white/80",
+    "text-gray-800 bg-white/60 backdrop-blur-lg shadow-md hover:bg-white/80",
   outline: "text-teal-600 border-2 border-teal-500 hover:bg-teal-50",
-  success: "text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-lg",
-  danger: "text-white bg-gradient-to-r from-red-500 to-pink-600 shadow-lg",
+  success: "text-white bg-gradient-to-r from-emerald-500 to-teal-600 shadow-md",
+  danger: "text-white bg-gradient-to-r from-red-500 to-pink-600 shadow-md",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
-  sm: "py-1.5 px-3 text-sm",
-  md: "py-2 px-4 text-base",
-  lg: "py-2.5 px-6 text-base",
+  xs: "py-1 px-2 text-xs",
+  sm: "py-1.5 px-2.5 text-sm",
+  md: "py-2 px-3.5 text-base",
+  lg: "py-2.5 px-5 text-base",
 };
 
 export const Button: React.FC<ButtonProps> = ({
@@ -47,7 +48,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const baseStyles =
-    "font-bold rounded-full transform transition hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100";
+    "font-bold rounded-full transform transition hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100";
   const widthStyle = fullWidth ? "w-full" : "";
 
   return (

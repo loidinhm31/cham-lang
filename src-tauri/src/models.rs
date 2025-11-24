@@ -24,6 +24,8 @@ pub struct Vocabulary {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "lowercase")]
 pub enum WordType {
+    #[serde(rename = "n/a")]
+    NA,
     Noun,
     Verb,
     Adjective,
@@ -39,6 +41,7 @@ pub enum WordType {
 pub fn get_level_config(language: &str) -> Vec<String> {
     match language {
         "en" | "vi" | "es" | "fr" | "de" => vec![
+            "N/A".to_string(),
             "A1".to_string(),
             "A2".to_string(),
             "B1".to_string(),
@@ -47,11 +50,13 @@ pub fn get_level_config(language: &str) -> Vec<String> {
             "C2".to_string(),
         ],
         "ko" | "ja" | "zh" => vec![
+            "N/A".to_string(),
             "Basic".to_string(),
             "Intermediate".to_string(),
             "Advanced".to_string(),
         ],
         _ => vec![
+            "N/A".to_string(),
             "Beginner".to_string(),
             "Intermediate".to_string(),
             "Advanced".to_string(),
