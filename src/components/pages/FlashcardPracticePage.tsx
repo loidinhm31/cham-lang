@@ -284,7 +284,7 @@ export const FlashcardPracticePage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="glass"
-              size="lg"
+              size="md"
               fullWidth
               icon={RotateCcw}
               onClick={handleRestart}
@@ -293,7 +293,7 @@ export const FlashcardPracticePage: React.FC = () => {
             </Button>
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               fullWidth
               onClick={() => navigate(isStudyMode ? "/collections" : "/practice")}
             >
@@ -317,7 +317,7 @@ export const FlashcardPracticePage: React.FC = () => {
             <p className="text-gray-600">{t("vocabulary.noResults")}</p>
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               className="mt-4"
               onClick={() => navigate("/")}
             >
@@ -387,7 +387,7 @@ export const FlashcardPracticePage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="danger"
-              size="lg"
+              size="md"
               fullWidth
               icon={X}
               onClick={() => handleAnswer(false)}
@@ -396,7 +396,7 @@ export const FlashcardPracticePage: React.FC = () => {
             </Button>
             <Button
               variant="success"
-              size="lg"
+              size="md"
               fullWidth
               icon={Check}
               onClick={() => handleAnswer(true)}

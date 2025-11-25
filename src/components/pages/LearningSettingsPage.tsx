@@ -286,7 +286,7 @@ export const LearningSettingsPage: React.FC = () => {
         <div className="flex gap-3 pt-4">
           <Button
             variant="secondary"
-            size="lg"
+            size="md"
             fullWidth
             onClick={() => navigate(-1)}
             disabled={saving}
@@ -295,7 +295,7 @@ export const LearningSettingsPage: React.FC = () => {
           </Button>
           <Button
             variant="primary"
-            size="lg"
+            size="md"
             fullWidth
             icon={Save}
             onClick={handleSave}

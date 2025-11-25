@@ -221,7 +221,7 @@ export const CollectionDetailPage: React.FC = () => {
               </div>
               <Button
                 variant="primary"
-                size="lg"
+                size="md"
                 onClick={() => navigate(`/practice/study?collection=${collection.id}`)}
                 className="bg-blue-600 hover:bg-blue-700"
               >
@@ -236,7 +236,7 @@ export const CollectionDetailPage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="primary"
-              size="lg"
+              size="sm"
               icon={Plus}
               fullWidth
               onClick={() => navigate("/vocabulary/add")}
@@ -246,7 +246,7 @@ export const CollectionDetailPage: React.FC = () => {
             {vocabularies.length > 0 && (
               <Button
                 variant="secondary"
-                size="lg"
+                size="sm"
                 icon={CheckSquare}
                 onClick={handleEnterSelectionMode}
               >
@@ -255,7 +255,7 @@ export const CollectionDetailPage: React.FC = () => {
             )}
             <Button
               variant="outline"
-              size="lg"
+              size="sm"
               icon={Edit}
               onClick={() => navigate(`/collections/${collection.id}/edit`)}
             >
@@ -263,7 +263,7 @@ export const CollectionDetailPage: React.FC = () => {
             </Button>
             <Button
               variant="danger"
-              size="lg"
+              size="sm"
               icon={Trash2}
               onClick={handleDelete}
             >

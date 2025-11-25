@@ -33,6 +33,8 @@ export const VocabularyDetailPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const state = location.state as LocationState;
   const { collectionId, vocabularyIds, currentIndex } = state || {};
@@ -94,6 +96,7 @@ export const VocabularyDetailPage: React.FC = () => {
       currentIndex !== undefined &&
       currentIndex < vocabularyIds.length - 1
     ) {
+      setIsAnimating(true);
       const nextId = vocabularyIds[currentIndex + 1];
       navigate(`/vocabulary/${nextId}`, {
         state: {
@@ -102,11 +105,13 @@ export const VocabularyDetailPage: React.FC = () => {
           currentIndex: currentIndex + 1,
         },
       });
+      setTimeout(() => setIsAnimating(false), 300);
     }
   }, [vocabularyIds, currentIndex, collectionId, navigate]);
 
   const goToPrevious = useCallback(() => {
     if (vocabularyIds && currentIndex !== undefined && currentIndex > 0) {
+      setIsAnimating(true);
       const prevId = vocabularyIds[currentIndex - 1];
       navigate(`/vocabulary/${prevId}`, {
         state: {
@@ -115,6 +120,7 @@ export const VocabularyDetailPage: React.FC = () => {
           currentIndex: currentIndex - 1,
         },
       });
+      setTimeout(() => setIsAnimating(false), 300);
     }
   }, [vocabularyIds, currentIndex, collectionId, navigate]);
 
@@ -140,23 +146,48 @@ export const VocabularyDetailPage: React.FC = () => {
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
+    setSwipeOffset(0);
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
+    if (!touchStart) return;
+
+    const currentTouch = e.targetTouches[0].clientX;
+    setTouchEnd(currentTouch);
+
+    // Calculate offset with some resistance for better feel
+    const rawOffset = currentTouch - touchStart;
+    const resistance = 0.5; // Add resistance to make swipe feel more controlled
+    setSwipeOffset(rawOffset * resistance);
   };
 
   const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
+    if (!touchStart || !touchEnd) {
+      setSwipeOffset(0);
+      return;
+    }
 
     const distance = touchStart - touchEnd;
     const isLeftSwipe = distance > minSwipeDistance;
     const isRightSwipe = distance < -minSwipeDistance;
 
     if (isLeftSwipe) {
-      goToNext();
+      setIsAnimating(true);
+      setTimeout(() => {
+        goToNext();
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
     } else if (isRightSwipe) {
-      goToPrevious();
+      setIsAnimating(true);
+      setTimeout(() => {
+        goToPrevious();
+        setSwipeOffset(0);
+        setIsAnimating(false);
+      }, 200);
+    } else {
+      // Reset if swipe wasn't strong enough
+      setSwipeOffset(0);
     }
   };
 
@@ -184,7 +215,49 @@ export const VocabularyDetailPage: React.FC = () => {
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
+        style={{
+          transform: `translateX(${swipeOffset}px)`,
+          opacity: 1 - Math.abs(swipeOffset) / 400,
+          transition: isAnimating || swipeOffset === 0
+            ? "transform 0.2s ease-out, opacity 0.2s ease-out"
+            : "none",
+        }}
       >
+        {/* Swipe Direction Indicators */}
+        {vocabularyIds && currentIndex !== undefined && Math.abs(swipeOffset) > 10 && (
+          <>
+            {/* Left swipe indicator (next) */}
+            {swipeOffset < 0 && currentIndex < vocabularyIds.length - 1 && (
+              <div
+                className="fixed right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                style={{
+                  opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
+                  transition: "opacity 0.1s",
+                }}
+              >
+                <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
+                  <ChevronRight className="w-12 h-12" />
+                </div>
+              </div>
+            )}
+
+            {/* Right swipe indicator (previous) */}
+            {swipeOffset > 0 && currentIndex > 0 && (
+              <div
+                className="fixed left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                style={{
+                  opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
+                  transition: "opacity 0.1s",
+                }}
+              >
+                <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
+                  <ChevronLeft className="w-12 h-12" />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         {/* Navigation Arrows - Only show if in collection context */}
         {vocabularyIds && currentIndex !== undefined && (
           <>
@@ -198,7 +271,7 @@ export const VocabularyDetailPage: React.FC = () => {
               {currentIndex > 0 && (
                 <button
                   onClick={goToPrevious}
-                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all"
+                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
                 >
                   <ChevronLeft className="w-8 h-8 text-gray-700" />
                 </button>
@@ -207,7 +280,7 @@ export const VocabularyDetailPage: React.FC = () => {
               {currentIndex < vocabularyIds.length - 1 && (
                 <button
                   onClick={goToNext}
-                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all"
+                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
                 >
                   <ChevronRight className="w-8 h-8 text-gray-700" />
                 </button>
@@ -333,7 +406,7 @@ export const VocabularyDetailPage: React.FC = () => {
         <div className="flex gap-3">
           <Button
             variant="outline"
-            size="lg"
+            size="md"
             icon={Edit}
             fullWidth
             onClick={() => navigate(`/vocabulary/edit/${vocabulary.id}`)}
@@ -342,7 +415,7 @@ export const VocabularyDetailPage: React.FC = () => {
           </Button>
           <Button
             variant="danger"
-            size="lg"
+            size="md"
             icon={Trash2}
             fullWidth
             onClick={handleDelete}

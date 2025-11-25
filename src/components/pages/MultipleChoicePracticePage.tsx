@@ -343,7 +343,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
           <div className="flex gap-3">
             <Button
               variant="glass"
-              size="lg"
+              size="md"
               fullWidth
               icon={RotateCcw}
               onClick={handleRestart}
@@ -352,7 +352,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
             </Button>
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               fullWidth
               onClick={() => navigate(isStudyMode ? "/collections" : "/practice")}
             >
@@ -376,7 +376,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
             <p className="text-gray-600">{t("vocabulary.noResults")}</p>
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               className="mt-4"
               onClick={() => navigate("/")}
             >
@@ -445,7 +445,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
         {/* Next Button - shows while waiting for auto-advance */}
         {showNext && (
-          <Button variant="primary" size="lg" fullWidth onClick={handleNext}>
+          <Button variant="primary" size="md" fullWidth onClick={handleNext}>
             {sessionManager && !sessionManager.isSessionComplete()
               ? `${t("practice.next")} (auto)`
               : t("practice.finish")}

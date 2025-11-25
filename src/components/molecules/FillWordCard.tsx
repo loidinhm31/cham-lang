@@ -88,7 +88,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
             <Button
               type="submit"
               variant="primary"
-              size="lg"
+              size="md"
               fullWidth
               disabled={!answer.trim()}
             >
