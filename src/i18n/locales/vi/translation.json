@@ -40,6 +40,10 @@
     "exampleSentence": "Câu Ví Dụ",
     "exampleSentences": "Các Câu Ví Dụ",
     "topics": "Chủ Đề",
+    "tags": "Thẻ",
+    "tag": "Thẻ",
+    "selectTopics": "Chọn chủ đề để lọc...",
+    "selectTags": "Chọn thẻ để lọc...",
     "relatedWords": "Từ Liên Quan",
     "language": "Ngôn Ngữ",
     "collection": "Bộ Sưu Tập",
@@ -385,6 +389,7 @@
     "edit": "Sửa",
     "delete": "Xóa",
     "save": "Lưu",
-    "cancel": "Hủy"
+    "cancel": "Hủy",
+    "noOptionsFound": "Không tìm thấy tùy chọn nào"
   }
 }

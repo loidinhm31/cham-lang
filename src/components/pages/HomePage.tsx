@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Brain, Plus } from "lucide-react";
 import { SearchBar, TopBar } from "@/components/molecules";
 import { CollectionList } from "@/components/organisms";
-import { Button } from "@/components/atoms";
+import { Button, SearchableMultiSelect } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import { CollectionService } from "@/services/collection.service.ts";
 import type { Collection } from "@/types/collection.ts";
@@ -16,9 +16,25 @@ export const HomePage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Filter states
+  const [availableTopics, setAvailableTopics] = useState<string[]>([]);
+  const [availableTags, setAvailableTags] = useState<string[]>([]);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
   useEffect(() => {
     loadCollections();
+    loadTopicsAndTags();
   }, []);
+
+  // Re-filter when topics or tags selection changes
+  useEffect(() => {
+    if (selectedTopics.length > 0 || selectedTags.length > 0) {
+      handleSearch();
+    } else if (!searchQuery.trim()) {
+      loadCollections();
+    }
+  }, [selectedTopics, selectedTags]);
 
   const loadCollections = async () => {
     try {
@@ -32,28 +48,69 @@ export const HomePage: React.FC = () => {
     }
   };
 
+  const loadTopicsAndTags = async () => {
+    try {
+      const [topics, tags] = await Promise.all([
+        VocabularyService.getAllTopics(),
+        VocabularyService.getAllTags(),
+      ]);
+      setAvailableTopics(topics);
+      setAvailableTags(tags);
+    } catch (error) {
+      console.error("Failed to load topics and tags:", error);
+    }
+  };
+
   const handleSearch = async () => {
-    if (!searchQuery.trim()) {
+    if (
+      !searchQuery.trim() &&
+      selectedTopics.length === 0 &&
+      selectedTags.length === 0
+    ) {
       loadCollections();
       return;
     }
 
     try {
       setLoading(true);
-      // Search vocabularies to find matching words
-      const matchingVocabularies = await VocabularyService.searchVocabularies({
-        query: searchQuery,
-      });
-
-      // Extract unique collection IDs from matching vocabularies
-      const collectionIds = new Set(
-        matchingVocabularies.map((v) => v.collection_id).filter((id) => id), // Filter out undefined/null values
-      );
 
       // Get all user collections
       const allCollections = await CollectionService.getUserCollections();
+      const collectionIds = new Set<string>();
 
-      // Filter collections to only show those with matching words
+      // Search by word query if provided
+      if (searchQuery.trim()) {
+        const matchingVocabularies = await VocabularyService.searchVocabularies({
+          query: searchQuery,
+        });
+        matchingVocabularies.forEach((v) => {
+          if (v.collection_id) collectionIds.add(v.collection_id);
+        });
+      }
+
+      // Filter by topics if selected
+      if (selectedTopics.length > 0) {
+        const allVocabularies = await VocabularyService.getAllVocabularies();
+        const topicMatches = allVocabularies.filter((v) =>
+          v.topics.some((topic) => selectedTopics.includes(topic))
+        );
+        topicMatches.forEach((v) => {
+          if (v.collection_id) collectionIds.add(v.collection_id);
+        });
+      }
+
+      // Filter by tags if selected
+      if (selectedTags.length > 0) {
+        const allVocabularies = await VocabularyService.getAllVocabularies();
+        const tagMatches = allVocabularies.filter((v) =>
+          v.tags.some((tag) => selectedTags.includes(tag))
+        );
+        tagMatches.forEach((v) => {
+          if (v.collection_id) collectionIds.add(v.collection_id);
+        });
+      }
+
+      // Filter collections to only show those with matching criteria
       const filteredCollections = allCollections.filter((collection) =>
         collectionIds.has(collection.id || ""),
       );
@@ -95,6 +152,24 @@ export const HomePage: React.FC = () => {
           onSearch={handleSearch}
           placeholder={t("vocabulary.search")}
         />
+
+        {/* Topic and Tag Filters */}
+        <div className="flex flex-col gap-3">
+          <SearchableMultiSelect
+            label={t("vocabulary.topics")}
+            options={availableTopics}
+            selected={selectedTopics}
+            onChange={setSelectedTopics}
+            placeholder={t("vocabulary.selectTopics")}
+          />
+          <SearchableMultiSelect
+            label={t("vocabulary.tags")}
+            options={availableTags}
+            selected={selectedTags}
+            onChange={setSelectedTags}
+            placeholder={t("vocabulary.selectTags")}
+          />
+        </div>
 
         {/* Action Buttons */}
         <div className="flex gap-3">

@@ -27,6 +27,7 @@ pub fn create_vocabulary(
         definitions: request.definitions,
         example_sentences: request.example_sentences,
         topics: request.topics,
+        tags: request.tags,
         related_words: request.related_words,
         language: request.language,
         collection_id: request.collection_id.clone(),
@@ -137,6 +138,26 @@ pub fn bulk_move_vocabularies(
         result.moved_count, result.skipped_count
     );
     Ok(result)
+}
+
+#[tauri::command]
+pub fn get_all_topics(
+    local_db: State<'_, LocalDatabase>,
+) -> Result<Vec<String>, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_all_topics(user_id)
+        .map_err(|e| format!("Failed to get topics: {}", e))
+}
+
+#[tauri::command]
+pub fn get_all_tags(
+    local_db: State<'_, LocalDatabase>,
+) -> Result<Vec<String>, String> {
+    let user_id = local_db.get_local_user_id();
+    local_db
+        .get_all_tags(user_id)
+        .map_err(|e| format!("Failed to get tags: {}", e))
 }
 
 // User preferences commands

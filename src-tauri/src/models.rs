@@ -13,6 +13,7 @@ pub struct Vocabulary {
     pub definitions: Vec<Definition>,
     pub example_sentences: Vec<String>,
     pub topics: Vec<String>,
+    pub tags: Vec<String>,
     pub related_words: Vec<RelatedWord>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -142,6 +143,7 @@ pub struct CreateVocabularyRequest {
     pub definitions: Vec<Definition>,
     pub example_sentences: Vec<String>,
     pub topics: Vec<String>,
+    pub tags: Vec<String>,
     pub related_words: Vec<RelatedWord>,
     pub language: String,
     pub collection_id: String,
@@ -158,6 +160,7 @@ pub struct UpdateVocabularyRequest {
     pub definitions: Option<Vec<Definition>>,
     pub example_sentences: Option<Vec<String>>,
     pub topics: Option<Vec<String>>,
+    pub tags: Option<Vec<String>>,
     pub related_words: Option<Vec<RelatedWord>>,
     pub collection_id: Option<String>,
 }

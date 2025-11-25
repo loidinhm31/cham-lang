@@ -42,6 +42,7 @@ export interface Vocabulary {
   definitions: Definition[];
   example_sentences: string[];
   topics: string[];
+  tags: string[];
   related_words: RelatedWord[];
   created_at: string;
   updated_at: string;
@@ -59,6 +60,7 @@ export interface CreateVocabularyRequest {
   definitions: Definition[];
   example_sentences: string[];
   topics: string[];
+  tags: string[];
   related_words: RelatedWord[];
   language: string;
   collection_id: string;
@@ -74,6 +76,7 @@ export interface UpdateVocabularyRequest {
   definitions?: Definition[];
   example_sentences?: string[];
   topics?: string[];
+  tags?: string[];
   related_words?: RelatedWord[];
   collection_id?: string;
 }

@@ -95,6 +95,36 @@ impl LocalDatabase {
             )?;
         }
 
+        // Insert tags (find or create, then link)
+        for tag_name in &vocab.tags {
+            // Try to find existing tag
+            let tag_id: Result<String, _> = tx.query_row(
+                "SELECT id FROM tags WHERE name = ?1",
+                params![tag_name],
+                |row| row.get(0),
+            );
+
+            let tag_id = if let Ok(existing_id) = tag_id {
+                existing_id
+            } else {
+                // Create new tag
+                let new_tag_id = Uuid::new_v4().to_string();
+                tx.execute(
+                    "INSERT INTO tags (id, name, created_at) VALUES (?1, ?2, ?3)",
+                    params![new_tag_id, tag_name, now],
+                )?;
+                new_tag_id
+            };
+
+            // Link vocabulary to tag
+            let vtag_id = Uuid::new_v4().to_string();
+            tx.execute(
+                "INSERT OR IGNORE INTO vocabulary_tags (id, vocabulary_id, tag_id, created_at)
+                 VALUES (?1, ?2, ?3, ?4)",
+                params![vtag_id, id, tag_id, now],
+            )?;
+        }
+
         // Insert related words
         for related_word in &vocab.related_words {
             let rw_id = Uuid::new_v4().to_string();
@@ -179,6 +209,17 @@ impl LocalDatabase {
                 .query_map(params![&vocab_id], |row| row.get(0))?
                 .collect::<Result<Vec<_>, _>>()?;
 
+            // Fetch tags
+            let mut tag_stmt = conn.prepare(
+                "SELECT t.name
+                 FROM vocabulary_tags vt
+                 JOIN tags t ON vt.tag_id = t.id
+                 WHERE vt.vocabulary_id = ?1"
+            )?;
+            let tags: Vec<String> = tag_stmt
+                .query_map(params![&vocab_id], |row| row.get(0))?
+                .collect::<Result<Vec<_>, _>>()?;
+
             // Fetch related words
             let mut rel_stmt = conn.prepare(
                 "SELECT related_vocabulary_id, relationship_type
@@ -215,6 +256,7 @@ impl LocalDatabase {
                 definitions,
                 example_sentences,
                 topics,
+                tags,
                 related_words,
                 language,
                 collection_id,
@@ -495,6 +537,41 @@ impl LocalDatabase {
                     "INSERT OR IGNORE INTO vocabulary_topics (id, vocabulary_id, topic_id, created_at)
                      VALUES (?1, ?2, ?3, ?4)",
                     params![vt_id, vocab_id, topic_id, now],
+                )?;
+            }
+        }
+
+        // Update tags (replace strategy)
+        if let Some(ref tags) = request.tags {
+            tx.execute(
+                "DELETE FROM vocabulary_tags WHERE vocabulary_id = ?1",
+                params![vocab_id],
+            )?;
+
+            for tag_name in tags {
+                // Find or create tag
+                let tag_id: Result<String, _> = tx.query_row(
+                    "SELECT id FROM tags WHERE name = ?1",
+                    params![tag_name],
+                    |row| row.get(0),
+                );
+
+                let tag_id = if let Ok(existing_id) = tag_id {
+                    existing_id
+                } else {
+                    let new_tag_id = Uuid::new_v4().to_string();
+                    tx.execute(
+                        "INSERT INTO tags (id, name, created_at) VALUES (?1, ?2, ?3)",
+                        params![new_tag_id, tag_name, now],
+                    )?;
+                    new_tag_id
+                };
+
+                let vtag_id = Uuid::new_v4().to_string();
+                tx.execute(
+                    "INSERT OR IGNORE INTO vocabulary_tags (id, vocabulary_id, tag_id, created_at)
+                     VALUES (?1, ?2, ?3, ?4)",
+                    params![vtag_id, vocab_id, tag_id, now],
                 )?;
             }
         }

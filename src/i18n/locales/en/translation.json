@@ -40,6 +40,10 @@
     "exampleSentence": "Example Sentence",
     "exampleSentences": "Example Sentences",
     "topics": "Topics",
+    "tags": "Tags",
+    "tag": "Tag",
+    "selectTopics": "Select topics to filter...",
+    "selectTags": "Select tags to filter...",
     "relatedWords": "Related Words",
     "language": "Language",
     "collection": "Collection",
@@ -385,6 +389,7 @@
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "noOptionsFound": "No options found"
   }
 }

@@ -94,6 +94,8 @@ pub fn run() {
             update_vocabulary,
             delete_vocabulary,
             bulk_move_vocabularies,
+            get_all_topics,
+            get_all_tags,
             // User preferences
             save_preferences,
             get_preferences,

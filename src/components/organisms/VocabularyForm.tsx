@@ -42,6 +42,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     ],
     example_sentences: initialData?.example_sentences || [""],
     topics: initialData?.topics || [""],
+    tags: initialData?.tags || [""],
     related_words: initialData?.related_words || [],
     language: initialData?.language || "en",
     collection_id: initialData?.collection_id || "",
@@ -156,6 +157,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
         (s) => s.trim() !== "",
       ),
       topics: formData.topics.filter((t) => t.trim() !== ""),
+      tags: formData.tags.filter((t) => t.trim() !== ""),
     };
     onSubmit(cleanedData);
   };
@@ -227,6 +229,26 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     const newTopics = [...formData.topics];
     newTopics[index] = value;
     setFormData({ ...formData, topics: newTopics });
+  };
+
+  const addTag = () => {
+    setFormData({
+      ...formData,
+      tags: [...formData.tags, ""],
+    });
+  };
+
+  const removeTag = (index: number) => {
+    setFormData({
+      ...formData,
+      tags: formData.tags.filter((_, i) => i !== index),
+    });
+  };
+
+  const updateTag = (index: number, value: string) => {
+    const newTags = [...formData.tags];
+    newTags[index] = value;
+    setFormData({ ...formData, tags: newTags });
   };
 
   return (
@@ -441,6 +463,46 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
                 <button
                   type="button"
                   onClick={() => removeTopic(index)}
+                  className="p-3 text-red-500 hover:text-red-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Tags */}
+      <Card variant="glass">
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-gray-800">
+              {t("vocabulary.tags")}
+            </h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              icon={Plus}
+              onClick={addTag}
+            >
+              {t("buttons.add")}
+            </Button>
+          </div>
+
+          {formData.tags.map((tag, index) => (
+            <div key={index} className="flex gap-2">
+              <Input
+                placeholder={t("vocabulary.tag")}
+                value={tag}
+                onChange={(e) => updateTag(index, e.target.value)}
+                className="flex-1"
+              />
+              {formData.tags.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeTag(index)}
                   className="p-3 text-red-500 hover:text-red-700"
                 >
                   <X className="w-5 h-5" />

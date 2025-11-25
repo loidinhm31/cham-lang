@@ -49,6 +49,7 @@ struct CsvRow {
     definitions: String,
     example_sentences: Option<String>,
     topics: Option<String>,
+    tags: Option<String>,
     related_words: Option<String>,
 }
 
@@ -106,6 +107,25 @@ fn unflatten_topics(topics_str: Option<&String>) -> Vec<String> {
             s.split('|')
                 .filter_map(|topic| {
                     let trimmed = topic.trim();
+                    if trimmed.is_empty() {
+                        None
+                    } else {
+                        Some(trimmed.to_string())
+                    }
+                })
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// Unflatten tags from pipe-delimited string
+/// Format: "tag1|tag2|tag3"
+fn unflatten_tags(tags_str: Option<&String>) -> Vec<String> {
+    tags_str
+        .map(|s| {
+            s.split('|')
+                .filter_map(|tag| {
+                    let trimmed = tag.trim();
                     if trimmed.is_empty() {
                         None
                     } else {
@@ -296,6 +316,7 @@ pub fn import_vocabularies_csv(
             definitions: unflatten_definitions(&row.definitions),
             example_sentences: unflatten_examples(row.example_sentences.as_ref()),
             topics: unflatten_topics(row.topics.as_ref()),
+            tags: unflatten_tags(row.tags.as_ref()),
             related_words: unflatten_related_words(row.related_words.as_ref()),
             language: row.language.clone(),
             collection_id: collection_id.clone(),

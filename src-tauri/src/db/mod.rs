@@ -41,8 +41,10 @@ impl LocalDatabase {
         conn.execute("DROP TABLE IF EXISTS vocabulary_definitions", [])?;
         conn.execute("DROP TABLE IF EXISTS vocabulary_example_sentences", [])?;
         conn.execute("DROP TABLE IF EXISTS vocabulary_topics", [])?;
+        conn.execute("DROP TABLE IF EXISTS vocabulary_tags", [])?;
         conn.execute("DROP TABLE IF EXISTS vocabulary_related_words", [])?;
         conn.execute("DROP TABLE IF EXISTS topics", [])?;
+        conn.execute("DROP TABLE IF EXISTS tags", [])?;
         conn.execute("DROP TABLE IF EXISTS practice_sessions", [])?;
         conn.execute("DROP TABLE IF EXISTS practice_progress", [])?;
         conn.execute("DROP TABLE IF EXISTS collection_shared_users", [])?;
@@ -201,6 +203,30 @@ impl LocalDatabase {
                 FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
                 FOREIGN KEY (related_vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
                 UNIQUE(vocabulary_id, related_vocabulary_id)
+            )",
+            [],
+        )?;
+
+        // Tags master table
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS tags (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE,
+                created_at INTEGER NOT NULL
+            )",
+            [],
+        )?;
+
+        // Vocabulary tags junction table (many-to-many)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS vocabulary_tags (
+                id TEXT PRIMARY KEY,
+                vocabulary_id TEXT NOT NULL,
+                tag_id TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
+                FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
+                UNIQUE(vocabulary_id, tag_id)
             )",
             [],
         )?;
@@ -392,9 +418,12 @@ impl LocalDatabase {
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_examples_vocab ON vocabulary_example_sentences(vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_topics_vocab ON vocabulary_topics(vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_topics_topic ON vocabulary_topics(topic_id)", [])?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_tags_vocab ON vocabulary_tags(vocabulary_id)", [])?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_tags_tag ON vocabulary_tags(tag_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_related_vocab ON vocabulary_related_words(vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_related_related ON vocabulary_related_words(related_vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_topics_name ON topics(name)", [])?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)", [])?;
 
         // Indexes for normalized word progress tables
         conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_user_lang ON word_progress(user_id, language)", [])?;
@@ -456,6 +485,38 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT DISTINCT language FROM collections WHERE owner_id = ?1 AND deleted_at IS NULL"
+        )?;
+
+        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        rows.collect()
+    }
+
+    /// Get all distinct topics from user's vocabularies
+    pub fn get_all_topics(&self, user_id: &str) -> SqlResult<Vec<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT DISTINCT t.name
+             FROM topics t
+             JOIN vocabulary_topics vt ON t.id = vt.topic_id
+             JOIN vocabularies v ON vt.vocabulary_id = v.id
+             WHERE v.user_id = ?1 AND v.deleted_at IS NULL
+             ORDER BY t.name"
+        )?;
+
+        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        rows.collect()
+    }
+
+    /// Get all distinct tags from user's vocabularies
+    pub fn get_all_tags(&self, user_id: &str) -> SqlResult<Vec<String>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT DISTINCT t.name
+             FROM tags t
+             JOIN vocabulary_tags vt ON t.id = vt.tag_id
+             JOIN vocabularies v ON vt.vocabulary_id = v.id
+             WHERE v.user_id = ?1 AND v.deleted_at IS NULL
+             ORDER BY t.name"
         )?;
 
         let rows = stmt.query_map(params![user_id], |row| row.get(0))?;

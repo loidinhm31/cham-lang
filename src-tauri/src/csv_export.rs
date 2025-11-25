@@ -43,6 +43,12 @@ fn flatten_topics(vocabulary: &Vocabulary) -> String {
     vocabulary.topics.join("|")
 }
 
+/// Flatten tags to pipe-delimited string
+/// Format: "tag1|tag2|tag3"
+fn flatten_tags(vocabulary: &Vocabulary) -> String {
+    vocabulary.tags.join("|")
+}
+
 /// Flatten related words to delimited string
 /// Format: "word1:synonym|word2:antonym|word3:related"
 fn flatten_related_words(vocabulary: &Vocabulary) -> String {
@@ -67,6 +73,7 @@ struct CsvRow {
     definitions: String,
     example_sentences: String,
     topics: String,
+    tags: String,
     related_words: String,
 }
 
@@ -85,6 +92,7 @@ impl CsvRow {
             definitions: flatten_definitions(vocab),
             example_sentences: flatten_examples(vocab),
             topics: flatten_topics(vocab),
+            tags: flatten_tags(vocab),
             related_words: flatten_related_words(vocab),
         }
     }
@@ -173,6 +181,7 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
         "definitions",
         "example_sentences",
         "topics",
+        "tags",
         "related_words",
     ])
     .map_err(|e| format!("Failed to write CSV header: {}", e))?;
@@ -192,6 +201,7 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
             "a small domesticated carnivorous mammal|con mèo|I have a cat",
             "The cat is sleeping on the sofa|Cats are independent animals",
             "animals|pets|mammals",
+            "beginner|common",
             "dog:related|kitten:derivative",
         ],
         vec![
@@ -207,6 +217,7 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
             "a domesticated carnivorous mammal|con chó|She walks her dog every morning",
             "Dogs are loyal companions|The dog barked loudly",
             "animals|pets|mammals",
+            "beginner|common|important",
             "cat:related|puppy:derivative",
         ],
         vec![
@@ -222,6 +233,7 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
             "to move swiftly on foot|chạy|I run every morning;to operate or function|vận hành|The engine runs smoothly",
             "She runs 5 kilometers daily|He ran to catch the bus",
             "sports|movement|exercise",
+            "common|basic",
             "walk:antonym|sprint:synonym|jog:similar",
         ],
     ];

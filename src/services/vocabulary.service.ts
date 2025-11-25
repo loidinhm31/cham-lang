@@ -103,4 +103,13 @@ export class VocabularyService {
   static async getAllLanguages(): Promise<string[]> {
     return invoke("get_all_languages");
   }
+
+  // Topics and tags
+  static async getAllTopics(): Promise<string[]> {
+    return invoke("get_all_topics");
+  }
+
+  static async getAllTags(): Promise<string[]> {
+    return invoke("get_all_tags");
+  }
 }
