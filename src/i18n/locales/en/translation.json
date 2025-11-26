@@ -315,7 +315,13 @@
     "shareSuccess": "Collection shared successfully",
     "shareFailed": "Failed to share collection",
     "createSuccess": "Collection created successfully",
-    "updateSuccess": "Collection updated successfully"
+    "updateSuccess": "Collection updated successfully",
+    "sortBy": "Sort by",
+    "sortLatestUpdated": "Latest Updated",
+    "sortLatestCreated": "Latest Created",
+    "sortOldestUpdated": "Oldest Updated",
+    "sortOldestCreated": "Oldest Created",
+    "sortName": "Name (A-Z)"
   },
   "collection": {
     "title": "Collection Details",
@@ -380,7 +386,14 @@
     "pasteCSVContent": "Paste CSV Content",
     "csvPlaceholder": "collection_name,collection_language,word,word_type,level,ipa,...\nAnimals,en,cat,noun,A1,/kæt/,...",
     "pasteHelp": "Paste your CSV content here. Make sure it includes the header row with column names.",
-    "noCsvText": "Please paste CSV content or switch to file upload mode"
+    "noCsvText": "Please paste CSV content or switch to file upload mode",
+    "simpleImport": "Simple Import",
+    "defaultLanguage": "Default Language",
+    "defaultLanguageHelp": "This language will be used for new collections created during import",
+    "pasteSimpleContent": "Paste from Excel (3 columns)",
+    "simplePlaceholder": "Collection\tWord\tDefinition\n6과\t셰어하우스\tshare house\n6과\t정착하다\tđịnh cư\n7과\t풍속 화가\thọa sĩ tranh phong tục",
+    "simpleHelp": "Simply copy 3 columns from Excel: Collection Name, Word, and Definition. Paste here and import!",
+    "noSimpleCsvText": "Please paste the content from Excel (3 columns: collection, word, definition)"
   },
   "common": {
     "loading": "Loading...",

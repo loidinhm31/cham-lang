@@ -315,7 +315,13 @@
     "shareSuccess": "Đã chia sẻ bộ sưu tập thành công",
     "shareFailed": "Chia sẻ bộ sưu tập thất bại",
     "createSuccess": "Đã tạo bộ sưu tập thành công",
-    "updateSuccess": "Đã cập nhật bộ sưu tập thành công"
+    "updateSuccess": "Đã cập nhật bộ sưu tập thành công",
+    "sortBy": "Sắp xếp theo",
+    "sortLatestUpdated": "Cập nhật gần nhất",
+    "sortLatestCreated": "Tạo gần nhất",
+    "sortOldestUpdated": "Cập nhật cũ nhất",
+    "sortOldestCreated": "Tạo cũ nhất",
+    "sortName": "Tên (A-Z)"
   },
   "collection": {
     "title": "Chi Tiết Bộ Sưu Tập",
@@ -380,7 +386,14 @@
     "pasteCSVContent": "Dán Nội Dung CSV",
     "csvPlaceholder": "collection_name,collection_language,word,word_type,level,ipa,...\nAnimals,en,cat,noun,A1,/kæt/,...",
     "pasteHelp": "Dán nội dung CSV của bạn vào đây. Đảm bảo bao gồm dòng tiêu đề với tên cột.",
-    "noCsvText": "Vui lòng dán nội dung CSV hoặc chuyển sang chế độ tải tệp lên"
+    "noCsvText": "Vui lòng dán nội dung CSV hoặc chuyển sang chế độ tải tệp lên",
+    "simpleImport": "Nhập Đơn Giản",
+    "defaultLanguage": "Ngôn Ngữ Mặc Định",
+    "defaultLanguageHelp": "Ngôn ngữ này sẽ được sử dụng cho các bộ sưu tập mới được tạo trong quá trình nhập",
+    "pasteSimpleContent": "Dán từ Excel (3 cột)",
+    "simplePlaceholder": "Bộ sưu tập\tTừ\tĐịnh nghĩa\n6과\t셰어하우스\tshare house\n6과\t정착하다\tđịnh cư\n7과\t풍속 화가\thọa sĩ tranh phong tục",
+    "simpleHelp": "Chỉ cần sao chép 3 cột từ Excel: Tên bộ sưu tập, Từ, và Định nghĩa. Dán vào đây và nhập!",
+    "noSimpleCsvText": "Vui lòng dán nội dung từ Excel (3 cột: bộ sưu tập, từ, định nghĩa)"
   },
   "common": {
     "loading": "Đang tải...",

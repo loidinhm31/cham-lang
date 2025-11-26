@@ -221,6 +221,172 @@ fn find_or_create_collection(
     }
 }
 
+/// Simple import request for 3-column format (collection_name, word, definition)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SimpleImportRequest {
+    /// Tab-separated values: collection_name, word, definition
+    pub csv_text: String,
+    /// Default language for new collections (e.g., "ko", "en", "vi")
+    pub default_language: String,
+    /// If provided, import all vocabularies into this collection
+    pub target_collection_id: Option<String>,
+    /// Auto-create collections if they don't exist
+    pub create_missing_collections: bool,
+}
+
+/// Import vocabularies from simple 3-column format
+#[tauri::command]
+pub fn import_simple_vocabularies(
+    local_db: State<'_, LocalDatabase>,
+    request: SimpleImportRequest,
+) -> Result<CsvImportResult, String> {
+    println!("📥 Starting simple CSV import ({} bytes)", request.csv_text.len());
+
+    let mut rows_imported = 0;
+    let mut rows_failed = 0;
+    let mut errors = Vec::new();
+    let mut collections_created = Vec::new();
+    let mut affected_collections = std::collections::HashSet::new();
+    let mut row_number = 0;
+
+    // Parse tab-separated values
+    for line in request.csv_text.lines() {
+        row_number += 1;
+
+        // Skip empty lines
+        if line.trim().is_empty() {
+            continue;
+        }
+
+        // Split by tab
+        let parts: Vec<&str> = line.split('\t').collect();
+
+        // Expect at least 3 columns: collection_name, word, definition
+        if parts.len() < 3 {
+            rows_failed += 1;
+            errors.push(CsvImportError {
+                row_number,
+                error_message: format!("Expected 3 columns (collection_name, word, definition), found {}", parts.len()),
+                row_data: line.to_string(),
+            });
+            continue;
+        }
+
+        let collection_name = parts[0].trim();
+        let word = parts[1].trim();
+        let definition = parts[2].trim();
+
+        // Skip rows with empty word (might be section markers)
+        if word.is_empty() {
+            continue;
+        }
+
+        // Skip rows with empty collection name
+        if collection_name.is_empty() {
+            rows_failed += 1;
+            errors.push(CsvImportError {
+                row_number,
+                error_message: "Collection name is empty".to_string(),
+                row_data: line.to_string(),
+            });
+            continue;
+        }
+
+        // Determine which collection to use
+        let collection_id = if let Some(ref target_id) = request.target_collection_id {
+            target_id.clone()
+        } else {
+            // Find or create collection from CSV data
+            match find_or_create_collection(
+                &local_db,
+                collection_name,
+                &request.default_language,
+                None, // No description for simple import
+                request.create_missing_collections,
+            ) {
+                Ok(id) => {
+                    // Track if this is a newly created collection
+                    if !collections_created.contains(&id) && request.create_missing_collections {
+                        if let Ok(Some(collection)) = local_db.get_collection(&id) {
+                            if collection.word_count == 0 {
+                                collections_created.push(id.clone());
+                            }
+                        }
+                    }
+                    id
+                }
+                Err(e) => {
+                    rows_failed += 1;
+                    errors.push(CsvImportError {
+                        row_number,
+                        error_message: e,
+                        row_data: line.to_string(),
+                    });
+                    continue;
+                }
+            }
+        };
+
+        // Create simple vocabulary with single definition
+        let vocab = Vocabulary {
+            id: None,
+            word: word.to_string(),
+            word_type: WordType::Noun, // Default to noun for simple import
+            level: "A1".to_string(), // Default level
+            ipa: String::new(),
+            concept: None,
+            definitions: vec![Definition {
+                meaning: definition.to_string(),
+                translation: None,
+                example: None,
+            }],
+            example_sentences: vec![],
+            topics: vec![],
+            tags: vec![],
+            related_words: vec![],
+            language: request.default_language.clone(),
+            collection_id: collection_id.clone(),
+            user_id: "local".to_string(),
+            created_at: chrono::Utc::now(),
+            updated_at: chrono::Utc::now(),
+        };
+
+        // Create vocabulary
+        match local_db.create_vocabulary(&vocab, "local") {
+            Ok(_) => {
+                rows_imported += 1;
+                affected_collections.insert(collection_id.clone());
+            }
+            Err(e) => {
+                rows_failed += 1;
+                errors.push(CsvImportError {
+                    row_number,
+                    error_message: format!("Failed to create vocabulary: {}", e),
+                    row_data: line.to_string(),
+                });
+            }
+        }
+    }
+
+    // Update word counts for all affected collections
+    println!("📊 Updating word counts for {} affected collections...", affected_collections.len());
+    for collection_id in &affected_collections {
+        if let Err(e) = local_db.update_collection_word_count(collection_id) {
+            println!("⚠️ Warning: Failed to update word count for collection {}: {}", collection_id, e);
+        }
+    }
+
+    println!("✅ Simple CSV import complete: {} imported, {} failed", rows_imported, rows_failed);
+
+    Ok(CsvImportResult {
+        success: rows_failed == 0,
+        rows_imported,
+        rows_failed,
+        errors,
+        collections_created,
+    })
+}
+
 /// Import vocabularies from CSV file or text
 #[tauri::command]
 pub fn import_vocabularies_csv(

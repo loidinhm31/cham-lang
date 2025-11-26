@@ -4,6 +4,7 @@ import type {
   CsvExportRequest,
   CsvImportRequest,
   CsvImportResult,
+  SimpleImportRequest,
 } from "../types/csv";
 
 /**
@@ -34,6 +35,15 @@ export class CsvService {
     request: CsvImportRequest,
   ): Promise<CsvImportResult> {
     return invoke("import_vocabularies_csv", { request });
+  }
+
+  /**
+   * Import vocabularies from simple 3-column format (collection_name, word, definition)
+   */
+  static async importSimpleVocabularies(
+    request: SimpleImportRequest,
+  ): Promise<CsvImportResult> {
+    return invoke("import_simple_vocabularies", { request });
   }
 
   /**

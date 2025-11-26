@@ -118,6 +118,7 @@ pub fn run() {
             export_collections_csv,
             choose_csv_save_location,
             import_vocabularies_csv,
+            import_simple_vocabularies,
             generate_csv_template,
         ])
         .run(tauri::generate_context!())

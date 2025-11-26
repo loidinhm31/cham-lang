@@ -26,7 +26,11 @@ export const CSVImportPage: React.FC = () => {
   const [collections, setCollections] = useState<Collection[]>([]);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [csvText, setCsvText] = useState<string>("");
-  const [importMode, setImportMode] = useState<"file" | "text">("file");
+  const [simpleCsvText, setSimpleCsvText] = useState<string>("");
+  const [importMode, setImportMode] = useState<"file" | "text" | "simple">(
+    "file",
+  );
+  const [defaultLanguage, setDefaultLanguage] = useState<string>("ko");
   const [targetCollectionId, setTargetCollectionId] = useState<string>("");
   const [autoCreateCollections, setAutoCreateCollections] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
@@ -92,19 +96,36 @@ export const CSVImportPage: React.FC = () => {
       showAlert(t("csv.noCsvText"), { variant: "warning" });
       return;
     }
+    if (importMode === "simple" && !simpleCsvText.trim()) {
+      showAlert(t("csv.noSimpleCsvText"), { variant: "warning" });
+      return;
+    }
 
     try {
       setIsImporting(true);
 
-      const result = await CsvService.importVocabularies({
-        file_path: importMode === "file" ? selectedFile! : undefined,
-        csv_text: importMode === "text" ? csvText : undefined,
-        target_collection_id:
-          targetCollectionId && targetCollectionId !== ""
-            ? targetCollectionId
-            : undefined,
-        create_missing_collections: autoCreateCollections,
-      });
+      let result;
+      if (importMode === "simple") {
+        result = await CsvService.importSimpleVocabularies({
+          csv_text: simpleCsvText,
+          default_language: defaultLanguage,
+          target_collection_id:
+            targetCollectionId && targetCollectionId !== ""
+              ? targetCollectionId
+              : undefined,
+          create_missing_collections: autoCreateCollections,
+        });
+      } else {
+        result = await CsvService.importVocabularies({
+          file_path: importMode === "file" ? selectedFile! : undefined,
+          csv_text: importMode === "text" ? csvText : undefined,
+          target_collection_id:
+            targetCollectionId && targetCollectionId !== ""
+              ? targetCollectionId
+              : undefined,
+          create_missing_collections: autoCreateCollections,
+        });
+      }
 
       setImportResult(result);
 
@@ -181,6 +202,18 @@ export const CSVImportPage: React.FC = () => {
                 <FileText className="w-4 h-4 inline mr-2" />
                 {t("csv.pasteText")}
               </button>
+              <button
+                onClick={() => setImportMode("simple")}
+                disabled={isImporting}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  importMode === "simple"
+                    ? "bg-white text-chameleon-600 shadow-sm"
+                    : "text-gray-600 hover:text-gray-800"
+                }`}
+              >
+                <Upload className="w-4 h-4 inline mr-2" />
+                {t("csv.simpleImport")}
+              </button>
             </div>
           </div>
 
@@ -226,6 +259,52 @@ export const CSVImportPage: React.FC = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 font-mono text-sm"
               />
               <p className="text-xs text-gray-500 mt-1">{t("csv.pasteHelp")}</p>
+            </div>
+          )}
+
+          {/* Simple Import Mode */}
+          {importMode === "simple" && (
+            <div className="mb-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("csv.defaultLanguage")}
+                </label>
+                <select
+                  value={defaultLanguage}
+                  onChange={(e) => setDefaultLanguage(e.target.value)}
+                  disabled={isImporting}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500"
+                >
+                  <option value="ko">Korean (한국어)</option>
+                  <option value="en">English</option>
+                  <option value="vi">Vietnamese (Tiếng Việt)</option>
+                  <option value="es">Spanish (Español)</option>
+                  <option value="fr">French (Français)</option>
+                  <option value="de">German (Deutsch)</option>
+                  <option value="ja">Japanese (日本語)</option>
+                  <option value="zh">Chinese (中文)</option>
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("csv.defaultLanguageHelp")}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  {t("csv.pasteSimpleContent")}
+                </label>
+                <textarea
+                  value={simpleCsvText}
+                  onChange={(e) => setSimpleCsvText(e.target.value)}
+                  disabled={isImporting}
+                  rows={12}
+                  placeholder={t("csv.simplePlaceholder")}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {t("csv.simpleHelp")}
+                </p>
+              </div>
             </div>
           )}
 
@@ -287,6 +366,7 @@ export const CSVImportPage: React.FC = () => {
               disabled={
                 (importMode === "file" && !selectedFile) ||
                 (importMode === "text" && !csvText.trim()) ||
+                (importMode === "simple" && !simpleCsvText.trim()) ||
                 isImporting
               }
               className="flex-1 flex items-center justify-center gap-2"
@@ -400,6 +480,7 @@ export const CSVImportPage: React.FC = () => {
                     onClick={() => {
                       setSelectedFile(null);
                       setCsvText("");
+                      setSimpleCsvText("");
                       setImportResult(null);
                     }}
                   >
