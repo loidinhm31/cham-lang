@@ -87,7 +87,7 @@ impl LocalDatabase {
             params![Utc::now().timestamp(), Utc::now().timestamp()],
         )?;
 
-        // Collections table (normalized - removed shared_with JSON)
+        // Collections table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS collections (
                 id TEXT PRIMARY KEY,
@@ -105,7 +105,7 @@ impl LocalDatabase {
             [],
         )?;
 
-        // Collection shared users table (replaces shared_with JSON array)
+        // Collection shared users table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS collection_shared_users (
                 id TEXT PRIMARY KEY,
@@ -119,7 +119,7 @@ impl LocalDatabase {
             [],
         )?;
 
-        // Vocabularies table (normalized - removed JSON fields)
+        // Vocabularies table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS vocabularies (
                 id TEXT PRIMARY KEY,
@@ -201,7 +201,6 @@ impl LocalDatabase {
                 relationship_type TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
                 FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
-                FOREIGN KEY (related_vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
                 UNIQUE(vocabulary_id, related_vocabulary_id)
             )",
             [],
@@ -231,7 +230,7 @@ impl LocalDatabase {
             [],
         )?;
 
-        // User preferences table (normalized - removed learning_languages JSON)
+        // User preferences table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS user_preferences (
                 id TEXT PRIMARY KEY,
@@ -259,7 +258,7 @@ impl LocalDatabase {
             [],
         )?;
 
-        // Practice sessions table (normalized - removed results JSON)
+        // Practice sessions table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_sessions (
                 id TEXT PRIMARY KEY,
@@ -298,7 +297,7 @@ impl LocalDatabase {
             [],
         )?;
 
-        // Practice progress table (normalized - removed words_progress JSON)
+        // Practice progress table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_progress (
                 id TEXT PRIMARY KEY,

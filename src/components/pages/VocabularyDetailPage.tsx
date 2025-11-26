@@ -300,7 +300,7 @@ export const VocabularyDetailPage: React.FC = () => {
               <span
                 className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-4 py-2 rounded-full`}
               >
-                {t(`levels.${vocabulary.level}`)}
+                {vocabulary.level && t(`levels.${vocabulary.level}`)}
               </span>
             </div>
           </div>
