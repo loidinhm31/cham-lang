@@ -154,7 +154,7 @@ export const HomePage: React.FC = () => {
         />
 
         {/* Topic and Tag Filters */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col md:flex-row gap-3">
           <SearchableMultiSelect
             label={t("vocabulary.topics")}
             options={availableTopics}
