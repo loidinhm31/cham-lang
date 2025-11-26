@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Brain, Plus } from "lucide-react";
 import { SearchBar, TopBar } from "@/components/molecules";
 import { CollectionList } from "@/components/organisms";
-import { Button, SearchableMultiSelect } from "@/components/atoms";
+import { Button, SearchableMultiSelect, Select } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import { CollectionService } from "@/services/collection.service.ts";
 import type { Collection } from "@/types/collection.ts";
@@ -22,6 +22,11 @@ export const HomePage: React.FC = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
+  // Sort state - load from localStorage or default to "latestUpdated"
+  const [sortBy, setSortBy] = useState<string>(() => {
+    return localStorage.getItem("collections_sort_preference") || "latestUpdated";
+  });
+
   useEffect(() => {
     loadCollections();
     loadTopicsAndTags();
@@ -36,11 +41,47 @@ export const HomePage: React.FC = () => {
     }
   }, [selectedTopics, selectedTags]);
 
+  // Re-sort when sort order changes and save preference
+  useEffect(() => {
+    setCollections((prev) => sortCollections(prev));
+    localStorage.setItem("collections_sort_preference", sortBy);
+  }, [sortBy]);
+
+  const sortCollections = (collectionsToSort: Collection[]) => {
+    const sorted = [...collectionsToSort];
+    switch (sortBy) {
+      case "latestUpdated":
+        return sorted.sort(
+          (a, b) =>
+            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+        );
+      case "latestCreated":
+        return sorted.sort(
+          (a, b) =>
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+        );
+      case "oldestUpdated":
+        return sorted.sort(
+          (a, b) =>
+            new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+        );
+      case "oldestCreated":
+        return sorted.sort(
+          (a, b) =>
+            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+        );
+      case "name":
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      default:
+        return sorted;
+    }
+  };
+
   const loadCollections = async () => {
     try {
       setLoading(true);
       const data = await CollectionService.getUserCollections();
-      setCollections(data);
+      setCollections(sortCollections(data));
     } catch (error) {
       console.error("Failed to load collections:", error);
     } finally {
@@ -115,7 +156,7 @@ export const HomePage: React.FC = () => {
         collectionIds.has(collection.id || ""),
       );
 
-      setCollections(filteredCollections);
+      setCollections(sortCollections(filteredCollections));
     } catch (error) {
       console.error("Search failed:", error);
     } finally {
@@ -170,6 +211,32 @@ export const HomePage: React.FC = () => {
             placeholder={t("vocabulary.selectTags")}
           />
         </div>
+
+        {/* Sort Selector */}
+        <Select
+          label={t("collections.sortBy")}
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          options={[
+            {
+              value: "latestUpdated",
+              label: t("collections.sortLatestUpdated"),
+            },
+            {
+              value: "latestCreated",
+              label: t("collections.sortLatestCreated"),
+            },
+            {
+              value: "oldestUpdated",
+              label: t("collections.sortOldestUpdated"),
+            },
+            {
+              value: "oldestCreated",
+              label: t("collections.sortOldestCreated"),
+            },
+            { value: "name", label: t("collections.sortName") },
+          ]}
+        />
 
         {/* Action Buttons */}
         <div className="flex gap-3">
