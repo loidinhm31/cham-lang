@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { RotateCcw, BookOpen } from "lucide-react";
@@ -47,6 +47,7 @@ export const FillWordPracticePage: React.FC = () => {
   const [completed, setCompleted] = useState(false);
   const [showNext, setShowNext] = useState(false);
   const [questionCounter, setQuestionCounter] = useState(0);
+  const autoAdvanceTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (collectionId) {
@@ -165,15 +166,15 @@ export const FillWordPracticePage: React.FC = () => {
 
       setShowNext(true);
 
-      // Auto-advance after 1.5 seconds to show feedback
-      setTimeout(() => {
+      // Auto-advance after 2 seconds to show feedback
+      autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
       }, 2000);
     } catch (error) {
       console.error("Error in handleAnswer:", error);
       setShowNext(true); // Show next anyway to not block the user
       // Auto-advance even on error
-      setTimeout(() => {
+      autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
       }, 2000);
     }
@@ -182,6 +183,12 @@ export const FillWordPracticePage: React.FC = () => {
   const handleNext = () => {
     if (!sessionManager) {
       return;
+    }
+
+    // Clear any pending auto-advance timer to prevent double execution
+    if (autoAdvanceTimerRef.current !== null) {
+      clearTimeout(autoAdvanceTimerRef.current);
+      autoAdvanceTimerRef.current = null;
     }
 
     // Check if session is complete
