@@ -148,6 +148,12 @@
     "dailyReviewLimit": "Giới Hạn Ôn Tập Hàng Ngày",
     "showFailedWords": "Hiện Từ Sai Trong Phiên",
     "showFailedWordsDescription": "Thử lại ngay các từ sai trong cùng một phiên",
+    "uiPreferences": "Tùy Chọn Giao Diện",
+    "autoAdvanceTimeout": "Thời Gian Tự Động Chuyển",
+    "seconds": "giây",
+    "autoAdvanceTimeoutDescription": "Thời gian trước khi tự động hiện câu hỏi tiếp theo",
+    "showHintInFillWord": "Hiện Gợi Ý Trong Chế Độ Điền Từ",
+    "showHintInFillWordDescription": "Hiển thị chữ cái đầu tiên làm gợi ý khi điền từ",
     "saved": "Đã lưu cài đặt thành công!",
     "dangerZone": "Vùng Nguy Hiểm",
     "dangerZoneDescription": "Các hành động không thể hoàn tác và phá hủy"

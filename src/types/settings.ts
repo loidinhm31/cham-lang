@@ -24,6 +24,10 @@ export interface LearningSettings {
   new_words_per_day?: number; // Limit new words introduced daily
   daily_review_limit?: number; // Maximum reviews per day
 
+  // UI Preferences
+  auto_advance_timeout_seconds: number; // Auto-advance timeout in seconds (default: 2)
+  show_hint_in_fillword: boolean; // Show/hide hint in fill word mode (default: true)
+
   // Timestamps
   created_at: string;
   updated_at: string;
@@ -40,6 +44,8 @@ export const DEFAULT_LEARNING_SETTINGS: Omit<
   show_failed_words_in_session: true,
   new_words_per_day: 20,
   daily_review_limit: 100,
+  auto_advance_timeout_seconds: 2,
+  show_hint_in_fillword: true,
 };
 
 // Box interval configurations (in days)

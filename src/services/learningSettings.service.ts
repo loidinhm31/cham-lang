@@ -15,6 +15,8 @@ export interface UpdateLearningSettingsRequest {
   show_failed_words_in_session?: boolean;
   new_words_per_day?: number;
   daily_review_limit?: number;
+  auto_advance_timeout_seconds?: number;
+  show_hint_in_fillword?: boolean;
 }
 
 export class LearningSettingsService {

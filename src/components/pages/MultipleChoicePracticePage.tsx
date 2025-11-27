@@ -49,6 +49,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
   const [showNext, setShowNext] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [questionCounter, setQuestionCounter] = useState(0);
+  const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(2000); // in milliseconds
   const autoAdvanceTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -75,6 +76,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
       // Load learning settings
       const userSettings =
         await LearningSettingsService.getOrCreateLearningSettings();
+
+      // Set UI preferences from settings
+      setAutoAdvanceTimeout(userSettings.auto_advance_timeout_seconds * 1000);
 
       console.log("userSettings", userSettings);
 
@@ -201,17 +205,17 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
       setShowNext(true);
 
-      // Auto-advance after 2 seconds to show feedback
+      // Auto-advance after configured timeout to show feedback
       autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
-      }, 2000);
+      }, autoAdvanceTimeout);
     } catch (error) {
       console.error("Error in handleAnswer:", error);
       setShowNext(true); // Show next anyway to not block the user
       // Auto-advance even on error
       autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
-      }, 2000);
+      }, autoAdvanceTimeout);
     }
   };
 

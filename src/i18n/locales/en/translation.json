@@ -148,6 +148,12 @@
     "dailyReviewLimit": "Daily Review Limit",
     "showFailedWords": "Show Failed Words in Session",
     "showFailedWordsDescription": "Retry incorrect words immediately in the same session",
+    "uiPreferences": "UI Preferences",
+    "autoAdvanceTimeout": "Auto-Advance Timeout",
+    "seconds": "seconds",
+    "autoAdvanceTimeoutDescription": "Time before automatically showing next question",
+    "showHintInFillWord": "Show Hint in Fill Word Mode",
+    "showHintInFillWordDescription": "Display the first letter as a hint when filling words",
     "saved": "Settings saved successfully!",
     "dangerZone": "Danger Zone",
     "dangerZoneDescription": "Irreversible and destructive actions"

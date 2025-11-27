@@ -370,6 +370,8 @@ impl LocalDatabase {
                 show_failed_words_in_session INTEGER NOT NULL,
                 new_words_per_day INTEGER,
                 daily_review_limit INTEGER,
+                auto_advance_timeout_seconds INTEGER DEFAULT 2,
+                show_hint_in_fillword INTEGER DEFAULT 1,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id),

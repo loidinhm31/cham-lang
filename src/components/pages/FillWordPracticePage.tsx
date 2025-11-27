@@ -47,6 +47,8 @@ export const FillWordPracticePage: React.FC = () => {
   const [completed, setCompleted] = useState(false);
   const [showNext, setShowNext] = useState(false);
   const [questionCounter, setQuestionCounter] = useState(0);
+  const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(2000); // in milliseconds
+  const [showHint, setShowHint] = useState(true);
   const autoAdvanceTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -67,6 +69,10 @@ export const FillWordPracticePage: React.FC = () => {
       // Load learning settings
       const userSettings =
         await LearningSettingsService.getOrCreateLearningSettings();
+
+      // Set UI preferences from settings
+      setAutoAdvanceTimeout(userSettings.auto_advance_timeout_seconds * 1000);
+      setShowHint(userSettings.show_hint_in_fillword);
 
       // Load vocabularies
       const vocabData =
@@ -166,17 +172,17 @@ export const FillWordPracticePage: React.FC = () => {
 
       setShowNext(true);
 
-      // Auto-advance after 2 seconds to show feedback
+      // Auto-advance after configured timeout to show feedback
       autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
-      }, 2000);
+      }, autoAdvanceTimeout);
     } catch (error) {
       console.error("Error in handleAnswer:", error);
       setShowNext(true); // Show next anyway to not block the user
       // Auto-advance even on error
       autoAdvanceTimerRef.current = window.setTimeout(() => {
         handleNext();
-      }, 2000);
+      }, autoAdvanceTimeout);
     }
   };
 
@@ -360,7 +366,7 @@ export const FillWordPracticePage: React.FC = () => {
     );
   }
 
-  const hint = currentVocab.word.charAt(0) + "...";
+  const hint = showHint ? currentVocab.word.charAt(0) + "..." : undefined;
 
   return (
     <>

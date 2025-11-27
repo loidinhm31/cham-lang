@@ -27,6 +27,8 @@ export const LearningSettingsPage: React.FC = () => {
   const [showFailedWords, setShowFailedWords] = useState(true);
   const [newWordsPerDay, setNewWordsPerDay] = useState(20);
   const [dailyReviewLimit, setDailyReviewLimit] = useState(100);
+  const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(2);
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
     loadSettings();
@@ -44,6 +46,8 @@ export const LearningSettingsPage: React.FC = () => {
       setShowFailedWords(data.show_failed_words_in_session);
       setNewWordsPerDay(data.new_words_per_day || 20);
       setDailyReviewLimit(data.daily_review_limit || 100);
+      setAutoAdvanceTimeout(data.auto_advance_timeout_seconds);
+      setShowHint(data.show_hint_in_fillword);
     } catch (error) {
       console.error("Failed to load settings:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -62,6 +66,8 @@ export const LearningSettingsPage: React.FC = () => {
         show_failed_words_in_session: showFailedWords,
         new_words_per_day: newWordsPerDay,
         daily_review_limit: dailyReviewLimit,
+        auto_advance_timeout_seconds: autoAdvanceTimeout,
+        show_hint_in_fillword: showHint,
       });
       showAlert(t("settings.saved") || "Settings saved successfully!", {
         variant: "success",
@@ -276,6 +282,71 @@ export const LearningSettingsPage: React.FC = () => {
               <span
                 className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
                   showFailedWords ? "translate-x-7" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        </Card>
+
+        {/* UI Preferences Section */}
+        <div className="pt-4">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">
+            {t("settings.uiPreferences") || "UI Preferences"}
+          </h2>
+        </div>
+
+        {/* Auto-Advance Timeout */}
+        <Card variant="glass">
+          <div className="space-y-3">
+            <label className="block text-sm font-semibold text-gray-700">
+              {t("settings.autoAdvanceTimeout") || "Auto-Advance Timeout"}
+            </label>
+            <input
+              type="range"
+              min="1"
+              max="10"
+              value={autoAdvanceTimeout}
+              onChange={(e) => setAutoAdvanceTimeout(Number(e.target.value))}
+              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+            />
+            <div className="text-center">
+              <span className="text-3xl font-black text-teal-600">
+                {autoAdvanceTimeout}
+              </span>
+              <span className="text-sm text-gray-600 ml-2">
+                {t("settings.seconds") || "seconds"}
+              </span>
+            </div>
+            <p className="text-xs text-gray-600 text-center">
+              {t("settings.autoAdvanceTimeoutDescription") ||
+                "Time before automatically showing next question"}
+            </p>
+          </div>
+        </Card>
+
+        {/* Show Hint in Fill Word */}
+        <Card variant="glass">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <label className="block text-sm font-semibold text-gray-700 mb-1">
+                {t("settings.showHintInFillWord") ||
+                  "Show Hint in Fill Word Mode"}
+              </label>
+              <p className="text-xs text-gray-600">
+                {t("settings.showHintInFillWordDescription") ||
+                  "Display the first letter as a hint when filling words"}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowHint(!showHint)}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                showHint ? "bg-teal-600" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  showHint ? "translate-x-7" : "translate-x-1"
                 }`}
               />
             </button>

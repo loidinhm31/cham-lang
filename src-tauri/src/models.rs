@@ -303,6 +303,10 @@ pub struct LearningSettings {
     pub new_words_per_day: Option<i32>, // Limit new words introduced daily
     pub daily_review_limit: Option<i32>, // Maximum reviews per day
 
+    // UI Preferences
+    pub auto_advance_timeout_seconds: i32, // Auto-advance timeout in seconds (default: 2)
+    pub show_hint_in_fillword: bool, // Show/hide hint in fill word mode (default: true)
+
     // Timestamps
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -316,4 +320,6 @@ pub struct UpdateLearningSettingsRequest {
     pub show_failed_words_in_session: Option<bool>,
     pub new_words_per_day: Option<i32>,
     pub daily_review_limit: Option<i32>,
+    pub auto_advance_timeout_seconds: Option<i32>,
+    pub show_hint_in_fillword: Option<bool>,
 }
