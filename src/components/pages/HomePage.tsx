@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Brain, Plus } from "lucide-react";
 import { SearchBar, TopBar } from "@/components/molecules";
 import { CollectionList } from "@/components/organisms";
-import { Button, SearchableMultiSelect, Select } from "@/components/atoms";
+import { Button, SearchableMultiSelect, Select, Accordion } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import { CollectionService } from "@/services/collection.service.ts";
 import type { Collection } from "@/types/collection.ts";
@@ -194,49 +194,52 @@ export const HomePage: React.FC = () => {
           placeholder={t("vocabulary.search")}
         />
 
-        {/* Topic and Tag Filters */}
-        <div className="flex flex-col md:flex-row gap-3">
-          <SearchableMultiSelect
-            label={t("vocabulary.topics")}
-            options={availableTopics}
-            selected={selectedTopics}
-            onChange={setSelectedTopics}
-            placeholder={t("vocabulary.selectTopics")}
-          />
-          <SearchableMultiSelect
-            label={t("vocabulary.tags")}
-            options={availableTags}
-            selected={selectedTags}
-            onChange={setSelectedTags}
-            placeholder={t("vocabulary.selectTags")}
-          />
-        </div>
+        {/* Filter Accordion */}
+        <Accordion title={t("buttons.filter")} defaultOpen={false}>
+          {/* Topic and Tag Filters */}
+          <div className="flex flex-col md:flex-row gap-3 pt-3">
+            <SearchableMultiSelect
+              label={t("vocabulary.topics")}
+              options={availableTopics}
+              selected={selectedTopics}
+              onChange={setSelectedTopics}
+              placeholder={t("vocabulary.selectTopics")}
+            />
+            <SearchableMultiSelect
+              label={t("vocabulary.tags")}
+              options={availableTags}
+              selected={selectedTags}
+              onChange={setSelectedTags}
+              placeholder={t("vocabulary.selectTags")}
+            />
+          </div>
 
-        {/* Sort Selector */}
-        <Select
-          label={t("collections.sortBy")}
-          value={sortBy}
-          onChange={(e) => setSortBy(e.target.value)}
-          options={[
-            {
-              value: "latestUpdated",
-              label: t("collections.sortLatestUpdated"),
-            },
-            {
-              value: "latestCreated",
-              label: t("collections.sortLatestCreated"),
-            },
-            {
-              value: "oldestUpdated",
-              label: t("collections.sortOldestUpdated"),
-            },
-            {
-              value: "oldestCreated",
-              label: t("collections.sortOldestCreated"),
-            },
-            { value: "name", label: t("collections.sortName") },
-          ]}
-        />
+          {/* Sort Selector */}
+          <Select
+            label={t("collections.sortBy")}
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            options={[
+              {
+                value: "latestUpdated",
+                label: t("collections.sortLatestUpdated"),
+              },
+              {
+                value: "latestCreated",
+                label: t("collections.sortLatestCreated"),
+              },
+              {
+                value: "oldestUpdated",
+                label: t("collections.sortOldestUpdated"),
+              },
+              {
+                value: "oldestCreated",
+                label: t("collections.sortOldestCreated"),
+              },
+              { value: "name", label: t("collections.sortName") },
+            ]}
+          />
+        </Accordion>
 
         {/* Action Buttons */}
         <div className="flex gap-3">
