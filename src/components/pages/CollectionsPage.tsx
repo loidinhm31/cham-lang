@@ -74,7 +74,9 @@ export const CollectionsPage: React.FC = () => {
               className="flex items-center flex-1 sm:flex-none justify-center"
             >
               <Upload className="w-4 h-4" />
-              <span className="hidden xs:inline sm:inline">{t("csv.import")}</span>
+              <span className="hidden xs:inline sm:inline">
+                {t("csv.import")}
+              </span>
             </Button>
             <Button
               variant="secondary"
@@ -83,7 +85,9 @@ export const CollectionsPage: React.FC = () => {
               className="flex items-center flex-1 sm:flex-none justify-center"
             >
               <Download className="w-4 h-4" />
-              <span className="hidden xs:inline sm:inline">{t("csv.export")}</span>
+              <span className="hidden xs:inline sm:inline">
+                {t("csv.export")}
+              </span>
             </Button>
             <Button
               variant="primary"
@@ -157,7 +161,10 @@ export const CollectionsPage: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="flex gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="flex gap-2 flex-wrap"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <Button
                     variant="secondary"
                     size="sm"
@@ -178,7 +185,9 @@ export const CollectionsPage: React.FC = () => {
                     className="flex items-center gap-1"
                   >
                     <Trash2 className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t("common.delete")}</span>
+                    <span className="hidden sm:inline">
+                      {t("common.delete")}
+                    </span>
                   </Button>
                 </div>
               </Card>

@@ -11,10 +11,13 @@
  * - 7 boxes: [1d, 2d, 4d, 7d, 14d, 30d, 60d]
  */
 
-import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
-import { addDays, BOX_INTERVAL_PRESETS } from "../types";
-import type { WordProgress } from "../../../types/practice";
-import type { LearningSettings } from "../../../types/settings";
+import type {
+  ReviewResult,
+  SpacedRepetitionAlgorithm,
+} from "@/utils/spacedRepetition/types";
+import { addDays, BOX_INTERVAL_PRESETS } from "@/utils/spacedRepetition/types";
+import type { WordProgress } from "@/types/practice";
+import type { LearningSettings } from "@/types/settings";
 
 const DEFAULT_EASINESS_FACTOR = 2.5;
 

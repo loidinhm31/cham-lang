@@ -16,7 +16,9 @@ export const StudyModePage: React.FC = () => {
   const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
   const [wordLimit, setWordLimit] = useState<string>("all");
-  const [contentMode, setContentMode] = useState<"definition" | "concept">("definition");
+  const [contentMode, setContentMode] = useState<"definition" | "concept">(
+    "definition",
+  );
   const [step, setStep] = useState<"config" | "mode">("config");
 
   useEffect(() => {
@@ -120,7 +122,10 @@ export const StudyModePage: React.FC = () => {
             </div>
 
             {/* Study Mode Banner */}
-            <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <Card
+              variant="glass"
+              className="bg-blue-50 border-2 border-blue-200"
+            >
               <div className="flex items-center gap-3">
                 <BookOpen className="w-8 h-8 text-blue-600" />
                 <div>
@@ -128,7 +133,8 @@ export const StudyModePage: React.FC = () => {
                     {t("study.banner") || "Study Mode - Progress Not Tracked"}
                   </p>
                   <p className="text-sm text-blue-700">
-                    {t("study.bannerDescription") || "Practice freely without affecting your learning statistics"}
+                    {t("study.bannerDescription") ||
+                      "Practice freely without affecting your learning statistics"}
                   </p>
                 </div>
               </div>
@@ -138,16 +144,28 @@ export const StudyModePage: React.FC = () => {
             <Card variant="glass">
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("vocabulary.collection")}:</span>
-                  <span className="font-semibold text-gray-800">{collection.name}</span>
+                  <span className="text-gray-600">
+                    {t("vocabulary.collection")}:
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    {collection.name}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("collections.language")}:</span>
-                  <span className="font-semibold text-gray-800">{collection.language}</span>
+                  <span className="text-gray-600">
+                    {t("collections.language")}:
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    {collection.language}
+                  </span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">{t("collections.words")}:</span>
-                  <span className="font-semibold text-gray-800">{collection.word_count}</span>
+                  <span className="text-gray-600">
+                    {t("collections.words")}:
+                  </span>
+                  <span className="font-semibold text-gray-800">
+                    {collection.word_count}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -204,7 +222,8 @@ export const StudyModePage: React.FC = () => {
                       {t("practice.useDefinition") || "Definition"}
                     </div>
                     <div className="text-xs text-gray-600 mt-1">
-                      {t("practice.useDefinitionDescription") || "Standard meaning"}
+                      {t("practice.useDefinitionDescription") ||
+                        "Standard meaning"}
                     </div>
                   </button>
                   <button
@@ -230,11 +249,7 @@ export const StudyModePage: React.FC = () => {
               </div>
             </Card>
 
-            <Button
-              variant="primary"
-              fullWidth
-              onClick={() => setStep("mode")}
-            >
+            <Button variant="primary" fullWidth onClick={() => setStep("mode")}>
               {t("practice.continue")}
             </Button>
           </>
@@ -247,19 +262,26 @@ export const StudyModePage: React.FC = () => {
                 {t("practice.selectMode")}
               </h1>
               <p className="text-lg text-gray-700">
-                {t("study.selectModeDescription") || "Choose how you want to study"}
+                {t("study.selectModeDescription") ||
+                  "Choose how you want to study"}
               </p>
             </div>
 
             {/* Study Mode Reminder */}
-            <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <Card
+              variant="glass"
+              className="bg-blue-50 border-2 border-blue-200"
+            >
               <div className="text-center">
                 <p className="font-semibold text-blue-900">
                   📚 {t("study.studying") || "Studying"}{" "}
-                  {wordLimit === "all" ? t("study.allWords") || "All Words" : wordLimit + " " + (t("practice.words") || "words")}
+                  {wordLimit === "all"
+                    ? t("study.allWords") || "All Words"
+                    : wordLimit + " " + (t("practice.words") || "words")}
                 </p>
                 <p className="text-sm text-blue-700">
-                  {t("study.progressNotTracked") || "Progress will not be tracked"}
+                  {t("study.progressNotTracked") ||
+                    "Progress will not be tracked"}
                 </p>
               </div>
             </Card>

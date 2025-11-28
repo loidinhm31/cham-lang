@@ -111,56 +111,53 @@ export const CollectionSelectorDialog: React.FC<
                         : "border-gray-400 hover:border-amber-400 bg-gray-50 hover:bg-amber-50 shadow hover:shadow-md"
                     }`}
                   >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-bold text-gray-900 text-lg">
-                        {collection.name}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-bold text-gray-900 text-lg">
+                          {collection.name}
+                        </div>
+                        {collection.description && (
+                          <div className="text-sm text-gray-700 mt-1 line-clamp-2">
+                            {collection.description}
+                          </div>
+                        )}
+                        <div className="text-sm font-medium text-teal-700 mt-2 flex items-center gap-3">
+                          <span className="uppercase">
+                            {collection.language}
+                          </span>
+                          <span className="text-gray-500">•</span>
+                          <span>
+                            {t("collection.wordCount", {
+                              count: collection.word_count,
+                            })}
+                          </span>
+                        </div>
                       </div>
-                      {collection.description && (
-                        <div className="text-sm text-gray-700 mt-1 line-clamp-2">
-                          {collection.description}
+                      {selectedId === collection.id && (
+                        <div className="ml-3 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
+                          <svg
+                            className="w-4 h-4 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={3}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
                         </div>
                       )}
-                      <div className="text-sm font-medium text-teal-700 mt-2 flex items-center gap-3">
-                        <span className="uppercase">{collection.language}</span>
-                        <span className="text-gray-500">•</span>
-                        <span>
-                          {t("collection.wordCount", {
-                            count: collection.word_count,
-                          })}
-                        </span>
-                      </div>
                     </div>
-                    {selectedId === collection.id && (
-                      <div className="ml-3 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center flex-shrink-0">
-                        <svg
-                          className="w-4 h-4 text-white"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={3}
-                            d="M5 13l4 4L19 7"
-                          />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
+                  </button>
+                );
               })}
             </div>
 
             <div className="flex gap-3 pt-4 border-t">
-              <Button
-                type="button"
-                variant="glass"
-                fullWidth
-                onClick={onClose}
-              >
+              <Button type="button" variant="glass" fullWidth onClick={onClose}>
                 {t("common.cancel")}
               </Button>
               <Button

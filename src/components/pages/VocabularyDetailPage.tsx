@@ -218,45 +218,48 @@ export const VocabularyDetailPage: React.FC = () => {
         style={{
           transform: `translateX(${swipeOffset}px)`,
           opacity: 1 - Math.abs(swipeOffset) / 400,
-          transition: isAnimating || swipeOffset === 0
-            ? "transform 0.2s ease-out, opacity 0.2s ease-out"
-            : "none",
+          transition:
+            isAnimating || swipeOffset === 0
+              ? "transform 0.2s ease-out, opacity 0.2s ease-out"
+              : "none",
         }}
       >
         {/* Swipe Direction Indicators */}
-        {vocabularyIds && currentIndex !== undefined && Math.abs(swipeOffset) > 10 && (
-          <>
-            {/* Left swipe indicator (next) */}
-            {swipeOffset < 0 && currentIndex < vocabularyIds.length - 1 && (
-              <div
-                className="fixed right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
-                style={{
-                  opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
-                  transition: "opacity 0.1s",
-                }}
-              >
-                <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
-                  <ChevronRight className="w-12 h-12" />
+        {vocabularyIds &&
+          currentIndex !== undefined &&
+          Math.abs(swipeOffset) > 10 && (
+            <>
+              {/* Left swipe indicator (next) */}
+              {swipeOffset < 0 && currentIndex < vocabularyIds.length - 1 && (
+                <div
+                  className="fixed right-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                  style={{
+                    opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
+                    transition: "opacity 0.1s",
+                  }}
+                >
+                  <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
+                    <ChevronRight className="w-12 h-12" />
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Right swipe indicator (previous) */}
-            {swipeOffset > 0 && currentIndex > 0 && (
-              <div
-                className="fixed left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
-                style={{
-                  opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
-                  transition: "opacity 0.1s",
-                }}
-              >
-                <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
-                  <ChevronLeft className="w-12 h-12" />
+              {/* Right swipe indicator (previous) */}
+              {swipeOffset > 0 && currentIndex > 0 && (
+                <div
+                  className="fixed left-4 top-1/2 -translate-y-1/2 z-20 pointer-events-none"
+                  style={{
+                    opacity: Math.min(Math.abs(swipeOffset) / 100, 0.8),
+                    transition: "opacity 0.1s",
+                  }}
+                >
+                  <div className="bg-blue-500 text-white p-4 rounded-full shadow-2xl">
+                    <ChevronLeft className="w-12 h-12" />
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
 
         {/* Navigation Arrows - Only show if in collection context */}
         {vocabularyIds && currentIndex !== undefined && (

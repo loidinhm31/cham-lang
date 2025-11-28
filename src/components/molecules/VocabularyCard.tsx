@@ -35,7 +35,11 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
       variant="glass"
       hover
       onClick={onClick}
-      className={selectionMode && isSelected ? "ring-2 ring-amber-500 bg-amber-50/50" : ""}
+      className={
+        selectionMode && isSelected
+          ? "ring-2 ring-amber-500 bg-amber-50/50"
+          : ""
+      }
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3 flex-1">

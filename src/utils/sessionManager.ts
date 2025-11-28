@@ -88,7 +88,10 @@ export class SessionManager {
     const currentWordId = this.state.currentWord?.id || "";
 
     // Helper function to get next word from a queue, skipping the current word if possible
-    const getFromQueue = (queue: Vocabulary[], allowSameWord: boolean = false): Vocabulary | null => {
+    const getFromQueue = (
+      queue: Vocabulary[],
+      allowSameWord: boolean = false,
+    ): Vocabulary | null => {
       if (queue.length === 0) return null;
 
       // If only one word and it's the current word, return it if allowed
@@ -139,7 +142,10 @@ export class SessionManager {
     }
 
     // Priority 2: Failed words queue (only after first pass is complete)
-    if (this.state.firstPassComplete && this.state.failedWordsQueue.length > 0) {
+    if (
+      this.state.firstPassComplete &&
+      this.state.failedWordsQueue.length > 0
+    ) {
       // Allow returning the same word if it's the only one left
       const nextWord = getFromQueue(this.state.failedWordsQueue, true);
 
@@ -189,7 +195,8 @@ export class SessionManager {
 
     // If not tracking progress, return a simple result without updating progress
     if (!this.trackProgress) {
-      const wordProgress = this.state.wordProgressMap.get(vocabularyId) ||
+      const wordProgress =
+        this.state.wordProgressMap.get(vocabularyId) ||
         this.createInitialWordProgress(vocabularyId, vocabulary.word);
 
       return {
@@ -305,7 +312,8 @@ export class SessionManager {
 
     // If not tracking progress, return a simple result without updating progress
     if (!this.trackProgress) {
-      const wordProgress = this.state.wordProgressMap.get(vocabularyId) ||
+      const wordProgress =
+        this.state.wordProgressMap.get(vocabularyId) ||
         this.createInitialWordProgress(vocabularyId, vocabulary.word);
 
       return {

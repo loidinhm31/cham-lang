@@ -1,9 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { BookOpen, Edit, Globe, Plus, Trash2, CheckSquare, GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  Edit,
+  Globe,
+  Plus,
+  Trash2,
+  CheckSquare,
+  GraduationCap,
+} from "lucide-react";
 import { TopBar, BulkActionToolbar } from "@/components/molecules";
-import { VocabularyList, CollectionSelectorDialog } from "@/components/organisms";
+import {
+  VocabularyList,
+  CollectionSelectorDialog,
+} from "@/components/organisms";
 import { Badge, Button, Card } from "@/components/atoms";
 import { CollectionService } from "@/services/collection.service.ts";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
@@ -127,13 +138,12 @@ export const CollectionDetailPage: React.FC = () => {
     try {
       const result = await VocabularyService.bulkMoveVocabularies(
         Array.from(selectedIds),
-        targetCollectionId
+        targetCollectionId,
       );
 
-      showAlert(
-        t("collection.moveSuccess", { count: result.moved_count }),
-        { variant: "success" }
-      );
+      showAlert(t("collection.moveSuccess", { count: result.moved_count }), {
+        variant: "success",
+      });
 
       // Reset selection and reload data
       setSelectionMode(false);
@@ -216,13 +226,16 @@ export const CollectionDetailPage: React.FC = () => {
                   {t("study.studyMode") || "Study Mode"}
                 </h3>
                 <p className="text-sm text-blue-700">
-                  {t("study.practiceWithoutTracking") || "Practice all words without tracking progress"}
+                  {t("study.practiceWithoutTracking") ||
+                    "Practice all words without tracking progress"}
                 </p>
               </div>
               <Button
                 variant="primary"
                 size="md"
-                onClick={() => navigate(`/practice/study?collection=${collection.id}`)}
+                onClick={() =>
+                  navigate(`/practice/study?collection=${collection.id}`)
+                }
                 className="bg-blue-600 hover:bg-blue-700"
               >
                 {t("study.start") || "Start"}

@@ -78,6 +78,18 @@ export interface UpdateProgressRequest {
   vocabulary_id: string;
   word: string;
   correct: boolean;
+  completed_modes_in_cycle: string[]; // Array of modes (flashcard, fillword, multiplechoice) completed in current cycle
+
+  // Spaced Repetition Fields
+  next_review_date: string; // ISO date string
+  interval_days: number;
+  easiness_factor: number;
+  consecutive_correct_count: number;
+  leitner_box: number;
+  last_interval_days: number;
+  total_reviews: number;
+  correct_count: number;
+  incorrect_count: number;
 }
 
 export interface PracticeQuestion {

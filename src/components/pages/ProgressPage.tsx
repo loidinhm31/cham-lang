@@ -35,7 +35,9 @@ export const ProgressPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   // Spaced Repetition State
-  const [learningStats, setLearningStats] = useState<LearningStats | null>(null);
+  const [learningStats, setLearningStats] = useState<LearningStats | null>(
+    null,
+  );
   const [boxDistribution, setBoxDistribution] = useState<BoxDistribution[]>([]);
   const [boxInfo, setBoxInfo] = useState<BoxInfo[]>([]);
 
@@ -83,7 +85,8 @@ export const ProgressPage: React.FC = () => {
       setTotalWords(vocabularies.length);
 
       // Load learning settings
-      const settings = await LearningSettingsService.getOrCreateLearningSettings();
+      const settings =
+        await LearningSettingsService.getOrCreateLearningSettings();
 
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
@@ -154,7 +157,19 @@ export const ProgressPage: React.FC = () => {
     );
 
     // Sort by common CEFR order if applicable
-    const levelOrder = ["N/A", "A1", "A2", "B1", "B2", "C1", "C2", "Basic", "Intermediate", "Advanced", "Beginner"];
+    const levelOrder = [
+      "N/A",
+      "A1",
+      "A2",
+      "B1",
+      "B2",
+      "C1",
+      "C2",
+      "Basic",
+      "Intermediate",
+      "Advanced",
+      "Beginner",
+    ];
     levels.sort((a, b) => {
       const aIndex = levelOrder.indexOf(a.level);
       const bIndex = levelOrder.indexOf(b.level);
@@ -295,8 +310,8 @@ export const ProgressPage: React.FC = () => {
                 <Card variant="glass">
                   <div className="text-center py-6">
                     <p className="text-sm text-gray-600">
-                      No vocabulary data yet. Start adding words to see progress by
-                      level!
+                      No vocabulary data yet. Start adding words to see progress
+                      by level!
                     </p>
                   </div>
                 </Card>
@@ -310,7 +325,9 @@ export const ProgressPage: React.FC = () => {
                     <h3 className="text-lg font-bold mb-1">
                       {practiceStreak} Day {t("stats.streak")}!
                     </h3>
-                    <p className="text-sm text-white/90">Keep learning every day 🔥</p>
+                    <p className="text-sm text-white/90">
+                      Keep learning every day 🔥
+                    </p>
                   </div>
                 </Card>
               )}
@@ -405,7 +422,9 @@ export const ProgressPage: React.FC = () => {
                   </h3>
                   <div className="space-y-2.5">
                     {boxDistribution.map((box) => {
-                      const info = boxInfo.find((b) => b.boxNumber === box.boxNumber);
+                      const info = boxInfo.find(
+                        (b) => b.boxNumber === box.boxNumber,
+                      );
                       if (!info) return null;
 
                       return (

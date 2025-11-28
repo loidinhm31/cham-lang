@@ -28,42 +28,56 @@ impl LocalDatabase {
             )
             .ok();
 
-        if let Some(word_progress_id) = existing_word_progress {
-            // Update existing word progress
-            if request.correct {
-                conn.execute(
-                    "UPDATE word_progress
-                     SET correct_count = correct_count + 1,
-                         total_reviews = total_reviews + 1,
-                         last_practiced = ?1,
-                         updated_at = ?2
-                     WHERE id = ?3",
-                    params![now, now, word_progress_id],
-                )?;
-            } else {
-                conn.execute(
-                    "UPDATE word_progress
-                     SET incorrect_count = incorrect_count + 1,
-                         total_reviews = total_reviews + 1,
-                         last_practiced = ?1,
-                         updated_at = ?2
-                     WHERE id = ?3",
-                    params![now, now, word_progress_id],
-                )?;
-            }
+        // Parse next_review_date from ISO string to timestamp
+        let next_review_timestamp = chrono::DateTime::parse_from_rfc3339(&request.next_review_date)
+            .map(|dt| dt.timestamp())
+            .unwrap_or(now);
 
-            // Update mastery level (0-5 scale)
+        if let Some(word_progress_id) = existing_word_progress {
+            // Update existing word progress with all spaced repetition fields
             conn.execute(
                 "UPDATE word_progress
-                 SET mastery_level = CAST(
-                     ROUND((CAST(correct_count AS REAL) / (correct_count + incorrect_count)) * 5.0)
-                     AS INTEGER)
-                 WHERE id = ?1",
-                params![word_progress_id],
+                 SET correct_count = ?1,
+                     incorrect_count = ?2,
+                     total_reviews = ?3,
+                     next_review_date = ?4,
+                     interval_days = ?5,
+                     easiness_factor = ?6,
+                     consecutive_correct_count = ?7,
+                     leitner_box = ?8,
+                     last_interval_days = ?9,
+                     last_practiced = ?10,
+                     updated_at = ?11,
+                     mastery_level = CAST(
+                         ROUND((CAST(?12 AS REAL) / NULLIF(?13, 0)) * 5.0)
+                         AS INTEGER)
+                 WHERE id = ?14",
+                params![
+                    request.correct_count,
+                    request.incorrect_count,
+                    request.total_reviews,
+                    next_review_timestamp,
+                    request.interval_days,
+                    request.easiness_factor,
+                    request.consecutive_correct_count,
+                    request.leitner_box,
+                    request.last_interval_days,
+                    now,
+                    now,
+                    request.correct_count,
+                    request.correct_count + request.incorrect_count,
+                    word_progress_id
+                ],
             )?;
         } else {
-            // Create new word progress
+            // Create new word progress using values from request
             let word_progress_id = Uuid::new_v4().to_string();
+            let mastery = if request.correct_count + request.incorrect_count > 0 {
+                ((request.correct_count as f32 / (request.correct_count + request.incorrect_count) as f32) * 5.0).round() as i32
+            } else {
+                0
+            };
+
             conn.execute(
                 "INSERT INTO word_progress
                  (id, user_id, language, vocabulary_id, word, correct_count, incorrect_count,
@@ -77,22 +91,48 @@ impl LocalDatabase {
                     request.language,
                     request.vocabulary_id,
                     request.word,
-                    if request.correct { 1 } else { 0 },
-                    if request.correct { 0 } else { 1 },
-                    1, // total_reviews
-                    if request.correct { 5 } else { 0 }, // mastery_level
-                    now, // next_review_date
-                    0, // interval_days
-                    2.5, // easiness_factor
-                    0, // consecutive_correct_count
-                    1, // leitner_box
-                    0, // last_interval_days
+                    request.correct_count,
+                    request.incorrect_count,
+                    request.total_reviews,
+                    mastery,
+                    next_review_timestamp,
+                    request.interval_days,
+                    request.easiness_factor,
+                    request.consecutive_correct_count,
+                    request.leitner_box,
+                    request.last_interval_days,
                     0, // failed_in_session (FALSE)
                     0, // retry_count
                     now, // last_practiced
                     now, // created_at
                     now, // updated_at
                 ],
+            )?;
+        }
+
+        // Update word_progress_completed_modes table
+        // First, get the word_progress_id (either existing or newly created)
+        let word_progress_id: String = conn.query_row(
+            "SELECT id FROM word_progress
+             WHERE user_id = ?1 AND language = ?2 AND vocabulary_id = ?3",
+            params![user_id, request.language, request.vocabulary_id],
+            |row| row.get(0),
+        )?;
+
+        // Delete existing completed modes for this word
+        conn.execute(
+            "DELETE FROM word_progress_completed_modes WHERE word_progress_id = ?1",
+            params![word_progress_id],
+        )?;
+
+        // Insert new completed modes
+        for mode in &request.completed_modes_in_cycle {
+            let completed_mode_id = Uuid::new_v4().to_string();
+            conn.execute(
+                "INSERT INTO word_progress_completed_modes
+                 (id, word_progress_id, practice_mode, completed_at)
+                 VALUES (?1, ?2, ?3, ?4)",
+                params![completed_mode_id, word_progress_id, mode, now],
             )?;
         }
 

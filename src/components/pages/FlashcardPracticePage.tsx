@@ -169,7 +169,7 @@ export const FlashcardPracticePage: React.FC = () => {
       setCurrentVocab(nextWord);
       setIsFlipped(false);
       setCardStartTime(Date.now());
-      setQuestionCounter(prev => prev + 1); // Increment counter to force re-render even for same word
+      setQuestionCounter((prev) => prev + 1); // Increment counter to force re-render even for same word
     }
   };
 
@@ -203,6 +203,16 @@ export const FlashcardPracticePage: React.FC = () => {
             vocabulary_id: progress.vocabulary_id,
             word: progress.word,
             correct: progress.correct_count > 0,
+            completed_modes_in_cycle: progress.completed_modes_in_cycle || [],
+            next_review_date: progress.next_review_date,
+            interval_days: progress.interval_days,
+            easiness_factor: progress.easiness_factor,
+            consecutive_correct_count: progress.consecutive_correct_count,
+            leitner_box: progress.leitner_box,
+            last_interval_days: progress.last_interval_days,
+            total_reviews: progress.total_reviews,
+            correct_count: progress.correct_count,
+            incorrect_count: progress.incorrect_count,
           });
         }
       } catch (error) {
@@ -227,7 +237,11 @@ export const FlashcardPracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.flashcardMode")}
+          title={
+            isStudyMode
+              ? t("study.title") || "Study Mode"
+              : t("practice.flashcardMode")
+          }
           showBack
         />
         <div className="flex items-center justify-center h-64">
@@ -248,18 +262,27 @@ export const FlashcardPracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.completed") || "Study Complete") : t("practice.completed")}
+          title={
+            isStudyMode
+              ? t("study.completed") || "Study Complete"
+              : t("practice.completed")
+          }
           showBack
         />
         <div className="px-4 pt-6 space-y-6">
           {isStudyMode && (
-            <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <Card
+              variant="glass"
+              className="bg-blue-50 border-2 border-blue-200"
+            >
               <div className="text-center">
                 <p className="font-semibold text-blue-900">
-                  {t("study.progressNotTracked") || "Progress was not tracked for this session"}
+                  {t("study.progressNotTracked") ||
+                    "Progress was not tracked for this session"}
                 </p>
                 <p className="text-sm text-blue-700">
-                  {t("study.studyCompleteDescription") || "This was a study session"}
+                  {t("study.studyCompleteDescription") ||
+                    "This was a study session"}
                 </p>
               </div>
             </Card>
@@ -268,7 +291,9 @@ export const FlashcardPracticePage: React.FC = () => {
           <Card variant="gradient" className="text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-black mb-4">
-              {isStudyMode ? (t("study.wellDone") || "Great Job!") : t("practice.wellDone")}
+              {isStudyMode
+                ? t("study.wellDone") || "Great Job!"
+                : t("practice.wellDone")}
             </h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
@@ -295,7 +320,9 @@ export const FlashcardPracticePage: React.FC = () => {
               variant="primary"
               size="md"
               fullWidth
-              onClick={() => navigate(isStudyMode ? "/collections" : "/practice")}
+              onClick={() =>
+                navigate(isStudyMode ? "/collections" : "/practice")
+              }
             >
               {t("buttons.close")}
             </Button>
@@ -309,7 +336,11 @@ export const FlashcardPracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.flashcardMode")}
+          title={
+            isStudyMode
+              ? t("study.title") || "Study Mode"
+              : t("practice.flashcardMode")
+          }
           showBack
         />
         <div className="px-4 pt-6">
@@ -332,7 +363,11 @@ export const FlashcardPracticePage: React.FC = () => {
   return (
     <>
       <TopBar
-        title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.flashcardMode")}
+        title={
+          isStudyMode
+            ? t("study.title") || "Study Mode"
+            : t("practice.flashcardMode")
+        }
         showBack
       />
 
@@ -357,7 +392,9 @@ export const FlashcardPracticePage: React.FC = () => {
             <span className="text-sm font-semibold text-gray-700">
               {t("practice.progress")}
             </span>
-            <span className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}>
+            <span
+              className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}
+            >
               {sessionManager
                 ? `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
                 : "0 / 0"}

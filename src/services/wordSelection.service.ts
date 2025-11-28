@@ -105,11 +105,23 @@ export class WordSelectionService {
     }
 
     // 3. Fill remaining slots with least recently practiced words not completed in current mode
+    // Only include words that are either new (no progress) or have a review date that has passed
     const maxWords = options.maxWords || settings.daily_review_limit || 100;
     if (selected.length < maxWords) {
-      const remaining = Array.from(vocabularyMap.values()).filter((v) =>
-        isAvailableForMode(v.id || ""),
-      );
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const remaining = Array.from(vocabularyMap.values()).filter((v) => {
+        if (!isAvailableForMode(v.id || "")) return false;
+
+        const progress = progressMap.get(v.id || "");
+        if (!progress) return true; // New words are always available
+
+        // Check if the word is due for review
+        const reviewDate = new Date(progress.next_review_date);
+        reviewDate.setHours(0, 0, 0, 0);
+        return reviewDate <= today; // Only include if review date has passed
+      });
 
       // Sort by last practiced (oldest first)
       remaining.sort((a, b) => {

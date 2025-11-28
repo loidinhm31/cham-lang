@@ -40,12 +40,7 @@ export const BulkActionToolbar: React.FC<BulkActionToolbarProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
-              <Button
-                variant="glass"
-                size="sm"
-                icon={X}
-                onClick={onCancel}
-              >
+              <Button variant="glass" size="sm" icon={X} onClick={onCancel}>
                 {t("common.cancel")}
               </Button>
               <Button

@@ -80,14 +80,10 @@ export const MultipleChoicePracticePage: React.FC = () => {
       // Set UI preferences from settings
       setAutoAdvanceTimeout(userSettings.auto_advance_timeout_seconds * 1000);
 
-      console.log("userSettings", userSettings);
-
       // Load vocabularies
       const vocabData =
         await VocabularyService.getVocabulariesByCollection(collectionId);
       setAllVocabularies(vocabData); // Store all vocabularies for generating options
-
-      console.log("vocabData", vocabData);
 
       if (vocabData.length === 0) {
         setLoading(false);
@@ -99,9 +95,6 @@ export const MultipleChoicePracticePage: React.FC = () => {
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
       const wordsProgress = progressData?.words_progress || [];
-
-      console.log("progressData", progressData);
-      console.log("wordsProgress", wordsProgress);
 
       let selectedWords: Vocabulary[];
 
@@ -147,7 +140,6 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
       // Get first word
       const firstWord = manager.getNextWord();
-      console.log("firstWord", firstWord)
       setCurrentVocab(firstWord);
       setQuestionCounter(0); // Reset counter for new session
     } catch (error) {
@@ -178,12 +170,13 @@ export const MultipleChoicePracticePage: React.FC = () => {
       (v) => (v.id || v.word) !== (currentVocab.id || currentVocab.word),
     );
     const shuffledOthers = shuffleArray(otherVocabs);
-    const wrongAnswers = shuffledOthers
-      .slice(0, 3)
-      .map((v) => getContent(v));
+    const wrongAnswers = shuffledOthers.slice(0, 3).map((v) => getContent(v));
 
     // Combine with correct answer and shuffle using Fisher-Yates
-    const allOptions = shuffleArray([getContent(currentVocab), ...wrongAnswers]);
+    const allOptions = shuffleArray([
+      getContent(currentVocab),
+      ...wrongAnswers,
+    ]);
 
     setOptions(allOptions);
   };
@@ -239,7 +232,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
       setCurrentVocab(nextWord);
       setShowNext(false);
       setCardStartTime(Date.now());
-      setQuestionCounter(prev => prev + 1); // Increment counter to force re-render even for same word
+      setQuestionCounter((prev) => prev + 1); // Increment counter to force re-render even for same word
     }
   };
 
@@ -273,6 +266,16 @@ export const MultipleChoicePracticePage: React.FC = () => {
             vocabulary_id: progress.vocabulary_id,
             word: progress.word,
             correct: progress.correct_count > 0,
+            completed_modes_in_cycle: progress.completed_modes_in_cycle || [],
+            next_review_date: progress.next_review_date,
+            interval_days: progress.interval_days,
+            easiness_factor: progress.easiness_factor,
+            consecutive_correct_count: progress.consecutive_correct_count,
+            leitner_box: progress.leitner_box,
+            last_interval_days: progress.last_interval_days,
+            total_reviews: progress.total_reviews,
+            correct_count: progress.correct_count,
+            incorrect_count: progress.incorrect_count,
           });
         }
       } catch (error) {
@@ -297,7 +300,11 @@ export const MultipleChoicePracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.multipleChoiceMode")}
+          title={
+            isStudyMode
+              ? t("study.title") || "Study Mode"
+              : t("practice.multipleChoiceMode")
+          }
           showBack
         />
         <div className="flex items-center justify-center h-64">
@@ -318,18 +325,27 @@ export const MultipleChoicePracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.completed") || "Study Complete") : t("practice.completed")}
+          title={
+            isStudyMode
+              ? t("study.completed") || "Study Complete"
+              : t("practice.completed")
+          }
           showBack
         />
         <div className="px-4 pt-6 space-y-6">
           {isStudyMode && (
-            <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+            <Card
+              variant="glass"
+              className="bg-blue-50 border-2 border-blue-200"
+            >
               <div className="text-center">
                 <p className="font-semibold text-blue-900">
-                  {t("study.progressNotTracked") || "Progress was not tracked for this session"}
+                  {t("study.progressNotTracked") ||
+                    "Progress was not tracked for this session"}
                 </p>
                 <p className="text-sm text-blue-700">
-                  {t("study.studyCompleteDescription") || "This was a study session"}
+                  {t("study.studyCompleteDescription") ||
+                    "This was a study session"}
                 </p>
               </div>
             </Card>
@@ -338,7 +354,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
           <Card variant="gradient" className="text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-black mb-4">
-              {isStudyMode ? (t("study.wellDone") || "Great Job!") : t("practice.wellDone")}
+              {isStudyMode
+                ? t("study.wellDone") || "Great Job!"
+                : t("practice.wellDone")}
             </h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
@@ -365,7 +383,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
               variant="primary"
               size="md"
               fullWidth
-              onClick={() => navigate(isStudyMode ? "/collections" : "/practice")}
+              onClick={() =>
+                navigate(isStudyMode ? "/collections" : "/practice")
+              }
             >
               {t("buttons.close")}
             </Button>
@@ -379,7 +399,11 @@ export const MultipleChoicePracticePage: React.FC = () => {
     return (
       <>
         <TopBar
-          title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.multipleChoiceMode")}
+          title={
+            isStudyMode
+              ? t("study.title") || "Study Mode"
+              : t("practice.multipleChoiceMode")
+          }
           showBack
         />
         <div className="px-4 pt-6">
@@ -402,7 +426,11 @@ export const MultipleChoicePracticePage: React.FC = () => {
   return (
     <>
       <TopBar
-        title={isStudyMode ? (t("study.title") || "Study Mode") : t("practice.multipleChoiceMode")}
+        title={
+          isStudyMode
+            ? t("study.title") || "Study Mode"
+            : t("practice.multipleChoiceMode")
+        }
         showBack
       />
 
@@ -427,7 +455,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
             <span className="text-sm font-semibold text-gray-700">
               {t("practice.progress")}
             </span>
-            <span className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}>
+            <span
+              className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}
+            >
               {sessionManager
                 ? !showNext &&
                   `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`

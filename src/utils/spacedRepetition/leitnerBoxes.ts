@@ -232,6 +232,7 @@ export function getWordsInBox(
 
 /**
  * Get words that are due for review today
+ * Excludes words that have completed all three modes in the current cycle
  */
 export function getWordsDueToday(
   wordsProgress: WordProgress[],

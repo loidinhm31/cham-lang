@@ -11,10 +11,13 @@
  * This is the easiest algorithm to understand and explain to users.
  */
 
-import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
-import { addDays } from "../types";
-import type { WordProgress } from "../../../types/practice";
-import type { LearningSettings } from "../../../types/settings";
+import type {
+  ReviewResult,
+  SpacedRepetitionAlgorithm,
+} from "@/utils/spacedRepetition/types";
+import { addDays } from "@/utils/spacedRepetition/types";
+import type { WordProgress } from "@/types/practice";
+import type { LearningSettings } from "@/types/settings";
 
 const DEFAULT_EASINESS_FACTOR = 2.5;
 const INITIAL_INTERVAL = 1; // Start with 1 day

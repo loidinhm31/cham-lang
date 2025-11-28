@@ -4,7 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Brain, Plus } from "lucide-react";
 import { SearchBar, TopBar } from "@/components/molecules";
 import { CollectionList } from "@/components/organisms";
-import { Button, SearchableMultiSelect, Select, Accordion } from "@/components/atoms";
+import {
+  Button,
+  SearchableMultiSelect,
+  Select,
+  Accordion,
+} from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import { CollectionService } from "@/services/collection.service.ts";
 import type { Collection } from "@/types/collection.ts";
@@ -24,7 +29,9 @@ export const HomePage: React.FC = () => {
 
   // Sort state - load from localStorage or default to "latestUpdated"
   const [sortBy, setSortBy] = useState<string>(() => {
-    return localStorage.getItem("collections_sort_preference") || "latestUpdated";
+    return (
+      localStorage.getItem("collections_sort_preference") || "latestUpdated"
+    );
   });
 
   useEffect(() => {
@@ -121,9 +128,11 @@ export const HomePage: React.FC = () => {
 
       // Search by word query if provided
       if (searchQuery.trim()) {
-        const matchingVocabularies = await VocabularyService.searchVocabularies({
-          query: searchQuery,
-        });
+        const matchingVocabularies = await VocabularyService.searchVocabularies(
+          {
+            query: searchQuery,
+          },
+        );
         matchingVocabularies.forEach((v) => {
           if (v.collection_id) collectionIds.add(v.collection_id);
         });
@@ -133,7 +142,7 @@ export const HomePage: React.FC = () => {
       if (selectedTopics.length > 0) {
         const allVocabularies = await VocabularyService.getAllVocabularies();
         const topicMatches = allVocabularies.filter((v) =>
-          v.topics.some((topic) => selectedTopics.includes(topic))
+          v.topics.some((topic) => selectedTopics.includes(topic)),
         );
         topicMatches.forEach((v) => {
           if (v.collection_id) collectionIds.add(v.collection_id);
@@ -144,7 +153,7 @@ export const HomePage: React.FC = () => {
       if (selectedTags.length > 0) {
         const allVocabularies = await VocabularyService.getAllVocabularies();
         const tagMatches = allVocabularies.filter((v) =>
-          v.tags.some((tag) => selectedTags.includes(tag))
+          v.tags.some((tag) => selectedTags.includes(tag)),
         );
         tagMatches.forEach((v) => {
           if (v.collection_id) collectionIds.add(v.collection_id);

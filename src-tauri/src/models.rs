@@ -273,6 +273,18 @@ pub struct UpdateProgressRequest {
     pub vocabulary_id: String,
     pub word: String,
     pub correct: bool,
+    pub completed_modes_in_cycle: Vec<String>, // Array of modes completed in current cycle
+
+    // Spaced Repetition Fields
+    pub next_review_date: String, // ISO date string
+    pub interval_days: i32,
+    pub easiness_factor: f32,
+    pub consecutive_correct_count: i32,
+    pub leitner_box: i32,
+    pub last_interval_days: i32,
+    pub total_reviews: i32,
+    pub correct_count: i32,
+    pub incorrect_count: i32,
 }
 
 // Learning Settings for Spaced Repetition & Leitner System

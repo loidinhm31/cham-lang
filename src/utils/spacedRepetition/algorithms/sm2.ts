@@ -10,10 +10,13 @@
  * - Intervals: 1 day, 6 days, then multiply by EF
  */
 
-import type { ReviewResult, SpacedRepetitionAlgorithm } from "../types";
-import { addDays, BOX_INTERVAL_PRESETS } from "../types";
-import type { WordProgress } from "../../../types/practice";
-import type { LearningSettings } from "../../../types/settings";
+import type {
+  ReviewResult,
+  SpacedRepetitionAlgorithm,
+} from "@/utils/spacedRepetition/types";
+import { addDays, BOX_INTERVAL_PRESETS } from "@/utils/spacedRepetition/types";
+import type { WordProgress } from "@/types/practice";
+import type { LearningSettings } from "@/types/settings";
 
 const MIN_EASINESS_FACTOR = 1.3;
 const MAX_EASINESS_FACTOR = 2.5;

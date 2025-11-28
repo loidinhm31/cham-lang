@@ -35,7 +35,9 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, title }) => {
               <div className={`text-2xl font-black ${stat.color}`}>
                 {stat.value}
               </div>
-              <div className="text-xs text-gray-600 whitespace-nowrap">{stat.label}</div>
+              <div className="text-xs text-gray-600 whitespace-nowrap">
+                {stat.label}
+              </div>
             </div>
           ))}
         </div>
