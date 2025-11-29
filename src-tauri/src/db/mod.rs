@@ -99,7 +99,6 @@ impl LocalDatabase {
                 word_count INTEGER DEFAULT 0,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
-                deleted_at INTEGER,
                 FOREIGN KEY (owner_id) REFERENCES users(id)
             )",
             [],
@@ -133,8 +132,7 @@ impl LocalDatabase {
                 user_id TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
-                deleted_at INTEGER,
-                FOREIGN KEY (collection_id) REFERENCES collections(id),
+                FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
                 FOREIGN KEY (user_id) REFERENCES users(id)
             )",
             [],
@@ -485,7 +483,7 @@ impl LocalDatabase {
     pub fn get_all_languages(&self, user_id: &str) -> SqlResult<Vec<String>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
-            "SELECT DISTINCT language FROM collections WHERE owner_id = ?1 AND deleted_at IS NULL"
+            "SELECT DISTINCT language FROM collections WHERE owner_id = ?1"
         )?;
 
         let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
@@ -500,7 +498,7 @@ impl LocalDatabase {
              FROM topics t
              JOIN vocabulary_topics vt ON t.id = vt.topic_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
-             WHERE v.user_id = ?1 AND v.deleted_at IS NULL
+             WHERE v.user_id = ?1
              ORDER BY t.name"
         )?;
 
@@ -516,7 +514,7 @@ impl LocalDatabase {
              FROM tags t
              JOIN vocabulary_tags vt ON t.id = vt.tag_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
-             WHERE v.user_id = ?1 AND v.deleted_at IS NULL
+             WHERE v.user_id = ?1
              ORDER BY t.name"
         )?;
 

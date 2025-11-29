@@ -4,13 +4,13 @@ import { useTranslation } from "react-i18next";
 import { Info, Save } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
-import { LearningSettingsService } from "@/services/learningSettings.service.ts";
+import { LearningSettingsService } from "@/services/learningSettings.service";
 import { useDialog } from "@/contexts";
 import type {
   LeitnerBoxCount,
   SpacedRepetitionAlgorithm,
-} from "@/types/settings.ts";
-import { BOX_INTERVAL_PRESETS } from "@/types/settings.ts";
+} from "@/types/settings";
+import { BOX_INTERVAL_PRESETS } from "@/types/settings";
 
 export const LearningSettingsPage: React.FC = () => {
   const { t } = useTranslation();

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button, Card, Input, Select, TextArea } from "@/components/atoms";
-import type { CreateCollectionRequest } from "@/types/collection.ts";
+import type { CreateCollectionRequest } from "@/types/collection";
 
 interface CollectionFormProps {
   initialData?: Partial<CreateCollectionRequest & { id: string }>;

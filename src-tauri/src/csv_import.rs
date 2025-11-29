@@ -332,7 +332,7 @@ pub fn import_simple_vocabularies(
             id: None,
             word: word.to_string(),
             word_type: WordType::Noun, // Default to noun for simple import
-            level: "A1".to_string(), // Default level
+            level: "N/A".to_string(), // Default level
             ipa: String::new(),
             concept: None,
             definitions: vec![Definition {
@@ -476,7 +476,11 @@ pub fn import_vocabularies_csv(
             id: None,
             word: row.word.clone(),
             word_type: parse_word_type(&row.word_type),
-            level: row.level.clone(),
+            level: if row.level.trim().is_empty() {
+                "N/A".to_string()
+            } else {
+                row.level.clone()
+            },
             ipa: row.ipa.unwrap_or_default(),
             concept: row.concept,
             definitions: unflatten_definitions(&row.definitions),

@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { RotateCcw, BookOpen } from "lucide-react";
 import { FillWordCard, TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
-import { Vocabulary } from "@/types/vocabulary.ts";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import { PracticeService } from "@/services/practice.service.ts";
-import { LearningSettingsService } from "@/services/learningSettings.service.ts";
-import { WordSelectionService } from "@/services/wordSelection.service.ts";
-import { SessionManager } from "@/utils/sessionManager.ts";
+import { Vocabulary } from "@/types/vocabulary";
+import { VocabularyService } from "@/services/vocabulary.service";
+import { PracticeService } from "@/services/practice.service";
+import { LearningSettingsService } from "@/services/learningSettings.service";
+import { WordSelectionService } from "@/services/wordSelection.service";
+import { SessionManager } from "@/utils/sessionManager";
 import { useDialog } from "@/contexts";
 
 // Helper function to shuffle array

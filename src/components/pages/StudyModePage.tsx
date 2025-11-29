@@ -4,8 +4,8 @@ import { useTranslation } from "react-i18next";
 import { Brain, CheckSquare, PenTool, BookOpen } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
-import { CollectionService } from "@/services/collection.service.ts";
-import type { Collection } from "@/types/collection.ts";
+import { CollectionService } from "@/services/collection.service";
+import type { Collection } from "@/types/collection";
 
 export const StudyModePage: React.FC = () => {
   const { t } = useTranslation();

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StatsCard, TopBar } from "@/components/molecules";
 import { Card } from "@/components/atoms";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import { PracticeService } from "@/services/practice.service.ts";
-import { LearningSettingsService } from "@/services/learningSettings.service.ts";
-import type { Vocabulary } from "@/types/vocabulary.ts";
-import type { LearningSettings } from "@/types/settings.ts";
-import type { WordProgress } from "@/types/practice.ts";
+import { VocabularyService } from "@/services/vocabulary.service";
+import { PracticeService } from "@/services/practice.service";
+import { LearningSettingsService } from "@/services/learningSettings.service";
+import type { Vocabulary } from "@/types/vocabulary";
+import type { LearningSettings } from "@/types/settings";
+import type { WordProgress } from "@/types/practice";
 import {
   getLearningStats,
   getBoxDistribution,
@@ -15,7 +15,7 @@ import {
   type LearningStats,
   type BoxDistribution,
   type BoxInfo,
-} from "@/utils/spacedRepetition/leitnerBoxes.ts";
+} from "@/utils/spacedRepetition/leitnerBoxes";
 
 interface LevelProgress {
   level: string;

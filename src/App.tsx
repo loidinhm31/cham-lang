@@ -22,7 +22,7 @@ import {
 } from "./components/pages";
 import { SyncNotificationProvider, DialogProvider } from "./contexts";
 import "./i18n/config";
-import { MainLayout } from "@/components/templates/MainLayout.tsx";
+import { MainLayout } from "@/components/templates/MainLayout";
 
 const App: React.FC = () => {
   return (

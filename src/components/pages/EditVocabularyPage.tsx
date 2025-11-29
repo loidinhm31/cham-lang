@@ -3,11 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { TopBar } from "@/components/molecules";
 import { VocabularyForm } from "@/components/organisms";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import type {
-  CreateVocabularyRequest,
-  Vocabulary,
-} from "@/types/vocabulary.ts";
+import { VocabularyService } from "@/services/vocabulary.service";
+import type { CreateVocabularyRequest, Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
 export const EditVocabularyPage: React.FC = () => {

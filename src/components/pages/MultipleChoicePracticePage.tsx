@@ -3,12 +3,12 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MultipleChoiceCard, TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import { PracticeService } from "@/services/practice.service.ts";
-import { LearningSettingsService } from "@/services/learningSettings.service.ts";
-import { WordSelectionService } from "@/services/wordSelection.service.ts";
-import { SessionManager } from "@/utils/sessionManager.ts";
-import type { Vocabulary } from "@/types/vocabulary.ts";
+import { VocabularyService } from "@/services/vocabulary.service";
+import { PracticeService } from "@/services/practice.service";
+import { LearningSettingsService } from "@/services/learningSettings.service";
+import { WordSelectionService } from "@/services/wordSelection.service";
+import { SessionManager } from "@/utils/sessionManager";
+import type { Vocabulary } from "@/types/vocabulary";
 import { RotateCcw, BookOpen } from "lucide-react";
 import { useDialog } from "@/contexts";
 

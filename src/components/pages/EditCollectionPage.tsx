@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CollectionService } from "@/services/collection.service.ts";
+import { CollectionService } from "@/services/collection.service";
 import { TopBar } from "@/components/molecules";
 import { CollectionForm } from "@/components/organisms";
 import type {
   Collection,
   CreateCollectionRequest,
   UpdateCollectionRequest,
-} from "@/types/collection.ts";
+} from "@/types/collection";
 import { useDialog } from "@/contexts";
 
 export const EditCollectionPage: React.FC = () => {

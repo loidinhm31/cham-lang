@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { CollectionService } from "@/services/collection.service.ts";
+import { CollectionService } from "@/services/collection.service";
 import { TopBar } from "@/components/molecules";
 import { CollectionForm } from "@/components/organisms";
-import type { CreateCollectionRequest } from "@/types/collection.ts";
+import type { CreateCollectionRequest } from "@/types/collection";
 import { useDialog } from "@/contexts";
 
 export const CreateCollectionPage: React.FC = () => {

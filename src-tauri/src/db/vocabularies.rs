@@ -147,7 +147,7 @@ impl LocalDatabase {
         // Get main vocabulary record
         let mut stmt = conn.prepare(
             "SELECT id, word, word_type, level, ipa, concept, language, collection_id, user_id, created_at, updated_at
-             FROM vocabularies WHERE id = ?1 AND deleted_at IS NULL"
+             FROM vocabularies WHERE id = ?1"
         )?;
 
         let mut rows = stmt.query(params![vocab_id])?;
@@ -283,7 +283,7 @@ impl LocalDatabase {
                 format!(
                     "SELECT id
                      FROM vocabularies
-                     WHERE user_id = ?1 AND language = ?2 AND deleted_at IS NULL
+                     WHERE user_id = ?1 AND language = ?2
                      ORDER BY created_at DESC
                      LIMIT {}",
                     limit.unwrap_or(1000)
@@ -295,7 +295,7 @@ impl LocalDatabase {
                 format!(
                     "SELECT id
                      FROM vocabularies
-                     WHERE user_id = ?1 AND deleted_at IS NULL
+                     WHERE user_id = ?1
                      ORDER BY created_at DESC
                      LIMIT {}",
                     limit.unwrap_or(1000)
@@ -333,7 +333,7 @@ impl LocalDatabase {
         let sql = format!(
             "SELECT id
              FROM vocabularies
-             WHERE collection_id = ?1 AND deleted_at IS NULL
+             WHERE collection_id = ?1
              ORDER BY created_at DESC
              LIMIT {}",
             limit.unwrap_or(100)
@@ -363,13 +363,13 @@ impl LocalDatabase {
         let sql = if let Some(_lang) = language {
             "SELECT id
              FROM vocabularies
-             WHERE word LIKE ?1 AND language = ?2 AND deleted_at IS NULL
+             WHERE word LIKE ?1 AND language = ?2
              ORDER BY word
              LIMIT 50"
         } else {
             "SELECT id
              FROM vocabularies
-             WHERE word LIKE ?1 AND deleted_at IS NULL
+             WHERE word LIKE ?1
              ORDER BY word
              LIMIT 50"
         };
@@ -599,7 +599,7 @@ impl LocalDatabase {
             if &old_coll_id != new_coll_id {
                 // Update old collection word count
                 let old_count: i32 = tx.query_row(
-                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1 AND deleted_at IS NULL",
+                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1",
                     params![old_coll_id],
                     |row| row.get(0),
                 )?;
@@ -610,7 +610,7 @@ impl LocalDatabase {
 
                 // Update new collection word count
                 let new_count: i32 = tx.query_row(
-                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1 AND deleted_at IS NULL",
+                    "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1",
                     params![new_coll_id],
                     |row| row.get(0),
                 )?;
@@ -625,15 +625,14 @@ impl LocalDatabase {
         Ok(())
     }
 
-    /// Soft delete a vocabulary (sets deleted_at timestamp)
+    /// Delete a vocabulary (hard delete - cascades to related data)
     pub fn delete_vocabulary(&self, vocab_id: &str) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
-        let now = Utc::now().timestamp();
 
+        // Hard delete - ON DELETE CASCADE will handle related tables
         conn.execute(
-            "UPDATE vocabularies SET deleted_at = ?1, updated_at = ?2
-             WHERE id = ?3",
-            params![now, now, vocab_id],
+            "DELETE FROM vocabularies WHERE id = ?1",
+            params![vocab_id],
         )?;
 
         Ok(())
@@ -656,7 +655,7 @@ impl LocalDatabase {
         let target_exists: bool = tx
             .query_row(
                 "SELECT 1 FROM collections
-                 WHERE id = ?1 AND owner_id = ?2 AND deleted_at IS NULL",
+                 WHERE id = ?1 AND owner_id = ?2",
                 params![target_collection_id, user_id],
                 |_row| Ok(true),
             )
@@ -683,7 +682,7 @@ impl LocalDatabase {
             let vocab_info: Option<(String, String)> = tx
                 .query_row(
                     "SELECT collection_id, language FROM vocabularies
-                     WHERE id = ?1 AND user_id = ?2 AND deleted_at IS NULL",
+                     WHERE id = ?1 AND user_id = ?2",
                     params![vocab_id, user_id],
                     |row| Ok((row.get(0)?, row.get(1)?)),
                 )
@@ -711,7 +710,7 @@ impl LocalDatabase {
         for collection_id in source_collections.iter() {
             let count: i32 = tx.query_row(
                 "SELECT COUNT(*) FROM vocabularies
-                 WHERE collection_id = ?1 AND deleted_at IS NULL",
+                 WHERE collection_id = ?1",
                 params![collection_id],
                 |row| row.get(0),
             )?;
@@ -727,7 +726,7 @@ impl LocalDatabase {
         // Update target collection word count
         let target_count: i32 = tx.query_row(
             "SELECT COUNT(*) FROM vocabularies
-             WHERE collection_id = ?1 AND deleted_at IS NULL",
+             WHERE collection_id = ?1",
             params![target_collection_id],
             |row| row.get(0),
         )?;

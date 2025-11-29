@@ -36,7 +36,7 @@ impl LocalDatabase {
         let mut stmt = conn.prepare(
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
-             FROM collections WHERE id = ?1 AND deleted_at IS NULL"
+             FROM collections WHERE id = ?1"
         )?;
 
         let mut rows = stmt.query(params![collection_id])?;
@@ -88,7 +88,7 @@ impl LocalDatabase {
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
              FROM collections
-             WHERE owner_id = ?1 AND deleted_at IS NULL
+             WHERE owner_id = ?1
              ORDER BY updated_at DESC"
         )?;
 
@@ -145,13 +145,13 @@ impl LocalDatabase {
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
              FROM collections
-             WHERE is_public = 1 AND deleted_at IS NULL AND language = ?1
+             WHERE is_public = 1 AND language = ?1
              ORDER BY updated_at DESC"
         } else {
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
              FROM collections
-             WHERE is_public = 1 AND deleted_at IS NULL
+             WHERE is_public = 1
              ORDER BY updated_at DESC"
         };
 
@@ -224,7 +224,7 @@ impl LocalDatabase {
 
         // Count vocabularies in this collection
         let count: i32 = conn.query_row(
-            "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1 AND deleted_at IS NULL",
+            "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1",
             params![collection_id],
             |row| row.get(0),
         )?;
@@ -259,16 +259,14 @@ impl LocalDatabase {
         Ok(())
     }
 
-    /// Soft delete a collection
+    /// Delete a collection (hard delete - cascades to vocabularies)
     pub fn delete_collection(&self, collection_id: &str) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
-        let now = Utc::now().timestamp();
 
-        // Soft delete
+        // Hard delete - ON DELETE CASCADE will handle related vocabularies
         conn.execute(
-            "UPDATE collections SET deleted_at = ?1, updated_at = ?2
-             WHERE id = ?3",
-            params![now, now, collection_id],
+            "DELETE FROM collections WHERE id = ?1",
+            params![collection_id],
         )?;
 
         Ok(())

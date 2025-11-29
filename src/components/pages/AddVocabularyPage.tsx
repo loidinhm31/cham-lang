@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import type { CreateVocabularyRequest } from "@/types/vocabulary.ts";
+import { VocabularyService } from "@/services/vocabulary.service";
+import type { CreateVocabularyRequest } from "@/types/vocabulary";
 import { TopBar } from "@/components/molecules";
 import { VocabularyForm } from "@/components/organisms";
 import { useDialog } from "@/contexts";

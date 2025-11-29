@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { CollectionCard } from "@/components/molecules";
-import type { Collection } from "@/types/collection.ts";
+import type { Collection } from "@/types/collection";
 
 interface CollectionListProps {
   collections: Collection[];

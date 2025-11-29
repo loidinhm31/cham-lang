@@ -2,7 +2,7 @@ import React from "react";
 import { BookOpen, ChevronRight, Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card } from "@/components/atoms";
-import type { Collection } from "@/types/collection.ts";
+import type { Collection } from "@/types/collection";
 
 interface CollectionCardProps {
   collection: Collection;

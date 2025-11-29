@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card } from "@/components/atoms";
-import type { LanguageLevel, Vocabulary } from "@/types/vocabulary.ts";
+import type { LanguageLevel, Vocabulary } from "@/types/vocabulary";
 
 interface VocabularyCardProps {
   vocabulary: Vocabulary;

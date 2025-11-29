@@ -5,7 +5,7 @@ import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Badge, Button, Card } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
-import type { LanguageLevel, Vocabulary } from "@/types/vocabulary.ts";
+import type { LanguageLevel, Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
 const levelColors: Record<LanguageLevel, string> = {
@@ -303,7 +303,9 @@ export const VocabularyDetailPage: React.FC = () => {
               <span
                 className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-4 py-2 rounded-full`}
               >
-                {vocabulary.level && t(`levels.${vocabulary.level}`)}
+                {vocabulary.level &&
+                  vocabulary.level !== "N/A" &&
+                  t(`levels.${vocabulary.level}`)}
               </span>
             </div>
           </div>

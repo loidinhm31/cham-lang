@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, X } from "lucide-react";
-import { CollectionService } from "@/services/collection.service.ts";
+import { CollectionService } from "@/services/collection.service";
 import { Button, Card, Input, Select, TextArea } from "@/components/atoms";
 import type {
   CreateVocabularyRequest,
   Definition,
   LanguageLevel,
   WordType,
-} from "@/types/vocabulary.ts";
-import type { Collection } from "@/types/collection.ts";
-import { getCollectionId } from "@/types/collection.ts";
+} from "@/types/vocabulary";
+import type { Collection } from "@/types/collection";
+import { getCollectionId } from "@/types/collection";
 
 interface VocabularyFormProps {
   initialData?: Partial<CreateVocabularyRequest>;

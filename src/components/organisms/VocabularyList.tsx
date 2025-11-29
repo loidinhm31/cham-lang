@@ -1,7 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { VocabularyCard } from "@/components/molecules";
-import type { Vocabulary } from "@/types/vocabulary.ts";
+import type { Vocabulary } from "@/types/vocabulary";
 
 interface VocabularyListProps {
   vocabularies: Vocabulary[];

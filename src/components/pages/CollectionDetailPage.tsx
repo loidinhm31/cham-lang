@@ -16,10 +16,10 @@ import {
   CollectionSelectorDialog,
 } from "@/components/organisms";
 import { Badge, Button, Card } from "@/components/atoms";
-import { CollectionService } from "@/services/collection.service.ts";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import type { Collection } from "@/types/collection.ts";
-import type { Vocabulary } from "@/types/vocabulary.ts";
+import { CollectionService } from "@/services/collection.service";
+import { VocabularyService } from "@/services/vocabulary.service";
+import type { Collection } from "@/types/collection";
+import type { Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
 export const CollectionDetailPage: React.FC = () => {

@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Download, CheckSquare, Square, FileDown } from "lucide-react";
-import { CollectionService } from "@/services/collection.service.ts";
-import { CsvService } from "@/services/csv.service.ts";
+import { CollectionService } from "@/services/collection.service";
+import { CsvService } from "@/services/csv.service";
 import { TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
-import type { Collection } from "@/types/collection.ts";
-import { getCollectionId } from "@/types/collection.ts";
+import type { Collection } from "@/types/collection";
+import { getCollectionId } from "@/types/collection";
 import { useDialog } from "@/contexts";
 
 export const CSVExportPage: React.FC = () => {

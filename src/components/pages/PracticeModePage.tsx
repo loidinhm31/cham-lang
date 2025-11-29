@@ -4,12 +4,12 @@ import { useTranslation } from "react-i18next";
 import { Brain, CheckSquare, Clock, Library, PenTool } from "lucide-react";
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
-import { CollectionService } from "@/services/collection.service.ts";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import { PracticeService } from "@/services/practice.service.ts";
-import { LearningSettingsService } from "@/services/learningSettings.service.ts";
-import { WordSelectionService } from "@/services/wordSelection.service.ts";
-import type { Collection } from "@/types/collection.ts";
+import { CollectionService } from "@/services/collection.service";
+import { VocabularyService } from "@/services/vocabulary.service";
+import { PracticeService } from "@/services/practice.service";
+import { LearningSettingsService } from "@/services/learningSettings.service";
+import { WordSelectionService } from "@/services/wordSelection.service";
+import type { Collection } from "@/types/collection";
 
 export const PracticeModePage: React.FC = () => {
   const { t } = useTranslation();

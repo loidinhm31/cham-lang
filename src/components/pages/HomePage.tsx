@@ -10,9 +10,9 @@ import {
   Select,
   Accordion,
 } from "@/components/atoms";
-import { VocabularyService } from "@/services/vocabulary.service.ts";
-import { CollectionService } from "@/services/collection.service.ts";
-import type { Collection } from "@/types/collection.ts";
+import { VocabularyService } from "@/services/vocabulary.service";
+import { CollectionService } from "@/services/collection.service";
+import type { Collection } from "@/types/collection";
 
 export const HomePage: React.FC = () => {
   const { t } = useTranslation();
