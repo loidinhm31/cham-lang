@@ -5,6 +5,7 @@
 
 export type SpacedRepetitionAlgorithm = "sm2" | "modifiedsm2" | "simple";
 export type LeitnerBoxCount = 3 | 5 | 7;
+export type FillWordDirection = "definition_to_word" | "word_to_definition";
 
 export interface LearningSettings {
   id?: string;

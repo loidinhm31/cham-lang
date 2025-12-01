@@ -35,6 +35,7 @@ export const FillWordPracticePage: React.FC = () => {
     | null;
   const wordLimit = searchParams.get("wordLimit") || "50";
   const batchSize = parseInt(searchParams.get("batchSize") || "10", 10);
+  const direction = searchParams.get("direction") || "definition_to_word";
 
   // Check if this is study mode (URL path includes /practice/study/)
   const isStudyMode = location.pathname.includes("/practice/study/");
@@ -50,6 +51,7 @@ export const FillWordPracticePage: React.FC = () => {
   const [questionCounter, setQuestionCounter] = useState(0);
   const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(2000); // in milliseconds
   const [showHint, setShowHint] = useState(true);
+  const [isReversedDirection, setIsReversedDirection] = useState(false); // true = show word, fill definition; false = show definition, fill word
   const autoAdvanceTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -74,6 +76,9 @@ export const FillWordPracticePage: React.FC = () => {
       // Set UI preferences from settings
       setAutoAdvanceTimeout(userSettings.auto_advance_timeout_seconds * 1000);
       setShowHint(userSettings.show_hint_in_fillword);
+
+      // Set direction from URL parameter
+      setIsReversedDirection(direction === "word_to_definition");
 
       // Load vocabularies
       const vocabData =
@@ -154,6 +159,28 @@ export const FillWordPracticePage: React.FC = () => {
     }
     // Default to definition
     return vocab.definitions[0]?.meaning || "No definition available";
+  };
+
+  // Get the prompt text to display based on direction
+  const getPromptText = (vocab: Vocabulary, reversed: boolean): string => {
+    if (reversed) {
+      // Show word, expect definition/concept
+      return vocab.word;
+    } else {
+      // Show definition/concept, expect word
+      return getContent(vocab);
+    }
+  };
+
+  // Get the correct answer based on direction
+  const getCorrectAnswer = (vocab: Vocabulary, reversed: boolean): string => {
+    if (reversed) {
+      // Expect definition/concept
+      return getContent(vocab);
+    } else {
+      // Expect word
+      return vocab.word;
+    }
   };
 
   const handleAnswer = (correct: boolean) => {
@@ -398,7 +425,9 @@ export const FillWordPracticePage: React.FC = () => {
     );
   }
 
-  const hint = showHint ? currentVocab.word.charAt(0) + "..." : undefined;
+  const hint = showHint
+    ? getCorrectAnswer(currentVocab, isReversedDirection).charAt(0) + "..."
+    : undefined;
 
   return (
     <>
@@ -454,8 +483,8 @@ export const FillWordPracticePage: React.FC = () => {
         {/* Fill Word Card */}
         <FillWordCard
           key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
-          definition={getContent(currentVocab)}
-          correctAnswer={currentVocab.word}
+          definition={getPromptText(currentVocab, isReversedDirection)}
+          correctAnswer={getCorrectAnswer(currentVocab, isReversedDirection)}
           hint={hint}
           onAnswer={handleAnswer}
         />

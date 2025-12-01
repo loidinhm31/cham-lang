@@ -212,7 +212,12 @@
     "tryAgain": "Thử Lại",
     "startPractice": "Bắt Đầu Luyện Tập",
     "dueForReview": "Cần Ôn Tập",
-    "words": "từ"
+    "words": "từ",
+    "fillWordDirection": "Chiều Điền từ",
+    "definitionToWord": "Định nghĩa → Từ",
+    "definitionToWordDescription": "Xem định nghĩa, gõ từ",
+    "wordToDefinition": "Từ → Định nghĩa",
+    "wordToDefinitionDescription": "Xem từ, gõ định nghĩa"
   },
   "study": {
     "title": "Chế Độ Ôn Tập",
@@ -411,6 +416,7 @@
     "delete": "Xóa",
     "save": "Lưu",
     "cancel": "Hủy",
-    "noOptionsFound": "Không tìm thấy tùy chọn nào"
+    "noOptionsFound": "Không tìm thấy tùy chọn nào",
+    "back": "Quay lại"
   }
 }
