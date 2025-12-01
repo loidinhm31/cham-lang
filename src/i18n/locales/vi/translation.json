@@ -193,6 +193,8 @@
     "useDefinitionDescription": "Nghĩa chuẩn",
     "useConcept": "Khái Niệm",
     "useConceptDescription": "Ý tưởng cốt lõi",
+    "batchSize": "Số Từ Mỗi Phiên",
+    "batchSizeDescription": "Chọn số lượng từ bạn muốn luyện tập trong mỗi phiên",
     "flashcardMode": "Chế Độ Thẻ Ghi Nhớ",
     "flashcardDescription": "Lật thẻ để kiểm tra trí nhớ của bạn",
     "fillWordMode": "Điền Từ",

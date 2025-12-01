@@ -30,6 +30,12 @@ export const PracticeModePage: React.FC = () => {
         : "definition";
     },
   );
+  const [batchSize, setBatchSize] = useState<number>(() => {
+    // Load from localStorage or default to 10
+    const saved = localStorage.getItem("practiceBatchSize");
+    const parsed = saved ? parseInt(saved, 10) : 10;
+    return isNaN(parsed) || parsed < 1 ? 10 : parsed;
+  });
   const [dueWordsCount, setDueWordsCount] = useState<number>(0);
   const [loadingStats, setLoadingStats] = useState(false);
 
@@ -149,6 +155,12 @@ export const PracticeModePage: React.FC = () => {
   const handleContentModeChange = (mode: "definition" | "concept") => {
     setContentMode(mode);
     localStorage.setItem("practiceContentMode", mode);
+  };
+
+  const handleBatchSizeChange = (size: number) => {
+    const validSize = Math.max(1, Math.min(size, 100)); // Limit between 1 and 100
+    setBatchSize(validSize);
+    localStorage.setItem("practiceBatchSize", validSize.toString());
   };
 
   if (loadingCollections) {
@@ -329,6 +341,68 @@ export const PracticeModePage: React.FC = () => {
               </div>
             </Card>
 
+            {/* Batch Size Selection */}
+            <Card variant="glass">
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-gray-700">
+                  {t("practice.batchSize") || "Words per Session"}
+                </label>
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleBatchSizeChange(batchSize - 5)}
+                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    disabled={batchSize <= 5}
+                  >
+                    −
+                  </button>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={batchSize}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (!isNaN(value)) {
+                          handleBatchSizeChange(value);
+                        }
+                      }}
+                      className="w-full px-4 py-3 text-center text-2xl font-bold text-purple-700 bg-purple-50 rounded-xl border-2 border-purple-200 focus:border-purple-500 focus:outline-none transition-all"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleBatchSizeChange(batchSize + 5)}
+                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    disabled={batchSize >= 100}
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[5, 10, 15, 20, 25, 30].map((size) => (
+                    <button
+                      key={size}
+                      type="button"
+                      onClick={() => handleBatchSizeChange(size)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        batchSize === size
+                          ? "bg-purple-500 text-white"
+                          : "bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200"
+                      }`}
+                    >
+                      {size}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-600 text-center">
+                  {t("practice.batchSizeDescription") ||
+                    "Choose how many words you want to practice in each session"}
+                </p>
+              </div>
+            </Card>
+
             {/* Mode Selection Label */}
             <div className="text-center">
               <h3 className="text-xl font-bold text-gray-800">
@@ -346,7 +420,7 @@ export const PracticeModePage: React.FC = () => {
                     hover
                     onClick={() =>
                       navigate(
-                        `${mode.path}?collection=${selectedCollection}&contentMode=${contentMode}`,
+                        `${mode.path}?collection=${selectedCollection}&contentMode=${contentMode}&batchSize=${batchSize}`,
                       )
                     }
                     className="cursor-pointer"

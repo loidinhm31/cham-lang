@@ -193,6 +193,8 @@
     "useDefinitionDescription": "Standard meaning",
     "useConcept": "Concept",
     "useConceptDescription": "Core idea",
+    "batchSize": "Words per Session",
+    "batchSizeDescription": "Choose how many words you want to practice in each session",
     "flashcardMode": "Flashcard Mode",
     "flashcardDescription": "Flip cards to test your memory",
     "fillWordMode": "Fill in the Word",

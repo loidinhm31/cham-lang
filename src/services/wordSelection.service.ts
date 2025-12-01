@@ -57,6 +57,9 @@ export class WordSelectionService {
       wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
     );
 
+    // Determine the maximum words to select
+    const maxWords = options.maxWords || settings.daily_review_limit || 100;
+
     // Helper function to check if a word is available for the current mode
     const isAvailableForMode = (vocabularyId: string): boolean => {
       if (!options.currentMode) return true; // No mode filtering
@@ -70,9 +73,12 @@ export class WordSelectionService {
     };
 
     // 1. Add due words (highest priority) that haven't completed current mode
-    if (options.includeDueWords) {
+    // Limit due words to respect maxWords
+    if (options.includeDueWords && selected.length < maxWords) {
       const dueWords = getWordsDueToday(wordsProgress);
       for (const wordProgress of dueWords) {
+        if (selected.length >= maxWords) break; // Stop if we've reached the limit
+
         if (isAvailableForMode(wordProgress.vocabulary_id)) {
           const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
           if (vocab) {
@@ -84,8 +90,12 @@ export class WordSelectionService {
     }
 
     // 2. Add new words (never practiced before)
-    if (options.includeNewWords) {
+    // Limit new words based on both maxNewWords and remaining slots
+    if (options.includeNewWords && selected.length < maxWords) {
       const maxNew = options.maxNewWords || settings.new_words_per_day || 20;
+      const remainingSlots = maxWords - selected.length;
+      const maxNewToAdd = Math.min(maxNew, remainingSlots);
+
       const newWords: Vocabulary[] = [];
 
       for (const vocab of vocabularyMap.values()) {
@@ -95,9 +105,9 @@ export class WordSelectionService {
         }
       }
 
-      // Shuffle new words and take up to maxNew
+      // Shuffle new words and take up to maxNewToAdd
       this.shuffleArray(newWords);
-      const newWordsToAdd = newWords.slice(0, maxNew);
+      const newWordsToAdd = newWords.slice(0, maxNewToAdd);
       selected.push(...newWordsToAdd);
 
       // Remove added words from map
@@ -106,7 +116,6 @@ export class WordSelectionService {
 
     // 3. Fill remaining slots with least recently practiced words not completed in current mode
     // Only include words that are either new (no progress) or have a review date that has passed
-    const maxWords = options.maxWords || settings.daily_review_limit || 100;
     if (selected.length < maxWords) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);

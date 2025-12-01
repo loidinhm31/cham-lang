@@ -34,6 +34,7 @@ export const FillWordPracticePage: React.FC = () => {
     | "definition"
     | null;
   const wordLimit = searchParams.get("wordLimit") || "50";
+  const batchSize = parseInt(searchParams.get("batchSize") || "10", 10);
 
   // Check if this is study mode (URL path includes /practice/study/)
   const isStudyMode = location.pathname.includes("/practice/study/");
@@ -112,7 +113,7 @@ export const FillWordPracticePage: React.FC = () => {
           {
             includeDueWords: true,
             includeNewWords: true,
-            maxWords: 50,
+            maxWords: batchSize,
             shuffle: true,
             currentMode: "fillword", // Filter to only include words not completed in fillword mode
           },
