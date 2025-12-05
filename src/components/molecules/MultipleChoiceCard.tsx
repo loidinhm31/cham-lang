@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
-import { Badge, Card } from "@/components/atoms";
 
 interface MultipleChoiceCardProps {
   question: string;
@@ -57,27 +56,29 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
 
   const getOptionStyle = (option: string) => {
     if (!answered) {
-      return "bg-white/60 hover:bg-white/80 text-gray-800 border-2 border-transparent";
+      return "bg-white border-gray-300 text-gray-900 hover:translate-y-[-2px] hover:shadow-[0_8px_0_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.1)]";
     }
 
     if (option === correctAnswer) {
-      return "bg-emerald-500 text-white border-2 border-emerald-600";
+      return "bg-[#98FF98] border-[#7EE57E] text-emerald-900";
     }
 
     if (option === selectedOption && option !== correctAnswer) {
-      return "bg-red-500 text-white border-2 border-red-600";
+      return "bg-[#FFD1DC] border-[#FFB3C1] text-red-900";
     }
 
-    return "bg-white/40 text-gray-500";
+    return "bg-gray-200 border-gray-400 text-gray-500";
   };
 
   return (
-    <Card variant="glass" className="h-full">
+    <div className="h-full w-full bg-[#E6E6FA] rounded-[32px] border-[4px] border-[#D0D0F0] shadow-[0_12px_0_rgba(0,0,0,0.15),0_6px_20px_rgba(0,0,0,0.12),inset_0_-3px_6px_rgba(0,0,0,0.08)] p-8">
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
-          <div className="text-5xl mb-4">🎯</div>
-          <h3 className="text-3xl font-black text-gray-800 mb-2">{question}</h3>
-          {subtitle && <p className="text-lg text-teal-700">{subtitle}</p>}
+          <div className="text-6xl mb-6">🎯</div>
+          <h3 className="text-4xl font-black text-gray-900 mb-3">{question}</h3>
+          {subtitle && (
+            <p className="text-xl font-semibold text-indigo-600">{subtitle}</p>
+          )}
         </div>
 
         <div className="flex-1 space-y-4">
@@ -86,27 +87,24 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
               key={index}
               onClick={() => handleOptionClick(option)}
               disabled={answered}
-              className={`w-full py-4 px-6 text-lg font-semibold rounded-2xl transition transform active:scale-95 disabled:cursor-not-allowed ${getOptionStyle(
+              className={`w-full py-5 px-6 text-lg font-bold rounded-3xl border-[3px] shadow-[0_6px_0_rgba(0,0,0,0.12),0_3px_8px_rgba(0,0,0,0.08),inset_0_-2px_3px_rgba(0,0,0,0.05)] transition-all duration-200 active:translate-y-[3px] active:shadow-[0_3px_0_rgba(0,0,0,0.12),0_1px_4px_rgba(0,0,0,0.08)] disabled:cursor-not-allowed ${getOptionStyle(
                 option,
               )}`}
             >
               <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 flex-1">
-                  <Badge
-                    variant="glass"
-                    className="px-3 py-1 text-base font-bold shrink-0"
-                  >
+                <div className="flex items-center gap-4 flex-1">
+                  <div className="w-10 h-10 bg-indigo-500 text-white rounded-xl flex items-center justify-center font-black text-lg border-2 border-indigo-600 shadow-sm shrink-0">
                     {index + 1}
-                  </Badge>
+                  </div>
                   <span className="text-left">{option}</span>
                 </div>
                 {answered && option === correctAnswer && (
-                  <Check className="w-6 h-6 shrink-0" />
+                  <Check className="w-7 h-7 stroke-[3] shrink-0" />
                 )}
                 {answered &&
                   option === selectedOption &&
                   option !== correctAnswer && (
-                    <X className="w-6 h-6 shrink-0" />
+                    <X className="w-7 h-7 stroke-[3] shrink-0" />
                   )}
               </div>
             </button>
@@ -115,21 +113,24 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
 
         {answered && (
           <div
-            className={`mt-6 p-4 rounded-2xl text-center ${
+            className={`mt-6 p-6 rounded-3xl text-center border-[3px] shadow-[0_4px_0_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.1)] ${
               selectedOption === correctAnswer
-                ? "bg-emerald-100 text-emerald-800"
-                : "bg-red-100 text-red-800"
+                ? "bg-[#98FF98] border-[#7EE57E] text-emerald-900"
+                : "bg-[#FFD1DC] border-[#FFB3C1] text-red-900"
             }`}
           >
-            <p className="font-bold">
+            <p className="font-black text-2xl mb-2">
               {selectedOption === correctAnswer ? "✓ Correct!" : "✗ Incorrect"}
             </p>
             {selectedOption !== correctAnswer && (
-              <p className="text-sm mt-1">Correct answer: {correctAnswer}</p>
+              <p className="text-base font-semibold mt-2">
+                Correct answer:{" "}
+                <span className="font-black">{correctAnswer}</span>
+              </p>
             )}
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 };

@@ -21,11 +21,13 @@ export const StudyModePage: React.FC = () => {
   );
   const [step, setStep] = useState<"config" | "mode">("config");
   const [fillWordDirection, setFillWordDirection] = useState<
-      "definition_to_word" | "word_to_definition"
+    "definition_to_word" | "word_to_definition"
   >(() => {
     // Load from localStorage or default to 'definition_to_word'
     const saved = localStorage.getItem("practiceFillWordDirection");
-    return saved === "word_to_definition" ? "word_to_definition" : "definition_to_word";
+    return saved === "word_to_definition"
+      ? "word_to_definition"
+      : "definition_to_word";
   });
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export const StudyModePage: React.FC = () => {
   };
 
   const handleFillWordDirectionChange = (
-      direction: "definition_to_word" | "word_to_definition",
+    direction: "definition_to_word" | "word_to_definition",
   ) => {
     setFillWordDirection(direction);
     localStorage.setItem("practiceFillWordDirection", direction);
@@ -308,19 +310,19 @@ export const StudyModePage: React.FC = () => {
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                      type="button"
-                      onClick={() =>
-                          handleFillWordDirectionChange("definition_to_word")
-                      }
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                          fillWordDirection === "definition_to_word"
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 bg-white/40 hover:border-gray-300"
-                      }`}
+                    type="button"
+                    onClick={() =>
+                      handleFillWordDirectionChange("definition_to_word")
+                    }
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      fillWordDirection === "definition_to_word"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                    }`}
                   >
                     <div className="text-2xl mb-2">📖→✍️</div>
                     <div
-                        className={`font-semibold ${fillWordDirection === "definition_to_word" ? "text-blue-700" : "text-gray-700"}`}
+                      className={`font-semibold ${fillWordDirection === "definition_to_word" ? "text-blue-700" : "text-gray-700"}`}
                     >
                       {t("practice.definitionToWord")}
                     </div>
@@ -329,19 +331,19 @@ export const StudyModePage: React.FC = () => {
                     </div>
                   </button>
                   <button
-                      type="button"
-                      onClick={() =>
-                          handleFillWordDirectionChange("word_to_definition")
-                      }
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                          fillWordDirection === "word_to_definition"
-                              ? "border-blue-500 bg-blue-50"
-                              : "border-gray-200 bg-white/40 hover:border-gray-300"
-                      }`}
+                    type="button"
+                    onClick={() =>
+                      handleFillWordDirectionChange("word_to_definition")
+                    }
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      fillWordDirection === "word_to_definition"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                    }`}
                   >
                     <div className="text-2xl mb-2">✍️→📖</div>
                     <div
-                        className={`font-semibold ${fillWordDirection === "word_to_definition" ? "text-blue-700" : "text-gray-700"}`}
+                      className={`font-semibold ${fillWordDirection === "word_to_definition" ? "text-blue-700" : "text-gray-700"}`}
                     >
                       {t("practice.wordToDefinition")}
                     </div>

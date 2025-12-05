@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Card } from "./Card";
 
 interface FlashCardProps {
   front: string;
@@ -24,7 +23,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
 
   return (
     <div
-      className="relative w-full h-80 cursor-pointer perspective-1000"
+      className="relative w-full h-96 cursor-pointer perspective-1000"
       onClick={handleClick}
     >
       <style>{`
@@ -35,7 +34,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
           position: relative;
           width: 100%;
           height: 100%;
-          transition: transform 0.6s;
+          transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
           transform-style: preserve-3d;
         }
         .flip-card-inner.flipped {
@@ -53,35 +52,39 @@ export const FlashCard: React.FC<FlashCardProps> = ({
       `}</style>
 
       <div className={`flip-card-inner ${isFlipped ? "flipped" : ""}`}>
-        {/* Front */}
+        {/* Front - Vibrant Gradient Clay Card */}
         <div className="flip-card-front">
-          <Card
-            variant="gradient"
-            className="h-full flex flex-col items-center justify-center"
-          >
-            <img
-              src="/chameleon.svg"
-              alt="Cham Lang"
-              className="w-24 h-24 mb-6"
-            />
-            <h2 className="text-4xl font-black mb-2">{front}</h2>
-            {subtitle && <p className="text-xl text-white/90">{subtitle}</p>}
-            <p className="text-sm text-white/70 mt-8">Tap to reveal</p>
-          </Card>
+          <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-[32px] border-[4px] border-purple-700 shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center p-8">
+            <div className="w-28 h-28 bg-white/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
+              <img src="/chameleon.svg" alt="Cham Lang" className="w-20 h-20" />
+            </div>
+            <h2 className="text-5xl font-black text-white mb-3 text-center drop-shadow-lg">
+              {front}
+            </h2>
+            {subtitle && (
+              <p className="text-2xl font-semibold text-white/90 text-center">
+                {subtitle}
+              </p>
+            )}
+            <p className="text-sm font-bold text-white/70 mt-10 px-6 py-2 bg-white/10 rounded-full">
+              Tap to reveal ✨
+            </p>
+          </div>
         </div>
 
-        {/* Back */}
+        {/* Back - Pastel Clay Card */}
         <div className="flip-card-back">
-          <Card
-            variant="glass"
-            className="h-full flex items-center justify-center"
-          >
-            <div className="text-center px-6">
-              <div className="text-5xl mb-4">✨</div>
-              <p className="text-2xl font-bold text-gray-800 mb-4">{back}</p>
-              <p className="text-sm text-gray-600">Tap to flip back</p>
+          <div className="h-full w-full bg-[#FFF9C4] rounded-[32px] border-[4px] border-[#FFF59D] shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="text-6xl mb-6">💡</div>
+              <p className="text-3xl font-bold text-gray-900 mb-6 leading-relaxed">
+                {back}
+              </p>
+              <p className="text-sm font-bold text-gray-600 px-6 py-2 bg-white/60 rounded-full inline-block border-2 border-gray-300 shadow-sm">
+                Tap to flip back
+              </p>
             </div>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

@@ -181,18 +181,18 @@ export const HomePage: React.FC = () => {
     <>
       <TopBar title={t("app.name")} showBack={false} />
 
-      <div className="px-4 pt-6 space-y-2">
-        {/* Hero Section */}
-        <div className="text-center py-3">
-          <img
-            src="/chameleon.svg"
-            alt="Cham Lang"
-            className="w-24 h-24 mx-auto mb-4"
-          />
-          <h1 className="text-4xl font-black text-gray-800 mb-2">
+      <div className="px-6 pt-8 space-y-6 pb-24">
+        {/* Hero Section - Vibrant Block-Based */}
+        <div className="text-center py-8">
+          <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-400 to-pink-500 rounded-[32px] border-[4px] border-purple-600 shadow-[0_10px_0_rgba(0,0,0,0.15),0_5px_15px_rgba(0,0,0,0.12)] flex items-center justify-center transform hover:rotate-3 transition-transform duration-300">
+            <img src="/chameleon.svg" alt="Cham Lang" className="w-20 h-20" />
+          </div>
+          <h1 className="text-5xl font-black text-gray-900 mb-3 tracking-tight">
             {t("app.name").toUpperCase()}
           </h1>
-          <p className="text-lg text-gray-700">{t("app.tagline")}</p>
+          <p className="text-xl font-semibold text-indigo-600">
+            {t("app.tagline")}
+          </p>
         </div>
 
         {/* Search Bar */}
@@ -206,7 +206,7 @@ export const HomePage: React.FC = () => {
         {/* Filter Accordion */}
         <Accordion title={t("buttons.filter")} defaultOpen={false}>
           {/* Topic and Tag Filters */}
-          <div className="flex flex-col md:flex-row gap-3 pt-3">
+          <div className="flex flex-col md:flex-row gap-4 pt-4">
             <SearchableMultiSelect
               label={t("vocabulary.topics")}
               options={availableTopics}
@@ -250,23 +250,23 @@ export const HomePage: React.FC = () => {
           />
         </Accordion>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3">
+        {/* Action Buttons - Vibrant Block Layout */}
+        <div className="grid grid-cols-2 gap-4">
           <Button
             variant="secondary"
-            size="md"
+            size="lg"
             icon={Brain}
-            fullWidth
             onClick={() => navigate("/practice")}
+            className="h-20 flex-col gap-2"
           >
             {t("practice.title")}
           </Button>
           <Button
             variant="primary"
-            size="md"
+            size="lg"
             icon={Plus}
-            fullWidth
             onClick={() => navigate("/vocabulary/add")}
+            className="h-20 flex-col gap-2"
           >
             {t("vocabulary.add")}
           </Button>

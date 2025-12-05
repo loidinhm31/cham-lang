@@ -41,7 +41,9 @@ export const PracticeModePage: React.FC = () => {
   >(() => {
     // Load from localStorage or default to 'definition_to_word'
     const saved = localStorage.getItem("practiceFillWordDirection");
-    return saved === "word_to_definition" ? "word_to_definition" : "definition_to_word";
+    return saved === "word_to_definition"
+      ? "word_to_definition"
+      : "definition_to_word";
   });
   const [dueWordsCount, setDueWordsCount] = useState<number>(0);
   const [loadingStats, setLoadingStats] = useState(false);
@@ -496,7 +498,9 @@ export const PracticeModePage: React.FC = () => {
                     key={mode.id}
                     variant="default"
                     hover
-                    onClick={() => navigate(`${mode.path}?${params.toString()}`)}
+                    onClick={() =>
+                      navigate(`${mode.path}?${params.toString()}`)
+                    }
                     className="cursor-pointer"
                   >
                     <div className="flex items-center gap-6">
