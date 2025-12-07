@@ -6,6 +6,12 @@ export interface CsvExportRequest {
   collection_ids: string[];
 }
 
+export interface ExportResult {
+  message: string;
+  file_path: string;
+  file_name: string;
+}
+
 export interface CsvImportRequest {
   /** Either file_path or csv_text must be provided */
   file_path?: string;

@@ -117,6 +117,8 @@ pub fn run() {
             // CSV Import/Export
             export_collections_csv,
             choose_csv_save_location,
+            get_export_directory,
+            open_export_directory,
             import_vocabularies_csv,
             import_simple_vocabularies,
             generate_csv_template,

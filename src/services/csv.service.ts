@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { save, open } from "@tauri-apps/plugin-dialog";
 import type {
   CsvExportRequest,
+  ExportResult,
   CsvImportRequest,
   CsvImportResult,
   SimpleImportRequest,
@@ -12,12 +13,19 @@ import type {
  */
 export class CsvService {
   /**
+   * Get the app's export directory (Android-safe)
+   */
+  static async getExportDirectory(): Promise<string> {
+    return invoke("get_export_directory");
+  }
+
+  /**
    * Export collections to CSV file
    */
   static async exportCollections(
     collectionIds: string[],
     filePath: string,
-  ): Promise<string> {
+  ): Promise<ExportResult> {
     const request: CsvExportRequest = {
       collection_ids: collectionIds,
     };
@@ -58,7 +66,7 @@ export class CsvService {
           extensions: ["csv"],
         },
       ],
-      defaultPath: `chameleon_export_${new Date().toISOString().split("T")[0]}.csv`,
+      defaultPath: `chamlang_export_${new Date().toISOString().split("T")[0]}.csv`,
     });
 
     return filePath;
@@ -100,7 +108,7 @@ export class CsvService {
           extensions: ["csv"],
         },
       ],
-      defaultPath: "chameleon_import_template.csv",
+      defaultPath: "chamlang_import_template.csv",
     });
 
     if (!filePath) {

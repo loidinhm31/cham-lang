@@ -65,12 +65,14 @@ export const CSVExportPage: React.FC = () => {
     try {
       setIsExporting(true);
 
-      // Open save dialog
-      const filePath = await CsvService.chooseSaveLocation();
-      if (!filePath) {
-        setIsExporting(false);
-        return; // User cancelled
-      }
+      let filePath: string | null = null;
+
+      // Always use app export directory to avoid content URI issues on Android
+      // The file dialog's content URIs cannot be written to directly
+      const exportDir = await CsvService.getExportDirectory();
+      const timestamp = new Date().toISOString().split("T")[0];
+      filePath = `${exportDir}/chamlang_export_${timestamp}.csv`;
+      console.log("Exporting to app directory:", filePath);
 
       // Export to CSV
       const result = await CsvService.exportCollections(
@@ -78,9 +80,13 @@ export const CSVExportPage: React.FC = () => {
         filePath,
       );
 
-      showAlert(t("csv.exportSuccess", { message: result }), {
-        variant: "success",
-      });
+      showAlert(
+        t("csv.exportSuccess", { message: result.message }) +
+        `\n\nFile: ${result.file_name}`,
+        {
+          variant: "success",
+        }
+      );
       navigate("/collections");
     } catch (error) {
       console.error("Export failed:", error);

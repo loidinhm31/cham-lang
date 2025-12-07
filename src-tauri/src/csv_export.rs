@@ -1,8 +1,16 @@
 use crate::models::{Vocabulary, Collection};
 use crate::local_db::LocalDatabase;
 use serde::{Deserialize, Serialize};
-use tauri::State;
+use tauri::{State, AppHandle, Manager};
 use std::path::PathBuf;
+use std::fs;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ExportResult {
+    pub message: String,
+    pub file_path: String,
+    pub file_name: String,
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CsvExportRequest {
@@ -104,7 +112,7 @@ pub fn export_collections_csv(
     local_db: State<'_, LocalDatabase>,
     request: CsvExportRequest,
     file_path: String,
-) -> Result<String, String> {
+) -> Result<ExportResult, String> {
     println!("📤 Starting CSV export for {} collections", request.collection_ids.len());
 
     let mut csv_rows: Vec<CsvRow> = Vec::new();
@@ -130,24 +138,57 @@ pub fn export_collections_csv(
         }
     }
 
-    // Write to CSV file
-    let path = PathBuf::from(&file_path);
-    let mut writer = csv::Writer::from_path(&path)
-        .map_err(|e| format!("Failed to create CSV file: {}", e))?;
+    // Generate CSV content in memory first
+    let mut csv_buffer = Vec::new();
+    {
+        let mut writer = csv::Writer::from_writer(&mut csv_buffer);
 
-    // Write all rows
-    for row in csv_rows {
-        writer.serialize(&row)
-            .map_err(|e| format!("Failed to write CSV row: {}", e))?;
+        // Write all rows
+        for row in csv_rows {
+            writer.serialize(&row)
+                .map_err(|e| format!("Failed to write CSV row: {}", e))?;
+        }
+
+        writer.flush()
+            .map_err(|e| format!("Failed to flush CSV buffer: {}", e))?;
     }
 
-    writer.flush()
-        .map_err(|e| format!("Failed to save CSV file: {}", e))?;
+    // Determine the actual write path
+    let write_path = PathBuf::from(&file_path);
+
+    // Ensure parent directory exists
+    if let Some(parent) = write_path.parent() {
+        if !parent.exists() {
+            println!("📁 Creating parent directory: {:?}", parent);
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("Failed to create directory {:?}: {} (OS error: {})",
+                    parent, e, e.raw_os_error().unwrap_or(-1)))?;
+        }
+    }
+
+    // Write the CSV buffer to the file
+    println!("💾 Writing {} bytes to: {:?}", csv_buffer.len(), write_path);
+    fs::write(&write_path, csv_buffer)
+        .map_err(|e| {
+            let os_error = e.raw_os_error().unwrap_or(-1);
+            let err_msg = format!("Failed to save CSV file to {:?}: {} (OS error: {})", write_path, e, os_error);
+            eprintln!("❌ {}", err_msg);
+            err_msg
+        })?;
 
     println!("✅ CSV export complete: {} vocabularies exported to {}", total_vocabularies, file_path);
 
-    Ok(format!("Successfully exported {} vocabularies from {} collections",
-               total_vocabularies, request.collection_ids.len()))
+    let file_name = write_path.file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("export.csv")
+        .to_string();
+
+    Ok(ExportResult {
+        message: format!("Successfully exported {} vocabularies from {} collections",
+                        total_vocabularies, request.collection_ids.len()),
+        file_path: file_path.clone(),
+        file_name,
+    })
 }
 
 /// Open file save dialog for CSV export
@@ -158,12 +199,81 @@ pub async fn choose_csv_save_location() -> Result<Option<String>, String> {
     Ok(None)
 }
 
+/// Get the app's document directory for Android-safe file exports
+/// Returns a path that's guaranteed to be writable on both desktop and Android
+#[tauri::command]
+pub fn get_export_directory(app: AppHandle) -> Result<String, String> {
+    // Try to get the app's data directory
+    let data_dir = app.path().app_data_dir()
+        .map_err(|e| format!("Failed to get app data directory: {}", e))?;
+
+    // Create an exports subdirectory
+    let export_dir = data_dir.join("exports");
+
+    // Ensure it exists
+    if !export_dir.exists() {
+        fs::create_dir_all(&export_dir)
+            .map_err(|e| format!("Failed to create exports directory: {}", e))?;
+    }
+
+    export_dir.to_str()
+        .ok_or_else(|| "Failed to convert path to string".to_string())
+        .map(|s| s.to_string())
+}
+
+/// Open the exports directory in the system file manager
+#[tauri::command]
+pub fn open_export_directory(app: AppHandle) -> Result<(), String> {
+    let export_dir = get_export_directory(app)?;
+
+    #[cfg(target_os = "android")]
+    {
+        // On Android, we can't open the app's data directory in the file manager
+        // because it's in a protected location. Return an error message.
+        Err(format!("Exports are saved to the app's data directory.\nPath: {}", export_dir))
+    }
+
+    #[cfg(not(target_os = "android"))]
+    {
+        // On desktop, try to open the directory using system commands
+        #[cfg(target_os = "windows")]
+        std::process::Command::new("explorer")
+            .arg(&export_dir)
+            .spawn()
+            .map_err(|e| format!("Failed to open exports directory: {}", e))?;
+
+        #[cfg(target_os = "macos")]
+        std::process::Command::new("open")
+            .arg(&export_dir)
+            .spawn()
+            .map_err(|e| format!("Failed to open exports directory: {}", e))?;
+
+        #[cfg(target_os = "linux")]
+        std::process::Command::new("xdg-open")
+            .arg(&export_dir)
+            .spawn()
+            .map_err(|e| format!("Failed to open exports directory: {}", e))?;
+
+        Ok(())
+    }
+}
+
 /// Generate a CSV template with example data for users to follow
 #[tauri::command]
 pub fn generate_csv_template(file_path: String) -> Result<String, String> {
     println!("📝 Generating CSV template at: {}", file_path);
 
     let path = PathBuf::from(&file_path);
+
+    // Ensure parent directory exists
+    if let Some(parent) = path.parent() {
+        if !parent.exists() {
+            println!("📁 Creating parent directory: {:?}", parent);
+            fs::create_dir_all(parent)
+                .map_err(|e| format!("Failed to create directory {:?}: {}", parent, e))?;
+        }
+    }
+
     let mut writer = csv::Writer::from_path(&path)
         .map_err(|e| format!("Failed to create CSV template file: {}", e))?;
 
