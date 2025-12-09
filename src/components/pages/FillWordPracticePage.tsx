@@ -200,17 +200,25 @@ export const FillWordPracticePage: React.FC = () => {
 
       setShowNext(true);
 
-      // Auto-advance after configured timeout to show feedback
-      autoAdvanceTimerRef.current = window.setTimeout(() => {
-        handleNext();
-      }, autoAdvanceTimeout);
+      // In self-assessment mode (word -> definition):
+      // - If answer is correct, auto-advance as normal
+      // - If answer is incorrect, don't auto-advance (user needs to manually click Next)
+      if (!isReversedDirection || correct) {
+        // Auto-advance in normal mode OR when answer is correct in self-assessment mode
+        autoAdvanceTimerRef.current = window.setTimeout(() => {
+          handleNext();
+        }, autoAdvanceTimeout);
+      }
+      // If isReversedDirection && !correct, no auto-advance (user clicked "I was incorrect")
     } catch (error) {
       console.error("Error in handleAnswer:", error);
       setShowNext(true); // Show next anyway to not block the user
-      // Auto-advance even on error
-      autoAdvanceTimerRef.current = window.setTimeout(() => {
-        handleNext();
-      }, autoAdvanceTimeout);
+      // Auto-advance even on error (but not for incorrect answers in self-assessment mode)
+      if (!isReversedDirection) {
+        autoAdvanceTimerRef.current = window.setTimeout(() => {
+          handleNext();
+        }, autoAdvanceTimeout);
+      }
     }
   };
 
@@ -487,13 +495,17 @@ export const FillWordPracticePage: React.FC = () => {
           correctAnswer={getCorrectAnswer(currentVocab, isReversedDirection)}
           hint={hint}
           onAnswer={handleAnswer}
+          selfAssessmentMode={isReversedDirection}
         />
 
         {/* Next Button - shows while waiting for auto-advance */}
         {showNext && (
           <Button variant="primary" size="md" fullWidth onClick={handleNext}>
             {sessionManager && !sessionManager.isSessionComplete()
-              ? `${t("practice.next")} (auto)`
+              ? // Show "(auto)" only when we're actually auto-advancing
+                autoAdvanceTimerRef.current !== null
+                ? `${t("practice.next")} (auto)`
+                : t("practice.next")
               : t("practice.finish")}
           </Button>
         )}

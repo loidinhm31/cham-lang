@@ -217,7 +217,17 @@
     "definitionToWord": "Definition → Word",
     "definitionToWordDescription": "See definition, type word",
     "wordToDefinition": "Word → Definition",
-    "wordToDefinitionDescription": "See word, type definition"
+    "wordToDefinitionDescription": "See word, type definition",
+    "fillWordTitle": "Fill in the word",
+    "checkAnswer": "Check Answer",
+    "typeYourAnswer": "Type your answer...",
+    "yourAnswer": "Your answer:",
+    "correctAnswer": "Correct answer:",
+    "correctResult": "✓ Correct!",
+    "incorrectResult": "✗ Incorrect",
+    "theCorrectAnswerIs": "The correct answer is:",
+    "iWasCorrect": "I was correct",
+    "iWasIncorrect": "I was incorrect"
   },
   "study": {
     "title": "Study Mode",

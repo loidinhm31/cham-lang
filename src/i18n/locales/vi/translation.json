@@ -217,7 +217,17 @@
     "definitionToWord": "Định nghĩa → Từ",
     "definitionToWordDescription": "Xem định nghĩa, gõ từ",
     "wordToDefinition": "Từ → Định nghĩa",
-    "wordToDefinitionDescription": "Xem từ, gõ định nghĩa"
+    "wordToDefinitionDescription": "Xem từ, gõ định nghĩa",
+    "fillWordTitle": "Điền từ",
+    "checkAnswer": "Kiểm Tra Đáp Án",
+    "typeYourAnswer": "Nhập câu trả lời của bạn...",
+    "yourAnswer": "Câu trả lời của bạn:",
+    "correctAnswer": "Đáp án đúng:",
+    "correctResult": "✓ Chính Xác!",
+    "incorrectResult": "✗ Không Chính Xác",
+    "theCorrectAnswerIs": "Đáp án đúng là:",
+    "iWasCorrect": "Tôi đúng",
+    "iWasIncorrect": "Tôi sai"
   },
   "study": {
     "title": "Chế Độ Ôn Tập",
