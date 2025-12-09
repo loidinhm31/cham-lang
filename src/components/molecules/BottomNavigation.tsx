@@ -34,7 +34,7 @@ export const BottomNavigation: React.FC = () => {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe">
-      <div className="max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 pb-13">
+      <div className="max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 sm:pb-6 pb-13">
         <div className="grid grid-cols-4 gap-2 bg-white rounded-[28px] border-[3px] border-gray-300 shadow-[0_8px_0_rgba(0,0,0,0.1),0_4px_16px_rgba(0,0,0,0.12),inset_0_-2px_4px_rgba(0,0,0,0.05)] p-3">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;

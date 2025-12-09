@@ -19,9 +19,9 @@ import {
   CSVExportPage,
   CSVImportPage,
   StudyModePage,
-} from "./components/pages";
-import { SyncNotificationProvider, DialogProvider } from "./contexts";
-import "./i18n/config";
+} from "@/components/pages";
+import { SyncNotificationProvider, DialogProvider } from "@/contexts";
+import "@/i18n/config";
 import { MainLayout } from "@/components/templates/MainLayout";
 
 const App: React.FC = () => {
