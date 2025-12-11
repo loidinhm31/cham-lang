@@ -2,7 +2,7 @@ import React from "react";
 import { ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, type CardVariant } from "@/components/atoms";
-import type { LanguageLevel, Vocabulary } from "@/types/vocabulary";
+import type { WordType, Vocabulary } from "@/types/vocabulary";
 
 interface VocabularyCardProps {
   vocabulary: Vocabulary;
@@ -12,13 +12,17 @@ interface VocabularyCardProps {
   onToggleSelection?: (e: React.MouseEvent) => void;
 }
 
-const levelColors: Record<LanguageLevel, string> = {
-  A1: "bg-[#98FF98] text-gray-800 border-[#7EE57E]",
-  A2: "bg-[#ADD8E6] text-gray-800 border-[#8FC4DE]",
-  B1: "bg-[#E6E6FA] text-gray-800 border-[#D0D0F0]",
-  B2: "bg-[#FFF9C4] text-gray-800 border-[#FFF59D]",
-  C1: "bg-[#FDBCB4] text-gray-800 border-[#FCA89D]",
-  C2: "bg-[#FFD1DC] text-gray-800 border-[#FFB3C1]",
+const wordTypeColors: Record<WordType, string> = {
+  "n/a": "bg-gray-200 text-gray-800 border-gray-300",
+  noun: "bg-[#98FF98] text-gray-800 border-[#7EE57E]",
+  verb: "bg-[#ADD8E6] text-gray-800 border-[#8FC4DE]",
+  adjective: "bg-[#E6E6FA] text-gray-800 border-[#D0D0F0]",
+  adverb: "bg-[#FFF9C4] text-gray-800 border-[#FFF59D]",
+  pronoun: "bg-[#FDBCB4] text-gray-800 border-[#FCA89D]",
+  preposition: "bg-[#FFD1DC] text-gray-800 border-[#FFB3C1]",
+  conjunction: "bg-[#FFE4B5] text-gray-800 border-[#FFD89B]",
+  interjection: "bg-[#DDA0DD] text-gray-800 border-[#C77DC7]",
+  phrase: "bg-[#F0E68C] text-gray-800 border-[#E6D66C]",
 };
 
 export const VocabularyCard: React.FC<VocabularyCardProps> = ({
@@ -30,19 +34,23 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // Determine card color based on vocabulary level
-  const cardVariants: Record<LanguageLevel, CardVariant> = {
-    A1: "clay-mint",
-    A2: "clay-blue",
-    B1: "clay-lilac",
-    B2: "clay-yellow",
-    C1: "clay-peach",
-    C2: "clay-pink",
+  // Determine card color based on word type
+  const cardVariants: Record<WordType, CardVariant> = {
+    "n/a": "clay-gray",
+    noun: "clay-mint",
+    verb: "clay-blue",
+    adjective: "clay-lilac",
+    adverb: "clay-yellow",
+    pronoun: "clay-peach",
+    preposition: "clay-pink",
+    conjunction: "clay-yellow",
+    interjection: "clay-lilac",
+    phrase: "clay-mint",
   };
 
   return (
     <Card
-      variant={cardVariants[vocabulary.level]}
+      variant={cardVariants[vocabulary.word_type]}
       hover
       onClick={onClick}
       className={
@@ -75,9 +83,9 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
           </div>
         </div>
         <span
-          className={`${levelColors[vocabulary.level]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] shrink-0 ml-2`}
+          className={`${wordTypeColors[vocabulary.word_type]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] shrink-0 ml-2`}
         >
-          {vocabulary.level}
+          {vocabulary.word_type}
         </span>
       </div>
 

@@ -3,6 +3,7 @@ import React from "react";
 export type CardVariant =
   | "default"
   | "glass"
+  | "clay-gray"
   | "clay-peach"
   | "clay-blue"
   | "clay-mint"
@@ -22,6 +23,7 @@ interface CardProps {
 const variantStyles: Record<CardVariant, string> = {
   default: "bg-white",
   glass: "bg-white",
+  "clay-gray": "bg-gray-200",
   "clay-peach": "bg-[#FDBCB4]",
   "clay-blue": "bg-[#ADD8E6]",
   "clay-mint": "bg-[#98FF98]",
