@@ -41,7 +41,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
         </div>
         <Badge
           variant="primary"
-          className="flex items-center gap-1.5 px-3 py-1.5 flex-shrink-0 ml-2"
+          className="flex items-center gap-1.5 px-3 py-1.5 shrink-0 ml-2"
         >
           <BookOpen className="w-4 h-4" />
           <span className="font-bold">{collection.word_count}</span>

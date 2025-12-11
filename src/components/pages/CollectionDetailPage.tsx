@@ -90,6 +90,7 @@ export const CollectionDetailPage: React.FC = () => {
         collectionId: id,
         vocabularyIds: vocabularies.map((v) => v.id),
         currentIndex: index,
+        totalWords: collection?.word_count,
       },
     });
   };
@@ -218,7 +219,7 @@ export const CollectionDetailPage: React.FC = () => {
         {!selectionMode && vocabularies.length > 0 && (
           <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">

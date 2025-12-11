@@ -286,7 +286,7 @@ impl LocalDatabase {
                      WHERE user_id = ?1 AND language = ?2
                      ORDER BY created_at DESC
                      LIMIT {}",
-                    limit.unwrap_or(1000)
+                    limit.unwrap_or(999999)
                 ),
                 vec![Box::new(user_id.to_string()), Box::new(lang.to_string())]
             )
@@ -298,7 +298,7 @@ impl LocalDatabase {
                      WHERE user_id = ?1
                      ORDER BY created_at DESC
                      LIMIT {}",
-                    limit.unwrap_or(1000)
+                    limit.unwrap_or(999999)
                 ),
                 vec![Box::new(user_id.to_string())]
             )
@@ -336,7 +336,7 @@ impl LocalDatabase {
              WHERE collection_id = ?1
              ORDER BY created_at DESC
              LIMIT {}",
-            limit.unwrap_or(100)
+            limit.unwrap_or(999999)
         );
 
         let mut stmt = conn.prepare(&sql)?;

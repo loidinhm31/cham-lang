@@ -62,7 +62,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
                 e.stopPropagation();
                 onToggleSelection(e);
               }}
-              className="w-6 h-6 rounded-lg border-[3px] border-gray-400 text-orange-500 focus:ring-2 focus:ring-orange-500 cursor-pointer mt-1 flex-shrink-0 shadow-sm"
+              className="w-6 h-6 rounded-lg border-[3px] border-gray-400 text-orange-500 focus:ring-2 focus:ring-orange-500 cursor-pointer mt-1 shrink-0 shadow-sm"
             />
           )}
           <div className="flex-1">
@@ -75,7 +75,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
           </div>
         </div>
         <span
-          className={`${levelColors[vocabulary.level]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] flex-shrink-0 ml-2`}
+          className={`${levelColors[vocabulary.level]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] shrink-0 ml-2`}
         >
           {vocabulary.level}
         </span>

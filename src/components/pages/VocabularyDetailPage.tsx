@@ -21,6 +21,7 @@ interface LocationState {
   collectionId?: string;
   vocabularyIds?: string[];
   currentIndex?: number;
+  totalWords?: number; // Total word count from collection
 }
 
 export const VocabularyDetailPage: React.FC = () => {
@@ -37,7 +38,7 @@ export const VocabularyDetailPage: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const state = location.state as LocationState;
-  const { collectionId, vocabularyIds, currentIndex } = state || {};
+  const { collectionId, vocabularyIds, currentIndex, totalWords } = state || {};
 
   useEffect(() => {
     if (id) {
@@ -103,11 +104,12 @@ export const VocabularyDetailPage: React.FC = () => {
           collectionId,
           vocabularyIds,
           currentIndex: currentIndex + 1,
+          totalWords,
         },
       });
       setTimeout(() => setIsAnimating(false), 300);
     }
-  }, [vocabularyIds, currentIndex, collectionId, navigate]);
+  }, [vocabularyIds, currentIndex, collectionId, totalWords, navigate]);
 
   const goToPrevious = useCallback(() => {
     if (vocabularyIds && currentIndex !== undefined && currentIndex > 0) {
@@ -118,11 +120,12 @@ export const VocabularyDetailPage: React.FC = () => {
           collectionId,
           vocabularyIds,
           currentIndex: currentIndex - 1,
+          totalWords,
         },
       });
       setTimeout(() => setIsAnimating(false), 300);
     }
-  }, [vocabularyIds, currentIndex, collectionId, navigate]);
+  }, [vocabularyIds, currentIndex, collectionId, totalWords, navigate]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -266,7 +269,7 @@ export const VocabularyDetailPage: React.FC = () => {
           <>
             {/* Progress Indicator */}
             <div className="text-center text-sm text-gray-500 mb-4">
-              {currentIndex + 1} / {vocabularyIds.length}
+              {currentIndex + 1} / {totalWords || vocabularyIds.length}
             </div>
 
             {/* Navigation Buttons */}
