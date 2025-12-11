@@ -197,7 +197,7 @@ export const VocabularyDetailPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t("vocabulary.title")} showBack />
+        <TopBar title={t("vocabulary.title")} showBack backTo={collectionId ? `/collections/${collectionId}` : "/"} />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -211,7 +211,7 @@ export const VocabularyDetailPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={vocabulary.word} showBack />
+      <TopBar title={vocabulary.word} showBack backTo={collectionId ? `/collections/${collectionId}` : "/"} />
 
       <div
         className="px-4 pt-6 pb-6 space-y-6 relative"
@@ -417,7 +417,16 @@ export const VocabularyDetailPage: React.FC = () => {
             size="md"
             icon={Edit}
             fullWidth
-            onClick={() => navigate(`/vocabulary/edit/${vocabulary.id}`)}
+            onClick={() =>
+              navigate(`/vocabulary/edit/${vocabulary.id}`, {
+                state: {
+                  collectionId,
+                  vocabularyIds,
+                  currentIndex,
+                  totalWords,
+                },
+              })
+            }
           >
             {t("buttons.edit")}
           </Button>

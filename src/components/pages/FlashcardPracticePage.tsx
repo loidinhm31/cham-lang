@@ -244,6 +244,7 @@ export const FlashcardPracticePage: React.FC = () => {
               : t("practice.flashcardMode")
           }
           showBack
+          backTo={isStudyMode ? "/" : "/practice"}
         />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
@@ -269,6 +270,7 @@ export const FlashcardPracticePage: React.FC = () => {
               : t("practice.completed")
           }
           showBack
+          backTo={isStudyMode ? "/" : "/practice"}
         />
         <div className="px-4 pt-6 space-y-6">
           {isStudyMode && (
@@ -343,6 +345,7 @@ export const FlashcardPracticePage: React.FC = () => {
               : t("practice.flashcardMode")
           }
           showBack
+          backTo={isStudyMode ? "/" : "/practice"}
         />
         <div className="px-4 pt-6">
           <Card variant="glass" className="text-center p-8">
@@ -370,6 +373,7 @@ export const FlashcardPracticePage: React.FC = () => {
             : t("practice.flashcardMode")
         }
         showBack
+        backTo={isStudyMode ? "/" : "/practice"}
       />
 
       <div className="px-4 pt-6 space-y-6">

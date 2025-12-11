@@ -182,7 +182,7 @@ export const PracticeModePage: React.FC = () => {
   if (loadingCollections) {
     return (
       <>
-        <TopBar title={t("practice.title")} showBack />
+        <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-xl text-gray-600">{t("common.loading")}</div>
         </div>
@@ -193,7 +193,7 @@ export const PracticeModePage: React.FC = () => {
   if (collections.length === 0) {
     return (
       <>
-        <TopBar title={t("practice.title")} showBack />
+        <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="px-4 pt-6">
           <Card variant="glass" className="p-12 text-center">
             <Library className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -214,7 +214,7 @@ export const PracticeModePage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("practice.title")} showBack />
+      <TopBar title={t("practice.title")} showBack backTo="/" />
 
       <div className="px-4 pt-6 space-y-6">
         {step === "collection" ? (

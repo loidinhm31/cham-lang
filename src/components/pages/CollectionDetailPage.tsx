@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
@@ -25,6 +25,7 @@ import { useDialog } from "@/contexts";
 export const CollectionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
   const { showAlert, showConfirm } = useDialog();
   const [collection, setCollection] = useState<Collection | null>(null);
@@ -33,6 +34,10 @@ export const CollectionDetailPage: React.FC = () => {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+
+  // Determine back route based on where user came from
+  const state = location.state as { fromPage?: string } | null;
+  const backRoute = state?.fromPage === 'home' ? '/' : '/collections';
 
   useEffect(() => {
     if (id) {
@@ -52,7 +57,7 @@ export const CollectionDetailPage: React.FC = () => {
     } catch (error) {
       console.error("Failed to load collection:", error);
       showAlert(t("messages.error"), { variant: "error" });
-      navigate("/");
+      navigate(backRoute);
     } finally {
       setLoading(false);
     }
@@ -76,7 +81,7 @@ export const CollectionDetailPage: React.FC = () => {
     try {
       await CollectionService.deleteCollection(collection.id);
       showAlert(t("messages.deleteSuccess"), { variant: "success" });
-      navigate("/");
+      navigate(backRoute);
     } catch (error) {
       console.error("Failed to delete collection:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -160,7 +165,7 @@ export const CollectionDetailPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t("collection.title")} showBack />
+        <TopBar title={t("collection.title")} showBack backTo={backRoute} />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -174,7 +179,7 @@ export const CollectionDetailPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={collection.name} showBack />
+      <TopBar title={collection.name} showBack backTo={backRoute} />
 
       {/* Bulk Action Toolbar */}
       {selectionMode && (

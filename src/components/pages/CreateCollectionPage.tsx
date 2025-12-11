@@ -33,7 +33,7 @@ export const CreateCollectionPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("collections.create")} showBack />
+      <TopBar title={t("collections.create")} showBack backTo="/collections" />
 
       <div className="px-4 pt-6">
         <CollectionForm

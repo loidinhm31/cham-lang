@@ -34,7 +34,7 @@ export const AddVocabularyPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("vocabulary.add")} showBack />
+      <TopBar title={t("vocabulary.add")} showBack backTo="/" />
 
       <div className="px-4 pt-6">
         <VocabularyForm

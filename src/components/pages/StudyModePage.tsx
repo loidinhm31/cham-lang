@@ -93,7 +93,7 @@ export const StudyModePage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t("study.title") || "Study Mode"} showBack />
+        <TopBar title={t("study.title") || "Study Mode"} showBack backTo="/" />
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-xl text-gray-600">{t("common.loading")}</div>
         </div>
@@ -104,7 +104,7 @@ export const StudyModePage: React.FC = () => {
   if (!collection) {
     return (
       <>
-        <TopBar title={t("study.title") || "Study Mode"} showBack />
+        <TopBar title={t("study.title") || "Study Mode"} showBack backTo="/" />
         <div className="px-4 pt-6">
           <Card variant="glass" className="p-12 text-center">
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
@@ -121,7 +121,7 @@ export const StudyModePage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("study.title") || "Study Mode"} showBack />
+      <TopBar title={t("study.title") || "Study Mode"} showBack backTo="/" />
 
       <div className="px-4 pt-6 space-y-6">
         {step === "config" ? (

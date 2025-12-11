@@ -67,7 +67,7 @@ export const SearchableMultiSelect: React.FC<SearchableMultiSelectProps> = ({
       {/* Selection display */}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="min-h-[48px] py-2 px-4 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer flex flex-wrap gap-2 items-center"
+        className="min-h-12 py-2 px-4 bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg border-0 focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer flex flex-wrap gap-2 items-center"
       >
         {selected.length === 0 ? (
           <span className="text-gray-400">{placeholder}</span>

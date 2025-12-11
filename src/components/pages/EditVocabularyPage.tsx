@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { TopBar } from "@/components/molecules";
 import { VocabularyForm } from "@/components/organisms";
@@ -7,11 +7,20 @@ import { VocabularyService } from "@/services/vocabulary.service";
 import type { CreateVocabularyRequest, Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
+interface LocationState {
+  collectionId?: string;
+  vocabularyIds?: string[];
+  currentIndex?: number;
+  totalWords?: number;
+}
+
 export const EditVocabularyPage: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { id } = useParams<{ id: string }>();
   const { showAlert } = useDialog();
+  const state = location.state as LocationState;
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
   const [initialData, setInitialData] = useState<
@@ -63,7 +72,14 @@ export const EditVocabularyPage: React.FC = () => {
         ...data,
       });
       showAlert(t("messages.saveSuccess"), { variant: "success" });
-      navigate(`/vocabulary/${id}`);
+      navigate(`/vocabulary/${id}`, {
+        state: {
+          collectionId: state?.collectionId,
+          vocabularyIds: state?.vocabularyIds,
+          currentIndex: state?.currentIndex,
+          totalWords: state?.totalWords,
+        },
+      });
     } catch (error) {
       console.error("Failed to update vocabulary:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -74,7 +90,14 @@ export const EditVocabularyPage: React.FC = () => {
 
   const handleCancel = () => {
     if (id) {
-      navigate(`/vocabulary/${id}`);
+      navigate(`/vocabulary/${id}`, {
+        state: {
+          collectionId: state?.collectionId,
+          vocabularyIds: state?.vocabularyIds,
+          currentIndex: state?.currentIndex,
+          totalWords: state?.totalWords,
+        },
+      });
     } else {
       navigate("/");
     }
@@ -83,7 +106,7 @@ export const EditVocabularyPage: React.FC = () => {
   if (loadingData) {
     return (
       <>
-        <TopBar title={t("vocabulary.edit")} showBack />
+        <TopBar title={t("vocabulary.edit")} showBack backTo={id ? `/vocabulary/${id}` : "/"} />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -93,7 +116,7 @@ export const EditVocabularyPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("vocabulary.edit")} showBack />
+      <TopBar title={t("vocabulary.edit")} showBack backTo={id ? `/vocabulary/${id}` : "/"} />
 
       <div className="px-4 pt-6">
         <VocabularyForm

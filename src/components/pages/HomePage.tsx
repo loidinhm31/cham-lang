@@ -174,7 +174,9 @@ export const HomePage: React.FC = () => {
   };
 
   const handleCollectionClick = (collection: Collection) => {
-    navigate(`/collections/${collection.id}`);
+    navigate(`/collections/${collection.id}`, {
+      state: { fromPage: 'home' }
+    });
   };
 
   return (

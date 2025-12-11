@@ -75,7 +75,7 @@ export const EditCollectionPage: React.FC = () => {
   if (loadingData) {
     return (
       <>
-        <TopBar title={t("collections.edit")} showBack />
+        <TopBar title={t("collections.edit")} showBack backTo={id ? `/collections/${id}` : "/collections"} />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -85,7 +85,7 @@ export const EditCollectionPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("collections.edit")} showBack />
+      <TopBar title={t("collections.edit")} showBack backTo={id ? `/collections/${id}` : "/collections"} />
 
       <div className="px-4 pt-6">
         <CollectionForm

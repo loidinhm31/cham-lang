@@ -9,6 +9,8 @@ interface TopBarProps {
   showMenu?: boolean;
   showNotifications?: boolean;
   onMenuClick?: () => void;
+  backTo?: string;
+  onBackClick?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -17,6 +19,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   showMenu = true,
   showNotifications = true,
   onMenuClick,
+  backTo,
+  onBackClick,
 }) => {
   const navigate = useNavigate();
   const { hasSyncNotification } = useSyncNotification();
@@ -25,13 +29,23 @@ export const TopBar: React.FC<TopBarProps> = ({
     navigate("/profile");
   };
 
+  const handleBackClick = () => {
+    if (onBackClick) {
+      onBackClick();
+    } else if (backTo) {
+      navigate(backTo);
+    } else {
+      navigate(-1);
+    }
+  };
+
   return (
     <div className="sticky top-0 z-40 pt-safe">
       <div className="max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 pt-4">
         <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-2xl p-4 shadow-lg">
           {showBack ? (
             <button
-              onClick={() => navigate(-1)}
+              onClick={handleBackClick}
               className="p-2 hover:bg-white/50 rounded-xl transition"
             >
               <ArrowLeft className="w-6 h-6 text-gray-800" />
