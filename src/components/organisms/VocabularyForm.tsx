@@ -151,7 +151,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     // Filter out empty values
     const cleanedData = {
       ...formData,
-      concept: formData.concept?.trim() || undefined,
+      concept: formData.concept?.trim() || "",
       definitions: formData.definitions.filter((d) => d.meaning.trim() !== ""),
       example_sentences: formData.example_sentences.filter(
         (s) => s.trim() !== "",

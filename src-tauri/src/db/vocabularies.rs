@@ -441,7 +441,12 @@ impl LocalDatabase {
         }
         if let Some(ref concept) = request.concept {
             updates.push("concept = ?");
-            params.push(Box::new(concept.clone()));
+            // Convert empty string to NULL
+            if concept.trim().is_empty() {
+                params.push(Box::new(None::<String>));
+            } else {
+                params.push(Box::new(Some(concept.clone())));
+            }
         }
         if let Some(ref collection_id) = request.collection_id {
             updates.push("collection_id = ?");
