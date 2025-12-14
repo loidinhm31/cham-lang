@@ -143,18 +143,6 @@ pub struct UpdateCollectionRequest {
     pub shared_with: Option<Vec<String>>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct UserPreferences {
-    pub id: String,
-    pub user_id: String,
-    pub interface_language: String, // "en", "vi"
-    pub native_language: String,
-    pub learning_languages: Vec<String>,
-    pub theme: String,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateVocabularyRequest {
     pub word: String,

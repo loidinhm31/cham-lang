@@ -1,7 +1,7 @@
 {
   "name": "cham-lang",
   "private": true,
-  "version": "0.0.3-apha",
+  "version": "0.0.14",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,7 +12,7 @@
     "tauri-dev": "tauri dev"
   },
   "dependencies": {
-    "@choochmeque/tauri-plugin-google-auth-api": "^0.3.4",
+    "@choochmeque/tauri-plugin-google-auth-api": "^0.3",
     "@tailwindcss/vite": "^4.1.17",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.4.2",
