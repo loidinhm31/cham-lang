@@ -82,10 +82,10 @@ export const CSVExportPage: React.FC = () => {
 
       showAlert(
         t("csv.exportSuccess", { message: result.message }) +
-        `\n\nFile: ${result.file_name}`,
+          `\n\nFile: ${result.file_name}`,
         {
           variant: "success",
-        }
+        },
       );
       navigate("/collections");
     } catch (error) {

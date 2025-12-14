@@ -332,14 +332,38 @@ impl LocalDatabase {
         collection_id: &str,
         limit: Option<i64>,
     ) -> SqlResult<Vec<Vocabulary>> {
+        let paginated = self.get_vocabularies_by_collection_paginated(collection_id, limit, None)?;
+        Ok(paginated.items)
+    }
+
+    pub fn get_vocabularies_by_collection_paginated(
+        &self,
+        collection_id: &str,
+        limit: Option<i64>,
+        offset: Option<i64>,
+    ) -> SqlResult<crate::models::PaginatedResponse<Vocabulary>> {
+        use crate::models::PaginatedResponse;
+
+        let limit = limit.unwrap_or(999999);
+        let offset = offset.unwrap_or(0);
+
         let conn = self.conn.lock().unwrap();
+
+        // Get total count
+        let total: i64 = conn.query_row(
+            "SELECT COUNT(*) FROM vocabularies WHERE collection_id = ?1",
+            params![collection_id],
+            |row| row.get(0),
+        )?;
+
+        // Get paginated IDs
         let sql = format!(
             "SELECT id
              FROM vocabularies
              WHERE collection_id = ?1
              ORDER BY created_at DESC
-             LIMIT {}",
-            limit.unwrap_or(999999)
+             LIMIT {} OFFSET {}",
+            limit, offset
         );
 
         let mut stmt = conn.prepare(&sql)?;
@@ -351,13 +375,14 @@ impl LocalDatabase {
         drop(conn);
 
         // Load each vocabulary
-        let mut result = Vec::new();
+        let mut items = Vec::new();
         for id in vocab_ids {
             if let Some(vocab) = self.get_vocabulary(&id)? {
-                result.push(vocab);
+                items.push(vocab);
             }
         }
-        Ok(result)
+
+        Ok(PaginatedResponse::new(items, total, offset, limit))
     }
 
     /// Search vocabularies by word pattern

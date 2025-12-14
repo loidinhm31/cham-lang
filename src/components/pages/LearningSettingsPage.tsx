@@ -131,7 +131,11 @@ export const LearningSettingsPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("settings.learning") || "Learning Settings"} showBack backTo="/profile" />
+      <TopBar
+        title={t("settings.learning") || "Learning Settings"}
+        showBack
+        backTo="/profile"
+      />
 
       <div className="px-4 pt-6 space-y-6 pb-20">
         {/* Header */}

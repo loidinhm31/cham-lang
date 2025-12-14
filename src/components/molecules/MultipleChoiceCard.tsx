@@ -81,7 +81,9 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
           <h3 className="text-4xl font-black text-gray-900 mb-3">{question}</h3>
           {subtitle && (
             <div className="flex items-center justify-center gap-3">
-              <p className="text-xl font-semibold text-indigo-600">{subtitle}</p>
+              <p className="text-xl font-semibold text-indigo-600">
+                {subtitle}
+              </p>
               {audioUrl && <AudioPlayer audioUrl={audioUrl} size="md" />}
             </div>
           )}

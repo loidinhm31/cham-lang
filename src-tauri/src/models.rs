@@ -1,6 +1,27 @@
 use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PaginatedResponse<T> {
+    pub items: Vec<T>,
+    pub total: i64,
+    pub offset: i64,
+    pub limit: i64,
+    pub has_more: bool,
+}
+
+impl<T> PaginatedResponse<T> {
+    pub fn new(items: Vec<T>, total: i64, offset: i64, limit: i64) -> Self {
+        let has_more = offset + (items.len() as i64) < total;
+        Self {
+            items,
+            total,
+            offset,
+            limit,
+            has_more,
+        }
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Vocabulary {

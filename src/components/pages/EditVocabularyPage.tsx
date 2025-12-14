@@ -107,7 +107,11 @@ export const EditVocabularyPage: React.FC = () => {
   if (loadingData) {
     return (
       <>
-        <TopBar title={t("vocabulary.edit")} showBack backTo={id ? `/vocabulary/${id}` : "/"} />
+        <TopBar
+          title={t("vocabulary.edit")}
+          showBack
+          backTo={id ? `/vocabulary/${id}` : "/"}
+        />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -117,7 +121,11 @@ export const EditVocabularyPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("vocabulary.edit")} showBack backTo={id ? `/vocabulary/${id}` : "/"} />
+      <TopBar
+        title={t("vocabulary.edit")}
+        showBack
+        backTo={id ? `/vocabulary/${id}` : "/"}
+      />
 
       <div className="px-4 pt-6">
         <VocabularyForm

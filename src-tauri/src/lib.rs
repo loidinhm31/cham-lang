@@ -90,6 +90,7 @@ pub fn run() {
             get_vocabulary,
             get_all_vocabularies,
             get_vocabularies_by_collection,
+            get_vocabularies_by_collection_paginated,
             search_vocabularies,
             update_vocabulary,
             delete_vocabulary,

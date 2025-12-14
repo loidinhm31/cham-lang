@@ -83,6 +83,18 @@ pub fn get_vocabularies_by_collection(
 }
 
 #[tauri::command]
+pub fn get_vocabularies_by_collection_paginated(
+    local_db: State<'_, LocalDatabase>,
+    collection_id: String,
+    limit: Option<i64>,
+    offset: Option<i64>,
+) -> Result<crate::models::PaginatedResponse<Vocabulary>, String> {
+    local_db
+        .get_vocabularies_by_collection_paginated(&collection_id, limit, offset)
+        .map_err(|e| format!("Database error: {}", e))
+}
+
+#[tauri::command]
 pub fn search_vocabularies(
     local_db: State<'_, LocalDatabase>,
     query: String,

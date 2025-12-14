@@ -2,7 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, X } from "lucide-react";
 import { CollectionService } from "@/services/collection.service";
-import { Button, Card, Input, Select, TextArea, AudioPlayer } from "@/components/atoms";
+import {
+  Button,
+  Card,
+  Input,
+  Select,
+  TextArea,
+  AudioPlayer,
+} from "@/components/atoms";
 import type {
   CreateVocabularyRequest,
   Definition,

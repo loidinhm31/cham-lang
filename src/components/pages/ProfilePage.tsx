@@ -1,12 +1,26 @@
-import React, {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {useTranslation} from "react-i18next";
-import {Cloud, CloudOff, Download, Languages, LogIn, LogOut, Settings, Trash2, Upload,} from "lucide-react";
-import {invoke} from "@tauri-apps/api/core";
-import {refreshToken, signIn, signOut,} from "@choochmeque/tauri-plugin-google-auth-api";
-import {TopBar} from "@/components/molecules";
-import {Button, Card, Select} from "@/components/atoms";
-import {useDialog, useSyncNotification} from "@/contexts";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import {
+  Cloud,
+  CloudOff,
+  Download,
+  Languages,
+  LogIn,
+  LogOut,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
+import { invoke } from "@tauri-apps/api/core";
+import {
+  refreshToken,
+  signIn,
+  signOut,
+} from "@choochmeque/tauri-plugin-google-auth-api";
+import { TopBar } from "@/components/molecules";
+import { Button, Card, Select } from "@/components/atoms";
+import { useDialog, useSyncNotification } from "@/contexts";
 
 // OAuth configuration - these should be environment variables in production
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -46,7 +60,7 @@ export const ProfilePage: React.FC = () => {
       const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
       const storedEmail = localStorage.getItem("gdrive_user_email");
 
-      console.log('data', storedRefreshToken)
+      console.log("data", storedRefreshToken);
       if (storedToken) {
         setAccessToken(storedToken);
         setRefreshTokenState(storedRefreshToken || "");
@@ -96,18 +110,21 @@ export const ProfilePage: React.FC = () => {
       if (storedRefreshToken && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
         try {
           console.log("Attempting manual token refresh...");
-          const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
+          const tokenResponse = await fetch(
+            "https://oauth2.googleapis.com/token",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                client_secret: GOOGLE_CLIENT_SECRET,
+                refresh_token: storedRefreshToken,
+                grant_type: "refresh_token",
+              }),
             },
-            body: new URLSearchParams({
-              client_id: GOOGLE_CLIENT_ID,
-              client_secret: GOOGLE_CLIENT_SECRET,
-              refresh_token: storedRefreshToken,
-              grant_type: "refresh_token",
-            }),
-          });
+          );
 
           if (!tokenResponse.ok) {
             throw new Error(`Token refresh failed: ${tokenResponse.status}`);

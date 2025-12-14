@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,6 +22,8 @@ import type { Collection } from "@/types/collection";
 import type { Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
+const PAGE_SIZE = 20;
+
 export const CollectionDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -31,29 +33,35 @@ export const CollectionDetailPage: React.FC = () => {
   const [collection, setCollection] = useState<Collection | null>(null);
   const [vocabularies, setVocabularies] = useState<Vocabulary[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [page, setPage] = useState(0);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
 
   // Determine back route based on where user came from
   const state = location.state as { fromPage?: string } | null;
-  const backRoute = state?.fromPage === 'home' ? '/' : '/collections';
-
-  useEffect(() => {
-    if (id) {
-      loadCollectionData(id);
-    }
-  }, [id]);
+  const backRoute = state?.fromPage === "home" ? "/" : "/collections";
 
   const loadCollectionData = async (collectionId: string) => {
     try {
       setLoading(true);
-      const [collectionData, vocabData] = await Promise.all([
+      setPage(0);
+      setHasMore(true);
+      const [collectionData, vocabResponse] = await Promise.all([
         CollectionService.getCollection(collectionId),
-        VocabularyService.getVocabulariesByCollection(collectionId),
+        VocabularyService.getVocabulariesByCollectionPaginated(
+          collectionId,
+          PAGE_SIZE,
+          0,
+        ),
       ]);
       setCollection(collectionData);
-      setVocabularies(vocabData);
+      setVocabularies(vocabResponse.items);
+      setTotalCount(vocabResponse.total);
+      setHasMore(vocabResponse.has_more);
     } catch (error) {
       console.error("Failed to load collection:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -62,6 +70,42 @@ export const CollectionDetailPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const loadMoreVocabularies = useCallback(async () => {
+    if (!id || loadingMore || !hasMore) {
+      return;
+    }
+
+    try {
+      setLoadingMore(true);
+      const nextPage = page + 1;
+      const vocabResponse =
+        await VocabularyService.getVocabulariesByCollectionPaginated(
+          id,
+          PAGE_SIZE,
+          nextPage * PAGE_SIZE,
+        );
+
+      if (vocabResponse.items.length > 0) {
+        setVocabularies((prev) => [...prev, ...vocabResponse.items]);
+        setPage(nextPage);
+        setHasMore(vocabResponse.has_more);
+      } else {
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error("Failed to load more vocabularies:", error);
+      showAlert(t("messages.error"), { variant: "error" });
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [id, page, loadingMore, hasMore, showAlert, t]);
+
+  useEffect(() => {
+    if (id) {
+      loadCollectionData(id);
+    }
+  }, [id]);
 
   const handleDelete = async () => {
     if (!collection?.id) {
@@ -294,7 +338,12 @@ export const CollectionDetailPage: React.FC = () => {
         {/* Vocabulary List */}
         <div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            {t("vocabulary.title")}
+            {t("vocabulary.title")}{" "}
+            {totalCount > 0 && (
+              <span className="text-gray-500 text-lg font-normal">
+                ({vocabularies.length}/{totalCount})
+              </span>
+            )}
           </h2>
           <VocabularyList
             vocabularies={vocabularies}
@@ -303,6 +352,9 @@ export const CollectionDetailPage: React.FC = () => {
             selectionMode={selectionMode}
             selectedIds={selectedIds}
             onToggleSelection={handleToggleSelection}
+            loadingMore={loadingMore}
+            hasMore={hasMore}
+            onLoadMore={loadMoreVocabularies}
           />
         </div>
       </div>

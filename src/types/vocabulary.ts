@@ -1,3 +1,11 @@
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  offset: number;
+  limit: number;
+  has_more: boolean;
+}
+
 export type WordType =
   | "n/a"
   | "noun"

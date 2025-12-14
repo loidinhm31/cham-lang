@@ -7,6 +7,7 @@ import type {
   BulkMoveResult,
   UserPreferences,
   Vocabulary,
+  PaginatedResponse,
 } from "@/types/vocabulary";
 
 export class VocabularyService {
@@ -88,6 +89,18 @@ export class VocabularyService {
     limit?: number,
   ): Promise<Vocabulary[]> {
     return invoke("get_vocabularies_by_collection", { collectionId, limit });
+  }
+
+  static async getVocabulariesByCollectionPaginated(
+    collectionId: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<PaginatedResponse<Vocabulary>> {
+    return invoke("get_vocabularies_by_collection_paginated", {
+      collectionId,
+      limit,
+      offset,
+    });
   }
 
   // User preferences

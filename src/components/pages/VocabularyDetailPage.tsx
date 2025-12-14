@@ -197,7 +197,11 @@ export const VocabularyDetailPage: React.FC = () => {
   if (loading) {
     return (
       <>
-        <TopBar title={t("vocabulary.title")} showBack backTo={collectionId ? `/collections/${collectionId}` : "/"} />
+        <TopBar
+          title={t("vocabulary.title")}
+          showBack
+          backTo={collectionId ? `/collections/${collectionId}` : "/"}
+        />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
         </div>
@@ -211,7 +215,11 @@ export const VocabularyDetailPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={vocabulary.word} showBack backTo={collectionId ? `/collections/${collectionId}` : "/"} />
+      <TopBar
+        title={vocabulary.word}
+        showBack
+        backTo={collectionId ? `/collections/${collectionId}` : "/"}
+      />
 
       <div
         className="px-4 pt-6 pb-6 space-y-6 relative"
