@@ -162,7 +162,185 @@ export const ProfilePage: React.FC = () => {
           "profile",
           "https://www.googleapis.com/auth/drive.file",
         ],
-        successHtmlResponse: "<h1>Success!</h1>",
+        successHtmlResponse: `
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Sign In Successful</title>
+            <style>
+              * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+              }
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                padding: 20px;
+              }
+              .container {
+                background: white;
+                border-radius: 16px;
+                padding: 48px 40px;
+                text-align: center;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                max-width: 400px;
+                width: 100%;
+                animation: slideUp 0.4s ease-out;
+              }
+              @keyframes slideUp {
+                from {
+                  opacity: 0;
+                  transform: translateY(30px);
+                }
+                to {
+                  opacity: 1;
+                  transform: translateY(0);
+                }
+              }
+              .checkmark {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: #10b981;
+                margin: 0 auto 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: scaleIn 0.5s ease-out 0.2s both;
+              }
+              @keyframes scaleIn {
+                from {
+                  transform: scale(0);
+                }
+                to {
+                  transform: scale(1);
+                }
+              }
+              .checkmark svg {
+                width: 48px;
+                height: 48px;
+                stroke: white;
+                stroke-width: 3;
+                stroke-linecap: round;
+                stroke-linejoin: round;
+                fill: none;
+                stroke-dasharray: 100;
+                stroke-dashoffset: 100;
+                animation: drawCheck 0.5s ease-out 0.4s forwards;
+              }
+              @keyframes drawCheck {
+                to {
+                  stroke-dashoffset: 0;
+                }
+              }
+              h1 {
+                color: #1f2937;
+                font-size: 28px;
+                font-weight: 700;
+                margin-bottom: 12px;
+              }
+              p {
+                color: #6b7280;
+                font-size: 16px;
+                line-height: 1.6;
+                margin-bottom: 32px;
+              }
+              .close-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                padding: 14px 32px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                width: 100%;
+                transition: transform 0.2s, box-shadow 0.2s;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+              }
+              .close-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+              }
+              .close-btn:active {
+                transform: translateY(0);
+              }
+              .auto-close {
+                color: #9ca3af;
+                font-size: 14px;
+                margin-top: 16px;
+              }
+              .signature {
+                margin-top: 32px;
+                padding-top: 24px;
+                border-top: 1px solid #e5e7eb;
+              }
+              .signature .brand {
+                font-size: 18px;
+                font-weight: 700;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                margin-bottom: 4px;
+              }
+              .signature .tagline {
+                font-size: 13px;
+                color: #9ca3af;
+                margin-bottom: 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="checkmark">
+                <svg viewBox="0 0 52 52">
+                  <polyline points="14,26 22,34 38,18"/>
+                </svg>
+              </div>
+              <h1>Sign In Successful!</h1>
+              <p>You have successfully signed in with Google. You can now close this window and return to the app.</p>
+              <button class="close-btn" onclick="closeWindow()">Close Window</button>
+              <p class="auto-close">This window will close automatically in <span id="countdown">5</span> seconds</p>
+              <div class="signature">
+                <div class="brand">Cham Lang</div>
+                <p class="tagline">Adapt to Learn</p>
+              </div>
+            </div>
+            <script>
+              let countdown = 5;
+              const countdownEl = document.getElementById('countdown');
+
+              const timer = setInterval(() => {
+                countdown--;
+                countdownEl.textContent = countdown;
+                if (countdown <= 0) {
+                  clearInterval(timer);
+                  closeWindow();
+                }
+              }, 1000);
+
+              function closeWindow() {
+                // Try multiple methods to close the window
+                if (window.close) {
+                  window.close();
+                }
+                // Fallback for browsers that prevent window.close()
+                setTimeout(() => {
+                  window.location.href = 'about:blank';
+                }, 100);
+              }
+            </script>
+          </body>
+          </html>
+        `,
       };
 
       const response = await signIn(signInOptions);
