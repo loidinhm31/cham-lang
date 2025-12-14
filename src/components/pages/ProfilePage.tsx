@@ -1,26 +1,12 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import {
-  Cloud,
-  CloudOff,
-  Download,
-  Languages,
-  LogIn,
-  LogOut,
-  Settings,
-  Trash2,
-  Upload,
-} from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
-import {
-  refreshToken,
-  signIn,
-  signOut,
-} from "@choochmeque/tauri-plugin-google-auth-api";
-import { TopBar } from "@/components/molecules";
-import { Button, Card, Select } from "@/components/atoms";
-import { useSyncNotification, useDialog } from "@/contexts";
+import React, {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {useTranslation} from "react-i18next";
+import {Cloud, CloudOff, Download, Languages, LogIn, LogOut, Settings, Trash2, Upload,} from "lucide-react";
+import {invoke} from "@tauri-apps/api/core";
+import {refreshToken, signIn, signOut,} from "@choochmeque/tauri-plugin-google-auth-api";
+import {TopBar} from "@/components/molecules";
+import {Button, Card, Select} from "@/components/atoms";
+import {useDialog, useSyncNotification} from "@/contexts";
 
 // OAuth configuration - these should be environment variables in production
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -34,6 +20,8 @@ export const ProfilePage: React.FC = () => {
     useSyncNotification();
   const [isConfigured, setIsConfigured] = useState(false);
   const [accessToken, setAccessToken] = useState<string>("");
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_refreshTokenState, setRefreshTokenState] = useState<string>("");
   const [userEmail, setUserEmail] = useState<string>("");
   const [backupInfo, setBackupInfo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -55,10 +43,13 @@ export const ProfilePage: React.FC = () => {
   const checkGDriveConfig = () => {
     try {
       const storedToken = localStorage.getItem("gdrive_access_token");
+      const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
       const storedEmail = localStorage.getItem("gdrive_user_email");
 
+      console.log('data', storedRefreshToken)
       if (storedToken) {
         setAccessToken(storedToken);
+        setRefreshTokenState(storedRefreshToken || "");
         setUserEmail(storedEmail || "");
         setIsConfigured(true);
         loadBackupInfo(storedToken);
@@ -82,23 +73,70 @@ export const ProfilePage: React.FC = () => {
 
   const handleTokenRefresh = async (): Promise<string | null> => {
     try {
+      // Try using the plugin's refresh token method first
       const response = await refreshToken();
 
       // Update stored token
       localStorage.setItem("gdrive_access_token", response.accessToken);
       setAccessToken(response.accessToken);
 
+      // Store refresh token if provided
+      if (response.refreshToken) {
+        localStorage.setItem("gdrive_refresh_token", response.refreshToken);
+        setRefreshTokenState(response.refreshToken);
+      }
+
       return response.accessToken;
     } catch (error) {
-      console.error("Token refresh failed:", error);
+      console.error("Token refresh failed via plugin:", error);
+
+      // Fallback: Try manual token refresh using stored refresh token
+      const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
+
+      if (storedRefreshToken && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
+        try {
+          console.log("Attempting manual token refresh...");
+          const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              client_id: GOOGLE_CLIENT_ID,
+              client_secret: GOOGLE_CLIENT_SECRET,
+              refresh_token: storedRefreshToken,
+              grant_type: "refresh_token",
+            }),
+          });
+
+          if (!tokenResponse.ok) {
+            throw new Error(`Token refresh failed: ${tokenResponse.status}`);
+          }
+
+          const tokenData = await tokenResponse.json();
+
+          // Update stored token
+          localStorage.setItem("gdrive_access_token", tokenData.access_token);
+          setAccessToken(tokenData.access_token);
+
+          console.log("Manual token refresh successful");
+          return tokenData.access_token;
+        } catch (manualError) {
+          console.error("Manual token refresh also failed:", manualError);
+        }
+      }
+
+      // If both methods fail, show session expired and clear tokens
       showAlert(t("auth.sessionExpired"), {
         variant: "warning",
       });
 
       // Clear tokens and sign out
       localStorage.removeItem("gdrive_access_token");
+      localStorage.removeItem("gdrive_refresh_token");
       localStorage.removeItem("gdrive_user_email");
       setAccessToken("");
+      setRefreshTokenState("");
       setUserEmail("");
       setIsConfigured(false);
 
@@ -115,7 +153,7 @@ export const ProfilePage: React.FC = () => {
     try {
       setLoading(true);
 
-      const response = await signIn({
+      const signInOptions: any = {
         clientId: GOOGLE_CLIENT_ID,
         clientSecret: GOOGLE_CLIENT_SECRET,
         scopes: [
@@ -124,14 +162,28 @@ export const ProfilePage: React.FC = () => {
           "profile",
           "https://www.googleapis.com/auth/drive.file",
         ],
-      });
+        successHtmlResponse: "<h1>Success!</h1>",
+      };
+
+      const response = await signIn(signInOptions);
 
       console.log("Sign in successful:", response);
 
-      // Store tokens
+      // Store access token
       localStorage.setItem("gdrive_access_token", response.accessToken);
+      setAccessToken(response.accessToken);
+
+      // Store refresh token if provided (critical for token refresh)
+      if (response.refreshToken) {
+        console.log("Refresh token received and stored");
+        localStorage.setItem("gdrive_refresh_token", response.refreshToken);
+        setRefreshTokenState(response.refreshToken);
+      } else {
+        console.warn("No refresh token received - token refresh may not work");
+      }
+
+      // Parse ID token to get email
       if (response.idToken) {
-        // Parse ID token to get email (basic parsing, in production use a proper JWT library)
         try {
           const payload = JSON.parse(atob(response.idToken.split(".")[1]));
           if (payload.email) {
@@ -143,7 +195,6 @@ export const ProfilePage: React.FC = () => {
         }
       }
 
-      setAccessToken(response.accessToken);
       setIsConfigured(true);
       showAlert(t("auth.signInSuccess"), { variant: "success" });
       loadBackupInfo(response.accessToken);
@@ -162,9 +213,11 @@ export const ProfilePage: React.FC = () => {
 
       // Clear stored tokens
       localStorage.removeItem("gdrive_access_token");
+      localStorage.removeItem("gdrive_refresh_token");
       localStorage.removeItem("gdrive_user_email");
 
       setAccessToken("");
+      setRefreshTokenState("");
       setUserEmail("");
       setIsConfigured(false);
       setBackupInfo(null);
@@ -242,11 +295,10 @@ export const ProfilePage: React.FC = () => {
 
     try {
       setLoading(true);
-      let currentToken = accessToken;
 
       try {
         const result = await invoke<string>("restore_from_gdrive", {
-          accessToken: currentToken,
+          accessToken: accessToken,
         });
         showAlert(result + t("gdrive.restartPrompt"), { variant: "success" });
         // Recheck sync status after restore
