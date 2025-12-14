@@ -2,11 +2,10 @@ use tauri::State;
 
 use crate::local_db::LocalDatabase;
 use crate::models::{
-    Vocabulary, CreateVocabularyRequest, UpdateVocabularyRequest,
-    BulkMoveRequest, BulkMoveResult,
-    UserPreferences, PracticeSession, CreatePracticeSessionRequest,
-    UserPracticeProgress, UpdateProgressRequest,
-    LearningSettings, UpdateLearningSettingsRequest
+    BulkMoveRequest, BulkMoveResult, CreatePracticeSessionRequest,
+    CreateVocabularyRequest, LearningSettings, PracticeSession, UpdateLearningSettingsRequest,
+    UpdateProgressRequest, UpdateVocabularyRequest,
+    UserPracticeProgress, Vocabulary
 };
 
 // Vocabulary CRUD commands
@@ -171,32 +170,6 @@ pub fn get_all_tags(
     local_db
         .get_all_tags(user_id)
         .map_err(|e| format!("Failed to get tags: {}", e))
-}
-
-// User preferences commands
-
-#[tauri::command]
-pub fn save_preferences(
-    local_db: State<'_, LocalDatabase>,
-    preferences: UserPreferences,
-) -> Result<String, String> {
-    let user_id = local_db.get_local_user_id();
-    local_db
-        .save_preferences(user_id, &preferences)
-        .map_err(|e| format!("Database error: {}", e))?;
-
-    println!("✓ User preferences saved");
-    Ok("Preferences saved successfully".to_string())
-}
-
-#[tauri::command]
-pub fn get_preferences(
-    local_db: State<'_, LocalDatabase>,
-) -> Result<Option<UserPreferences>, String> {
-    let user_id = local_db.get_local_user_id();
-    local_db
-        .get_preferences(user_id)
-        .map_err(|e| format!("Database error: {}", e))
 }
 
 // Practice commands

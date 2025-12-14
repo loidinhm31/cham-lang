@@ -7,12 +7,12 @@ mod gdrive;
 mod csv_export;
 mod csv_import;
 
-use local_db::LocalDatabase;
-use commands::*;
 use collection_commands::*;
-use gdrive::*;
+use commands::*;
 use csv_export::*;
 use csv_import::*;
+use gdrive::*;
+use local_db::LocalDatabase;
 use tauri::Manager;
 
 
@@ -97,9 +97,6 @@ pub fn run() {
             bulk_move_vocabularies,
             get_all_topics,
             get_all_tags,
-            // User preferences
-            save_preferences,
-            get_preferences,
             // Practice
             create_practice_session,
             get_practice_sessions,

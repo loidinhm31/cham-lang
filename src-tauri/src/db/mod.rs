@@ -49,7 +49,6 @@ impl LocalDatabase {
         conn.execute("DROP TABLE IF EXISTS practice_progress", [])?;
         conn.execute("DROP TABLE IF EXISTS collection_shared_users", [])?;
         conn.execute("DROP TABLE IF EXISTS user_learning_languages", [])?;
-        conn.execute("DROP TABLE IF EXISTS user_preferences", [])?;
         conn.execute("DROP TABLE IF EXISTS learning_settings", [])?;
         conn.execute("DROP TABLE IF EXISTS vocabularies", [])?;
         conn.execute("DROP TABLE IF EXISTS collections", [])?;
@@ -231,21 +230,6 @@ impl LocalDatabase {
                 FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
                 FOREIGN KEY (tag_id) REFERENCES tags(id) ON DELETE CASCADE,
                 UNIQUE(vocabulary_id, tag_id)
-            )",
-            [],
-        )?;
-
-        // User preferences table
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS user_preferences (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL UNIQUE,
-                interface_language TEXT,
-                native_language TEXT,
-                theme TEXT,
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL,
-                FOREIGN KEY (user_id) REFERENCES users(id)
             )",
             [],
         )?;

@@ -109,14 +109,3 @@ export interface SearchQuery {
   topics?: string[];
   language?: string;
 }
-
-export interface UserPreferences {
-  id?: string;
-  user_id: string;
-  interface_language: string;
-  native_language: string;
-  learning_languages: string[];
-  theme: string;
-  created_at: string;
-  updated_at: string;
-}

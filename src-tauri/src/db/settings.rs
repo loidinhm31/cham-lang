@@ -1,13 +1,12 @@
-use rusqlite::{Result as SqlResult, params};
 use chrono::Utc;
+use rusqlite::{params, Result as SqlResult};
 use uuid::Uuid;
 
-use crate::models::{
-    LearningSettings, SpacedRepetitionAlgorithm, UpdateLearningSettingsRequest,
-    UserPreferences,
-};
-use super::LocalDatabase;
 use super::helpers::timestamp_to_datetime;
+use super::LocalDatabase;
+use crate::models::{
+    LearningSettings, SpacedRepetitionAlgorithm, UpdateLearningSettingsRequest
+};
 
 impl LocalDatabase {
     //==========================================================================
@@ -244,131 +243,6 @@ impl LocalDatabase {
                 2, // 2 seconds auto-advance timeout
                 true, // show hint in fillword
             )
-        }
-    }
-
-    //==========================================================================
-    // USER PREFERENCES OPERATIONS
-    //==========================================================================
-
-    /// Save user preferences (normalized version)
-    pub fn save_preferences(
-        &self,
-        user_id: &str,
-        preferences: &UserPreferences,
-    ) -> SqlResult<()> {
-        let conn = self.conn.lock().unwrap();
-        let now = Utc::now().timestamp();
-
-        // Check if preferences exist
-        let exists: bool = conn
-            .query_row(
-                "SELECT 1 FROM user_preferences WHERE user_id = ?1",
-                params![user_id],
-                |_| Ok(true),
-            )
-            .unwrap_or(false);
-
-        if exists {
-            // Update existing preferences
-            conn.execute(
-                "UPDATE user_preferences
-                 SET interface_language = ?1, native_language = ?2, theme = ?3, updated_at = ?4
-                 WHERE user_id = ?5",
-                params![
-                    preferences.interface_language,
-                    preferences.native_language,
-                    preferences.theme,
-                    now,
-                    user_id
-                ],
-            )?;
-
-            // Delete existing learning languages
-            conn.execute(
-                "DELETE FROM user_learning_languages WHERE user_id = ?1",
-                params![user_id],
-            )?;
-        } else {
-            // Create new preferences
-            let id = Uuid::new_v4().to_string();
-            conn.execute(
-                "INSERT INTO user_preferences
-                 (id, user_id, interface_language, native_language, theme, created_at, updated_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
-                params![
-                    id,
-                    user_id,
-                    preferences.interface_language,
-                    preferences.native_language,
-                    preferences.theme,
-                    now,
-                    now
-                ],
-            )?;
-        }
-
-        // Insert learning languages
-        for language in &preferences.learning_languages {
-            let id = Uuid::new_v4().to_string();
-            conn.execute(
-                "INSERT INTO user_learning_languages
-                 (id, user_id, language, created_at)
-                 VALUES (?1, ?2, ?3, ?4)",
-                params![id, user_id, language, now],
-            )?;
-        }
-
-        Ok(())
-    }
-
-    /// Get user preferences (normalized version)
-    pub fn get_preferences(
-        &self,
-        user_id: &str,
-    ) -> SqlResult<Option<UserPreferences>> {
-        let conn = self.conn.lock().unwrap();
-
-        // Get user preferences header
-        let mut stmt = conn.prepare(
-            "SELECT id, interface_language, native_language, theme, created_at, updated_at
-             FROM user_preferences
-             WHERE user_id = ?1"
-        )?;
-
-        let mut rows = stmt.query(params![user_id])?;
-
-        if let Some(row) = rows.next()? {
-            let id: String = row.get(0)?;
-            let interface_language: Option<String> = row.get(1)?;
-            let native_language: Option<String> = row.get(2)?;
-            let theme: Option<String> = row.get(3)?;
-            let created_at = timestamp_to_datetime(row.get(4)?);
-            let updated_at = timestamp_to_datetime(row.get(5)?);
-
-            drop(rows);
-            drop(stmt);
-
-            // Fetch learning languages from normalized table
-            let mut lang_stmt = conn.prepare(
-                "SELECT language FROM user_learning_languages WHERE user_id = ?1"
-            )?;
-            let learning_languages: Vec<String> = lang_stmt
-                .query_map(params![user_id], |r| r.get(0))?
-                .collect::<Result<Vec<_>, _>>()?;
-
-            Ok(Some(UserPreferences {
-                id,
-                user_id: user_id.to_string(),
-                interface_language: interface_language.unwrap_or_default(),
-                native_language: native_language.unwrap_or_default(),
-                learning_languages,
-                theme: theme.unwrap_or_default(),
-                created_at,
-                updated_at,
-            }))
-        } else {
-            Ok(None)
         }
     }
 }

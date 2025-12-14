@@ -5,7 +5,6 @@ import type {
   UpdateVocabularyRequest,
   BulkMoveRequest,
   BulkMoveResult,
-  UserPreferences,
   Vocabulary,
   PaginatedResponse,
 } from "@/types/vocabulary";
@@ -101,15 +100,6 @@ export class VocabularyService {
       limit,
       offset,
     });
-  }
-
-  // User preferences
-  static async savePreferences(preferences: UserPreferences): Promise<string> {
-    return invoke("save_preferences", { preferences });
-  }
-
-  static async getPreferences(): Promise<UserPreferences | null> {
-    return invoke("get_preferences");
   }
 
   // Language management
