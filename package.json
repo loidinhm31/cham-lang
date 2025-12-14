@@ -12,7 +12,7 @@
     "tauri-dev": "tauri dev"
   },
   "dependencies": {
-    "@choochmeque/tauri-plugin-google-auth-api": "^0.3.3",
+    "@choochmeque/tauri-plugin-google-auth-api": "^0.3.4",
     "@tailwindcss/vite": "^4.1.17",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.4.2",

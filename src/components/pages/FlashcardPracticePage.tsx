@@ -420,6 +420,7 @@ export const FlashcardPracticePage: React.FC = () => {
           key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           front={currentVocab.word}
           subtitle={currentVocab.ipa}
+          audioUrl={currentVocab.audio_url}
           back={getContent(currentVocab)}
           onFlip={setIsFlipped}
         />

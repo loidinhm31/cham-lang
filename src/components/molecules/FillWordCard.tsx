@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Check, X } from "lucide-react";
-import { Button, Input } from "@/components/atoms";
+import { Button, Input, AudioPlayer } from "@/components/atoms";
 import { useTranslation } from "react-i18next";
 
 interface FillWordCardProps {
   definition: string;
   correctAnswer: string;
   hint?: string;
+  audioUrl?: string;
   onAnswer: (correct: boolean, userAnswer?: string) => void;
   selfAssessmentMode?: boolean; // Enable self-assessment: user decides if their answer is correct
 }
@@ -15,6 +16,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
   definition,
   correctAnswer,
   hint,
+  audioUrl,
   onAnswer,
   selfAssessmentMode = false,
 }) => {
@@ -103,6 +105,11 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
             <p className="text-2xl font-semibold text-gray-900 leading-relaxed">
               {definition}
             </p>
+            {audioUrl && (
+              <div className="flex justify-center mt-4">
+                <AudioPlayer audioUrl={audioUrl} size="md" />
+              </div>
+            )}
           </div>
           {hint && !submitted && (
             <div className="mt-6 px-5 py-3 bg-[#FFF9C4] rounded-2xl border-2 border-[#FFF59D] shadow-sm inline-block">

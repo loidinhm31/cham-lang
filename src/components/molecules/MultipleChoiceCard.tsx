@@ -1,9 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Check, X } from "lucide-react";
+import { AudioPlayer } from "@/components/atoms";
 
 interface MultipleChoiceCardProps {
   question: string;
   subtitle?: string;
+  audioUrl?: string;
   options: string[];
   correctAnswer: string;
   onAnswer: (correct: boolean, selectedAnswer?: string) => void;
@@ -12,6 +14,7 @@ interface MultipleChoiceCardProps {
 export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
   question,
   subtitle,
+  audioUrl,
   options,
   correctAnswer,
   onAnswer,
@@ -77,7 +80,10 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
           <div className="text-6xl mb-6">🎯</div>
           <h3 className="text-4xl font-black text-gray-900 mb-3">{question}</h3>
           {subtitle && (
-            <p className="text-xl font-semibold text-indigo-600">{subtitle}</p>
+            <div className="flex items-center justify-center gap-3">
+              <p className="text-xl font-semibold text-indigo-600">{subtitle}</p>
+              {audioUrl && <AudioPlayer audioUrl={audioUrl} size="md" />}
+            </div>
           )}
         </div>
 

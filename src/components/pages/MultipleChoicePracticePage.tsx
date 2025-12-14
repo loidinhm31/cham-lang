@@ -484,6 +484,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
           key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           question={currentVocab.word}
           subtitle={currentVocab.ipa}
+          audioUrl={currentVocab.audio_url}
           options={options}
           correctAnswer={getContent(currentVocab)}
           onAnswer={handleAnswer}

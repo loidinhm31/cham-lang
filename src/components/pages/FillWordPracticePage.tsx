@@ -498,6 +498,7 @@ export const FillWordPracticePage: React.FC = () => {
           definition={getPromptText(currentVocab, isReversedDirection)}
           correctAnswer={getCorrectAnswer(currentVocab, isReversedDirection)}
           hint={hint}
+          audioUrl={currentVocab.audio_url}
           onAnswer={handleAnswer}
           selfAssessmentMode={isReversedDirection}
         />

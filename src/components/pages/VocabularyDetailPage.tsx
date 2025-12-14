@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { TopBar } from "@/components/molecules";
-import { Badge, Button, Card } from "@/components/atoms";
+import { Badge, Button, Card, AudioPlayer } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service.ts";
 import type { LanguageLevel, Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
@@ -298,7 +298,12 @@ export const VocabularyDetailPage: React.FC = () => {
         <Card variant="gradient">
           <div className="text-center">
             <h1 className="text-5xl font-black mb-3">{vocabulary.word}</h1>
-            <p className="text-2xl text-white/90 mb-4">{vocabulary.ipa}</p>
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <p className="text-2xl text-white/90">{vocabulary.ipa}</p>
+              {vocabulary.audio_url && (
+                <AudioPlayer audioUrl={vocabulary.audio_url} size="lg" />
+              )}
+            </div>
             <div className="flex items-center justify-center gap-3">
               <Badge variant="glass" className="bg-white/20 text-white">
                 {t(`wordTypes.${vocabulary.word_type}`)}

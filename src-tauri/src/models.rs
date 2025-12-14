@@ -9,6 +9,7 @@ pub struct Vocabulary {
     pub word_type: WordType,
     pub level: String, // Flexible level system (CEFR: A1-C2, Korean: Basic/Intermediate/Advanced, etc.)
     pub ipa: String,
+    pub audio_url: Option<String>, // Optional audio pronunciation URL
     pub concept: Option<String>, // Optional concept field for alternative learning mode
     pub definitions: Vec<Definition>,
     pub example_sentences: Vec<String>,
@@ -139,6 +140,7 @@ pub struct CreateVocabularyRequest {
     pub word_type: WordType,
     pub level: String,
     pub ipa: String,
+    pub audio_url: Option<String>,
     pub concept: Option<String>,
     pub definitions: Vec<Definition>,
     pub example_sentences: Vec<String>,
@@ -156,6 +158,7 @@ pub struct UpdateVocabularyRequest {
     pub word_type: Option<WordType>,
     pub level: Option<String>,
     pub ipa: Option<String>,
+    pub audio_url: Option<String>,
     pub concept: Option<String>,
     pub definitions: Option<Vec<Definition>>,
     pub example_sentences: Option<Vec<String>>,

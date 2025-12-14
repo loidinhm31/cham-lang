@@ -18,14 +18,15 @@ impl LocalDatabase {
         // Insert main vocabulary record
         tx.execute(
             "INSERT INTO vocabularies
-             (id, word, word_type, level, ipa, concept, language, collection_id, user_id, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
+             (id, word, word_type, level, ipa, audio_url, concept, language, collection_id, user_id, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
             params![
                 id,
                 vocab.word,
                 word_type_to_string(&vocab.word_type),
                 vocab.level,
                 vocab.ipa,
+                vocab.audio_url,
                 vocab.concept,
                 vocab.language,
                 vocab.collection_id,
@@ -146,7 +147,7 @@ impl LocalDatabase {
 
         // Get main vocabulary record
         let mut stmt = conn.prepare(
-            "SELECT id, word, word_type, level, ipa, concept, language, collection_id, user_id, created_at, updated_at
+            "SELECT id, word, word_type, level, ipa, audio_url, concept, language, collection_id, user_id, created_at, updated_at
              FROM vocabularies WHERE id = ?1"
         )?;
 
@@ -158,12 +159,13 @@ impl LocalDatabase {
             let word_type_str: String = row.get(2)?;
             let level: String = row.get(3)?;
             let ipa: String = row.get(4)?;
-            let concept: Option<String> = row.get(5)?;
-            let language: String = row.get(6)?;
-            let collection_id: String = row.get(7)?;
-            let user_id: String = row.get(8)?;
-            let created_at = timestamp_to_datetime(row.get(9)?);
-            let updated_at = timestamp_to_datetime(row.get(10)?);
+            let audio_url: Option<String> = row.get(5)?;
+            let concept: Option<String> = row.get(6)?;
+            let language: String = row.get(7)?;
+            let collection_id: String = row.get(8)?;
+            let user_id: String = row.get(9)?;
+            let created_at = timestamp_to_datetime(row.get(10)?);
+            let updated_at = timestamp_to_datetime(row.get(11)?);
 
             let word_type = parse_word_type(&word_type_str);
 
@@ -252,6 +254,7 @@ impl LocalDatabase {
                 word_type,
                 level,
                 ipa,
+                audio_url,
                 concept,
                 definitions,
                 example_sentences,
@@ -438,6 +441,15 @@ impl LocalDatabase {
         if let Some(ref ipa) = request.ipa {
             updates.push("ipa = ?");
             params.push(Box::new(ipa.clone()));
+        }
+        if let Some(ref audio_url) = request.audio_url {
+            updates.push("audio_url = ?");
+            // Convert empty string to NULL
+            if audio_url.trim().is_empty() {
+                params.push(Box::new(None::<String>));
+            } else {
+                params.push(Box::new(Some(audio_url.clone())));
+            }
         }
         if let Some(ref concept) = request.concept {
             updates.push("concept = ?");

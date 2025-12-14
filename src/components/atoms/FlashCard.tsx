@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { AudioPlayer } from "./AudioPlayer";
 
 interface FlashCardProps {
   front: string;
   back: string;
   subtitle?: string;
+  audioUrl?: string;
   onFlip?: (isFlipped: boolean) => void;
 }
 
@@ -11,6 +13,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
   front,
   back,
   subtitle,
+  audioUrl,
   onFlip,
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
@@ -62,9 +65,12 @@ export const FlashCard: React.FC<FlashCardProps> = ({
               {front}
             </h2>
             {subtitle && (
-              <p className="text-2xl font-semibold text-white/90 text-center">
-                {subtitle}
-              </p>
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <p className="text-2xl font-semibold text-white/90 text-center">
+                  {subtitle}
+                </p>
+                {audioUrl && <AudioPlayer audioUrl={audioUrl} size="md" />}
+              </div>
             )}
             <p className="text-sm font-bold text-white/70 mt-10 px-6 py-2 bg-white/10 rounded-full">
               Tap to reveal ✨

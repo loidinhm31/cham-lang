@@ -129,6 +129,7 @@ impl LocalDatabase {
                 concept TEXT,
                 language TEXT NOT NULL,
                 collection_id TEXT NOT NULL,
+                audio_url TEXT,
                 user_id TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
@@ -137,6 +138,12 @@ impl LocalDatabase {
             )",
             [],
         )?;
+
+        // Migration: Add audio_url column to vocabularies table if it doesn't exist
+        conn.execute(
+            "ALTER TABLE vocabularies ADD COLUMN audio_url TEXT",
+            [],
+        ).ok(); // Ignore error if column already exists
 
         // Vocabulary definitions table (one-to-many)
         conn.execute(

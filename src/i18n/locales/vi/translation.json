@@ -50,7 +50,10 @@
     "noCollectionsWarning": "Vui lòng tạo bộ sưu tập trước khi thêm từ",
     "noResults": "Không tìm thấy từ nào",
     "createdAt": "Đã Tạo",
-    "updatedAt": "Cập Nhật Lần Cuối"
+    "updatedAt": "Cập Nhật Lần Cuối",
+    "audioUrl": "Đường Dẫn Âm Thanh",
+    "invalidAudioUrl": "Đường dẫn âm thanh không hợp lệ. Phải kết thúc bằng .mp3, .wav, .ogg, .m4a, hoặc .aac",
+    "previewAudio": "Nghe Thử"
   },
   "wordTypes": {
     "n/a": "N/A",

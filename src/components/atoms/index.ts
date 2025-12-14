@@ -8,6 +8,7 @@ export { Card } from "./Card";
 export { FlashCard } from "./FlashCard";
 export { Dialog } from "./Dialog";
 export { Accordion } from "./Accordion";
+export { AudioPlayer } from "./AudioPlayer";
 export type { ButtonVariant, ButtonSize } from "./Button";
 export type { BadgeVariant } from "./Badge";
 export type { CardVariant } from "./Card";

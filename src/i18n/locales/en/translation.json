@@ -50,7 +50,10 @@
     "noCollectionsWarning": "Please create a collection first before adding words",
     "noResults": "No words found",
     "createdAt": "Created",
-    "updatedAt": "Last Updated"
+    "updatedAt": "Last Updated",
+    "audioUrl": "Audio URL",
+    "invalidAudioUrl": "Invalid audio URL. Must end with .mp3, .wav, .ogg, .m4a, or .aac",
+    "previewAudio": "Preview"
   },
   "wordTypes": {
     "n/a": "N/A",

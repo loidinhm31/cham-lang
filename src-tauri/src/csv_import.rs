@@ -44,6 +44,7 @@ struct CsvRow {
     word_type: String,
     level: String,
     ipa: Option<String>,
+    audio_url: Option<String>,
     concept: Option<String>,
     language: String,
     definitions: String,
@@ -334,6 +335,7 @@ pub fn import_simple_vocabularies(
             word_type: WordType::Noun, // Default to noun for simple import
             level: "N/A".to_string(), // Default level
             ipa: String::new(),
+            audio_url: None, // Simple import doesn't have audio_url
             concept: None,
             definitions: vec![Definition {
                 meaning: definition.to_string(),
@@ -482,6 +484,14 @@ pub fn import_vocabularies_csv(
                 row.level.clone()
             },
             ipa: row.ipa.unwrap_or_default(),
+            audio_url: row.audio_url.clone().and_then(|url| {
+                let trimmed = url.trim();
+                if trimmed.is_empty() {
+                    None
+                } else {
+                    Some(trimmed.to_string())
+                }
+            }),
             concept: row.concept,
             definitions: unflatten_definitions(&row.definitions),
             example_sentences: unflatten_examples(row.example_sentences.as_ref()),

@@ -48,6 +48,7 @@ export const EditVocabularyPage: React.FC = () => {
         concept: vocabulary.concept,
         definitions: vocabulary.definitions,
         example_sentences: vocabulary.example_sentences,
+        audio_url: vocabulary.audio_url,
         topics: vocabulary.topics,
         related_words: vocabulary.related_words,
         language: vocabulary.language,

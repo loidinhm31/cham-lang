@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, X } from "lucide-react";
 import { CollectionService } from "@/services/collection.service";
-import { Button, Card, Input, Select, TextArea } from "@/components/atoms";
+import { Button, Card, Input, Select, TextArea, AudioPlayer } from "@/components/atoms";
 import type {
   CreateVocabularyRequest,
   Definition,
@@ -36,6 +36,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     word_type: initialData?.word_type || "n/a",
     level: initialData?.level || "N/A",
     ipa: initialData?.ipa || "",
+    audio_url: initialData?.audio_url || "",
     concept: initialData?.concept || "",
     definitions: initialData?.definitions || [
       { meaning: "", translation: "", example: "" },
@@ -133,6 +134,14 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     };
   });
 
+  // Validate audio URL format
+  const validateAudioUrl = (url: string): boolean => {
+    if (!url || url.trim() === "") return true; // Empty is valid (optional field)
+    const validExtensions = [".mp3", ".wav", ".ogg", ".m4a", ".aac"];
+    const lowerUrl = url.toLowerCase();
+    return validExtensions.some((ext) => lowerUrl.includes(ext));
+  };
+
   const handleCollectionChange = (collectionId: string) => {
     const selectedCollection = collections.find(
       (c) => getCollectionId(c) === collectionId,
@@ -151,6 +160,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     // Filter out empty values
     const cleanedData = {
       ...formData,
+      audio_url: formData.audio_url?.trim() || undefined,
       concept: formData.concept?.trim() || "",
       definitions: formData.definitions.filter((d) => d.meaning.trim() !== ""),
       example_sentences: formData.example_sentences.filter(
@@ -312,6 +322,35 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
             onChange={(e) => setFormData({ ...formData, ipa: e.target.value })}
             placeholder="/həˈloʊ/"
           />
+
+          <div className="space-y-2">
+            <Input
+              label={t("vocabulary.audioUrl") || "Audio URL (Optional)"}
+              value={formData.audio_url || ""}
+              onChange={(e) =>
+                setFormData({ ...formData, audio_url: e.target.value })
+              }
+              placeholder="https://example.com/audio.mp3"
+            />
+            {formData.audio_url &&
+              formData.audio_url.trim() !== "" &&
+              !validateAudioUrl(formData.audio_url) && (
+                <p className="text-sm text-red-600">
+                  {t("vocabulary.invalidAudioUrl") ||
+                    "Invalid audio URL. Must be .mp3, .wav, .ogg, .m4a, or .aac"}
+                </p>
+              )}
+            {formData.audio_url &&
+              formData.audio_url.trim() !== "" &&
+              validateAudioUrl(formData.audio_url) && (
+                <div className="flex items-center gap-2">
+                  <AudioPlayer audioUrl={formData.audio_url} size="sm" />
+                  <span className="text-sm text-gray-600">
+                    {t("vocabulary.previewAudio") || "Preview"}
+                  </span>
+                </div>
+              )}
+          </div>
 
           <TextArea
             label={t("vocabulary.concept") || "Concept (Optional)"}
