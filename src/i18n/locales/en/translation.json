@@ -159,7 +159,27 @@
     "showHintInFillWordDescription": "Display the first letter as a hint when filling words",
     "saved": "Settings saved successfully!",
     "dangerZone": "Danger Zone",
-    "dangerZoneDescription": "Irreversible and destructive actions"
+    "dangerZoneDescription": "Irreversible and destructive actions",
+    "notifications": "Notifications Test",
+    "notificationsDescription": "Test scheduled notifications",
+    "scheduleNotification": "Schedule Notification (+1 minute)",
+    "scheduling": "Scheduling...",
+    "notificationHint": "This will schedule a notification to appear in 1 minute",
+    "notificationPermissionDenied": "Notification permission denied. Please enable notifications in settings.",
+    "saving": "Saving..."
+  },
+  "reminder": {
+    "title": "Cham Lang Reminder",
+    "body": "Time to practice your vocabulary! Keep learning!",
+    "dailyReminder": "Daily Reminder",
+    "dailyReminderDescription": "Get reminded to practice every day",
+    "reminderTime": "Reminder Time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "currentTime": "Current time:",
+    "saveTime": "Save Reminder Time",
+    "reminderActive": "Daily reminder is active",
+    "reminderActiveDescription": "You will receive a notification every day at the specified time"
   },
   "stats": {
     "totalWords": "Total Words",

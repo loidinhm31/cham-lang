@@ -17,6 +17,8 @@ export interface UpdateLearningSettingsRequest {
   daily_review_limit?: number;
   auto_advance_timeout_seconds?: number;
   show_hint_in_fillword?: boolean;
+  reminder_enabled?: boolean;
+  reminder_time?: string;
 }
 
 export class LearningSettingsService {

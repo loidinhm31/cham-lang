@@ -3,6 +3,14 @@
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+  <!-- Permissions for scheduled tasks -->
+  <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+  <!-- For WorkManager (Android 6.0+) -->
+  <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
   <!-- AndroidTV support -->
   <uses-feature android:name="android.software.leanback" android:required="false"/>
 
@@ -37,5 +45,22 @@
         android:name="android.support.FILE_PROVIDER_PATHS"
         android:resource="@xml/file_paths"/>
     </provider>
+
+    <!-- Register the broadcast receiver for alarm-based scheduling -->
+    <receiver android:name="com.plugin.scheduletask.ScheduledTaskReceiver"
+              android:enabled="true"
+              android:exported="false" />
+
+<!--    &lt;!&ndash; Boot receiver to reschedule tasks after device restart &ndash;&gt;-->
+<!--    <receiver android:name="com.plugin.scheduletask.BootReceiver"-->
+<!--              android:enabled="true"-->
+<!--              android:exported="false">-->
+<!--      <intent-filter android:priority="1000">-->
+<!--        <action android:name="android.intent.action.BOOT_COMPLETED" />-->
+<!--        <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />-->
+<!--        <action android:name="android.intent.action.PACKAGE_REPLACED" />-->
+<!--        <data android:scheme="package" />-->
+<!--      </intent-filter>-->
+<!--    </receiver>-->
   </application>
 </manifest>

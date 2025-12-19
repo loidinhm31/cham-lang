@@ -29,6 +29,10 @@ export interface LearningSettings {
   auto_advance_timeout_seconds: number; // Auto-advance timeout in seconds (default: 2)
   show_hint_in_fillword: boolean; // Show/hide hint in fill word mode (default: true)
 
+  // Notification Settings
+  reminder_enabled?: boolean; // Enable daily reminder notifications
+  reminder_time?: string; // Daily reminder time in HH:MM format
+
   // Timestamps
   created_at: string;
   updated_at: string;

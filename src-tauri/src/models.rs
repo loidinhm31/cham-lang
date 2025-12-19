@@ -331,6 +331,10 @@ pub struct LearningSettings {
     pub auto_advance_timeout_seconds: i32, // Auto-advance timeout in seconds (default: 2)
     pub show_hint_in_fillword: bool, // Show/hide hint in fill word mode (default: true)
 
+    // Daily Reminder Settings
+    pub reminder_enabled: bool, // Enable/disable daily reminder (default: false)
+    pub reminder_time: String, // Time for daily reminder in HH:MM format (default: "19:00")
+
     // Timestamps
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -346,4 +350,6 @@ pub struct UpdateLearningSettingsRequest {
     pub daily_review_limit: Option<i32>,
     pub auto_advance_timeout_seconds: Option<i32>,
     pub show_hint_in_fillword: Option<bool>,
+    pub reminder_enabled: Option<bool>,
+    pub reminder_time: Option<String>,
 }

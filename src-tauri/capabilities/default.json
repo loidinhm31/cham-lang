@@ -12,6 +12,9 @@
     "dialog:default",
     "dialog:allow-save",
     "dialog:allow-open",
-    "dialog:allow-message"
+    "dialog:allow-message",
+    "notification:default",
+    "schedule-task:default",
+    "schedule-task:allow-schedule-task"
   ]
 }

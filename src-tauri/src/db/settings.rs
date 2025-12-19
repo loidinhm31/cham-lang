@@ -23,6 +23,7 @@ impl LocalDatabase {
             "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
                     show_failed_words_in_session, new_words_per_day, daily_review_limit,
                     auto_advance_timeout_seconds, show_hint_in_fillword,
+                    reminder_enabled, reminder_time,
                     created_at, updated_at
              FROM learning_settings
              WHERE user_id = ?1"
@@ -47,8 +48,10 @@ impl LocalDatabase {
                 daily_review_limit: row.get(6)?,
                 auto_advance_timeout_seconds: row.get::<_, Option<i32>>(7)?.unwrap_or(2),
                 show_hint_in_fillword: row.get::<_, Option<i32>>(8)?.unwrap_or(1) != 0,
-                created_at: timestamp_to_datetime(row.get(9)?),
-                updated_at: timestamp_to_datetime(row.get(10)?),
+                reminder_enabled: row.get::<_, Option<i32>>(9)?.unwrap_or(0) != 0,
+                reminder_time: row.get::<_, Option<String>>(10)?.unwrap_or_else(|| "19:00".to_string()),
+                created_at: timestamp_to_datetime(row.get(11)?),
+                updated_at: timestamp_to_datetime(row.get(12)?),
             }))
         } else {
             Ok(None)
@@ -82,8 +85,10 @@ impl LocalDatabase {
             "INSERT INTO learning_settings
              (id, user_id, sr_algorithm, leitner_box_count, consecutive_correct_required,
               show_failed_words_in_session, new_words_per_day, daily_review_limit,
-              auto_advance_timeout_seconds, show_hint_in_fillword, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+              auto_advance_timeout_seconds, show_hint_in_fillword,
+              reminder_enabled, reminder_time,
+              created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14)",
             params![
                 &id,
                 user_id,
@@ -95,6 +100,8 @@ impl LocalDatabase {
                 daily_review_limit,
                 auto_advance_timeout_seconds,
                 if show_hint_in_fillword { 1 } else { 0 },
+                0, // reminder_enabled: false by default
+                "19:00", // reminder_time: "19:00" (7:00 PM) by default
                 now.timestamp(),
                 now.timestamp(),
             ],
@@ -111,6 +118,8 @@ impl LocalDatabase {
             daily_review_limit,
             auto_advance_timeout_seconds,
             show_hint_in_fillword,
+            reminder_enabled: false,
+            reminder_time: "19:00".to_string(),
             created_at: now,
             updated_at: now,
         })
@@ -129,7 +138,8 @@ impl LocalDatabase {
         let mut stmt = conn.prepare(
             "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
                     show_failed_words_in_session, new_words_per_day, daily_review_limit,
-                    auto_advance_timeout_seconds, show_hint_in_fillword, created_at
+                    auto_advance_timeout_seconds, show_hint_in_fillword,
+                    reminder_enabled, reminder_time, created_at
              FROM learning_settings
              WHERE user_id = ?1"
         )?;
@@ -151,7 +161,9 @@ impl LocalDatabase {
             let current_review_limit: Option<i32> = row.get(6)?;
             let current_timeout: i32 = row.get::<_, Option<i32>>(7)?.unwrap_or(2);
             let current_show_hint: i32 = row.get::<_, Option<i32>>(8)?.unwrap_or(1);
-            let created_at = timestamp_to_datetime(row.get(9)?);
+            let current_reminder_enabled: i32 = row.get::<_, Option<i32>>(9)?.unwrap_or(0);
+            let current_reminder_time: String = row.get::<_, Option<String>>(10)?.unwrap_or_else(|| "19:00".to_string());
+            let created_at = timestamp_to_datetime(row.get(11)?);
 
             drop(rows);
             drop(stmt);
@@ -165,6 +177,8 @@ impl LocalDatabase {
             let daily_review_limit = request.daily_review_limit.or(current_review_limit);
             let auto_advance_timeout_seconds = request.auto_advance_timeout_seconds.unwrap_or(current_timeout);
             let show_hint_in_fillword = request.show_hint_in_fillword.unwrap_or(current_show_hint != 0);
+            let reminder_enabled = request.reminder_enabled.unwrap_or(current_reminder_enabled != 0);
+            let reminder_time = request.reminder_time.as_ref().unwrap_or(&current_reminder_time).clone();
 
             let sr_algorithm_str = match sr_algorithm {
                 SpacedRepetitionAlgorithm::SM2 => "sm2",
@@ -176,8 +190,10 @@ impl LocalDatabase {
                 "UPDATE learning_settings
                  SET sr_algorithm = ?1, leitner_box_count = ?2, consecutive_correct_required = ?3,
                      show_failed_words_in_session = ?4, new_words_per_day = ?5, daily_review_limit = ?6,
-                     auto_advance_timeout_seconds = ?7, show_hint_in_fillword = ?8, updated_at = ?9
-                 WHERE user_id = ?10",
+                     auto_advance_timeout_seconds = ?7, show_hint_in_fillword = ?8,
+                     reminder_enabled = ?9, reminder_time = ?10,
+                     updated_at = ?11
+                 WHERE user_id = ?12",
                 params![
                     sr_algorithm_str,
                     leitner_box_count,
@@ -187,6 +203,8 @@ impl LocalDatabase {
                     daily_review_limit,
                     auto_advance_timeout_seconds,
                     if show_hint_in_fillword { 1 } else { 0 },
+                    if reminder_enabled { 1 } else { 0 },
+                    &reminder_time,
                     now.timestamp(),
                     user_id,
                 ],
@@ -203,6 +221,8 @@ impl LocalDatabase {
                 daily_review_limit,
                 auto_advance_timeout_seconds,
                 show_hint_in_fillword,
+                reminder_enabled,
+                reminder_time,
                 created_at,
                 updated_at: now,
             })

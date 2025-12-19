@@ -6,12 +6,16 @@ mod collection_commands;
 mod gdrive;
 mod csv_export;
 mod csv_import;
+mod notification_commands;
+mod scheduled_task_handler;
 
 use collection_commands::*;
 use commands::*;
 use csv_export::*;
 use csv_import::*;
 use gdrive::*;
+use notification_commands::*;
+use scheduled_task_handler::NotificationTaskHandler;
 use local_db::LocalDatabase;
 use tauri::Manager;
 
@@ -43,6 +47,12 @@ pub fn run() {
     init_logging();
 
     tauri::Builder::default()
+        // IMPORTANT: schedule-task plugin must be initialized first to allow
+        // desktop scheduling routines to execute before full app startup
+        .plugin(tauri_plugin_schedule_task::init_with_handler(
+            NotificationTaskHandler,
+        ))
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_google_auth::init())
         .plugin(tauri_plugin_dialog::init())
@@ -120,6 +130,12 @@ pub fn run() {
             import_vocabularies_csv,
             import_simple_vocabularies,
             generate_csv_template,
+            // Notifications
+            schedule_notification,
+            send_test_notification,
+            schedule_test_notification_one_minute,
+            schedule_daily_reminder,
+            cancel_daily_reminder,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

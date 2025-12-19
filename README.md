@@ -65,6 +65,127 @@ Three comprehensive practice modes with spaced repetition:
     - CEFR (A1-C2) for European languages
     - Basic/Intermediate/Advanced for Asian languages
 
+### Scheduled Notifications
+
+Schedule notifications to appear at specific times, even when the app is closed.
+
+**Key Features:**
+- Works on both Desktop and Android
+- Notifications persist through app closure and device reboots
+- Runtime permission handling on Android 13+
+
+**Implementation:**
+
+1. **Frontend (ProfilePage.tsx)**
+   ```typescript
+   import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
+
+   // Check/request permission
+   let permissionGranted = await isPermissionGranted();
+   if (!permissionGranted) {
+     const permission = await requestPermission();
+     permissionGranted = permission === "granted";
+   }
+
+   // Schedule notification
+   await invoke("schedule_test_notification_one_minute");
+   ```
+
+2. **Backend (notification_commands.rs)**
+   ```rust
+   use tauri_plugin_schedule_task::{ScheduleTaskRequest, ScheduleTime, ScheduleTaskExt};
+
+   #[tauri::command]
+   pub async fn schedule_notification(app: AppHandle, title: String, body: String, delay_seconds: u64) {
+     let mut parameters = HashMap::new();
+     parameters.insert("title".to_string(), title);
+     parameters.insert("body".to_string(), body);
+
+     let task_request = ScheduleTaskRequest {
+       task_name: format!("notification_{}", chrono::Utc::now().timestamp()),
+       schedule_time: ScheduleTime::Duration(delay_seconds),
+       parameters: Some(parameters),
+     };
+
+     app.schedule_task().schedule_task(task_request).await?;
+   }
+   ```
+
+3. **Task Handler (scheduled_task_handler.rs)**
+   ```rust
+   impl<R: Runtime> ScheduledTaskHandler<R> for NotificationTaskHandler {
+     fn handle_scheduled_task(&self, task_name: &str, parameters: HashMap<String, String>, app: &AppHandle<R>) {
+       // Desktop: Use Tauri's notification API
+       // Android: Handled by MainActivity (see below)
+     }
+   }
+   ```
+
+4. **Android Native (NotificationHelper.kt)**
+   - **Purpose**: Send notifications using Android's native NotificationManager
+   - **Why needed**: Tauri's notification API requires active app context, unavailable in background workers
+   - **Usage**: Called by MainActivity when scheduled task triggers
+
+5. **Android Native (MainActivity.kt)**
+   - Intercepts scheduled task launches via `onNewIntent()` / `onCreate()`
+   - Extracts notification parameters from intent extras
+   - Calls `NotificationHelper.sendNotification()` to display notification
+
+6. **NotificationWorker.kt** (not currently used)
+   - Alternative approach to send notifications directly from WorkManager
+   - Can be used for more efficient notification delivery without launching MainActivity
+
+**Required Dependencies:**
+
+```toml
+# Cargo.toml
+tauri-plugin-notification = "2"
+tauri-plugin-schedule-task = "0.1"
+```
+
+```json
+// package.json
+"@tauri-apps/plugin-notification": "^2.3.3"
+```
+
+**Android Configuration:**
+
+```gradle
+// build.gradle.kts
+android {
+  defaultConfig {
+    minSdk = 26  // Required by schedule-task plugin
+  }
+}
+dependencies {
+  implementation("androidx.work:work-runtime-ktx:2.9.0")
+}
+```
+
+```xml
+<!-- AndroidManifest.xml -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+<uses-permission android:name="android.permission.WAKE_LOCK"/>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+```
+
+**Plugin Initialization (lib.rs):**
+```rust
+// IMPORTANT: schedule-task must be initialized FIRST
+tauri::Builder::default()
+    .plugin(tauri_plugin_schedule_task::init_with_handler(NotificationTaskHandler))
+    .plugin(tauri_plugin_notification::init())
+    // ... other plugins
+```
+
+**How It Works:**
+
+- **Desktop**: Plugin uses Tauri's async runtime to delay task execution (like setTimeout)
+- **Android**: Plugin uses WorkManager to schedule background workers that run even when app is closed
+  - When time arrives, WorkManager launches MainActivity with intent extras
+  - MainActivity extracts notification parameters and displays notification using native Android API
+
 ### Architecture
 
 - **Atomic Design Pattern**:
@@ -223,13 +344,19 @@ cham-lang/
 │   └── utils/              # Utility functions
 │       └── spacedRepetition/  # SR algorithms
 ├── src-tauri/
+│   ├── gen/android/app/src/main/java/com/loidinh/cham_lang/
+│   │   ├── MainActivity.kt           # Handles scheduled task intents
+│   │   ├── NotificationHelper.kt     # Native Android notification sender
+│   │   └── NotificationWorker.kt     # Alternative worker implementation
 │   └── src/
-│       ├── models.rs       # Data models
-│       ├── local_db.rs     # SQLite operations
-│       ├── commands.rs     # Vocabulary commands
-│       ├── collection_commands.rs  # Collection commands
-│       ├── gdrive.rs       # Google Drive sync
-│       └── lib.rs          # Main entry point
+│       ├── models.rs                 # Data models
+│       ├── local_db.rs               # SQLite operations
+│       ├── commands.rs               # Vocabulary commands
+│       ├── collection_commands.rs    # Collection commands
+│       ├── gdrive.rs                 # Google Drive sync
+│       ├── notification_commands.rs  # Notification scheduling commands
+│       ├── scheduled_task_handler.rs # Background task handler
+│       └── lib.rs                    # Main entry point
 └── README.md
 ```
 

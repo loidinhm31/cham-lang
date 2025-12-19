@@ -144,6 +144,17 @@ impl LocalDatabase {
             [],
         ).ok(); // Ignore error if column already exists
 
+        // Migration: Add reminder settings columns to learning_settings table
+        conn.execute(
+            "ALTER TABLE learning_settings ADD COLUMN reminder_enabled INTEGER DEFAULT 0",
+            [],
+        ).ok(); // Ignore error if column already exists
+
+        conn.execute(
+            "ALTER TABLE learning_settings ADD COLUMN reminder_time TEXT DEFAULT '19:00'",
+            [],
+        ).ok(); // Ignore error if column already exists
+
         // Vocabulary definitions table (one-to-many)
         conn.execute(
             "CREATE TABLE IF NOT EXISTS vocabulary_definitions (

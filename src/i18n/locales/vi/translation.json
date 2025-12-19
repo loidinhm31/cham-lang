@@ -159,7 +159,27 @@
     "showHintInFillWordDescription": "Hiển thị chữ cái đầu tiên làm gợi ý khi điền từ",
     "saved": "Đã lưu cài đặt thành công!",
     "dangerZone": "Vùng Nguy Hiểm",
-    "dangerZoneDescription": "Các hành động không thể hoàn tác và phá hủy"
+    "dangerZoneDescription": "Các hành động không thể hoàn tác và phá hủy",
+    "notifications": "Kiểm Tra Thông Báo",
+    "notificationsDescription": "Kiểm tra thông báo đã lên lịch",
+    "scheduleNotification": "Lên Lịch Thông Báo (+1 phút)",
+    "scheduling": "Đang lên lịch...",
+    "notificationHint": "Thao tác này sẽ lên lịch thông báo xuất hiện sau 1 phút",
+    "notificationPermissionDenied": "Quyền thông báo bị từ chối. Vui lòng bật thông báo trong cài đặt.",
+    "saving": "Đang lưu..."
+  },
+  "reminder": {
+    "title": "Nhắc Nhở Cham Lang",
+    "body": "Đã đến giờ luyện từ vựng! Tiếp tục học nào!",
+    "dailyReminder": "Nhắc Nhở Hàng Ngày",
+    "dailyReminderDescription": "Nhận nhắc nhở để luyện tập mỗi ngày",
+    "reminderTime": "Giờ Nhắc Nhở",
+    "hour": "Giờ",
+    "minute": "Phút",
+    "currentTime": "Thời gian hiện tại:",
+    "saveTime": "Lưu Giờ Nhắc Nhở",
+    "reminderActive": "Nhắc nhở hàng ngày đang hoạt động",
+    "reminderActiveDescription": "Bạn sẽ nhận được thông báo mỗi ngày vào giờ đã chọn"
   },
   "stats": {
     "totalWords": "Tổng Số Từ",
