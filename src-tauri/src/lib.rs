@@ -19,6 +19,9 @@ use scheduled_task_handler::NotificationTaskHandler;
 use local_db::LocalDatabase;
 use tauri::Manager;
 
+#[cfg(desktop)]
+use tauri::{menu::{MenuBuilder, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState}};
+
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -78,6 +81,109 @@ pub fn run() {
 
             // Store the database in app state
             app.manage(local_db);
+
+            // Setup tray icon (desktop only)
+            #[cfg(desktop)]
+            {
+                let show_hide = MenuItem::with_id(app, "show_hide", "Show/Hide", true, None::<&str>)?;
+                let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
+
+                let menu = MenuBuilder::new(app)
+                    .item(&show_hide)
+                    .separator()
+                    .item(&quit)
+                    .build()?;
+
+                let _tray = TrayIconBuilder::new()
+                    .icon(app.default_window_icon().unwrap().clone())
+                    .menu(&menu)
+                    .on_menu_event(|app, event| {
+                        match event.id().as_ref() {
+                            "show_hide" => {
+                                if let Some(window) = app.get_webview_window("main") {
+                                    match window.is_visible() {
+                                        Ok(true) => {
+                                            let _ = window.hide();
+                                        }
+                                        _ => {
+                                            // Properly restore window state
+                                            let _ = window.unminimize();
+                                            let _ = window.show();
+                                            let _ = window.set_focus();
+                                        }
+                                    }
+                                }
+                            }
+                            "quit" => {
+                                app.exit(0);
+                            }
+                            _ => {}
+                        }
+                    })
+                    .on_tray_icon_event(|tray, event| {
+                        match event {
+                            TrayIconEvent::Click {
+                                button: MouseButton::Left,
+                                button_state: MouseButtonState::Up,
+                                ..
+                            } => {
+                                let app = tray.app_handle();
+                                if let Some(window) = app.get_webview_window("main") {
+                                    match window.is_visible() {
+                                        Ok(true) => {
+                                            let _ = window.hide();
+                                        }
+                                        _ => {
+                                            // Properly restore window state
+                                            let _ = window.unminimize();
+                                            let _ = window.show();
+                                            let _ = window.set_focus();
+                                        }
+                                    }
+                                }
+                            }
+                            _ => {
+                                println!("unhandled event {event:?}");
+                            }
+                        }
+                    })
+                    .build(app)?;
+            }
+
+            // Setup window event handlers to hide on close and minimize (desktop only)
+            #[cfg(desktop)]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let window_clone = window.clone();
+                    let _ = window.on_window_event(move |event| {
+                        match event {
+                            tauri::WindowEvent::CloseRequested { api, .. } => {
+                                // Prevent window from closing, hide it instead
+                                api.prevent_close();
+                                let _ = window_clone.hide();
+                            }
+                            #[cfg(target_os = "linux")]
+                            tauri::WindowEvent::Resized(_) => {
+                                // On Linux, check if window is minimized
+                                if let Ok(false) = window_clone.is_minimized() {
+                                    // Window is not minimized, do nothing
+                                } else if let Ok(true) = window_clone.is_minimized() {
+                                    // Window is minimized, hide it to tray
+                                    let _ = window_clone.hide();
+                                }
+                            }
+                            #[cfg(any(target_os = "windows", target_os = "macos"))]
+                            tauri::WindowEvent::Focused(false) => {
+                                // On Windows/macOS, check if minimized when focus is lost
+                                if let Ok(true) = window_clone.is_minimized() {
+                                    let _ = window_clone.hide();
+                                }
+                            }
+                            _ => {}
+                        }
+                    });
+                }
+            }
 
             Ok(())
         })

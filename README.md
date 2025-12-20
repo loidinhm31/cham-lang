@@ -1,6 +1,19 @@
 # Cham Lang - Language Learning App
 
-A modern, offline-first vocabulary learning application built with Tauri 2, React, TypeScript, and SQLite. Features spaced repetition learning, multiple practice modes, and optional Google Drive sync. Supports both desktop and Android platforms.
+A modern, offline-first vocabulary learning application built with Tauri 2, React, TypeScript, and SQLite. Features spaced repetition learning, multiple practice modes, audio playback, daily reminders, and optional Google Drive sync. Supports both desktop and Android platforms.
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Project Structure](#project-structure)
+- [Configuration](#configuration)
+- [Development Commands](#development-commands)
+- [Mobile/Android Support](#mobileandroid-support)
+- [Recent Updates](#recent-updates)
+- [Troubleshooting](#troubleshooting)
 
 ## Features
 
@@ -9,12 +22,15 @@ A modern, offline-first vocabulary learning application built with Tauri 2, Reac
 - **Comprehensive Word Information**
     - Word definitions with translations
     - IPA pronunciation guide
+    - Audio pronunciation (supports MP3, WAV, OGG, M4A, AAC formats)
     - Example sentences
     - Word types (noun, verb, adjective, etc.)
     - Language-specific proficiency levels (CEFR for European languages, Basic/Intermediate/Advanced for Asian languages)
     - Topic categorization
     - Related words (synonyms, antonyms, derivatives)
     - Optional concept field for alternative learning prompts
+- **Audio Playback**: Integrated audio player with support for online audio URLs
+- **Pagination**: Efficient lazy loading for large vocabulary lists
 
 ### Collection-Based Organization
 
@@ -29,7 +45,15 @@ Three comprehensive practice modes with spaced repetition:
 
 1. **Flashcard Practice**: See definition/concept, recall the word
 2. **Fill Word Practice**: Fill in missing word from example sentence
+   - **Bidirectional Support**: Practice definition→word or word→definition
+   - **Hint System**: Toggle-able hints for extra support
 3. **Multiple Choice Practice**: Choose correct definition from options
+
+**Special Features**:
+- **Concept Mode**: Toggle between Definition Mode and Concept Mode for alternative learning prompts
+- **Study Mode vs Practice Mode**: Choose to practice with or without progress tracking
+- **Multi-Mode Completion**: Words must complete all three modes in a review cycle to advance boxes
+- **Auto-Advance**: Configurable auto-advance timeout (default: 2 seconds)
 
 ### Spaced Repetition Learning
 
@@ -40,8 +64,17 @@ Three comprehensive practice modes with spaced repetition:
 
 - **Leitner Box System**: Configurable 3, 5, or 7 boxes with progressive review intervals
 - **Smart Word Selection**: Prioritizes due words, limits new words per session
-- **Progress Tracking**: Per-word statistics including streak, interval, easiness factor
-- **Customizable Settings**: Configure thresholds, intervals, new word limits
+- **Progress Tracking**:
+  - Per-word statistics including streak, interval, easiness factor
+  - Per-language progress segregation
+  - Box distribution visualization
+  - Session statistics with duration and accuracy
+- **Advanced Settings**:
+  - New words per day limit (default: 20)
+  - Daily review limit (default: 100)
+  - Consecutive correct threshold per box
+  - Auto-advance timeout (default: 2 seconds)
+  - Hint display preferences
 
 ### Google Drive Backup
 
@@ -65,14 +98,20 @@ Three comprehensive practice modes with spaced repetition:
     - CEFR (A1-C2) for European languages
     - Basic/Intermediate/Advanced for Asian languages
 
-### Scheduled Notifications
+### Daily Reminders & Notifications
 
-Schedule notifications to appear at specific times, even when the app is closed.
+**Daily Reminder** (New in v0.0.15):
+- **Schedule Study Reminders**: Set a daily reminder at a specific time to practice vocabulary
+- **Persistent Reminders**: Notifications persist through app closure and device reboots
+- **Auto-Rescheduling**: Automatically reschedules for the next day after the reminder fires
+- **Cross-Platform**: Works on Desktop (Windows, macOS, Linux) and Android
+- **Easy Configuration**: Enable/disable and set time from Learning Settings page
 
-**Key Features:**
+**Scheduled Notifications**:
+- Schedule one-time or recurring notifications
 - Works on both Desktop and Android
-- Notifications persist through app closure and device reboots
 - Runtime permission handling on Android 13+
+- Test notification features for debugging
 
 **Implementation:**
 
@@ -189,11 +228,11 @@ tauri::Builder::default()
 ### Architecture
 
 - **Atomic Design Pattern**:
-    - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal
+    - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal, AudioPlayer
     - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
     - **Organisms**: VocabularyList, VocabularyForm, CollectionList, PracticeModeSelector
     - **Templates**: MainLayout
-    - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes, Settings, Profile
+    - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes (Flashcard, Fill Word, Multiple Choice), Settings, Learning Settings, Profile, Statistics
 
 - **Offline-First**: All data stored locally in SQLite
 - **Service Layer**: Clean separation between frontend and Tauri backend
@@ -201,10 +240,16 @@ tauri::Builder::default()
 
 ### Database
 
-- **SQLite Backend**: Lightweight, embedded database
+- **SQLite Backend**: Lightweight, embedded database with bundled support
 - **Cross-Platform**: Works on desktop and Android
 - **Platform-Specific Storage**: Automatic app data directory selection
 - **Schema Versioning**: Migration system for database updates
+- **Comprehensive Schema**:
+  - Core tables: users, collections, vocabularies, definitions, example sentences
+  - Practice tables: practice_sessions, practice_results, word_progress, word_progress_completed_modes
+  - Organization: topics, tags, related words (many-to-many relationships)
+  - Settings: learning_settings with algorithm, box count, and notification preferences
+  - Sync: database_metadata for Google Drive version tracking
 
 ## Tech Stack
 
@@ -216,14 +261,25 @@ tauri::Builder::default()
 - **React Router DOM 7** - Navigation
 - **React i18next** - Internationalization
 - **Lucide React** - Icon library
+- **Framer Motion** - Animations
+- **React Hook Form** - Form management
 
 ### Backend
 
 - **Tauri 2** - Desktop/mobile app framework
 - **Rust** - Backend language
-- **SQLite** - Embedded database (via rusqlite)
-- **tauri-plugin-google-auth** - Google Drive authentication
-- **Serde** - Serialization/deserialization
+- **rusqlite7** - Embedded SQLite database with bundled support
+- **Tauri Plugins**:
+  - `tauri-plugin-google-auth 0.3` - Google OAuth authentication
+  - `tauri-plugin-notification 2` - Native notifications
+  - `tauri-plugin-schedule-task` - Background task scheduling
+  - `tauri-plugin-dialog 2` - File dialogs
+  - `tauri-plugin-opener 2` - Open files/URLs
+- **serde + serde_json** - Serialization/deserialization
+- **chrono** - Date/time handling
+- **uuid** - ID generation
+- **reqwest** - HTTP client for Google Drive API
+- **csv** - CSV parsing for import/export
 
 ## Installation
 
@@ -303,7 +359,19 @@ tauri::Builder::default()
 3. Configure Leitner box count (3, 5, or 7 boxes)
 4. Set consecutive correct threshold
 5. Adjust review intervals per box
-6. Set daily new word limit
+6. Set daily new word limit (default: 20)
+7. Set daily review limit (default: 100)
+8. Configure auto-advance timeout
+9. Toggle hint display in fill word mode
+
+### Setting Up Daily Reminders
+
+1. Go to Learning Settings page
+2. Enable "Daily Reminder"
+3. Set your preferred reminder time (e.g., 09:00 for 9 AM)
+4. Save settings
+5. Grant notification permissions when prompted (Android 13+)
+6. Reminder will automatically reschedule for the next day after each notification
 
 ### Google Drive Backup
 

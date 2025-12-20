@@ -18,11 +18,13 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-opener = "2"
 tauri-plugin-google-auth = "0.3"
 tauri-plugin-notification = "2"
 tauri-plugin-schedule-task = { git = "https://github.com/loidinhm31/tauri-plugin-schedule-task", branch = "main" }
+tauri-plugin-dialog = "2"
+
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 # Local database
@@ -36,5 +38,4 @@ android_logger = "0.15.1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "multipart", "rustls-tls"] }
 # CSV Import/Export
 csv = "1.3"
-tauri-plugin-dialog = "2"
 
