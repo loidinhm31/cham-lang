@@ -15,7 +15,12 @@ export const StudyModePage: React.FC = () => {
 
   const [collection, setCollection] = useState<Collection | null>(null);
   const [loading, setLoading] = useState(true);
-  const [wordLimit, setWordLimit] = useState<string>("all");
+  const [batchSize, setBatchSize] = useState<number>(() => {
+    // Load from localStorage or default to 10
+    const saved = localStorage.getItem("practiceBatchSize");
+    const parsed = saved ? parseInt(saved, 10) : 10;
+    return isNaN(parsed) || parsed < 1 ? 10 : parsed;
+  });
   const [contentMode, setContentMode] = useState<"definition" | "concept">(
     "definition",
   );
@@ -55,6 +60,12 @@ export const StudyModePage: React.FC = () => {
     localStorage.setItem("practiceFillWordDirection", direction);
   };
 
+  const handleBatchSizeChange = (size: number) => {
+    const validSize = Math.max(1, Math.min(size, 100)); // Limit between 1 and 100
+    setBatchSize(validSize);
+    localStorage.setItem("practiceBatchSize", validSize.toString());
+  };
+
   const modes = [
     {
       id: "flashcard",
@@ -80,14 +91,6 @@ export const StudyModePage: React.FC = () => {
       color: "from-blue-500 to-cyan-600",
       path: "/practice/study/multiple-choice",
     },
-  ];
-
-  const wordLimitOptions = [
-    { value: "all", label: t("study.allWords") || "All Words" },
-    { value: "20", label: "20 " + (t("practice.words") || "words") },
-    { value: "50", label: "50 " + (t("practice.words") || "words") },
-    { value: "100", label: "100 " + (t("practice.words") || "words") },
-    { value: "200", label: "200 " + (t("practice.words") || "words") },
   ];
 
   if (loading) {
@@ -186,32 +189,65 @@ export const StudyModePage: React.FC = () => {
               </div>
             </Card>
 
-            {/* Word Limit Selection */}
+            {/* Batch Size Selection */}
             <Card variant="glass">
               <div className="space-y-4">
                 <label className="block text-sm font-semibold text-gray-700">
-                  {t("study.wordLimit") || "How many words?"}
+                  {t("practice.batchSize") || "Words per Session"}
                 </label>
-                <div className="grid grid-cols-2 gap-3">
-                  {wordLimitOptions.map((option) => (
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleBatchSizeChange(batchSize - 5)}
+                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    disabled={batchSize <= 5}
+                  >
+                    −
+                  </button>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="1"
+                      max="100"
+                      value={batchSize}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value, 10);
+                        if (!isNaN(value)) {
+                          handleBatchSizeChange(value);
+                        }
+                      }}
+                      className="w-full px-4 py-3 text-center text-2xl font-bold text-blue-700 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none transition-all"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleBatchSizeChange(batchSize + 5)}
+                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    disabled={batchSize >= 100}
+                  >
+                    +
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {[5, 10, 15, 20, 25, 30].map((size) => (
                     <button
-                      key={option.value}
+                      key={size}
                       type="button"
-                      onClick={() => setWordLimit(option.value)}
-                      className={`p-4 rounded-xl border-2 transition-all ${
-                        wordLimit === option.value
-                          ? "border-blue-500 bg-blue-50"
-                          : "border-gray-200 bg-white/40 hover:border-gray-300"
+                      onClick={() => handleBatchSizeChange(size)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                        batchSize === size
+                          ? "bg-blue-500 text-white"
+                          : "bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200"
                       }`}
                     >
-                      <div
-                        className={`font-semibold ${wordLimit === option.value ? "text-blue-700" : "text-gray-700"}`}
-                      >
-                        {option.label}
-                      </div>
+                      {size}
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-gray-600 text-center">
+                  {t("practice.batchSizeDescription") ||
+                    "Choose how many words you want to practice in each session"}
+                </p>
               </div>
             </Card>
 
@@ -290,10 +326,9 @@ export const StudyModePage: React.FC = () => {
             >
               <div className="text-center">
                 <p className="font-semibold text-blue-900">
-                  📚 {t("study.studying") || "Studying"}{" "}
-                  {wordLimit === "all"
-                    ? t("study.allWords") || "All Words"
-                    : wordLimit + " " + (t("practice.words") || "words")}
+                  📚 {t("study.studying") || "Studying"} {batchSize}{" "}
+                  {t("practice.words") || "words"}{" "}
+                  {t("study.perSession") || "per session"}
                 </p>
                 <p className="text-sm text-blue-700">
                   {t("study.progressNotTracked") ||
@@ -358,15 +393,24 @@ export const StudyModePage: React.FC = () => {
             <div className="space-y-4">
               {modes.map((mode) => {
                 const Icon = mode.icon;
+                const params = new URLSearchParams({
+                  collection: collectionId,
+                  contentMode,
+                  batchSize: batchSize.toString(),
+                });
+
+                // Add direction parameter only for fill-word mode
+                if (mode.id === "fillword") {
+                  params.set("direction", fillWordDirection);
+                }
+
                 return (
                   <Card
                     key={mode.id}
                     variant="default"
                     hover
                     onClick={() =>
-                      navigate(
-                        `${mode.path}?collection=${collectionId}&contentMode=${contentMode}&wordLimit=${wordLimit}&direction=${fillWordDirection}`,
-                      )
+                      navigate(`${mode.path}?${params.toString()}`)
                     }
                     className="cursor-pointer"
                   >

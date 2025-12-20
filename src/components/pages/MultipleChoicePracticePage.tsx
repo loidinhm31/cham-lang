@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MultipleChoiceCard, TopBar } from "@/components/molecules";
 import { Button, Card } from "@/components/atoms";
@@ -9,7 +9,7 @@ import { LearningSettingsService } from "@/services/learningSettings.service";
 import { WordSelectionService } from "@/services/wordSelection.service";
 import { SessionManager } from "@/utils/sessionManager";
 import type { Vocabulary } from "@/types/vocabulary";
-import { RotateCcw, BookOpen } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { useDialog } from "@/contexts";
 
 // Helper function to shuffle array
@@ -33,7 +33,6 @@ export const MultipleChoicePracticePage: React.FC = () => {
     | "concept"
     | "definition"
     | null;
-  const wordLimit = searchParams.get("wordLimit") || "50";
   const batchSize = parseInt(searchParams.get("batchSize") || "10", 10);
 
   // Check if this is study mode (URL path includes /practice/study/)
@@ -48,10 +47,14 @@ export const MultipleChoicePracticePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [showNext, setShowNext] = useState(false);
+  const [hasMoreWords, setHasMoreWords] = useState(false);
   const [options, setOptions] = useState<string[]>([]);
   const [questionCounter, setQuestionCounter] = useState(0);
   const [autoAdvanceTimeout, setAutoAdvanceTimeout] = useState(2000); // in milliseconds
   const autoAdvanceTimerRef = useRef<number | null>(null);
+  const [studiedVocabIds, setStudiedVocabIds] = useState<Set<string>>(
+    new Set(),
+  ); // Track studied vocabulary IDs in study mode
 
   useEffect(() => {
     if (collectionId) {
@@ -82,7 +85,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
       setAutoAdvanceTimeout(userSettings.auto_advance_timeout_seconds * 1000);
 
       // Load vocabularies
-      const vocabData =
+      let vocabData =
         await VocabularyService.getVocabulariesByCollection(collectionId);
       setAllVocabularies(vocabData); // Store all vocabularies for generating options
 
@@ -91,41 +94,38 @@ export const MultipleChoicePracticePage: React.FC = () => {
         return;
       }
 
+      // In study mode, filter out already studied vocabularies from this session
+      if (isStudyMode && studiedVocabIds.size > 0) {
+        vocabData = vocabData.filter((v) => !studiedVocabIds.has(v.id || ""));
+        if (vocabData.length === 0) {
+          // No more words to study
+          setLoading(false);
+          setCompleted(true);
+          setHasMoreWords(false);
+          return;
+        }
+      }
+
       const language = vocabData[0].language || "en";
 
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
       const wordsProgress = progressData?.words_progress || [];
 
-      let selectedWords: Vocabulary[];
-
-      if (isStudyMode) {
-        // Study mode: Simple selection without smart algorithm
-        selectedWords = [...vocabData];
-
-        // Apply word limit
-        if (wordLimit !== "all") {
-          const limit = parseInt(wordLimit, 10);
-          selectedWords = selectedWords.slice(0, limit);
-        }
-
-        // Shuffle
-        selectedWords = shuffleArray(selectedWords);
-      } else {
-        // Normal practice mode: Use smart selection with mode-specific filtering
-        selectedWords = WordSelectionService.selectWordsForPractice(
-          vocabData,
-          wordsProgress,
-          userSettings,
-          {
-            includeDueWords: true,
-            includeNewWords: true,
-            maxWords: batchSize,
-            shuffle: true,
-            currentMode: "multiplechoice", // Filter to only include words not completed in multiplechoice mode
-          },
-        );
-      }
+      // Select words using the same logic for both study and practice mode
+      // Study mode will use batch size just like practice mode
+      const selectedWords = WordSelectionService.selectWordsForPractice(
+        vocabData,
+        wordsProgress,
+        userSettings,
+        {
+          includeDueWords: true,
+          includeNewWords: true,
+          maxWords: batchSize,
+          shuffle: true,
+          currentMode: isStudyMode ? undefined : "multiplechoice", // Study mode doesn't filter by completed modes
+        },
+      );
 
       // Initialize session manager
       const manager = new SessionManager(
@@ -240,7 +240,20 @@ export const MultipleChoicePracticePage: React.FC = () => {
   const completeSession = async () => {
     if (!sessionManager || !collectionId || !currentVocab) {
       setCompleted(true);
+      setHasMoreWords(false);
       return;
+    }
+
+    const language = currentVocab.language || "en";
+
+    // In study mode, track studied vocabulary IDs for this session
+    if (isStudyMode && sessionManager) {
+      const sessionResults = sessionManager.getSessionResults();
+      const newStudiedIds = new Set(studiedVocabIds);
+      sessionResults.forEach((result) => {
+        newStudiedIds.add(result.vocabulary_id);
+      });
+      setStudiedVocabIds(newStudiedIds);
     }
 
     // In study mode, skip saving progress
@@ -248,7 +261,6 @@ export const MultipleChoicePracticePage: React.FC = () => {
       try {
         const stats = sessionManager.getStatistics();
         const results = sessionManager.getSessionResults();
-        const language = currentVocab.language || "en";
 
         // Save practice session
         await PracticeService.createPracticeSession({
@@ -282,6 +294,45 @@ export const MultipleChoicePracticePage: React.FC = () => {
       } catch (error) {
         console.error("Failed to save session:", error);
       }
+    }
+
+    // Check if there are more words to practice (for both study and normal mode)
+    try {
+      const userSettings =
+        await LearningSettingsService.getOrCreateLearningSettings();
+      let vocabData =
+        await VocabularyService.getVocabulariesByCollection(collectionId);
+
+      // In study mode, exclude already studied vocabularies
+      if (isStudyMode) {
+        const sessionResults = sessionManager?.getSessionResults() || [];
+        const currentStudiedIds = new Set(studiedVocabIds);
+        sessionResults.forEach((result) => {
+          currentStudiedIds.add(result.vocabulary_id);
+        });
+        vocabData = vocabData.filter((v) => !currentStudiedIds.has(v.id || ""));
+      }
+
+      const progressData = await PracticeService.getPracticeProgress(language);
+      const wordsProgress = progressData?.words_progress || [];
+
+      const nextBatch = WordSelectionService.selectWordsForPractice(
+        vocabData,
+        wordsProgress,
+        userSettings,
+        {
+          includeDueWords: true,
+          includeNewWords: true,
+          maxWords: batchSize,
+          shuffle: true,
+          currentMode: isStudyMode ? undefined : "multiplechoice", // Use same logic as initial selection
+        },
+      );
+
+      setHasMoreWords(nextBatch.length > 0);
+    } catch (error) {
+      console.error("Failed to check for more words:", error);
+      setHasMoreWords(false);
     }
 
     setCompleted(true);
@@ -372,27 +423,22 @@ export const MultipleChoicePracticePage: React.FC = () => {
             </div>
           </Card>
 
-          <div className="flex gap-3">
-            <Button
-              variant="glass"
-              size="md"
-              fullWidth
-              icon={RotateCcw}
-              onClick={handleRestart}
-            >
-              {t("practice.tryAgain")}
-            </Button>
-            <Button
-              variant="primary"
-              size="md"
-              fullWidth
-              onClick={() =>
-                navigate(isStudyMode ? "/collections" : "/practice")
+          <Button
+            variant="primary"
+            size="md"
+            fullWidth
+            onClick={() => {
+              if (hasMoreWords) {
+                handleRestart();
+              } else {
+                navigate(isStudyMode ? "/collections" : "/practice");
               }
-            >
-              {t("buttons.close")}
-            </Button>
-          </div>
+            }}
+          >
+            {hasMoreWords
+              ? t("practice.continue") || "Continue"
+              : t("buttons.close")}
+          </Button>
         </div>
       </>
     );
