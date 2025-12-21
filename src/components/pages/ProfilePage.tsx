@@ -13,6 +13,7 @@ import {
   Settings,
   Trash2,
   Upload,
+  Wifi,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
 import {
@@ -968,6 +969,36 @@ export const ProfilePage: React.FC = () => {
                 </p>
               </div>
             )}
+          </div>
+        </Card>
+
+        {/* Local Network Sync Section */}
+        <Card variant="glass">
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Wifi className="w-6 h-6 text-indigo-600" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {t("sync.localSync") || "Local Network Sync"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("sync.localSyncDescription") || "Sync with devices on your local network"}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2">
+              <Button
+                onClick={() => navigate("/local-sync")}
+                variant="primary"
+                fullWidth
+                icon={Wifi}
+              >
+                {t("sync.openLocalSync") || "Open Local Sync"}
+              </Button>
+            </div>
           </div>
         </Card>
 

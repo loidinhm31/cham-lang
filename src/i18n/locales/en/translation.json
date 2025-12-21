@@ -450,6 +450,30 @@
     "save": "Save",
     "cancel": "Cancel",
     "noOptionsFound": "No options found",
-    "back": "Back"
+    "back": "Back",
+    "remove": "Remove"
+  },
+  "sync": {
+    "localSync": "Local Network Sync",
+    "localSyncDescription": "Sync with devices on your local network",
+    "openLocalSync": "Open Local Sync",
+    "discovery": "Device Discovery",
+    "startDiscovery": "Start Discovery",
+    "stopDiscovery": "Stop Discovery",
+    "searching": "Searching for devices...",
+    "trustedDevices": "Trusted Devices",
+    "noTrustedDevices": "No trusted devices yet",
+    "trusted": "Trusted",
+    "pair": "Pair",
+    "pairingInstructions": "Enter this PIN on",
+    "confirmUnpair": "Remove trusted device",
+    "deviceRemoved": "Device removed",
+    "lastSynced": "Last synced",
+    "never": "Never",
+    "syncCount": "Syncs",
+    "syncNow": "Sync",
+    "syncStarted": "Sync started with",
+    "history": "Sync History",
+    "noHistory": "No sync history"
   }
 }

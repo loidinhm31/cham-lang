@@ -450,6 +450,30 @@
     "save": "Lưu",
     "cancel": "Hủy",
     "noOptionsFound": "Không tìm thấy tùy chọn nào",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "remove": "Xóa"
+  },
+  "sync": {
+    "localSync": "Đồng Bộ Mạng Cục Bộ",
+    "localSyncDescription": "Đồng bộ với thiết bị trên mạng cục bộ",
+    "openLocalSync": "Mở Đồng Bộ Cục Bộ",
+    "discovery": "Tìm Kiếm Thiết Bị",
+    "startDiscovery": "Bắt Đầu Tìm Kiếm",
+    "stopDiscovery": "Dừng Tìm Kiếm",
+    "searching": "Đang tìm kiếm thiết bị...",
+    "trustedDevices": "Thiết Bị Đã Ghép Nối",
+    "noTrustedDevices": "Chưa có thiết bị đã ghép nối",
+    "trusted": "Đã ghép nối",
+    "pair": "Ghép nối",
+    "pairingInstructions": "Nhập mã PIN này trên",
+    "confirmUnpair": "Xóa thiết bị đã ghép nối",
+    "deviceRemoved": "Đã xóa thiết bị",
+    "lastSynced": "Đồng bộ lần cuối",
+    "never": "Chưa bao giờ",
+    "syncCount": "Lần đồng bộ",
+    "syncNow": "Đồng Bộ",
+    "syncStarted": "Đã bắt đầu đồng bộ với",
+    "history": "Lịch Sử Đồng Bộ",
+    "noHistory": "Chưa có lịch sử đồng bộ"
   }
 }

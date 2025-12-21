@@ -19,6 +19,7 @@ import {
   CSVExportPage,
   CSVImportPage,
   StudyModePage,
+  LocalSyncPage,
 } from "@/components/pages";
 import { SyncNotificationProvider, DialogProvider } from "@/contexts";
 import "@/i18n/config";
@@ -58,6 +59,7 @@ const App: React.FC = () => {
               />
               <Route path="/csv/export" element={<CSVExportPage />} />
               <Route path="/csv/import" element={<CSVImportPage />} />
+              <Route path="/local-sync" element={<LocalSyncPage />} />
               <Route path="/practice" element={<PracticeModePage />} />
               <Route
                 path="/practice/flashcard"

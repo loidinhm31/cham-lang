@@ -8,6 +8,8 @@ mod csv_export;
 mod csv_import;
 mod notification_commands;
 mod scheduled_task_handler;
+mod mdns_sync;
+mod mdns_sync_commands;
 
 use collection_commands::*;
 use commands::*;
@@ -15,6 +17,7 @@ use csv_export::*;
 use csv_import::*;
 use gdrive::*;
 use notification_commands::*;
+use mdns_sync_commands::*;
 use scheduled_task_handler::NotificationTaskHandler;
 use local_db::LocalDatabase;
 use tauri::Manager;
@@ -80,7 +83,14 @@ pub fn run() {
             println!("💡 Google Drive sync available - configure in Profile");
 
             // Store the database in app state
-            app.manage(local_db);
+            app.manage(local_db.clone());
+
+            // Initialize mDNS sync manager
+            use mdns_sync::MdnsSyncManager;
+            use std::sync::Arc;
+            let mdns_sync_mgr = MdnsSyncManager::new(Arc::new(local_db))
+                .expect("Failed to initialize mDNS sync manager");
+            app.manage(mdns_sync_mgr);
 
             // Setup tray icon (desktop only)
             #[cfg(desktop)]
@@ -242,6 +252,20 @@ pub fn run() {
             schedule_test_notification_one_minute,
             schedule_daily_reminder,
             cancel_daily_reminder,
+            // mDNS sync commands
+            start_mdns_discovery,
+            stop_mdns_discovery,
+            get_discovered_devices,
+            initiate_pairing,
+            complete_pairing,
+            respond_to_pairing,
+            confirm_pairing,
+            get_trusted_devices,
+            remove_trusted_device,
+            sync_with_device,
+            get_sync_history,
+            cancel_sync,
+            get_mdns_diagnostics,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

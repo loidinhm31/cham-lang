@@ -407,6 +407,40 @@ impl LocalDatabase {
             [],
         );
 
+        // Trusted devices table (for mDNS sync pairing)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS trusted_devices (
+                id TEXT PRIMARY KEY,
+                device_id TEXT NOT NULL UNIQUE,
+                device_name TEXT NOT NULL,
+                shared_secret TEXT NOT NULL,
+                first_paired_at INTEGER NOT NULL,
+                last_synced_at INTEGER,
+                sync_count INTEGER DEFAULT 0,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )",
+            [],
+        )?;
+
+        // Sync history table (for mDNS sync tracking)
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS sync_history (
+                id TEXT PRIMARY KEY,
+                device_id TEXT NOT NULL,
+                direction TEXT NOT NULL,
+                bytes_transferred INTEGER NOT NULL,
+                duration_ms INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                error_message TEXT,
+                local_version_before INTEGER NOT NULL,
+                local_version_after INTEGER NOT NULL,
+                synced_at INTEGER NOT NULL,
+                FOREIGN KEY (device_id) REFERENCES trusted_devices(device_id) ON DELETE CASCADE
+            )",
+            [],
+        )?;
+
         // Create indexes
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_user ON vocabularies(user_id)", [])?;
@@ -443,6 +477,11 @@ impl LocalDatabase {
 
         // Indexes for normalized user learning languages
         conn.execute("CREATE INDEX IF NOT EXISTS idx_user_learning_languages_user ON user_learning_languages(user_id)", [])?;
+
+        // Indexes for mDNS sync tables
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_trusted_devices_device ON trusted_devices(device_id)", [])?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_sync_history_device ON sync_history(device_id)", [])?;
+        conn.execute("CREATE INDEX IF NOT EXISTS idx_sync_history_synced_at ON sync_history(synced_at)", [])?;
 
         Ok(())
     }

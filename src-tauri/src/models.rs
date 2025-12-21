@@ -353,3 +353,105 @@ pub struct UpdateLearningSettingsRequest {
     pub reminder_enabled: Option<bool>,
     pub reminder_time: Option<String>,
 }
+
+//==============================================================================
+// mDNS Sync Models
+//==============================================================================
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct TrustedDevice {
+    pub id: String,
+    pub device_id: String,
+    pub device_name: String,
+    #[serde(skip_serializing)] // Never send to frontend for security
+    pub shared_secret: String,
+    pub first_paired_at: i64,
+    pub last_synced_at: Option<i64>,
+    pub sync_count: i64,
+    pub created_at: i64,
+    pub updated_at: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SyncHistoryEntry {
+    pub id: String,
+    pub device_id: String,
+    pub device_name: Option<String>, // Joined from trusted_devices
+    pub direction: String,  // 'upload' | 'download'
+    pub bytes_transferred: i64,
+    pub duration_ms: i64,
+    pub status: String,  // 'success' | 'failed' | 'cancelled'
+    pub error_message: Option<String>,
+    pub local_version_before: i64,
+    pub local_version_after: i64,
+    pub synced_at: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SyncProgress {
+    pub session_id: String,
+    pub total_bytes: u64,
+    pub transferred_bytes: u64,
+    pub percentage: f32,
+    pub speed_bps: u64, // bytes per second
+    pub estimated_seconds_remaining: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct DiscoveredDevice {
+    pub device_id: String,
+    pub device_name: String,
+    pub ip_address: String,
+    pub port: u16,
+    pub version: String,
+    pub app_version: String,
+    pub is_trusted: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HandshakeRequest {
+    pub device_id: String,
+    pub device_name: String,
+    pub auth_token: String,
+    pub local_version: i64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct HandshakeResponse {
+    pub device_id: String,
+    pub device_name: String,
+    pub remote_version: i64,
+    pub session_id: String,
+    pub sync_direction: SyncDirection,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "lowercase")]
+pub enum SyncDirection {
+    Upload,   // Local is newer, upload to remote
+    Download, // Remote is newer, download from remote
+    None,     // Versions are equal, no sync needed
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PairingRequest {
+    pub device_id: String,
+    pub device_name: String,
+    pub pin: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct PairingResponse {
+    pub success: bool,
+    pub message: String,
+    pub shared_secret: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct IncomingPairingRequest {
+    pub device_id: String,
+    pub device_name: String,
+    pub ip_address: String,
+    pub port: u16,
+    pub timestamp: i64,
+}
