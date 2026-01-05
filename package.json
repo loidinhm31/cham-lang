@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "fix:format": "prettier --write ./src",
     "tauri": "tauri",
-    "tauri-dev": "tauri dev"
+    "tauri-dev": "tauri dev",
+    "version": "node scripts/bump-version.js"
   },
   "dependencies": {
     "@choochmeque/tauri-plugin-google-auth-api": "^0.3",
