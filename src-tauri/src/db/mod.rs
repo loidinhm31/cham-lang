@@ -284,7 +284,7 @@ impl LocalDatabase {
             "CREATE TABLE IF NOT EXISTS practice_results (
                 id TEXT PRIMARY KEY,
                 session_id TEXT NOT NULL,
-                vocabulary_id TEXT NOT NULL,
+                vocabulary_id TEXT,
                 word TEXT NOT NULL,
                 correct INTEGER NOT NULL,
                 practice_mode TEXT NOT NULL,
@@ -296,7 +296,7 @@ impl LocalDatabase {
             )",
             [],
         )?;
-
+        
         // Practice progress table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_progress (
