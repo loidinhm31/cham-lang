@@ -8,10 +8,61 @@ import type {
   PracticeMode,
   PracticeResult,
   WordProgress,
+  WordStatus,
+  RepetitionProgress,
 } from "../types/practice";
 import type { LearningSettings } from "../types/settings";
 import { getAlgorithm } from "./spacedRepetition";
 import type { ReviewResult } from "./spacedRepetition/types";
+
+const REPETITION_REQUIREMENTS: Record<WordStatus, number> = {
+  NEW: 3,
+  STILL_LEARNING: 2,
+  ALMOST_DONE: 1,
+  MASTERED: 1,
+};
+
+/**
+ * Determine word status based on progress
+ */
+function determineWordStatus(
+  wordProgress: WordProgress | undefined,
+): WordStatus {
+  // NEW if no progress or no prior practice
+  if (!wordProgress || wordProgress.total_reviews === 0) {
+    return "NEW";
+  }
+
+  // Determine status based on progress data
+  return determineProgressStatus(wordProgress);
+}
+
+/**
+ * Determine status from existing progress data
+ */
+function determineProgressStatus(wordProgress: WordProgress): WordStatus {
+  const box = wordProgress.leitner_box;
+  const consecutive = wordProgress.consecutive_correct_count;
+  const totalReviews = wordProgress.total_reviews;
+
+  // MASTERED: In final box (5+) or box 3 with strong performance
+  if (box >= 5 || (box === 3 && consecutive >= 2)) {
+    return "MASTERED";
+  }
+
+  // ALMOST_DONE: Box 4-5 or box 3 with some progress
+  if (box >= 4 || (box === 3 && consecutive >= 1)) {
+    return "ALMOST_DONE";
+  }
+
+  // STILL_LEARNING: Box 2-3 or 3+ total reviews
+  if (box >= 2 || totalReviews >= 3) {
+    return "STILL_LEARNING";
+  }
+
+  // Fallback (shouldn't reach here)
+  return "STILL_LEARNING";
+}
 
 export interface SessionState {
   // Word queues
@@ -35,6 +86,10 @@ export interface SessionState {
   totalQuestions: number;
   correctAnswers: number;
   incorrectAnswers: number;
+
+  // Status-based repetition tracking
+  wordStatusMap: Map<string, WordStatus>;
+  wordRepetitionTracker: Map<string, RepetitionProgress>;
 }
 
 export class SessionManager {
@@ -60,6 +115,26 @@ export class SessionManager {
       progressMap.set(wp.vocabulary_id, { ...wp });
     });
 
+    // Initialize status and repetition tracking
+    const wordStatusMap = new Map<string, WordStatus>();
+    const wordRepetitionTracker = new Map<string, RepetitionProgress>();
+
+    words.forEach((vocab) => {
+      const vocabId = vocab.id || "";
+      const progress = progressMap.get(vocabId);
+
+      // Determine status
+      const status = determineWordStatus(progress);
+      wordStatusMap.set(vocabId, status);
+
+      // Initialize repetition tracking
+      wordRepetitionTracker.set(vocabId, {
+        requiredRepetitions: REPETITION_REQUIREMENTS[status],
+        completedRepetitions: 0,
+        lastSeenAt: new Date(0),
+      });
+    });
+
     this.state = {
       activeQueue: [...words],
       completedWords: [],
@@ -75,6 +150,8 @@ export class SessionManager {
       totalQuestions: 0,
       correctAnswers: 0,
       incorrectAnswers: 0,
+      wordStatusMap,
+      wordRepetitionTracker,
     };
   }
 
@@ -82,72 +159,59 @@ export class SessionManager {
    * Get the next word to practice
    * Returns null if no more words available
    * Skips the current word to avoid showing the same word twice in a row
-   * Failed words only come back after completing first pass through all initial words
+   * Prioritizes words that need more repetitions
    */
   getNextWord(): Vocabulary | null {
     const currentWordId = this.state.currentWord?.id || "";
 
-    // Helper function to get next word from a queue, skipping the current word if possible
-    const getFromQueue = (
-      queue: Vocabulary[],
-      allowSameWord: boolean = false,
-    ): Vocabulary | null => {
-      if (queue.length === 0) return null;
+    // Priority 1: Words in active queue needing more repetitions
+    const activeNeedingReps = this.state.activeQueue.filter((vocab) => {
+      const vocabId = vocab.id || "";
+      const tracker = this.state.wordRepetitionTracker.get(vocabId);
+      return (
+        tracker && tracker.completedRepetitions < tracker.requiredRepetitions
+      );
+    });
 
-      // If only one word and it's the current word, return it if allowed
-      if (allowSameWord && queue.length === 1) {
-        const word = queue.shift();
-        return word || null;
-      }
+    if (activeNeedingReps.length > 0) {
+      // Try to get a different word than current
+      const differentWords = activeNeedingReps.filter(
+        (w) => w.id !== currentWordId,
+      );
+      const nextWord =
+        differentWords.length > 0 ? differentWords[0] : activeNeedingReps[0];
 
-      // Try to find a different word than current
-      let nextWord: Vocabulary | null = null;
-      let attempts = 0;
-      const maxAttempts = queue.length;
-
-      while (attempts < maxAttempts && queue.length > 0) {
-        const word = queue.shift();
-        if (word && (word.id || "") !== currentWordId) {
-          nextWord = word;
-          break;
-        } else if (word) {
-          // Put current word back at the end to try again later
-          queue.push(word);
-        }
-        attempts++;
-      }
-
+      this.state.currentWord = nextWord;
       return nextWord;
-    };
-
-    // Priority 1: Active queue (initial words) if first pass not complete
-    if (!this.state.firstPassComplete && this.state.activeQueue.length > 0) {
-      const nextWord = getFromQueue(this.state.activeQueue, false);
-      if (nextWord) {
-        this.state.currentWord = nextWord;
-        return nextWord;
-      }
-
-      // If we can't get a different word but queue is not empty, take it anyway
-      if (this.state.activeQueue.length > 0) {
-        const word = this.state.activeQueue.shift() || null;
-        this.state.currentWord = word;
-        return word;
-      }
     }
 
-    // Check if active queue is now empty for the first time
-    if (!this.state.firstPassComplete && this.state.activeQueue.length === 0) {
+    // Check if first pass complete (all words have been shown at least once)
+    if (
+      !this.state.firstPassComplete &&
+      this.state.activeQueue.every((vocab) => {
+        const vocabId = vocab.id || "";
+        const tracker = this.state.wordRepetitionTracker.get(vocabId);
+        return (
+          tracker &&
+          tracker.completedRepetitions >= tracker.requiredRepetitions
+        );
+      })
+    ) {
       this.state.firstPassComplete = true;
     }
 
-    // Priority 2: Failed words queue (only after first pass is complete)
+    // Priority 2: Failed words queue (after first pass complete)
     if (
       this.state.firstPassComplete &&
       this.state.failedWordsQueue.length > 0
     ) {
-      // Allow returning the same word if it's the only one left
-      const nextWord = getFromQueue(this.state.failedWordsQueue, true);
+      const differentWords = this.state.failedWordsQueue.filter(
+        (w) => w.id !== currentWordId,
+      );
+      const nextWord =
+        differentWords.length > 0
+          ? this.state.failedWordsQueue.shift()!
+          : this.state.failedWordsQueue.shift() || null;
 
       if (nextWord) {
         this.state.currentWord = nextWord;
@@ -155,21 +219,11 @@ export class SessionManager {
       }
     }
 
-    // Priority 3: Continue with active queue if we're on second+ pass
-    if (this.state.firstPassComplete && this.state.activeQueue.length > 0) {
-      const nextWord = getFromQueue(this.state.activeQueue, true);
-
-      if (nextWord) {
-        this.state.currentWord = nextWord;
-        return nextWord;
-      }
-    }
-
-    return null;
+    return null; // Session complete
   }
 
   /**
-   * Handle a correct answer with multi-mode completion tracking
+   * Handle a correct answer with repetition and multi-mode completion tracking
    */
   handleCorrectAnswer(
     vocabulary: Vocabulary,
@@ -177,41 +231,16 @@ export class SessionManager {
   ): ReviewResult {
     const vocabularyId = vocabulary.id || "";
 
-    // Update statistics (always track stats)
-    this.state.totalQuestions++;
-    this.state.correctAnswers++;
-
-    // Add to session results (always track session results)
-    this.state.sessionResults.push({
-      vocabulary_id: vocabularyId,
-      word: vocabulary.word,
-      correct: true,
-      mode: this.state.mode,
-      time_spent_seconds: timeSpentSeconds,
-    });
-
-    // Move to completed
-    this.state.completedWords.push(vocabulary);
-
-    // If not tracking progress, return a simple result without updating progress
-    if (!this.trackProgress) {
-      const wordProgress =
-        this.state.wordProgressMap.get(vocabularyId) ||
-        this.createInitialWordProgress(vocabularyId, vocabulary.word);
-
-      return {
-        updatedProgress: wordProgress,
-        boxChanged: false,
-        previousBox: wordProgress.leitner_box,
-        newBox: wordProgress.leitner_box,
-        nextReviewDate: new Date(wordProgress.next_review_date),
-        intervalDays: wordProgress.interval_days,
-        message: "Study mode - progress not tracked",
-      };
+    // Update repetition tracker
+    const repTracker = this.state.wordRepetitionTracker.get(vocabularyId);
+    if (repTracker) {
+      repTracker.completedRepetitions += 1;
+      repTracker.lastSeenAt = new Date();
     }
 
-    // Normal progress tracking logic
-    const algorithm = getAlgorithm(this.settings);
+    const completedAllReps =
+      repTracker &&
+      repTracker.completedRepetitions >= repTracker.requiredRepetitions;
 
     // Get or create word progress
     let wordProgress = this.state.wordProgressMap.get(vocabularyId);
@@ -223,52 +252,104 @@ export class SessionManager {
       this.state.wordProgressMap.set(vocabularyId, wordProgress);
     }
 
-    // Add current mode to completed modes in cycle
-    const completedModes = wordProgress.completed_modes_in_cycle || [];
-    if (!completedModes.includes(this.state.mode)) {
-      completedModes.push(this.state.mode);
-    }
+    // Update statistics (always)
+    this.state.totalQuestions++;
+    this.state.correctAnswers++;
 
-    // Check if all three modes are completed
-    const allModesCompleted =
-      completedModes.includes("flashcard") &&
-      completedModes.includes("fillword") &&
-      completedModes.includes("multiplechoice");
+    // Record session result
+    this.state.sessionResults.push({
+      vocabulary_id: vocabularyId,
+      word: vocabulary.word,
+      correct: true,
+      mode: this.state.mode,
+      time_spent_seconds: timeSpentSeconds,
+    });
 
     let reviewResult: ReviewResult;
 
-    if (allModesCompleted) {
-      // All modes completed - advance the word (box, interval, etc.)
-      reviewResult = algorithm.processCorrectAnswer(
-        wordProgress,
-        this.settings,
+    if (completedAllReps) {
+      // Move to completed queue
+      const idx = this.state.activeQueue.findIndex(
+        (w) => (w.id || "") === vocabularyId,
       );
+      if (idx >= 0) {
+        this.state.activeQueue.splice(idx, 1);
+        this.state.completedWords.push(vocabulary);
+      }
 
-      // Reset completed modes for next cycle
-      reviewResult.updatedProgress.completed_modes_in_cycle = [];
+      // Handle multi-mode cycle logic
+      if (!this.trackProgress) {
+        // Study mode - don't update progress
+        reviewResult = {
+          updatedProgress: wordProgress,
+          boxChanged: false,
+          previousBox: wordProgress.leitner_box,
+          newBox: wordProgress.leitner_box,
+          nextReviewDate: new Date(wordProgress.next_review_date),
+          intervalDays: wordProgress.interval_days,
+          message: "Study mode - progress not tracked",
+        };
+      } else {
+        // Practice mode - update progress
+        const completedModes = [
+          ...(wordProgress.completed_modes_in_cycle || []),
+        ];
+        if (!completedModes.includes(this.state.mode)) {
+          completedModes.push(this.state.mode);
+        }
+
+        const allModesCompleted =
+          completedModes.includes("flashcard") &&
+          completedModes.includes("fillword") &&
+          completedModes.includes("multiplechoice");
+
+        const algorithm = getAlgorithm(this.settings);
+
+        if (allModesCompleted) {
+          // Advance in SR/Leitner system
+          reviewResult = algorithm.processCorrectAnswer(
+            wordProgress,
+            this.settings,
+          );
+          reviewResult.updatedProgress.completed_modes_in_cycle = [];
+          reviewResult.message = `Word mastered! Advanced to box ${reviewResult.updatedProgress.leitner_box}`;
+        } else {
+          // Mode completed but not all modes yet
+          reviewResult = {
+            updatedProgress: {
+              ...wordProgress,
+              completed_modes_in_cycle: completedModes,
+              total_reviews: wordProgress.total_reviews + 1,
+              correct_count: wordProgress.correct_count + 1,
+              last_practiced: new Date().toISOString(),
+            },
+            boxChanged: false,
+            previousBox: wordProgress.leitner_box,
+            newBox: wordProgress.leitner_box,
+            nextReviewDate: new Date(wordProgress.next_review_date),
+            intervalDays: wordProgress.interval_days,
+            message: `Mode completed! ${3 - completedModes.length} more mode(s) to advance.`,
+          };
+        }
+
+        this.state.wordProgressMap.set(
+          vocabularyId,
+          reviewResult.updatedProgress,
+        );
+      }
     } else {
-      // Not all modes completed yet - update mode list but don't advance
-      const updatedProgress = {
-        ...wordProgress,
-        completed_modes_in_cycle: completedModes,
-        correct_count: wordProgress.correct_count + 1,
-        last_practiced: new Date().toISOString(),
-        total_reviews: wordProgress.total_reviews + 1,
-      };
-
+      // Not all repetitions complete - keep in active queue
+      const status = this.state.wordStatusMap.get(vocabularyId) || "NEW";
       reviewResult = {
-        updatedProgress,
+        updatedProgress: wordProgress,
         boxChanged: false,
         previousBox: wordProgress.leitner_box,
         newBox: wordProgress.leitner_box,
         nextReviewDate: new Date(wordProgress.next_review_date),
         intervalDays: wordProgress.interval_days,
-        message: `Mode completed! Complete ${3 - completedModes.length} more mode(s) to advance.`,
+        message: `Correct! ${repTracker?.completedRepetitions}/${repTracker?.requiredRepetitions} repetitions (${status})`,
       };
     }
-
-    // Update word progress in map
-    this.state.wordProgressMap.set(vocabularyId, reviewResult.updatedProgress);
 
     return reviewResult;
   }
@@ -281,6 +362,13 @@ export class SessionManager {
     timeSpentSeconds: number,
   ): ReviewResult {
     const vocabularyId = vocabulary.id || "";
+
+    // CRITICAL: Reset repetition counter on incorrect answer
+    const repTracker = this.state.wordRepetitionTracker.get(vocabularyId);
+    if (repTracker) {
+      repTracker.completedRepetitions = 0;
+      repTracker.lastSeenAt = new Date();
+    }
 
     // Update statistics (always track stats)
     this.state.totalQuestions++;
@@ -450,6 +538,38 @@ export class SessionManager {
    */
   getState(): SessionState {
     return { ...this.state };
+  }
+
+  /**
+   * Get word status
+   */
+  getWordStatus(vocabularyId: string): WordStatus {
+    return this.state.wordStatusMap.get(vocabularyId) || "NEW";
+  }
+
+  /**
+   * Get word repetition progress
+   */
+  getWordRepetitionProgress(vocabularyId: string): RepetitionProgress {
+    return (
+      this.state.wordRepetitionTracker.get(vocabularyId) || {
+        requiredRepetitions: 1,
+        completedRepetitions: 0,
+        lastSeenAt: new Date(),
+      }
+    );
+  }
+
+  /**
+   * Get session statistics
+   */
+  getSessionStats() {
+    return {
+      totalQuestions: this.state.totalQuestions,
+      correctAnswers: this.state.correctAnswers,
+      incorrectAnswers: this.state.incorrectAnswers,
+      wordsCompleted: this.state.completedWords.length,
+    };
   }
 
   /**

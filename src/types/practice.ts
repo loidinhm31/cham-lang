@@ -1,5 +1,13 @@
 export type PracticeMode = "flashcard" | "fillword" | "multiplechoice";
 
+export type WordStatus = "NEW" | "STILL_LEARNING" | "ALMOST_DONE" | "MASTERED";
+
+export interface RepetitionProgress {
+  requiredRepetitions: number;
+  completedRepetitions: number;
+  lastSeenAt: Date;
+}
+
 export interface PracticeResult {
   vocabulary_id: string;
   word: string;

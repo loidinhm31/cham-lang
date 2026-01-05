@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, Check, X } from "lucide-react";
 import { TopBar } from "@/components/molecules";
-import { Button, Card, FlashCard } from "@/components/atoms";
+import { Button, Card, FlashCard, StatusBadge } from "@/components/atoms";
 import { VocabularyService } from "@/services/vocabulary.service";
 import { PracticeService } from "@/services/practice.service";
 import { LearningSettingsService } from "@/services/learningSettings.service";
@@ -450,6 +450,30 @@ export const FlashcardPracticePage: React.FC = () => {
             ></div>
           </div>
         </Card>
+
+        {/* Status and Repetition Indicator */}
+        {currentVocab && sessionManager && (
+          <Card variant="glass">
+            <div className="flex items-center justify-between">
+              <StatusBadge
+                status={sessionManager.getWordStatus(currentVocab.id || "")}
+                currentRep={
+                  sessionManager.getWordRepetitionProgress(
+                    currentVocab.id || "",
+                  ).completedRepetitions
+                }
+                totalReps={
+                  sessionManager.getWordRepetitionProgress(
+                    currentVocab.id || "",
+                  ).requiredRepetitions
+                }
+              />
+              <div className="text-sm text-gray-600">
+                Question {sessionManager.getSessionStats().totalQuestions + 1}
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Flashcard */}
         <FlashCard
