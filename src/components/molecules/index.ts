@@ -7,3 +7,6 @@ export { StatsCard } from "./StatsCard";
 export { FillWordCard } from "./FillWordCard";
 export { MultipleChoiceCard } from "./MultipleChoiceCard";
 export { BulkActionToolbar } from "./BulkActionToolbar";
+export { HeroCard } from "./HeroCard";
+export { QuickActionsCard } from "./QuickActionsCard";
+export { SearchFiltersCard } from "./SearchFiltersCard";

@@ -192,8 +192,7 @@ export class SessionManager {
         const vocabId = vocab.id || "";
         const tracker = this.state.wordRepetitionTracker.get(vocabId);
         return (
-          tracker &&
-          tracker.completedRepetitions >= tracker.requiredRepetitions
+          tracker && tracker.completedRepetitions >= tracker.requiredRepetitions
         );
       })
     ) {

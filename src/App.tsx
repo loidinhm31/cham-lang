@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import {
   AddVocabularyPage,
@@ -21,10 +21,16 @@ import {
   StudyModePage,
 } from "@/components/pages";
 import { SyncNotificationProvider, DialogProvider } from "@/contexts";
+import { FontSizeService } from "@/services";
 import "@/i18n/config";
 import { MainLayout } from "@/components/templates/MainLayout";
 
 const App: React.FC = () => {
+  // Initialize font size on app start
+  useEffect(() => {
+    FontSizeService.initialize();
+  }, []);
+
   return (
     <BrowserRouter>
       <DialogProvider>

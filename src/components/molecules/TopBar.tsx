@@ -40,50 +40,48 @@ export const TopBar: React.FC<TopBarProps> = ({
   };
 
   return (
-    <div className="sticky top-0 z-40 pt-safe">
-      <div className="max-w-2xl md:max-w-4xl lg:max-w-6xl xl:max-w-7xl mx-auto px-4 pt-4">
-        <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-2xl p-4 shadow-lg">
-          {showBack ? (
-            <button
-              onClick={handleBackClick}
-              className="p-2 hover:bg-white/50 rounded-xl transition"
-            >
-              <ArrowLeft className="w-6 h-6 text-gray-800" />
-            </button>
-          ) : showMenu ? (
-            <button
-              onClick={onMenuClick}
-              className="p-2 hover:bg-white/50 rounded-xl transition"
-            >
-              <Menu className="w-6 h-6 text-gray-800" />
-            </button>
-          ) : (
-            <div className="w-10" />
-          )}
+    <div className="sticky top-0 z-40 pt-safe px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-4">
+      <div className="flex items-center justify-between bg-white/60 backdrop-blur-lg rounded-2xl p-4 shadow-lg">
+        {showBack ? (
+          <button
+            onClick={handleBackClick}
+            className="p-2 hover:bg-white/50 rounded-xl transition"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-800" />
+          </button>
+        ) : showMenu ? (
+          <button
+            onClick={onMenuClick}
+            className="p-2 hover:bg-white/50 rounded-xl transition"
+          >
+            <Menu className="w-6 h-6 text-gray-800" />
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
 
-          <h1 className="text-xl font-bold text-gray-800">{title}</h1>
+        <h1 className="text-xl font-bold text-gray-800">{title}</h1>
 
-          {showNotifications ? (
-            <button
-              onClick={handleNotificationClick}
-              className="p-2 hover:bg-white/50 rounded-xl transition relative"
-              title={
-                hasSyncNotification
-                  ? "Cloud backup version is different from local"
-                  : "Notifications"
-              }
-            >
-              <Bell
-                className={`w-6 h-6 ${hasSyncNotification ? "text-blue-600" : "text-gray-800"}`}
-              />
-              {hasSyncNotification && (
-                <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
-              )}
-            </button>
-          ) : (
-            <div className="w-10" />
-          )}
-        </div>
+        {showNotifications ? (
+          <button
+            onClick={handleNotificationClick}
+            className="p-2 hover:bg-white/50 rounded-xl transition relative"
+            title={
+              hasSyncNotification
+                ? "Cloud backup version is different from local"
+                : "Notifications"
+            }
+          >
+            <Bell
+              className={`w-6 h-6 ${hasSyncNotification ? "text-blue-600" : "text-gray-800"}`}
+            />
+            {hasSyncNotification && (
+              <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full animate-pulse"></span>
+            )}
+          </button>
+        ) : (
+          <div className="w-10" />
+        )}
       </div>
     </div>
   );

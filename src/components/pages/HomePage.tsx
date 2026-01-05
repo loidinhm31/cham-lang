@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Brain, Plus } from "lucide-react";
-import { SearchBar, TopBar } from "@/components/molecules";
-import { CollectionList } from "@/components/organisms";
 import {
-  Button,
-  SearchableMultiSelect,
-  Select,
-  Accordion,
-} from "@/components/atoms";
+  TopBar,
+  HeroCard,
+  QuickActionsCard,
+  SearchFiltersCard,
+} from "@/components/molecules";
+import { CollectionList } from "@/components/organisms";
 import { VocabularyService } from "@/services/vocabulary.service";
 import { CollectionService } from "@/services/collection.service";
 import type { Collection } from "@/types/collection";
@@ -183,98 +181,38 @@ export const HomePage: React.FC = () => {
     <>
       <TopBar title={t("app.name")} showBack={false} />
 
-      <div className="px-6 pt-8 space-y-6 pb-24">
-        {/* Hero Section - Vibrant Block-Based */}
-        <div className="text-center py-8">
-          <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-purple-400 to-pink-500 rounded-[32px] border-[4px] border-purple-600 shadow-[0_10px_0_rgba(0,0,0,0.15),0_5px_15px_rgba(0,0,0,0.12)] flex items-center justify-center transform hover:rotate-3 transition-transform duration-300">
-            <img src="/chameleon.svg" alt="Cham Lang" className="w-20 h-20" />
-          </div>
-          <h1 className="text-5xl font-black text-gray-900 mb-3 tracking-tight">
-            {t("app.name").toUpperCase()}
-          </h1>
-          <p className="text-xl font-semibold text-indigo-600">
-            {t("app.tagline")}
-          </p>
-        </div>
-
-        {/* Search Bar */}
-        <SearchBar
-          value={searchQuery}
-          onChange={setSearchQuery}
-          onSearch={handleSearch}
-          placeholder={t("vocabulary.search")}
-        />
-
-        {/* Filter Accordion */}
-        <Accordion title={t("buttons.filter")} defaultOpen={false}>
-          {/* Topic and Tag Filters */}
-          <div className="flex flex-col md:flex-row gap-4 pt-4">
-            <SearchableMultiSelect
-              label={t("vocabulary.topics")}
-              options={availableTopics}
-              selected={selectedTopics}
-              onChange={setSelectedTopics}
-              placeholder={t("vocabulary.selectTopics")}
-            />
-            <SearchableMultiSelect
-              label={t("vocabulary.tags")}
-              options={availableTags}
-              selected={selectedTags}
-              onChange={setSelectedTags}
-              placeholder={t("vocabulary.selectTags")}
-            />
+      <div className="px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-8 pb-24">
+        {/* Dashboard Grid Layout - Responsive */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 mb-6">
+          {/* Hero Card - Responsive spanning */}
+          <div className="lg:col-span-2 xl:col-span-2 2xl:col-span-3">
+            <HeroCard />
           </div>
 
-          {/* Sort Selector */}
-          <Select
-            label={t("collections.sortBy")}
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            options={[
-              {
-                value: "latestUpdated",
-                label: t("collections.sortLatestUpdated"),
-              },
-              {
-                value: "latestCreated",
-                label: t("collections.sortLatestCreated"),
-              },
-              {
-                value: "oldestUpdated",
-                label: t("collections.sortOldestUpdated"),
-              },
-              {
-                value: "oldestCreated",
-                label: t("collections.sortOldestCreated"),
-              },
-              { value: "name", label: t("collections.sortName") },
-            ]}
-          />
-        </Accordion>
+          {/* Quick Actions Card - Responsive spanning */}
+          <div className="lg:col-span-1 xl:col-span-2 2xl:col-span-3">
+            <QuickActionsCard />
+          </div>
 
-        {/* Action Buttons - Vibrant Block Layout */}
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            variant="secondary"
-            size="lg"
-            icon={Brain}
-            onClick={() => navigate("/practice")}
-            className="h-20 flex-col gap-2"
-          >
-            {t("practice.title")}
-          </Button>
-          <Button
-            variant="primary"
-            size="lg"
-            icon={Plus}
-            onClick={() => navigate("/vocabulary/add")}
-            className="h-20 flex-col gap-2"
-          >
-            {t("vocabulary.add")}
-          </Button>
+          {/* Search & Filters Card - Full width */}
+          <div className="lg:col-span-3 xl:col-span-4 2xl:col-span-6">
+            <SearchFiltersCard
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSearch={handleSearch}
+              availableTopics={availableTopics}
+              availableTags={availableTags}
+              selectedTopics={selectedTopics}
+              selectedTags={selectedTags}
+              onTopicsChange={setSelectedTopics}
+              onTagsChange={setSelectedTags}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          </div>
         </div>
 
-        {/* Collection List */}
+        {/* Collection List - Full width */}
         <CollectionList
           collections={collections}
           onCollectionClick={handleCollectionClick}
