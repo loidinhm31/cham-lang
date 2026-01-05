@@ -31,7 +31,7 @@ This guide explains how to set up Android app signing for both local development
 If you don't have a keystore yet, generate one using `keytool`:
 
 ```bash
-keytool -genkey -v -keystore ~/cham-lang-keystore.jks \
+keytool -genkey -v -keystore ./cham-lang-keystore.jks \
   -keyalg RSA -keysize 2048 -validity 10000 \
   -alias cham-lang-key
 ```
@@ -75,7 +75,7 @@ pnpm tauri android build
 Convert your keystore to base64 for storage in GitHub Secrets:
 
 ```bash
-base64 -i ~/cham-lang-keystore.jks          # Linux (copy output)
+base64 -i ./cham-lang-keystore.jks          # Linux (copy output)
 ```
 
 ### 2. Add GitHub Secrets
