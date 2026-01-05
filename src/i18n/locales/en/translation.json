@@ -125,6 +125,13 @@
     "title": "Settings",
     "language": "Interface Language",
     "languageDescription": "Choose your preferred language for the app",
+    "fontSize": "Text Size",
+    "fontSizeDescription": "Adjust the size of text throughout the app",
+    "selectFontSize": "Select Font Size",
+    "decrease": "Decrease",
+    "increase": "Increase",
+    "preview": "Preview",
+    "fontSizePreviewText": "The quick brown fox jumps over the lazy dog",
     "nativeLanguage": "Native Language",
     "learningLanguages": "Learning Languages",
     "theme": "Theme",
@@ -440,6 +447,12 @@
     "simplePlaceholder": "Collection\tWord\tDefinition\n6과\t셰어하우스\tshare house\n6과\t정착하다\tđịnh cư\n7과\t풍속 화가\thọa sĩ tranh phong tục",
     "simpleHelp": "Simply copy 3 columns from Excel: Collection Name, Word, and Definition. Paste here and import!",
     "noSimpleCsvText": "Please paste the content from Excel (3 columns: collection, word, definition)"
+  },
+  "fontSizes": {
+    "small": "Small",
+    "medium": "Medium (Default)",
+    "large": "Large",
+    "extra-large": "Extra Large"
   },
   "common": {
     "loading": "Loading...",

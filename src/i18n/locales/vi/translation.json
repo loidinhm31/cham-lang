@@ -125,6 +125,13 @@
     "title": "Cài Đặt",
     "language": "Ngôn Ngữ Giao Diện",
     "languageDescription": "Chọn ngôn ngữ bạn muốn sử dụng cho ứng dụng",
+    "fontSize": "Kích Thước Chữ",
+    "fontSizeDescription": "Điều chỉnh kích thước chữ trong toàn bộ ứng dụng",
+    "selectFontSize": "Chọn Kích Thước Chữ",
+    "decrease": "Giảm",
+    "increase": "Tăng",
+    "preview": "Xem Trước",
+    "fontSizePreviewText": "Chữ mẫu để xem kích thước hiển thị",
     "nativeLanguage": "Ngôn Ngữ Mẹ Đẻ",
     "learningLanguages": "Ngôn Ngữ Đang Học",
     "theme": "Giao Diện",
@@ -440,6 +447,12 @@
     "simplePlaceholder": "Bộ sưu tập\tTừ\tĐịnh nghĩa\n6과\t셰어하우스\tshare house\n6과\t정착하다\tđịnh cư\n7과\t풍속 화가\thọa sĩ tranh phong tục",
     "simpleHelp": "Chỉ cần sao chép 3 cột từ Excel: Tên bộ sưu tập, Từ, và Định nghĩa. Dán vào đây và nhập!",
     "noSimpleCsvText": "Vui lòng dán nội dung từ Excel (3 cột: bộ sưu tập, từ, định nghĩa)"
+  },
+  "fontSizes": {
+    "small": "Nhỏ",
+    "medium": "Trung Bình (Mặc Định)",
+    "large": "Lớn",
+    "extra-large": "Rất Lớn"
   },
   "common": {
     "loading": "Đang tải...",

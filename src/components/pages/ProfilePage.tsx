@@ -10,8 +10,11 @@ import {
   Languages,
   LogIn,
   LogOut,
+  Minus,
+  Plus,
   Settings,
   Trash2,
+  Type,
   Upload,
 } from "lucide-react";
 import { invoke } from "@tauri-apps/api/core";
@@ -23,7 +26,12 @@ import {
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
 import { useDialog, useSyncNotification } from "@/contexts";
-import { LearningSettingsService, NotificationService } from "@/services";
+import {
+  FontSizeService,
+  LearningSettingsService,
+  NotificationService,
+} from "@/services";
+import type { FontSizeOption } from "@/services";
 
 // OAuth configuration - these should be environment variables in production
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
@@ -44,6 +52,9 @@ export const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<string>(
     i18n.language || "en",
+  );
+  const [currentFontSize, setCurrentFontSize] = useState<FontSizeOption>(
+    FontSizeService.getFontSize(),
   );
   const [reminderEnabled, setReminderEnabled] = useState<boolean>(false);
   const [reminderTime, setReminderTime] = useState<string>("19:00"); // Default 7:00 PM
@@ -623,6 +634,29 @@ export const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleFontSizeChange = (size: FontSizeOption) => {
+    try {
+      FontSizeService.setFontSize(size);
+      setCurrentFontSize(size);
+      showAlert(t("settings.saved") || "Font size changed successfully!", {
+        variant: "success",
+      });
+    } catch (error) {
+      console.error("Failed to change font size:", error);
+      showAlert("Failed to change font size", { variant: "error" });
+    }
+  };
+
+  const handleIncreaseFontSize = () => {
+    const newSize = FontSizeService.increase();
+    setCurrentFontSize(newSize);
+  };
+
+  const handleDecreaseFontSize = () => {
+    const newSize = FontSizeService.decrease();
+    setCurrentFontSize(newSize);
+  };
+
   const handleTestNotification = async () => {
     try {
       setLoading(true);
@@ -739,7 +773,7 @@ export const ProfilePage: React.FC = () => {
     <>
       <TopBar title={t("nav.profile")} showBack={false} />
 
-      <div className="min-h-screen p-6 space-y-6">
+      <div className="min-h-screen px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 space-y-6">
         {/* Language Settings Section */}
         <Card variant="glass">
           <div className="space-y-4">
@@ -765,6 +799,81 @@ export const ProfilePage: React.FC = () => {
                 value={currentLanguage}
                 onChange={(e) => handleLanguageChange(e.target.value)}
               />
+            </div>
+          </div>
+        </Card>
+
+        {/* Font Size Settings Section */}
+        <Card variant="glass">
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <Type className="w-6 h-6 text-purple-600" />
+              <div>
+                <h3 className="text-lg font-bold text-gray-800">
+                  {t("settings.fontSize") || "Text Size"}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {t("settings.fontSizeDescription") ||
+                    "Adjust the size of text throughout the app"}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-2 space-y-4">
+              {/* Quick Increase/Decrease Buttons */}
+              <div className="flex items-center justify-between gap-4">
+                <Button
+                  onClick={handleDecreaseFontSize}
+                  disabled={currentFontSize === "small"}
+                  variant="secondary"
+                  icon={Minus}
+                  className="flex-1"
+                >
+                  {t("settings.decrease") || "Decrease"}
+                </Button>
+                <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 min-w-[140px] text-center">
+                  <span className="text-sm font-bold text-indigo-900">
+                    {t(`fontSizes.${currentFontSize}`) ||
+                      FontSizeService.getConfig(currentFontSize).label}
+                  </span>
+                </div>
+                <Button
+                  onClick={handleIncreaseFontSize}
+                  disabled={currentFontSize === "extra-large"}
+                  variant="secondary"
+                  icon={Plus}
+                  className="flex-1"
+                >
+                  {t("settings.increase") || "Increase"}
+                </Button>
+              </div>
+
+              {/* Dropdown Selector */}
+              <Select
+                label={t("settings.selectFontSize") || "Select Font Size"}
+                options={FontSizeService.getOptions().map((config) => ({
+                  value: config.value,
+                  label: t(`fontSizes.${config.value}`) || config.label,
+                }))}
+                value={currentFontSize}
+                onChange={(e) =>
+                  handleFontSizeChange(e.target.value as FontSizeOption)
+                }
+              />
+
+              {/* Preview Text */}
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <p className="text-xs text-gray-500 mb-2">
+                  {t("settings.preview") || "Preview:"}
+                </p>
+                <p className="text-gray-800">
+                  {t("app.tagline") || "Adapt to Learn"}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {t("settings.fontSizePreviewText") ||
+                    "The quick brown fox jumps over the lazy dog"}
+                </p>
+              </div>
             </div>
           </div>
         </Card>

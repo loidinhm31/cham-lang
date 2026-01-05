@@ -1,5 +1,6 @@
 export * from "./collection.service";
 export * from "./csv.service";
+export * from "./fontSize.service";
 export * from "./learningSettings.service";
 export * from "./notification.service";
 export * from "./practice.service";
