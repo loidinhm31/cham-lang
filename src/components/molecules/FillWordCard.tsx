@@ -35,8 +35,10 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
     setSubmitted(true);
 
     // Always auto-evaluate the answer
-    const userAnswer = answer.trim().toLowerCase();
-    const correct = userAnswer === correctAnswer.toLowerCase();
+    // Normalize Unicode to handle Vietnamese diacritics (NFC form)
+    const userAnswer = answer.trim().toLowerCase().normalize('NFC');
+    const correctAnswerNormalized = correctAnswer.toLowerCase().normalize('NFC');
+    const correct = userAnswer === correctAnswerNormalized;
     setIsCorrect(correct);
 
     if (correct) {
