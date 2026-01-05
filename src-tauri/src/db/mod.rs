@@ -274,7 +274,7 @@ impl LocalDatabase {
                 completed_at INTEGER NOT NULL,
                 duration_seconds INTEGER NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users(id),
-                FOREIGN KEY (collection_id) REFERENCES collections(id)
+                FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
             )",
             [],
         )?;
