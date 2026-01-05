@@ -821,17 +821,17 @@ export const ProfilePage: React.FC = () => {
 
             <div className="pt-2 space-y-4">
               {/* Quick Increase/Decrease Buttons */}
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
                 <Button
                   onClick={handleDecreaseFontSize}
                   disabled={currentFontSize === "small"}
                   variant="secondary"
                   icon={Minus}
-                  className="flex-1"
+                  className="sm:flex-1"
                 >
                   {t("settings.decrease") || "Decrease"}
                 </Button>
-                <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 min-w-[140px] text-center">
+                <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 sm:min-w-[140px] text-center">
                   <span className="text-sm font-bold text-indigo-900">
                     {t(`fontSizes.${currentFontSize}`) ||
                       FontSizeService.getConfig(currentFontSize).label}
@@ -842,7 +842,7 @@ export const ProfilePage: React.FC = () => {
                   disabled={currentFontSize === "extra-large"}
                   variant="secondary"
                   icon={Plus}
-                  className="flex-1"
+                  className="sm:flex-1"
                 >
                   {t("settings.increase") || "Increase"}
                 </Button>

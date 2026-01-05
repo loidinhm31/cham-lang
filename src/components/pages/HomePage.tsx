@@ -182,19 +182,19 @@ export const HomePage: React.FC = () => {
       <TopBar title={t("app.name")} showBack={false} />
 
       <div className="px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-8 pb-24">
-        {/* Dashboard Grid Layout - Responsive */}
+        {/* Dashboard Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-6 gap-6 mb-6">
-          {/* Hero Card - Responsive spanning */}
+          {/* Hero Card */}
           <div className="lg:col-span-2 xl:col-span-2 2xl:col-span-3">
             <HeroCard />
           </div>
 
-          {/* Quick Actions Card - Responsive spanning */}
+          {/* Quick Actions Card */}
           <div className="lg:col-span-1 xl:col-span-2 2xl:col-span-3">
             <QuickActionsCard />
           </div>
 
-          {/* Search & Filters Card - Full width */}
+          {/* Search & Filters Card */}
           <div className="lg:col-span-3 xl:col-span-4 2xl:col-span-6">
             <SearchFiltersCard
               searchQuery={searchQuery}
@@ -212,7 +212,7 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        {/* Collection List - Full width */}
+        {/* Collection List */}
         <CollectionList
           collections={collections}
           onCollectionClick={handleCollectionClick}
