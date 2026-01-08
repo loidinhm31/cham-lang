@@ -6,6 +6,7 @@ export interface RepetitionProgress {
   requiredRepetitions: number;
   completedRepetitions: number;
   lastSeenAt: Date;
+  failureCount: number;
 }
 
 export interface PracticeResult {
