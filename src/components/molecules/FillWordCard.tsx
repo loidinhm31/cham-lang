@@ -106,7 +106,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
             {t("practice.fillWordTitle")}
           </h3>
           <div className="bg-white rounded-3xl p-6 border-[3px] border-gray-300 shadow-[0_6px_0_rgba(0,0,0,0.1),0_3px_8px_rgba(0,0,0,0.08)]">
-            <p className="text-2xl font-semibold text-gray-900 leading-relaxed">
+            <p className="text-2xl font-semibold text-gray-900 leading-relaxed whitespace-pre-line">
               {definition}
             </p>
             {audioUrl && (
@@ -173,7 +173,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
                     <p className="text-sm font-bold text-gray-600 mb-2">
                       {t("practice.yourAnswer")}
                     </p>
-                    <p className="text-xl font-bold text-gray-900">
+                    <p className="text-xl font-bold text-gray-900 whitespace-pre-line">
                       {answer.trim()}
                     </p>
                   </div>
@@ -181,7 +181,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
                     <p className="text-sm font-bold text-gray-600 mb-2">
                       {t("practice.correctAnswer")}
                     </p>
-                    <p className="text-xl font-bold text-gray-900">
+                    <p className="text-xl font-bold text-gray-900 whitespace-pre-line">
                       {correctAnswer}
                     </p>
                   </div>
@@ -233,7 +233,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
                 {!isCorrect && (
                   <p className="text-base font-semibold">
                     {t("practice.theCorrectAnswerIs")}{" "}
-                    <span className="font-black text-lg">{correctAnswer}</span>
+                    <span className="font-black text-lg whitespace-pre-line">{correctAnswer}</span>
                   </p>
                 )}
               </div>

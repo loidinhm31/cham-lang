@@ -61,7 +61,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
             <div className="w-28 h-28 bg-white/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <img src="/chameleon.svg" alt="Cham Lang" className="w-20 h-20" />
             </div>
-            <h2 className="text-5xl font-black text-white mb-3 text-center drop-shadow-lg">
+            <h2 className="text-5xl font-black text-white mb-3 text-center drop-shadow-lg whitespace-pre-line">
               {front}
             </h2>
             {subtitle && (
@@ -83,7 +83,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
           <div className="h-full w-full bg-[#FFF9C4] rounded-[32px] border-[4px] border-[#FFF59D] shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex items-center justify-center p-8">
             <div className="text-center">
               <div className="text-6xl mb-6">💡</div>
-              <p className="text-3xl font-bold text-gray-900 mb-6 leading-relaxed">
+              <p className="text-3xl font-bold text-gray-900 mb-6 leading-relaxed whitespace-pre-line">
                 {back}
               </p>
               <p className="text-sm font-bold text-gray-600 px-6 py-2 bg-white/60 rounded-full inline-block border-2 border-gray-300 shadow-sm">

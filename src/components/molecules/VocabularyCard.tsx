@@ -74,7 +74,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
             />
           )}
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
+            <h3 className="text-2xl font-bold text-gray-900 mb-1 whitespace-pre-line">
               {vocabulary.word}
             </h3>
             <p className="text-sm font-semibold text-indigo-600">
