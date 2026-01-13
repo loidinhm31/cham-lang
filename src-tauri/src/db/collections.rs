@@ -48,8 +48,8 @@ impl LocalDatabase {
             let description: Option<String> = row.get(2)?;
             let language: String = row.get(3)?;
             let owner_id: String = row.get(4)?;
-            let is_public: i32 = row.get(5)?;
-            let word_count: i32 = row.get(6)?;
+            let is_public: i32 = row.get::<_, Option<i32>>(5)?.unwrap_or(0);
+            let word_count: i32 = row.get::<_, Option<i32>>(6)?.unwrap_or(0);
             let created_at = timestamp_to_datetime(row.get(7)?);
             let updated_at = timestamp_to_datetime(row.get(8)?);
 
@@ -100,8 +100,8 @@ impl LocalDatabase {
                     row.get::<_, Option<String>>(2)?,  // description
                     row.get::<_, String>(3)?,  // language
                     row.get::<_, String>(4)?,  // owner_id
-                    row.get::<_, i32>(5)?,     // is_public
-                    row.get::<_, i32>(6)?,     // word_count
+                    row.get::<_, Option<i32>>(5)?.unwrap_or(0),     // is_public
+                    row.get::<_, Option<i32>>(6)?.unwrap_or(0),     // word_count
                     row.get::<_, i64>(7)?,     // created_at
                     row.get::<_, i64>(8)?,     // updated_at
                 ))
@@ -165,8 +165,8 @@ impl LocalDatabase {
                     row.get::<_, Option<String>>(2)?,
                     row.get::<_, String>(3)?,
                     row.get::<_, String>(4)?,
-                    row.get::<_, i32>(5)?,
-                    row.get::<_, i32>(6)?,
+                    row.get::<_, Option<i32>>(5)?.unwrap_or(0),
+                    row.get::<_, Option<i32>>(6)?.unwrap_or(0),
                     row.get::<_, i64>(7)?,
                     row.get::<_, i64>(8)?,
                 ))
@@ -180,8 +180,8 @@ impl LocalDatabase {
                     row.get::<_, Option<String>>(2)?,
                     row.get::<_, String>(3)?,
                     row.get::<_, String>(4)?,
-                    row.get::<_, i32>(5)?,
-                    row.get::<_, i32>(6)?,
+                    row.get::<_, Option<i32>>(5)?.unwrap_or(0),
+                    row.get::<_, Option<i32>>(6)?.unwrap_or(0),
                     row.get::<_, i64>(7)?,
                     row.get::<_, i64>(8)?,
                 ))

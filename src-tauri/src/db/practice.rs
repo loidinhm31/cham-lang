@@ -432,11 +432,11 @@ impl LocalDatabase {
                     };
 
                     Ok(PracticeResult {
-                        vocabulary_id: row.get(0)?,
+                        vocabulary_id: row.get::<_, Option<String>>(0)?.unwrap_or_default(),
                         word: row.get(1)?,
                         correct: row.get::<_, i32>(2)? != 0,
                         mode: result_mode,
-                        time_spent_seconds: row.get(4)?,
+                        time_spent_seconds: row.get::<_, Option<i32>>(4)?.unwrap_or(0),
                     })
                 })?
                 .collect::<Result<Vec<_>, _>>()?;

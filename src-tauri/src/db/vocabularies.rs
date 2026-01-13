@@ -158,7 +158,7 @@ impl LocalDatabase {
             let word: String = row.get(1)?;
             let word_type_str: String = row.get(2)?;
             let level: String = row.get(3)?;
-            let ipa: String = row.get(4)?;
+            let ipa: String = row.get::<_, Option<String>>(4)?.unwrap_or_default();
             let audio_url: Option<String> = row.get(5)?;
             let concept: Option<String> = row.get(6)?;
             let language: String = row.get(7)?;
