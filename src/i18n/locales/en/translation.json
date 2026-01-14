@@ -257,7 +257,8 @@
     "incorrectResult": "✗ Incorrect",
     "theCorrectAnswerIs": "The correct answer is:",
     "iWasCorrect": "I was correct",
-    "iWasIncorrect": "I was incorrect"
+    "iWasIncorrect": "I was incorrect",
+    "totalAttempts": "total attempts"
   },
   "study": {
     "title": "Study Mode",
@@ -269,13 +270,25 @@
     "allWords": "All Words",
     "selectModeDescription": "Choose how you want to study",
     "studying": "Studying",
+    "perSession": "per session",
     "progressNotTracked": "Progress will not be tracked",
     "completed": "Study Complete",
     "wellDone": "Great Job!",
     "studyCompleteDescription": "This was a study session",
     "collectionNotFound": "Collection not found",
     "practiceWithoutTracking": "Practice all words without tracking progress",
-    "start": "Start"
+    "start": "Start",
+    "studyType": "Study Type",
+    "studyTypeStudy": "Study",
+    "studyTypeTest": "Test",
+    "testMode": "Test Mode",
+    "testNormal": "Normal Test",
+    "testNormalDescription": "Each word shown once",
+    "testIntensive": "Intensive Test",
+    "testIntensiveDescription": "Wrong words repeat until correct",
+    "testAllWords": "All words will be included",
+    "testComplete": "Test Complete",
+    "testScore": "Your Score"
   },
   "auth": {
     "login": "Login",

@@ -34,6 +34,16 @@ export const StudyModePage: React.FC = () => {
       ? "word_to_definition"
       : "definition_to_word";
   });
+  const [studyType, setStudyType] = useState<"study" | "test">(() => {
+    // Load from localStorage or default to 'study'
+    const saved = localStorage.getItem("studyType");
+    return saved === "test" ? "test" : "study";
+  });
+  const [testMode, setTestMode] = useState<"normal" | "intensive">(() => {
+    // Load from localStorage or default to 'normal'
+    const saved = localStorage.getItem("testMode");
+    return saved === "intensive" ? "intensive" : "normal";
+  });
 
   useEffect(() => {
     if (collectionId) {
@@ -64,6 +74,16 @@ export const StudyModePage: React.FC = () => {
     const validSize = Math.max(1, Math.min(size, 100)); // Limit between 1 and 100
     setBatchSize(validSize);
     localStorage.setItem("practiceBatchSize", validSize.toString());
+  };
+
+  const handleStudyTypeChange = (type: "study" | "test") => {
+    setStudyType(type);
+    localStorage.setItem("studyType", type);
+  };
+
+  const handleTestModeChange = (mode: "normal" | "intensive") => {
+    setTestMode(mode);
+    localStorage.setItem("testMode", mode);
   };
 
   const modes = [
@@ -189,7 +209,111 @@ export const StudyModePage: React.FC = () => {
               </div>
             </Card>
 
-            {/* Batch Size Selection */}
+            {/* Study Type Selection */}
+            <Card variant="glass">
+              <div className="space-y-4">
+                <label className="block text-sm font-semibold text-gray-700">
+                  {t("study.studyType") || "Study Type"}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => handleStudyTypeChange("study")}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      studyType === "study"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">📚</div>
+                    <div
+                      className={`font-semibold ${studyType === "study" ? "text-blue-700" : "text-gray-700"}`}
+                    >
+                      {t("study.studyTypeStudy") || "Study"}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {t("study.studyDescription") ||
+                        "Practice with repetition"}
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleStudyTypeChange("test")}
+                    className={`p-4 rounded-xl border-2 transition-all ${
+                      studyType === "test"
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">📝</div>
+                    <div
+                      className={`font-semibold ${studyType === "test" ? "text-blue-700" : "text-gray-700"}`}
+                    >
+                      {t("study.studyTypeTest") || "Test"}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {t("study.testAllWords") || "Test all words"}
+                    </div>
+                  </button>
+                </div>
+              </div>
+            </Card>
+
+            {/* Test Mode Selection - Only shown when Test is selected */}
+            {studyType === "test" && (
+              <Card variant="glass">
+                <div className="space-y-4">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    {t("study.testMode") || "Test Mode"}
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleTestModeChange("normal")}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        testMode === "normal"
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-200 bg-white/40 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">✅</div>
+                      <div
+                        className={`font-semibold ${testMode === "normal" ? "text-green-700" : "text-gray-700"}`}
+                      >
+                        {t("study.testNormal") || "Normal"}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {t("study.testNormalDescription") ||
+                          "Each word once"}
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleTestModeChange("intensive")}
+                      className={`p-4 rounded-xl border-2 transition-all ${
+                        testMode === "intensive"
+                          ? "border-green-500 bg-green-50"
+                          : "border-gray-200 bg-white/40 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="text-2xl mb-2">🔄</div>
+                      <div
+                        className={`font-semibold ${testMode === "intensive" ? "text-green-700" : "text-gray-700"}`}
+                      >
+                        {t("study.testIntensive") || "Intensive"}
+                      </div>
+                      <div className="text-xs text-gray-600 mt-1">
+                        {t("study.testIntensiveDescription") ||
+                          "Repeat until correct"}
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {/* Batch Size Selection - Only shown when Study is selected */}
+            {studyType === "study" && (
             <Card variant="glass">
               <div className="space-y-4">
                 <label className="block text-sm font-semibold text-gray-700">
@@ -250,6 +374,7 @@ export const StudyModePage: React.FC = () => {
                 </p>
               </div>
             </Card>
+            )}
 
             {/* Content Mode Selection */}
             <Card variant="glass">
@@ -319,21 +444,48 @@ export const StudyModePage: React.FC = () => {
               </p>
             </div>
 
-            {/* Study Mode Reminder */}
+            {/* Study/Test Mode Reminder */}
             <Card
               variant="glass"
-              className="bg-blue-50 border-2 border-blue-200"
+              className={
+                studyType === "test"
+                  ? "bg-green-50 border-2 border-green-200"
+                  : "bg-blue-50 border-2 border-blue-200"
+              }
             >
               <div className="text-center">
-                <p className="font-semibold text-blue-900">
-                  📚 {t("study.studying") || "Studying"} {batchSize}{" "}
-                  {t("practice.words") || "words"}{" "}
-                  {t("study.perSession") || "per session"}
-                </p>
-                <p className="text-sm text-blue-700">
-                  {t("study.progressNotTracked") ||
-                    "Progress will not be tracked"}
-                </p>
+                {studyType === "test" ? (
+                  <>
+                    <p className="font-semibold text-green-900">
+                      📝{" "}
+                      {testMode === "normal"
+                        ? t("study.testNormal") || "Normal Test"
+                        : t("study.testIntensive") || "Intensive Test"}
+                      {" - "}
+                      {collection.word_count}{" "}
+                      {t("practice.words") || "words"}
+                    </p>
+                    <p className="text-sm text-green-700">
+                      {testMode === "normal"
+                        ? t("study.testNormalDescription") ||
+                          "Each word shown once"
+                        : t("study.testIntensiveDescription") ||
+                          "Wrong words repeat until correct"}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-semibold text-blue-900">
+                      📚 {t("study.studying") || "Studying"} {batchSize}{" "}
+                      {t("practice.words") || "words"}{" "}
+                      {t("study.perSession") || "per session"}
+                    </p>
+                    <p className="text-sm text-blue-700">
+                      {t("study.progressNotTracked") ||
+                        "Progress will not be tracked"}
+                    </p>
+                  </>
+                )}
               </div>
             </Card>
 
@@ -397,7 +549,13 @@ export const StudyModePage: React.FC = () => {
                   collection: collectionId,
                   contentMode,
                   batchSize: batchSize.toString(),
+                  studyType,
                 });
+
+                // Add test mode parameter if in test mode
+                if (studyType === "test") {
+                  params.set("testMode", testMode);
+                }
 
                 // Add direction parameter only for fill-word mode
                 if (mode.id === "fillword") {

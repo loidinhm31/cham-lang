@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BookOpen, Check, X } from "lucide-react";
@@ -9,6 +9,7 @@ import { PracticeService } from "@/services/practice.service";
 import { LearningSettingsService } from "@/services/learningSettings.service";
 import { WordSelectionService } from "@/services/wordSelection.service";
 import { SessionManager } from "@/utils/sessionManager";
+import { useTestSession } from "@/hooks/useTestSession";
 import type { Vocabulary } from "@/types/vocabulary";
 import { useDialog } from "@/contexts";
 
@@ -28,9 +29,18 @@ export const FlashcardPracticePage: React.FC = () => {
   // Check if this is study mode (URL path includes /practice/study/)
   const isStudyMode = location.pathname.includes("/practice/study/");
 
+  // Check if this is test mode
+  const studyType = searchParams.get("studyType") as "study" | "test" | null;
+  const testMode = searchParams.get("testMode") as
+    | "normal"
+    | "intensive"
+    | null;
+  const isTestMode = studyType === "test";
+
   const [sessionManager, setSessionManager] = useState<SessionManager | null>(
     null,
   );
+  const [testWords, setTestWords] = useState<Vocabulary[]>([]);
   const [currentVocab, setCurrentVocab] = useState<Vocabulary | null>(null);
   const [cardStartTime, setCardStartTime] = useState(Date.now());
   const [isFlipped, setIsFlipped] = useState(false);
@@ -41,6 +51,24 @@ export const FlashcardPracticePage: React.FC = () => {
   const [studiedVocabIds, setStudiedVocabIds] = useState<Set<string>>(
     new Set(),
   ); // Track studied vocabulary IDs in study mode
+
+  // Initialize test session (only used in test mode)
+  const testSession = useTestSession(
+    testWords,
+    testMode || "normal",
+    contentMode || "definition",
+  );
+
+  // Ref to always have the latest testSession (avoids stale closure in callbacks)
+  const testSessionRef = useRef(testSession);
+  testSessionRef.current = testSession;
+
+  // Update current word when test session initializes
+  useEffect(() => {
+    if (isTestMode && testSession.currentWord && !currentVocab) {
+      setCurrentVocab(testSession.currentWord);
+    }
+  }, [isTestMode, testSession.currentWord, currentVocab]);
 
   useEffect(() => {
     if (collectionId) {
@@ -83,6 +111,15 @@ export const FlashcardPracticePage: React.FC = () => {
       }
 
       const language = vocabData[0].language || "en";
+
+      // Test mode: Load all words without using SessionManager
+      if (isTestMode) {
+        // Set all words for test session (currentWord will be set by useEffect)
+        setTestWords(vocabData);
+        setQuestionCounter(0);
+        setLoading(false);
+        return;
+      }
 
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
@@ -140,9 +177,31 @@ export const FlashcardPracticePage: React.FC = () => {
   };
 
   const handleAnswer = (correct: boolean) => {
-    if (!sessionManager || !currentVocab) return;
+    if (!currentVocab) return;
 
     const timeSpent = Math.floor((Date.now() - cardStartTime) / 1000);
+
+    // Test mode: Use test session (read from ref for latest values)
+    if (isTestMode) {
+      const currentTestSession = testSessionRef.current;
+      currentTestSession.handleAnswer(correct);
+
+      // Check if test is complete (read from ref)
+      if (currentTestSession.isComplete()) {
+        completeSession();
+      } else {
+        // Get next word from ref (avoids stale closure)
+        const nextWord = currentTestSession.currentWord;
+        setCurrentVocab(nextWord);
+        setIsFlipped(false);
+        setCardStartTime(Date.now());
+        setQuestionCounter((prev) => prev + 1);
+      }
+      return;
+    }
+
+    // Study/Practice mode: Use session manager
+    if (!sessionManager) return;
 
     // Process answer using session manager
     if (correct) {
@@ -165,6 +224,13 @@ export const FlashcardPracticePage: React.FC = () => {
   };
 
   const completeSession = async () => {
+    // Test mode: Just mark as completed, no progress saving
+    if (isTestMode) {
+      setCompleted(true);
+      setHasMoreWords(false);
+      return;
+    }
+
     if (!sessionManager || !collectionId || !currentVocab) {
       setCompleted(true);
       setHasMoreWords(false);
@@ -295,26 +361,53 @@ export const FlashcardPracticePage: React.FC = () => {
   }
 
   if (completed) {
-    const stats = sessionManager?.getStatistics() || {
-      totalQuestions: 0,
-      correctAnswers: 0,
-      incorrectAnswers: 0,
-      accuracy: 0,
-    };
+    // Get stats from test session or session manager
+    const testStats = isTestMode ? testSession.getResults() : null;
+    const sessionStats = !isTestMode
+      ? sessionManager?.getStatistics() || {
+        totalQuestions: 0,
+        correctAnswers: 0,
+        incorrectAnswers: 0,
+        accuracy: 0,
+        wordsCompleted: 0,
+        wordsRemaining: 0,
+        durationSeconds: 0,
+      }
+      : null;
 
     return (
       <>
         <TopBar
           title={
-            isStudyMode
-              ? t("study.completed") || "Study Complete"
-              : t("practice.completed")
+            isTestMode
+              ? t("study.testComplete") || "Test Complete"
+              : isStudyMode
+                ? t("study.completed") || "Study Complete"
+                : t("practice.completed")
           }
           showBack
-          backTo={isStudyMode ? "/" : "/practice"}
+          backTo={isStudyMode || isTestMode ? "/" : "/practice"}
         />
         <div className="px-4 pt-6 space-y-6">
-          {isStudyMode && (
+          {isTestMode && (
+            <Card
+              variant="glass"
+              className="bg-green-50 border-2 border-green-200"
+            >
+              <div className="text-center">
+                <p className="font-semibold text-green-900">
+                  📝{" "}
+                  {testMode === "normal"
+                    ? t("study.testNormal") || "Normal Test"
+                    : t("study.testIntensive") || "Intensive Test"}
+                </p>
+                <p className="text-sm text-green-700">
+                  {t("study.testComplete") || "Test completed!"}
+                </p>
+              </div>
+            </Card>
+          )}
+          {isStudyMode && !isTestMode && (
             <Card
               variant="glass"
               className="bg-blue-50 border-2 border-blue-200"
@@ -335,18 +428,31 @@ export const FlashcardPracticePage: React.FC = () => {
           <Card variant="gradient" className="text-center">
             <div className="text-6xl mb-4">🎉</div>
             <h2 className="text-3xl font-black mb-4">
-              {isStudyMode
-                ? t("study.wellDone") || "Great Job!"
-                : t("practice.wellDone")}
+              {isTestMode
+                ? t("study.testComplete") || "Test Complete!"
+                : isStudyMode
+                  ? t("study.wellDone") || "Great Job!"
+                  : t("practice.wellDone")}
             </h2>
             <div className="space-y-2">
               <p className="text-2xl text-white/90">
-                {stats.correctAnswers} / {stats.totalQuestions}{" "}
+                {isTestMode && testStats
+                  ? `${testStats.correctWords} / ${testStats.totalWords}`
+                  : sessionStats
+                    ? `${sessionStats.correctAnswers} / ${sessionStats.totalQuestions}`
+                    : "0 / 0"}{" "}
                 {t("practice.correct")}
               </p>
               <p className="text-xl text-white/80">
-                {stats.accuracy}% {t("practice.accuracy")}
+                {isTestMode && testStats
+                  ? testStats.accuracy
+                  : sessionStats?.accuracy || 0}% {t("practice.accuracy")}
               </p>
+              {isTestMode && testMode === "intensive" && testStats && (
+                <p className="text-lg text-white/70">
+                  {testStats.totalAttempts} {t("practice.totalAttempts") || "total attempts"}
+                </p>
+              )}
             </div>
           </Card>
 
@@ -355,16 +461,21 @@ export const FlashcardPracticePage: React.FC = () => {
             size="md"
             fullWidth
             onClick={() => {
-              if (hasMoreWords) {
+              if (isTestMode) {
+                // Test mode: just close
+                navigate("/collections");
+              } else if (hasMoreWords) {
                 handleRestart();
               } else {
                 navigate(isStudyMode ? "/collections" : "/practice");
               }
             }}
           >
-            {hasMoreWords
-              ? t("practice.continue") || "Continue"
-              : t("buttons.close")}
+            {isTestMode
+              ? t("buttons.close")
+              : hasMoreWords
+                ? t("practice.continue") || "Continue"
+                : t("buttons.close")}
           </Button>
         </div>
       </>
@@ -404,17 +515,39 @@ export const FlashcardPracticePage: React.FC = () => {
     <>
       <TopBar
         title={
-          isStudyMode
-            ? t("study.title") || "Study Mode"
-            : t("practice.flashcardMode")
+          isTestMode
+            ? testMode === "normal"
+              ? t("study.testNormal") || "Normal Test"
+              : t("study.testIntensive") || "Intensive Test"
+            : isStudyMode
+              ? t("study.title") || "Study Mode"
+              : t("practice.flashcardMode")
         }
         showBack
-        backTo={isStudyMode ? "/" : "/practice"}
+        backTo={isStudyMode || isTestMode ? "/" : "/practice"}
       />
 
       <div className="px-4 pt-6 space-y-6">
+        {/* Test Mode Banner */}
+        {isTestMode && (
+          <Card variant="glass" className="bg-green-50 border-2 border-green-200">
+            <div className="flex items-center gap-3">
+              <BookOpen className="w-6 h-6 text-green-600" />
+              <div className="flex-1">
+                <p className="font-semibold text-green-900 text-sm">
+                  📝{" "}
+                  {testMode === "normal"
+                    ? t("study.testNormalDescription") || "Each word shown once"
+                    : t("study.testIntensiveDescription") ||
+                    "Wrong words repeat"}
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Study Mode Banner */}
-        {isStudyMode && (
+        {isStudyMode && !isTestMode && (
           <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
             <div className="flex items-center gap-3">
               <BookOpen className="w-6 h-6 text-blue-600" />
@@ -434,25 +567,27 @@ export const FlashcardPracticePage: React.FC = () => {
               {t("practice.progress")}
             </span>
             <span
-              className={`text-sm font-bold ${isStudyMode ? "text-blue-600" : "text-teal-600"}`}
+              className={`text-sm font-bold ${isTestMode ? "text-green-600" : isStudyMode ? "text-blue-600" : "text-teal-600"}`}
             >
-              {sessionManager
-                ? `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
-                : "0 / 0"}
+              {isTestMode
+                ? `${testSession.getProgress().answeredWords} / ${testSession.getProgress().totalWords}`
+                : sessionManager
+                  ? `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
+                  : "0 / 0"}
             </span>
           </div>
           <div className="w-full h-3 bg-white/60 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${isStudyMode ? "bg-gradient-to-r from-blue-500 to-cyan-600" : "bg-gradient-to-r from-teal-500 to-cyan-600"}`}
+              className={`h-full rounded-full transition-all duration-300 ${isTestMode ? "bg-gradient-to-r from-green-500 to-emerald-600" : isStudyMode ? "bg-gradient-to-r from-blue-500 to-cyan-600" : "bg-gradient-to-r from-teal-500 to-cyan-600"}`}
               style={{
-                width: `${sessionManager ? sessionManager.getProgressPercentage() : 0}%`,
+                width: `${isTestMode ? testSession.getProgress().percentage : sessionManager ? sessionManager.getProgressPercentage() : 0}%`,
               }}
             ></div>
           </div>
         </Card>
 
-        {/* Status and Repetition Indicator */}
-        {currentVocab && sessionManager && (
+        {/* Status and Repetition Indicator - Hidden in test mode */}
+        {!isTestMode && currentVocab && sessionManager && (
           <Card variant="glass">
             <div className="flex items-center justify-between">
               <StatusBadge

@@ -257,7 +257,8 @@
     "incorrectResult": "✗ Không Chính Xác",
     "theCorrectAnswerIs": "Đáp án đúng là:",
     "iWasCorrect": "Tôi đúng",
-    "iWasIncorrect": "Tôi sai"
+    "iWasIncorrect": "Tôi sai",
+    "totalAttempts": "tổng số lần thử"
   },
   "study": {
     "title": "Chế Độ Ôn Tập",
@@ -269,13 +270,25 @@
     "allWords": "Tất Cả Từ",
     "selectModeDescription": "Chọn cách bạn muốn ôn tập",
     "studying": "Đang Ôn Tập",
+    "perSession": "mỗi phiên",
     "progressNotTracked": "Tiến độ sẽ không được ghi nhận",
     "completed": "Hoàn Thành Ôn Tập",
     "wellDone": "Làm Tuyệt Vời!",
     "studyCompleteDescription": "Đây là phiên ôn tập",
     "collectionNotFound": "Không tìm thấy bộ sưu tập",
     "practiceWithoutTracking": "Luyện tập tất cả từ mà không ghi nhận tiến độ",
-    "start": "Bắt Đầu"
+    "start": "Bắt Đầu",
+    "studyType": "Loại Ôn Tập",
+    "studyTypeStudy": "Ôn Tập",
+    "studyTypeTest": "Kiểm Tra",
+    "testMode": "Chế Độ Kiểm Tra",
+    "testNormal": "Kiểm Tra Thường",
+    "testNormalDescription": "Mỗi từ hiện một lần",
+    "testIntensive": "Kiểm Tra Chuyên Sâu",
+    "testIntensiveDescription": "Từ sai lặp lại cho đến khi đúng",
+    "testAllWords": "Tất cả từ sẽ được bao gồm",
+    "testComplete": "Hoàn Thành Kiểm Tra",
+    "testScore": "Điểm Số Của Bạn"
   },
   "auth": {
     "login": "Đăng Nhập",
