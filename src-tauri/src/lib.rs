@@ -1,27 +1,33 @@
-mod models;
-mod local_db;
-pub mod db;  // New modular database structure
-mod commands;
 mod collection_commands;
-mod gdrive;
+mod commands;
 mod csv_export;
 mod csv_import;
+pub mod db; // New modular database structure
+mod gdrive;
+mod local_db;
+mod models;
 mod notification_commands;
 mod scheduled_task_handler;
+
+// Desktop-only: Embedded web server for "Open in Browser" feature
+#[cfg(not(target_os = "android"))]
+mod web_server;
 
 use collection_commands::*;
 use commands::*;
 use csv_export::*;
 use csv_import::*;
 use gdrive::*;
+use local_db::LocalDatabase;
 use notification_commands::*;
 use scheduled_task_handler::NotificationTaskHandler;
-use local_db::LocalDatabase;
 use tauri::Manager;
 
 #[cfg(desktop)]
-use tauri::{menu::{MenuBuilder, MenuItem}, tray::{TrayIconBuilder, TrayIconEvent, MouseButton, MouseButtonState}};
-
+use tauri::{
+    menu::{MenuBuilder, MenuItem},
+    tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
+};
 
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
@@ -61,19 +67,20 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             // Get application data directory using Tauri's API (works on all platforms including Android)
-            let app_data_dir = app.path().app_data_dir()
+            let app_data_dir = app
+                .path()
+                .app_data_dir()
                 .expect("Could not determine app data directory");
 
             // Create data directory if it doesn't exist
-            std::fs::create_dir_all(&app_data_dir)
-                .expect("Could not create app data directory");
+            std::fs::create_dir_all(&app_data_dir).expect("Could not create app data directory");
 
             // Initialize local SQLite database
             let db_path = app_data_dir.join("chamlang.db");
             println!("📁 Database location: {:?}", db_path);
 
-            let local_db = LocalDatabase::new(db_path.clone())
-                .expect("Failed to initialize local database");
+            let local_db =
+                LocalDatabase::new(db_path.clone()).expect("Failed to initialize local database");
 
             println!("✓ Local database initialized");
             println!("✓ Cham Lang ready - all data stored locally!");
@@ -82,10 +89,26 @@ pub fn run() {
             // Store the database in app state
             app.manage(local_db);
 
+            // Start embedded web server for "Open in Browser" feature (desktop only)
+            // This allows users to open the app in their default web browser
+            #[cfg(desktop)]
+            {
+                // Only start if not in dev mode (Vite dev server handles it)
+                // Check if TAURI_DEV_HOST is set (indicates dev mode)
+                if std::env::var("TAURI_DEV_HOST").is_err() {
+                    web_server::start_web_server();
+                } else {
+                    println!(
+                        "📝 Dev mode detected - skipping embedded web server (Vite handles it)"
+                    );
+                }
+            }
+
             // Setup tray icon (desktop only)
             #[cfg(desktop)]
             {
-                let show_hide = MenuItem::with_id(app, "show_hide", "Show/Hide", true, None::<&str>)?;
+                let show_hide =
+                    MenuItem::with_id(app, "show_hide", "Show/Hide", true, None::<&str>)?;
                 let quit = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
 
                 let menu = MenuBuilder::new(app)

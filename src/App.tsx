@@ -19,6 +19,7 @@ import {
   CSVExportPage,
   CSVImportPage,
   StudyModePage,
+  OAuthCallbackPage,
 } from "@/components/pages";
 import { SyncNotificationProvider, DialogProvider } from "@/contexts";
 import { FontSizeService } from "@/services";
@@ -96,6 +97,8 @@ const App: React.FC = () => {
                 element={<LearningSettingsPage />}
               />
             </Route>
+            {/* OAuth Callback - Outside MainLayout (popup window) */}
+            <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
           </Routes>
         </SyncNotificationProvider>
       </DialogProvider>

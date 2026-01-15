@@ -283,8 +283,7 @@ export const StudyModePage: React.FC = () => {
                         {t("study.testNormal") || "Normal"}
                       </div>
                       <div className="text-xs text-gray-600 mt-1">
-                        {t("study.testNormalDescription") ||
-                          "Each word once"}
+                        {t("study.testNormalDescription") || "Each word once"}
                       </div>
                     </button>
                     <button
@@ -314,66 +313,66 @@ export const StudyModePage: React.FC = () => {
 
             {/* Batch Size Selection - Only shown when Study is selected */}
             {studyType === "study" && (
-            <Card variant="glass">
-              <div className="space-y-4">
-                <label className="block text-sm font-semibold text-gray-700">
-                  {t("practice.batchSize") || "Words per Session"}
-                </label>
-                <div className="flex items-center gap-4">
-                  <button
-                    type="button"
-                    onClick={() => handleBatchSizeChange(batchSize - 5)}
-                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
-                    disabled={batchSize <= 5}
-                  >
-                    −
-                  </button>
-                  <div className="flex-1">
-                    <input
-                      type="number"
-                      min="1"
-                      max="100"
-                      value={batchSize}
-                      onChange={(e) => {
-                        const value = parseInt(e.target.value, 10);
-                        if (!isNaN(value)) {
-                          handleBatchSizeChange(value);
-                        }
-                      }}
-                      className="w-full px-4 py-3 text-center text-2xl font-bold text-blue-700 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none transition-all"
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleBatchSizeChange(batchSize + 5)}
-                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
-                    disabled={batchSize >= 100}
-                  >
-                    +
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {[5, 10, 15, 20, 25, 30].map((size) => (
+              <Card variant="glass">
+                <div className="space-y-4">
+                  <label className="block text-sm font-semibold text-gray-700">
+                    {t("practice.batchSize") || "Words per Session"}
+                  </label>
+                  <div className="flex items-center gap-4">
                     <button
-                      key={size}
                       type="button"
-                      onClick={() => handleBatchSizeChange(size)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                        batchSize === size
-                          ? "bg-blue-500 text-white"
-                          : "bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200"
-                      }`}
+                      onClick={() => handleBatchSizeChange(batchSize - 5)}
+                      className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                      disabled={batchSize <= 5}
                     >
-                      {size}
+                      −
                     </button>
-                  ))}
+                    <div className="flex-1">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={batchSize}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value, 10);
+                          if (!isNaN(value)) {
+                            handleBatchSizeChange(value);
+                          }
+                        }}
+                        className="w-full px-4 py-3 text-center text-2xl font-bold text-blue-700 bg-blue-50 rounded-xl border-2 border-blue-200 focus:border-blue-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleBatchSizeChange(batchSize + 5)}
+                      className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                      disabled={batchSize >= 100}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[5, 10, 15, 20, 25, 30].map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => handleBatchSizeChange(size)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                          batchSize === size
+                            ? "bg-blue-500 text-white"
+                            : "bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-600 text-center">
+                    {t("practice.batchSizeDescription") ||
+                      "Choose how many words you want to practice in each session"}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-600 text-center">
-                  {t("practice.batchSizeDescription") ||
-                    "Choose how many words you want to practice in each session"}
-                </p>
-              </div>
-            </Card>
+              </Card>
             )}
 
             {/* Content Mode Selection */}
@@ -462,8 +461,7 @@ export const StudyModePage: React.FC = () => {
                         ? t("study.testNormal") || "Normal Test"
                         : t("study.testIntensive") || "Intensive Test"}
                       {" - "}
-                      {collection.word_count}{" "}
-                      {t("practice.words") || "words"}
+                      {collection.word_count} {t("practice.words") || "words"}
                     </p>
                     <p className="text-sm text-green-700">
                       {testMode === "normal"

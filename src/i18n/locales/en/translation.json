@@ -173,7 +173,11 @@
     "scheduling": "Scheduling...",
     "notificationHint": "This will schedule a notification to appear in 1 minute",
     "notificationPermissionDenied": "Notification permission denied. Please enable notifications in settings.",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "openInBrowser": "Open in Browser",
+    "openInBrowserDescription": "Open the app in your default web browser",
+    "openInBrowserButton": "Open in Web Browser",
+    "openInBrowserHint": "Opens http://127.0.0.1:25091 in your default browser"
   },
   "reminder": {
     "title": "Cham Lang Reminder",

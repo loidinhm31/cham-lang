@@ -1,60 +1,53 @@
-import { invoke } from "@tauri-apps/api/core";
-import type {
-  LearningSettings,
-  SpacedRepetitionAlgorithm,
-} from "@/types/settings";
-
 /**
- * Update Learning Settings Request
- * Matches the Rust UpdateLearningSettingsRequest struct
+ * Learning Settings Service
+ * Uses platform adapter for cross-platform compatibility
  */
-export interface UpdateLearningSettingsRequest {
-  sr_algorithm?: SpacedRepetitionAlgorithm;
-  leitner_box_count?: number;
-  consecutive_correct_required?: number;
-  show_failed_words_in_session?: boolean;
-  new_words_per_day?: number;
-  daily_review_limit?: number;
-  auto_advance_timeout_seconds?: number;
-  show_hint_in_fillword?: boolean;
-  reminder_enabled?: boolean;
-  reminder_time?: string;
-}
+
+import { getLearningSettingsService } from "@/adapters/ServiceFactory";
+import type { LearningSettings } from "@/types/settings";
+
+// Re-export the request type from the interface
+export type { UpdateLearningSettingsRequest } from "@/adapters/interfaces/ILearningSettingsService";
+
+// Get the platform-specific service
+const service = getLearningSettingsService();
 
 export class LearningSettingsService {
   /**
    * Get the user's learning settings (returns null if not set)
    */
   static async getLearningSettings(): Promise<LearningSettings | null> {
-    return invoke("get_learning_settings");
+    return service.getLearningSettings();
   }
 
   /**
    * Get the user's learning settings, or create default settings if none exist
    */
   static async getOrCreateLearningSettings(): Promise<LearningSettings> {
-    return invoke("get_or_create_learning_settings");
+    return service.getOrCreateLearningSettings();
   }
 
   /**
    * Update the user's learning settings
    */
   static async updateLearningSettings(
-    request: UpdateLearningSettingsRequest,
+    request: Parameters<typeof service.updateLearningSettings>[0],
   ): Promise<LearningSettings> {
-    return invoke("update_learning_settings", { request });
+    return service.updateLearningSettings(request);
   }
 
   /**
    * Helper: Update a single setting field
    */
   static async updateSingleSetting<
-    K extends keyof UpdateLearningSettingsRequest,
+    K extends keyof Parameters<typeof service.updateLearningSettings>[0],
   >(
     field: K,
-    value: UpdateLearningSettingsRequest[K],
+    value: Parameters<typeof service.updateLearningSettings>[0][K],
   ): Promise<LearningSettings> {
-    const request: UpdateLearningSettingsRequest = { [field]: value };
+    const request = { [field]: value } as Parameters<
+      typeof service.updateLearningSettings
+    >[0];
     return this.updateLearningSettings(request);
   }
 

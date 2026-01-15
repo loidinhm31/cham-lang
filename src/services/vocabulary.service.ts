@@ -1,93 +1,80 @@
-import { invoke } from "@tauri-apps/api/core";
+/**
+ * Vocabulary Service
+ * Uses platform adapter for cross-platform compatibility
+ */
+
+import { getVocabularyService } from "@/adapters/ServiceFactory";
 import type {
   CreateVocabularyRequest,
   SearchQuery,
   UpdateVocabularyRequest,
-  BulkMoveRequest,
   BulkMoveResult,
   Vocabulary,
   PaginatedResponse,
 } from "@/types/vocabulary";
 
+// Get the platform-specific service
+const service = getVocabularyService();
+
 export class VocabularyService {
-  // Database connection
-  static async connectDatabase(connectionString: string): Promise<string> {
-    return invoke("connect_database", { connectionString });
-  }
-
-  static async disconnectDatabase(): Promise<string> {
-    return invoke("disconnect_database");
-  }
-
-  static async isDatabaseConnected(): Promise<boolean> {
-    return invoke("is_database_connected");
-  }
-
   // Vocabulary CRUD
   static async createVocabulary(
     request: CreateVocabularyRequest,
   ): Promise<string> {
-    return invoke("create_vocabulary", { request });
+    return service.createVocabulary(request);
   }
 
   static async getVocabulary(id: string): Promise<Vocabulary> {
-    return invoke("get_vocabulary", { id });
+    return service.getVocabulary(id);
   }
 
   static async getAllVocabularies(
     language?: string,
     limit?: number,
   ): Promise<Vocabulary[]> {
-    return invoke("get_all_vocabularies", { language, limit });
+    return service.getAllVocabularies(language, limit);
   }
 
   static async updateVocabulary(
     request: UpdateVocabularyRequest,
   ): Promise<string> {
-    return invoke("update_vocabulary", { request });
+    return service.updateVocabulary(request);
   }
 
   static async deleteVocabulary(id: string): Promise<string> {
-    return invoke("delete_vocabulary", { id });
+    return service.deleteVocabulary(id);
   }
 
   static async bulkMoveVocabularies(
     vocabularyIds: string[],
     targetCollectionId: string,
   ): Promise<BulkMoveResult> {
-    const request: BulkMoveRequest = {
-      vocabulary_ids: vocabularyIds,
-      target_collection_id: targetCollectionId,
-    };
-    return invoke("bulk_move_vocabularies", { request });
+    return service.bulkMoveVocabularies(vocabularyIds, targetCollectionId);
   }
 
   static async searchVocabularies(query: SearchQuery): Promise<Vocabulary[]> {
-    return invoke("search_vocabularies", {
-      query: query.query,
-      language: query.language,
-    });
+    return service.searchVocabularies(query);
   }
 
   static async getVocabulariesByTopic(
     topic: string,
     language?: string,
   ): Promise<Vocabulary[]> {
-    return invoke("get_vocabularies_by_topic", { topic, language });
+    return service.getVocabulariesByTopic(topic, language);
   }
 
   static async getVocabulariesByLevel(
     level: string,
     language?: string,
   ): Promise<Vocabulary[]> {
-    return invoke("get_vocabularies_by_level", { level, language });
+    return service.getVocabulariesByLevel(level, language);
   }
 
   static async getVocabulariesByCollection(
     collectionId: string,
     limit?: number,
   ): Promise<Vocabulary[]> {
-    return invoke("get_vocabularies_by_collection", { collectionId, limit });
+    return service.getVocabulariesByCollection(collectionId, limit);
   }
 
   static async getVocabulariesByCollectionPaginated(
@@ -95,24 +82,24 @@ export class VocabularyService {
     limit?: number,
     offset?: number,
   ): Promise<PaginatedResponse<Vocabulary>> {
-    return invoke("get_vocabularies_by_collection_paginated", {
+    return service.getVocabulariesByCollectionPaginated(
       collectionId,
       limit,
       offset,
-    });
+    );
   }
 
   // Language management
   static async getAllLanguages(): Promise<string[]> {
-    return invoke("get_all_languages");
+    return service.getAllLanguages();
   }
 
   // Topics and tags
   static async getAllTopics(): Promise<string[]> {
-    return invoke("get_all_topics");
+    return service.getAllTopics();
   }
 
   static async getAllTags(): Promise<string[]> {
-    return invoke("get_all_tags");
+    return service.getAllTags();
   }
 }

@@ -173,7 +173,11 @@
     "scheduling": "Đang lên lịch...",
     "notificationHint": "Thao tác này sẽ lên lịch thông báo xuất hiện sau 1 phút",
     "notificationPermissionDenied": "Quyền thông báo bị từ chối. Vui lòng bật thông báo trong cài đặt.",
-    "saving": "Đang lưu..."
+    "saving": "Đang lưu...",
+    "openInBrowser": "Mở Trên Trình Duyệt",
+    "openInBrowserDescription": "Mở ứng dụng trên trình duyệt web mặc định của bạn",
+    "openInBrowserButton": "Mở Trên Trình Duyệt Web",
+    "openInBrowserHint": "Mở http://127.0.0.1:25091 trên trình duyệt mặc định của bạn"
   },
   "reminder": {
     "title": "Nhắc Nhở Cham Lang",
