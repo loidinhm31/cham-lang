@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React from "react";
+import * as AccordionPrimitive from "@radix-ui/react-accordion";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AccordionProps {
   title: string;
@@ -8,34 +10,54 @@ interface AccordionProps {
   className?: string;
 }
 
-export const Accordion: React.FC<AccordionProps> = ({
+const Accordion: React.FC<AccordionProps> = ({
   title,
   children,
   defaultOpen = false,
-  className = "",
+  className,
 }) => {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
-
   return (
-    <div
-      className={`bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden ${className}`}
-    >
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-white/40 transition-colors"
-      >
-        <span className="font-semibold text-gray-800">{title}</span>
-        {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-gray-600" />
-        ) : (
-          <ChevronDown className="w-5 h-5 text-gray-600" />
-        )}
-      </button>
-      {isOpen && (
-        <div className="px-4 pb-4 space-y-3 border-t border-gray-200/50">
-          {children}
-        </div>
+    <AccordionPrimitive.Root
+      type="single"
+      collapsible
+      defaultValue={defaultOpen ? "item" : undefined}
+      className={cn(
+        "bg-white/60 backdrop-blur-lg rounded-2xl shadow-lg overflow-hidden",
+        className,
       )}
-    </div>
+    >
+      <AccordionPrimitive.Item value="item">
+        <AccordionPrimitive.Header className="flex">
+          <AccordionPrimitive.Trigger
+            className={cn(
+              "flex flex-1 items-center justify-between px-4 py-3 text-left",
+              "hover:bg-white/40 transition-all duration-200",
+              "group",
+            )}
+          >
+            <span className="font-semibold text-gray-800">{title}</span>
+            <ChevronDown
+              className={cn(
+                "w-5 h-5 text-gray-600 transition-transform duration-300 ease-out",
+                "group-data-[state=open]:rotate-180",
+              )}
+            />
+          </AccordionPrimitive.Trigger>
+        </AccordionPrimitive.Header>
+        <AccordionPrimitive.Content
+          className={cn(
+            "overflow-hidden",
+            "data-[state=closed]:animate-accordion-up",
+            "data-[state=open]:animate-accordion-down",
+          )}
+        >
+          <div className="px-4 pb-4 space-y-3 border-t border-gray-200/50">
+            {children}
+          </div>
+        </AccordionPrimitive.Content>
+      </AccordionPrimitive.Item>
+    </AccordionPrimitive.Root>
   );
 };
+
+export { Accordion };

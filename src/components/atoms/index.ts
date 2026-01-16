@@ -1,10 +1,17 @@
-export { Button } from "./Button";
+export { Button, buttonVariants } from "./Button";
 export { Input } from "./Input";
 export { TextArea } from "./TextArea";
 export { Select } from "./Select";
 export { SearchableMultiSelect } from "./SearchableMultiSelect";
-export { Badge } from "./Badge";
-export { Card } from "./Card";
+export { Badge, badgeVariants } from "./Badge";
+export {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardFooter,
+  cardVariants,
+} from "./Card";
 export { FlashCard } from "./FlashCard";
 export { Dialog } from "./Dialog";
 export { Accordion } from "./Accordion";

@@ -127,7 +127,7 @@ export const EditVocabularyPage: React.FC = () => {
         backTo={id ? `/vocabulary/${id}` : "/"}
       />
 
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-6 pb-24">
         <VocabularyForm
           initialData={initialData}
           onSubmit={handleSubmit}

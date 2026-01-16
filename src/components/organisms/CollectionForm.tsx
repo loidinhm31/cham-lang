@@ -65,26 +65,29 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
               setFormData({ ...formData, description: e.target.value })
             }
             placeholder={t("collections.description")}
-            rows={3}
+            rows={2}
           />
 
-          <Select
-            label={t("collections.language")}
-            options={languageOptions}
-            value={formData.language}
-            onChange={(e) =>
-              setFormData({ ...formData, language: e.target.value })
-            }
-          />
+          {/* Language & Visibility - 2 column grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label={t("collections.language")}
+              options={languageOptions}
+              value={formData.language}
+              onValueChange={(value) =>
+                setFormData({ ...formData, language: value })
+              }
+            />
 
-          <Select
-            label={t("collections.visibility")}
-            options={visibilityOptions}
-            value={formData.is_public.toString()}
-            onChange={(e) =>
-              setFormData({ ...formData, is_public: e.target.value === "true" })
-            }
-          />
+            <Select
+              label={t("collections.visibility")}
+              options={visibilityOptions}
+              value={formData.is_public.toString()}
+              onValueChange={(value) =>
+                setFormData({ ...formData, is_public: value === "true" })
+              }
+            />
+          </div>
         </div>
       </Card>
 

@@ -36,7 +36,7 @@ export const AddVocabularyPage: React.FC = () => {
     <>
       <TopBar title={t("vocabulary.add")} showBack backTo="/" />
 
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-6 pb-24">
         <VocabularyForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}

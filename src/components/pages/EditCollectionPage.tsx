@@ -95,7 +95,7 @@ export const EditCollectionPage: React.FC = () => {
         backTo={id ? `/collections/${id}` : "/collections"}
       />
 
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-6 pb-24">
         <CollectionForm
           initialData={initialData}
           onSubmit={handleSubmit}

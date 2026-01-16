@@ -426,12 +426,11 @@ export const VocabularyDetailPage: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3">
+        <div className="flex gap-3 justify-center">
           <Button
             variant="outline"
             size="md"
             icon={Edit}
-            fullWidth
             onClick={() =>
               navigate(`/vocabulary/edit/${vocabulary.id}`, {
                 state: {
@@ -449,7 +448,6 @@ export const VocabularyDetailPage: React.FC = () => {
             variant="danger"
             size="md"
             icon={Trash2}
-            fullWidth
             onClick={handleDelete}
           >
             {t("buttons.delete")}

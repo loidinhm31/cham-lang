@@ -35,7 +35,7 @@ export const CreateCollectionPage: React.FC = () => {
     <>
       <TopBar title={t("collections.create")} showBack backTo="/collections" />
 
-      <div className="px-4 pt-6">
+      <div className="px-4 pt-6 pb-24">
         <CollectionForm
           onSubmit={handleSubmit}
           onCancel={handleCancel}
