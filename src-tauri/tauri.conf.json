@@ -5,7 +5,7 @@
   "identifier": "com.loidinh.cham-lang",
   "build": {
     "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:25091",
+    "devUrl": "http://localhost:1420",
     "beforeBuildCommand": "pnpm build",
     "frontendDist": "../dist"
   },

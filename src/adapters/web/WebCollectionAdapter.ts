@@ -58,7 +58,21 @@ export class WebCollectionAdapter implements ICollectionService {
 
   async getUserCollections(): Promise<Collection[]> {
     // In web mode, all collections belong to the local user
-    return db.collections.toArray();
+    const collections = await db.collections.toArray();
+
+    // Sort by updated_at DESC, then by name ASC for consistent ordering
+    // This matches SQLite backend behavior
+    collections.sort((a, b) => {
+      const dateA = new Date(a.updated_at).getTime();
+      const dateB = new Date(b.updated_at).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // DESC order (most recently updated first)
+      }
+      // Secondary sort by name (ascending, case-insensitive)
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
+
+    return collections;
   }
 
   async getPublicCollections(language?: string): Promise<Collection[]> {
@@ -76,6 +90,18 @@ export class WebCollectionAdapter implements ICollectionService {
     if (language) {
       collections = collections.filter((c) => c.language === language);
     }
+
+    // Sort by updated_at DESC, then by name ASC for consistent ordering
+    // This matches SQLite backend behavior
+    collections.sort((a, b) => {
+      const dateA = new Date(a.updated_at).getTime();
+      const dateB = new Date(b.updated_at).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // DESC order (most recently updated first)
+      }
+      // Secondary sort by name (ascending, case-insensitive)
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+    });
 
     return collections;
   }

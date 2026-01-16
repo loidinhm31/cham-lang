@@ -1,13 +1,13 @@
-use rusqlite::{Result as SqlResult, params};
 use chrono::Utc;
+use rusqlite::{params, Result as SqlResult};
 use uuid::Uuid;
 
-use crate::models::{
-    UpdateProgressRequest, UserPracticeProgress, WordProgress,
-    CreatePracticeSessionRequest, PracticeSession, PracticeResult, PracticeMode,
-};
-use super::LocalDatabase;
 use super::helpers::timestamp_to_datetime;
+use super::LocalDatabase;
+use crate::models::{
+    CreatePracticeSessionRequest, PracticeMode, PracticeResult, PracticeSession,
+    UpdateProgressRequest, UserPracticeProgress, WordProgress,
+};
 
 impl LocalDatabase {
     pub fn update_practice_progress(
@@ -73,7 +73,10 @@ impl LocalDatabase {
             // Create new word progress using values from request
             let word_progress_id = Uuid::new_v4().to_string();
             let mastery = if request.correct_count + request.incorrect_count > 0 {
-                ((request.correct_count as f32 / (request.correct_count + request.incorrect_count) as f32) * 5.0).round() as i32
+                ((request.correct_count as f32
+                    / (request.correct_count + request.incorrect_count) as f32)
+                    * 5.0)
+                    .round() as i32
             } else {
                 0
             };
@@ -167,7 +170,14 @@ impl LocalDatabase {
                          WHERE user_id = ?3 AND language = ?4
                      )
                  WHERE user_id = ?5 AND language = ?6",
-                params![now, now, user_id, request.language, user_id, request.language],
+                params![
+                    now,
+                    now,
+                    user_id,
+                    request.language,
+                    user_id,
+                    request.language
+                ],
             )?;
         }
 
@@ -187,7 +197,7 @@ impl LocalDatabase {
             "SELECT id, language, total_sessions, total_words_practiced,
                     current_streak, longest_streak, last_practice_date, created_at, updated_at
              FROM practice_progress
-             WHERE user_id = ?1 AND language = ?2"
+             WHERE user_id = ?1 AND language = ?2",
         )?;
 
         let mut rows = stmt.query(params![user_id, language])?;
@@ -214,7 +224,7 @@ impl LocalDatabase {
                         last_interval_days, failed_in_session, retry_count, last_practiced
                  FROM word_progress
                  WHERE user_id = ?1 AND language = ?2
-                 ORDER BY last_practiced DESC"
+                 ORDER BY last_practiced DESC, word COLLATE NOCASE ASC",
             )?;
 
             let words_progress: Vec<WordProgress> = word_stmt
@@ -374,7 +384,7 @@ impl LocalDatabase {
                     total_questions, correct_answers, started_at, completed_at, duration_seconds
              FROM practice_sessions
              WHERE user_id = ?1 AND language = ?2
-             ORDER BY completed_at DESC
+             ORDER BY completed_at DESC, id ASC
              LIMIT {}",
             limit.unwrap_or(50)
         );
@@ -382,17 +392,17 @@ impl LocalDatabase {
         let mut stmt = conn.prepare(&sql)?;
         let session_rows = stmt.query_map(params![user_id, language], |row| {
             Ok((
-                row.get::<_, String>(0)?,  // id
-                row.get::<_, String>(1)?,  // collection_id
-                row.get::<_, String>(2)?,  // mode
-                row.get::<_, String>(3)?,  // language
-                row.get::<_, Option<String>>(4)?,  // topic
-                row.get::<_, Option<String>>(5)?,  // level
-                row.get::<_, i32>(6)?,     // total_questions
-                row.get::<_, i32>(7)?,     // correct_answers
-                row.get::<_, i64>(8)?,     // started_at
-                row.get::<_, i64>(9)?,     // completed_at
-                row.get::<_, i32>(10)?,    // duration_seconds
+                row.get::<_, String>(0)?,         // id
+                row.get::<_, String>(1)?,         // collection_id
+                row.get::<_, String>(2)?,         // mode
+                row.get::<_, String>(3)?,         // language
+                row.get::<_, Option<String>>(4)?, // topic
+                row.get::<_, Option<String>>(5)?, // level
+                row.get::<_, i32>(6)?,            // total_questions
+                row.get::<_, i32>(7)?,            // correct_answers
+                row.get::<_, i64>(8)?,            // started_at
+                row.get::<_, i64>(9)?,            // completed_at
+                row.get::<_, i32>(10)?,           // duration_seconds
             ))
         })?;
 
@@ -402,8 +412,19 @@ impl LocalDatabase {
 
         // Fetch results for each session
         let mut sessions = Vec::new();
-        for (session_id, collection_id, mode_str, language, topic, level,
-             total_questions, correct_answers, started_at, completed_at, duration_seconds) in session_data
+        for (
+            session_id,
+            collection_id,
+            mode_str,
+            language,
+            topic,
+            level,
+            total_questions,
+            correct_answers,
+            started_at,
+            completed_at,
+            duration_seconds,
+        ) in session_data
         {
             // Parse mode
             let mode = match mode_str.as_str() {
@@ -418,7 +439,7 @@ impl LocalDatabase {
                 "SELECT vocabulary_id, word, correct, practice_mode, time_spent_seconds
                  FROM practice_results
                  WHERE session_id = ?1
-                 ORDER BY order_index"
+                 ORDER BY order_index",
             )?;
 
             let results: Vec<PracticeResult> = result_stmt

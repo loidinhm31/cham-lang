@@ -215,6 +215,18 @@ export class WebVocabularyAdapter implements IVocabularyService {
       .equals(collectionId)
       .toArray();
 
+    // Sort by created_at DESC, then by word ASC for consistent ordering
+    // This ensures same order as Tauri backend when timestamps are identical
+    vocabs.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // DESC order (newest first)
+      }
+      // Secondary sort by word (ascending, case-insensitive)
+      return a.word.toLowerCase().localeCompare(b.word.toLowerCase());
+    });
+
     if (limit && limit > 0) {
       vocabs = vocabs.slice(0, limit);
     }
@@ -231,6 +243,18 @@ export class WebVocabularyAdapter implements IVocabularyService {
       .where("collection_id")
       .equals(collectionId)
       .toArray();
+
+    // Sort by created_at DESC, then by word ASC for consistent ordering
+    // This ensures same order as Tauri backend when timestamps are identical
+    allVocabs.sort((a, b) => {
+      const dateA = new Date(a.created_at).getTime();
+      const dateB = new Date(b.created_at).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // DESC order (newest first)
+      }
+      // Secondary sort by word (ascending, case-insensitive)
+      return a.word.toLowerCase().localeCompare(b.word.toLowerCase());
+    });
 
     const total = allVocabs.length;
     const startIndex = offset || 0;

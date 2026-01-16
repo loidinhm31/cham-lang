@@ -47,8 +47,19 @@ export class WebPracticeAdapter implements IPracticeService {
     let sessions = await db.practiceSessions
       .where("language")
       .equals(language)
-      .reverse() // Most recent first
       .toArray();
+
+    // Sort by completed_at DESC to match SQLite backend behavior
+    // .reverse() only reverses by index key, not by timestamp
+    sessions.sort((a, b) => {
+      const dateA = new Date(a.completed_at).getTime();
+      const dateB = new Date(b.completed_at).getTime();
+      if (dateB !== dateA) {
+        return dateB - dateA; // DESC order (most recent first)
+      }
+      // Secondary sort by id for deterministic ordering
+      return a.id.localeCompare(b.id);
+    });
 
     if (limit && limit > 0) {
       sessions = sessions.slice(0, limit);

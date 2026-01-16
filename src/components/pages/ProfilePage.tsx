@@ -14,6 +14,7 @@ import {
   Minus,
   Plus,
   Settings,
+  StopCircle,
   Trash2,
   Type,
   Upload,
@@ -28,7 +29,12 @@ import {
 } from "@/services";
 import { getGDriveService } from "@/adapters/ServiceFactory";
 import type { FontSizeOption } from "@/services";
-import { isTauri, openInBrowser, getWebAppUrl } from "@/utils/platform";
+import {
+  isDesktop,
+  openInBrowser,
+  isOpenedFromDesktop,
+} from "@/utils/platform";
+import { browserSyncService } from "@/services/BrowserSyncService";
 
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -56,9 +62,14 @@ export const ProfilePage: React.FC = () => {
   const [reminderEnabled, setReminderEnabled] = useState<boolean>(false);
   const [reminderTime, setReminderTime] = useState<string>("19:00"); // Default 7:00 PM
 
+  // Browser sync state (desktop only)
+  const [browserSyncActive, setBrowserSyncActive] = useState<boolean>(false);
+  const [browserSyncLoading, setBrowserSyncLoading] = useState<boolean>(false);
+
   useEffect(() => {
     checkGDriveConfig();
     loadReminderSettings();
+    checkBrowserSyncStatus();
 
     // Dismiss notification when user first visits profile page
     // Only dismiss on mount, not when hasSyncNotification changes
@@ -67,6 +78,19 @@ export const ProfilePage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
+
+  // Check browser sync status from backend (desktop only)
+  const checkBrowserSyncStatus = async () => {
+    if (!isDesktop()) return;
+
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const isActive = await invoke<boolean>("is_browser_sync_active");
+      setBrowserSyncActive(isActive);
+    } catch (error) {
+      console.error("Failed to check browser sync status:", error);
+    }
+  };
 
   const loadReminderSettings = async () => {
     try {
@@ -115,7 +139,6 @@ export const ProfilePage: React.FC = () => {
       const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
       const storedEmail = localStorage.getItem("gdrive_user_email");
 
-      console.log("data", storedRefreshToken);
       if (storedToken) {
         setAccessToken(storedToken);
         setRefreshTokenState(storedRefreshToken || "");
@@ -531,45 +554,223 @@ export const ProfilePage: React.FC = () => {
       <TopBar title={t("nav.profile")} showBack={false} />
 
       <div className="min-h-screen px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 space-y-6">
-        {/* Open in Browser Section - Only show in Tauri (desktop) */}
-        {isTauri() && (
+        {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
+        {(isDesktop() || isOpenedFromDesktop()) && (
           <Card variant="glass">
             <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <ExternalLink className="w-6 h-6 text-cyan-600" />
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {t("settings.openInBrowser") || "Open in Browser"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {t("settings.openInBrowserDescription") ||
-                      "Open the app in your default web browser"}
-                  </p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Cloud className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {t("settings.browserSync") || "Browser Sync"}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {isDesktop()
+                        ? t("settings.openInBrowserDescription") ||
+                          "Open the app in your default web browser"
+                        : t("settings.browserSyncDescription") ||
+                          "Sync data between browser and desktop"}
+                    </p>
+                  </div>
                 </div>
+                {isDesktop() && browserSyncActive && (
+                  <span className="flex items-center gap-2 text-sm font-medium text-green-600">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    Active
+                  </span>
+                )}
               </div>
 
-              <div className="pt-2">
-                <Button
-                  onClick={async () => {
-                    try {
-                      await openInBrowser(getWebAppUrl());
-                    } catch (error) {
-                      console.error("Failed to open browser:", error);
-                      showAlert(`Failed to open browser: ${error}`, {
-                        variant: "error",
-                      });
-                    }
-                  }}
-                  variant="primary"
-                  fullWidth
-                  icon={ExternalLink}
-                >
-                  {t("settings.openInBrowserButton") || "Open in Web Browser"}
-                </Button>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  {t("settings.openInBrowserHint") ||
-                    `Opens http://127.0.0.1:25091 in your default browser`}
-                </p>
+              <div className="pt-2 space-y-3">
+                {/* Desktop: Open in Browser / Stop Sharing buttons */}
+                {isDesktop() && (
+                  <>
+                    {!browserSyncActive ? (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setBrowserSyncLoading(true);
+                            const { invoke } = await import(
+                              "@tauri-apps/api/core"
+                            );
+                            const url =
+                              await invoke<string>("start_browser_sync");
+                            setBrowserSyncActive(true);
+                            await openInBrowser(url);
+                            showAlert(
+                              t("settings.browserSyncStarted") ||
+                                "Browser sync started. Your data is now accessible in the browser.",
+                              { variant: "success" },
+                            );
+                          } catch (error) {
+                            console.error(
+                              "Failed to start browser sync:",
+                              error,
+                            );
+                            showAlert(
+                              `Failed to start browser sync: ${error}`,
+                              {
+                                variant: "error",
+                              },
+                            );
+                          } finally {
+                            setBrowserSyncLoading(false);
+                          }
+                        }}
+                        disabled={browserSyncLoading}
+                        variant="primary"
+                        fullWidth
+                        icon={ExternalLink}
+                      >
+                        {browserSyncLoading
+                          ? t("settings.starting") || "Starting..."
+                          : t("settings.openInBrowserButton") ||
+                            "Open in Web Browser"}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setBrowserSyncLoading(true);
+                            const { invoke } = await import(
+                              "@tauri-apps/api/core"
+                            );
+                            await invoke("stop_browser_sync");
+                            setBrowserSyncActive(false);
+                            showAlert(
+                              t("settings.browserSyncStopped") ||
+                                "Browser sync stopped.",
+                              { variant: "success" },
+                            );
+                          } catch (error) {
+                            console.error(
+                              "Failed to stop browser sync:",
+                              error,
+                            );
+                            showAlert(`Failed to stop browser sync: ${error}`, {
+                              variant: "error",
+                            });
+                          } finally {
+                            setBrowserSyncLoading(false);
+                          }
+                        }}
+                        disabled={browserSyncLoading}
+                        variant="danger"
+                        fullWidth
+                        icon={StopCircle}
+                      >
+                        {browserSyncLoading
+                          ? t("settings.stopping") || "Stopping..."
+                          : t("settings.stopSharing") || "Stop Sharing"}
+                      </Button>
+                    )}
+                    <p className="text-xs text-gray-500 text-center">
+                      {browserSyncActive
+                        ? t("settings.browserSyncActiveHint") ||
+                          "Your data is being shared on http://localhost:25091"
+                        : t("settings.openInBrowserHint") ||
+                          "Opens http://localhost:25091 in your default browser"}
+                    </p>
+                  </>
+                )}
+
+                {/* Browser: Load from Desktop / Sync to Desktop buttons */}
+                {isOpenedFromDesktop() && (
+                  <>
+                    {/* Load from Desktop button */}
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          console.log(
+                            "📥 Manual load from desktop triggered...",
+                          );
+                          const result =
+                            await browserSyncService.loadFromDesktop();
+                          console.log("📥 Load result:", result);
+                          if (result.success) {
+                            showAlert(result.message, { variant: "success" });
+                            // Reload using full current URL to preserve session token
+                            window.location.href = window.location.href;
+                          } else {
+                            showAlert(result.message, { variant: "error" });
+                          }
+                        } catch (error) {
+                          console.error("Failed to load from desktop:", error);
+                          showAlert(`Load failed: ${error}`, {
+                            variant: "error",
+                          });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      variant="secondary"
+                      fullWidth
+                      icon={Download}
+                    >
+                      {loading
+                        ? t("settings.loading") || "Loading..."
+                        : t("settings.loadFromDesktop") ||
+                          "Load Data from Desktop"}
+                    </Button>
+
+                    {/* Sync to Desktop button */}
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          console.log("📤 Manual sync to desktop triggered...");
+                          const result =
+                            await browserSyncService.syncToDesktop();
+                          console.log("📤 Sync result:", result);
+                          if (result.success) {
+                            showAlert(result.message, { variant: "success" });
+                          } else {
+                            showAlert(result.message, { variant: "error" });
+                          }
+                        } catch (error) {
+                          console.error("Failed to sync to desktop:", error);
+                          showAlert(`Sync failed: ${error}`, {
+                            variant: "error",
+                          });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      variant="primary"
+                      fullWidth
+                      icon={Upload}
+                    >
+                      {loading
+                        ? t("settings.syncing") || "Syncing..."
+                        : t("settings.syncToDesktopButton") ||
+                          "Sync Changes to Desktop"}
+                    </Button>
+
+                    {/* Session info */}
+                    <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded space-y-1">
+                      <p>
+                        <strong>Session:</strong>{" "}
+                        {browserSyncService.getToken()?.slice(0, 16)}...
+                      </p>
+                      <p>
+                        <strong>Last Load:</strong>{" "}
+                        {browserSyncService
+                          .getLastLoadTime()
+                          ?.toLocaleString() || "Never"}
+                      </p>
+                      <p>
+                        <strong>Last Sync:</strong>{" "}
+                        {browserSyncService
+                          .getLastSyncTime()
+                          ?.toLocaleString() || "Never"}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </Card>

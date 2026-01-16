@@ -1,10 +1,13 @@
-use rusqlite::{Result as SqlResult, params, OptionalExtension};
 use chrono::Utc;
+use rusqlite::{params, OptionalExtension, Result as SqlResult};
 use uuid::Uuid;
 
-use crate::models::{Vocabulary, UpdateVocabularyRequest};
+use super::helpers::{
+    parse_word_relationship, parse_word_type, timestamp_to_datetime, word_relationship_to_string,
+    word_type_to_string,
+};
 use super::LocalDatabase;
-use super::helpers::{timestamp_to_datetime, parse_word_type, parse_word_relationship, word_type_to_string, word_relationship_to_string};
+use crate::models::{UpdateVocabularyRequest, Vocabulary};
 
 impl LocalDatabase {
     /// Create a new vocabulary with all related data
@@ -133,7 +136,13 @@ impl LocalDatabase {
                 "INSERT OR IGNORE INTO vocabulary_related_words
                  (id, vocabulary_id, related_vocabulary_id, relationship_type, created_at)
                  VALUES (?1, ?2, ?3, ?4, ?5)",
-                params![rw_id, id, related_word.word_id, word_relationship_to_string(&related_word.relationship), now],
+                params![
+                    rw_id,
+                    id,
+                    related_word.word_id,
+                    word_relationship_to_string(&related_word.relationship),
+                    now
+                ],
             )?;
         }
 
@@ -177,7 +186,7 @@ impl LocalDatabase {
                 "SELECT meaning, translation, example, order_index
                  FROM vocabulary_definitions
                  WHERE vocabulary_id = ?1
-                 ORDER BY order_index"
+                 ORDER BY order_index",
             )?;
             let definitions: Vec<crate::models::Definition> = def_stmt
                 .query_map(params![&vocab_id], |row| {
@@ -194,7 +203,7 @@ impl LocalDatabase {
                 "SELECT sentence, order_index
                  FROM vocabulary_example_sentences
                  WHERE vocabulary_id = ?1
-                 ORDER BY order_index"
+                 ORDER BY order_index",
             )?;
             let example_sentences: Vec<String> = ex_stmt
                 .query_map(params![&vocab_id], |row| row.get(0))?
@@ -205,7 +214,7 @@ impl LocalDatabase {
                 "SELECT t.name
                  FROM vocabulary_topics vt
                  JOIN topics t ON vt.topic_id = t.id
-                 WHERE vt.vocabulary_id = ?1"
+                 WHERE vt.vocabulary_id = ?1",
             )?;
             let topics: Vec<String> = topic_stmt
                 .query_map(params![&vocab_id], |row| row.get(0))?
@@ -216,7 +225,7 @@ impl LocalDatabase {
                 "SELECT t.name
                  FROM vocabulary_tags vt
                  JOIN tags t ON vt.tag_id = t.id
-                 WHERE vt.vocabulary_id = ?1"
+                 WHERE vt.vocabulary_id = ?1",
             )?;
             let tags: Vec<String> = tag_stmt
                 .query_map(params![&vocab_id], |row| row.get(0))?
@@ -226,7 +235,7 @@ impl LocalDatabase {
             let mut rel_stmt = conn.prepare(
                 "SELECT related_vocabulary_id, relationship_type
                  FROM vocabulary_related_words
-                 WHERE vocabulary_id = ?1"
+                 WHERE vocabulary_id = ?1",
             )?;
             let related_words: Vec<crate::models::RelatedWord> = rel_stmt
                 .query_map(params![&vocab_id], |row| {
@@ -234,11 +243,13 @@ impl LocalDatabase {
                     let relationship_str: String = row.get(1)?;
 
                     // Fetch the related word's text
-                    let related_word: String = conn.query_row(
-                        "SELECT word FROM vocabularies WHERE id = ?1",
-                        params![&related_vocab_id],
-                        |r| r.get(0),
-                    ).unwrap_or_else(|_| String::new());
+                    let related_word: String = conn
+                        .query_row(
+                            "SELECT word FROM vocabularies WHERE id = ?1",
+                            params![&related_vocab_id],
+                            |r| r.get(0),
+                        )
+                        .unwrap_or_else(|_| String::new());
 
                     Ok(crate::models::RelatedWord {
                         word_id: related_vocab_id,
@@ -281,33 +292,35 @@ impl LocalDatabase {
     ) -> SqlResult<Vec<Vocabulary>> {
         let conn = self.conn.lock().unwrap();
 
-        let (sql, params_vec): (String, Vec<Box<dyn rusqlite::ToSql>>) = if let Some(lang) = language {
-            (
-                format!(
-                    "SELECT id
+        let (sql, params_vec): (String, Vec<Box<dyn rusqlite::ToSql>>) =
+            if let Some(lang) = language {
+                (
+                    format!(
+                        "SELECT id
                      FROM vocabularies
                      WHERE user_id = ?1 AND language = ?2
-                     ORDER BY created_at DESC
+                     ORDER BY created_at DESC, word COLLATE NOCASE ASC
                      LIMIT {}",
-                    limit.unwrap_or(999999)
-                ),
-                vec![Box::new(user_id.to_string()), Box::new(lang.to_string())]
-            )
-        } else {
-            (
-                format!(
-                    "SELECT id
+                        limit.unwrap_or(999999)
+                    ),
+                    vec![Box::new(user_id.to_string()), Box::new(lang.to_string())],
+                )
+            } else {
+                (
+                    format!(
+                        "SELECT id
                      FROM vocabularies
                      WHERE user_id = ?1
-                     ORDER BY created_at DESC
+                     ORDER BY created_at DESC, word COLLATE NOCASE ASC
                      LIMIT {}",
-                    limit.unwrap_or(999999)
-                ),
-                vec![Box::new(user_id.to_string())]
-            )
-        };
+                        limit.unwrap_or(999999)
+                    ),
+                    vec![Box::new(user_id.to_string())],
+                )
+            };
 
-        let params_refs: Vec<&dyn rusqlite::ToSql> = params_vec.iter().map(|p| p.as_ref()).collect();
+        let params_refs: Vec<&dyn rusqlite::ToSql> =
+            params_vec.iter().map(|p| p.as_ref()).collect();
         let mut stmt = conn.prepare(&sql)?;
         let vocab_ids: Vec<String> = stmt
             .query_map(params_refs.as_slice(), |row| row.get(0))?
@@ -332,7 +345,8 @@ impl LocalDatabase {
         collection_id: &str,
         limit: Option<i64>,
     ) -> SqlResult<Vec<Vocabulary>> {
-        let paginated = self.get_vocabularies_by_collection_paginated(collection_id, limit, None)?;
+        let paginated =
+            self.get_vocabularies_by_collection_paginated(collection_id, limit, None)?;
         Ok(paginated.items)
     }
 
@@ -357,11 +371,13 @@ impl LocalDatabase {
         )?;
 
         // Get paginated IDs
+        // Sort by created_at DESC, then by word ASC for consistent ordering
+        // This ensures same order as web adapter when timestamps are identical
         let sql = format!(
             "SELECT id
              FROM vocabularies
              WHERE collection_id = ?1
-             ORDER BY created_at DESC
+             ORDER BY created_at DESC, word COLLATE NOCASE ASC
              LIMIT {} OFFSET {}",
             limit, offset
         );
@@ -386,7 +402,11 @@ impl LocalDatabase {
     }
 
     /// Search vocabularies by word pattern
-    pub fn search_vocabularies(&self, query: &str, language: Option<&str>) -> SqlResult<Vec<Vocabulary>> {
+    pub fn search_vocabularies(
+        &self,
+        query: &str,
+        language: Option<&str>,
+    ) -> SqlResult<Vec<Vocabulary>> {
         let conn = self.conn.lock().unwrap();
         let sql = if let Some(_lang) = language {
             "SELECT id
@@ -442,7 +462,8 @@ impl LocalDatabase {
                 "SELECT collection_id FROM vocabularies WHERE id = ?1",
                 params![vocab_id],
                 |row| row.get(0),
-            ).optional()?
+            )
+            .optional()?
         } else {
             None
         };
@@ -500,7 +521,8 @@ impl LocalDatabase {
                 "UPDATE vocabularies SET {} WHERE id = ?",
                 updates.join(", ")
             );
-            let params_refs: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_ref()).collect();
+            let params_refs: Vec<&dyn rusqlite::ToSql> =
+                params.iter().map(|p| p.as_ref()).collect();
             tx.execute(&sql, params_refs.as_slice())?;
         }
 
@@ -631,13 +653,20 @@ impl LocalDatabase {
                     "INSERT OR IGNORE INTO vocabulary_related_words
                      (id, vocabulary_id, related_vocabulary_id, relationship_type, created_at)
                      VALUES (?1, ?2, ?3, ?4, ?5)",
-                    params![rw_id, vocab_id, related_word.word_id, word_relationship_to_string(&related_word.relationship), now],
+                    params![
+                        rw_id,
+                        vocab_id,
+                        related_word.word_id,
+                        word_relationship_to_string(&related_word.relationship),
+                        now
+                    ],
                 )?;
             }
         }
 
         // Update word counts if collection_id changed
-        if let (Some(old_coll_id), Some(new_coll_id)) = (old_collection_id, &request.collection_id) {
+        if let (Some(old_coll_id), Some(new_coll_id)) = (old_collection_id, &request.collection_id)
+        {
             if &old_coll_id != new_coll_id {
                 // Update old collection word count
                 let old_count: i32 = tx.query_row(
@@ -672,10 +701,7 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
 
         // Hard delete - ON DELETE CASCADE will handle related tables
-        conn.execute(
-            "DELETE FROM vocabularies WHERE id = ?1",
-            params![vocab_id],
-        )?;
+        conn.execute("DELETE FROM vocabularies WHERE id = ?1", params![vocab_id])?;
 
         Ok(())
     }
@@ -732,7 +758,8 @@ impl LocalDatabase {
 
             if let Some((source_collection_id, vocab_language)) = vocab_info {
                 // Only move if language matches and not already in target collection
-                if vocab_language == target_language && source_collection_id != target_collection_id {
+                if vocab_language == target_language && source_collection_id != target_collection_id
+                {
                     source_collections.insert(source_collection_id);
 
                     // Update vocabulary collection_id

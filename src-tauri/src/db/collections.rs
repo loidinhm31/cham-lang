@@ -1,10 +1,10 @@
-use rusqlite::{Result as SqlResult, params};
 use chrono::Utc;
+use rusqlite::{params, Result as SqlResult};
 use uuid::Uuid;
 
-use crate::models::Collection;
-use super::LocalDatabase;
 use super::helpers::timestamp_to_datetime;
+use super::LocalDatabase;
+use crate::models::Collection;
 
 impl LocalDatabase {
     /// Create a new collection
@@ -30,13 +30,36 @@ impl LocalDatabase {
         Ok(id)
     }
 
+    /// Import a collection with a specific ID (used for sync/restore operations)
+    pub fn import_collection_with_id(
+        &self,
+        collection_id: &str,
+        name: &str,
+        description: &str,
+        language: &str,
+        owner_id: &str,
+        is_public: bool,
+    ) -> SqlResult<()> {
+        let now = Utc::now().timestamp();
+
+        let conn = self.conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO collections
+             (id, name, description, language, owner_id, is_public, word_count, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?8)",
+            params![collection_id, name, description, language, owner_id, is_public, now, now],
+        )?;
+
+        Ok(())
+    }
+
     /// Get a collection by ID (normalized version)
     pub fn get_collection(&self, collection_id: &str) -> SqlResult<Option<Collection>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
-             FROM collections WHERE id = ?1"
+             FROM collections WHERE id = ?1",
         )?;
 
         let mut rows = stmt.query(params![collection_id])?;
@@ -57,9 +80,8 @@ impl LocalDatabase {
             drop(stmt);
 
             // Fetch shared users from normalized table
-            let mut shared_stmt = conn.prepare(
-                "SELECT user_id FROM collection_shared_users WHERE collection_id = ?1"
-            )?;
+            let mut shared_stmt = conn
+                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
             let shared_with: Vec<String> = shared_stmt
                 .query_map(params![&collection_id_local], |r| r.get(0))?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -89,21 +111,21 @@ impl LocalDatabase {
                     word_count, created_at, updated_at
              FROM collections
              WHERE owner_id = ?1
-             ORDER BY updated_at DESC"
+             ORDER BY updated_at DESC, name COLLATE NOCASE ASC",
         )?;
 
         let collection_rows: Vec<_> = stmt
             .query_map(params![user_id], |row| {
                 Ok((
-                    row.get::<_, String>(0)?,  // id
-                    row.get::<_, String>(1)?,  // name
-                    row.get::<_, Option<String>>(2)?,  // description
-                    row.get::<_, String>(3)?,  // language
-                    row.get::<_, String>(4)?,  // owner_id
-                    row.get::<_, Option<i32>>(5)?.unwrap_or(0),     // is_public
-                    row.get::<_, Option<i32>>(6)?.unwrap_or(0),     // word_count
-                    row.get::<_, i64>(7)?,     // created_at
-                    row.get::<_, i64>(8)?,     // updated_at
+                    row.get::<_, String>(0)?,                   // id
+                    row.get::<_, String>(1)?,                   // name
+                    row.get::<_, Option<String>>(2)?,           // description
+                    row.get::<_, String>(3)?,                   // language
+                    row.get::<_, String>(4)?,                   // owner_id
+                    row.get::<_, Option<i32>>(5)?.unwrap_or(0), // is_public
+                    row.get::<_, Option<i32>>(6)?.unwrap_or(0), // word_count
+                    row.get::<_, i64>(7)?,                      // created_at
+                    row.get::<_, i64>(8)?,                      // updated_at
                 ))
             })?
             .collect::<Result<Vec<_>, _>>()?;
@@ -112,10 +134,20 @@ impl LocalDatabase {
 
         // Fetch shared users for each collection
         let mut collections = Vec::new();
-        for (id, name, description, language, owner_id, is_public, word_count, created_at, updated_at) in collection_rows {
-            let mut shared_stmt = conn.prepare(
-                "SELECT user_id FROM collection_shared_users WHERE collection_id = ?1"
-            )?;
+        for (
+            id,
+            name,
+            description,
+            language,
+            owner_id,
+            is_public,
+            word_count,
+            created_at,
+            updated_at,
+        ) in collection_rows
+        {
+            let mut shared_stmt = conn
+                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
             let shared_with: Vec<String> = shared_stmt
                 .query_map(params![&id], |r| r.get(0))?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -146,13 +178,13 @@ impl LocalDatabase {
                     word_count, created_at, updated_at
              FROM collections
              WHERE is_public = 1 AND language = ?1
-             ORDER BY updated_at DESC"
+             ORDER BY updated_at DESC, name COLLATE NOCASE ASC"
         } else {
             "SELECT id, name, description, language, owner_id, is_public,
                     word_count, created_at, updated_at
              FROM collections
              WHERE is_public = 1
-             ORDER BY updated_at DESC"
+             ORDER BY updated_at DESC, name COLLATE NOCASE ASC"
         };
 
         let mut stmt = conn.prepare(sql)?;
@@ -193,10 +225,20 @@ impl LocalDatabase {
 
         // Fetch shared users for each collection
         let mut collections = Vec::new();
-        for (id, name, description, language, owner_id, is_public, word_count, created_at, updated_at) in collection_rows {
-            let mut shared_stmt = conn.prepare(
-                "SELECT user_id FROM collection_shared_users WHERE collection_id = ?1"
-            )?;
+        for (
+            id,
+            name,
+            description,
+            language,
+            owner_id,
+            is_public,
+            word_count,
+            created_at,
+            updated_at,
+        ) in collection_rows
+        {
+            let mut shared_stmt = conn
+                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
             let shared_with: Vec<String> = shared_stmt
                 .query_map(params![&id], |r| r.get(0))?
                 .collect::<Result<Vec<_>, _>>()?;
@@ -273,11 +315,7 @@ impl LocalDatabase {
     }
 
     /// Share a collection with a user (normalized version)
-    pub fn share_collection(
-        &self,
-        collection_id: &str,
-        user_id: &str,
-    ) -> SqlResult<()> {
+    pub fn share_collection(&self, collection_id: &str, user_id: &str) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         let id = Uuid::new_v4().to_string();
         let now = Utc::now().timestamp();
@@ -300,11 +338,7 @@ impl LocalDatabase {
     }
 
     /// Unshare a collection from a user (normalized version)
-    pub fn unshare_collection(
-        &self,
-        collection_id: &str,
-        user_id: &str,
-    ) -> SqlResult<()> {
+    pub fn unshare_collection(&self, collection_id: &str, user_id: &str) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         let now = Utc::now().timestamp();
 

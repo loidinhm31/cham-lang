@@ -1,9 +1,9 @@
-use crate::models::{Vocabulary, Collection};
 use crate::local_db::LocalDatabase;
+use crate::models::{Collection, Vocabulary};
 use serde::{Deserialize, Serialize};
-use tauri::{State, AppHandle, Manager};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
+use tauri::{AppHandle, Manager, State};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ExportResult {
@@ -20,7 +20,9 @@ pub struct CsvExportRequest {
 /// Flatten definitions array to delimited string
 /// Format: "meaning1|translation1|example1;meaning2|translation2|example2"
 fn flatten_definitions(vocabulary: &Vocabulary) -> String {
-    vocabulary.definitions.iter()
+    vocabulary
+        .definitions
+        .iter()
         .map(|def| {
             let mut parts = vec![def.meaning.clone()];
             if let Some(trans) = &def.translation {
@@ -60,7 +62,9 @@ fn flatten_tags(vocabulary: &Vocabulary) -> String {
 /// Flatten related words to delimited string
 /// Format: "word1:synonym|word2:antonym|word3:related"
 fn flatten_related_words(vocabulary: &Vocabulary) -> String {
-    vocabulary.related_words.iter()
+    vocabulary
+        .related_words
+        .iter()
         .map(|rw| format!("{}:{:?}", rw.word, rw.relationship))
         .collect::<Vec<_>>()
         .join("|")
@@ -115,7 +119,10 @@ pub fn export_collections_csv(
     request: CsvExportRequest,
     file_path: String,
 ) -> Result<ExportResult, String> {
-    println!("📤 Starting CSV export for {} collections", request.collection_ids.len());
+    println!(
+        "Starting CSV export for {} collections",
+        request.collection_ids.len()
+    );
 
     let mut csv_rows: Vec<CsvRow> = Vec::new();
     let mut total_vocabularies = 0;
@@ -123,15 +130,26 @@ pub fn export_collections_csv(
     // Collect all vocabularies from selected collections
     for collection_id in &request.collection_ids {
         // Get collection info
-        let collection = local_db.get_collection(collection_id)
+        let collection = local_db
+            .get_collection(collection_id)
             .map_err(|e| format!("Failed to get collection {}: {}", collection_id, e))?
             .ok_or_else(|| format!("Collection not found: {}", collection_id))?;
 
         // Get vocabularies for this collection
-        let vocabularies = local_db.get_vocabularies_by_collection(collection_id, None)
-            .map_err(|e| format!("Failed to get vocabularies for collection {}: {}", collection_id, e))?;
+        let vocabularies = local_db
+            .get_vocabularies_by_collection(collection_id, None)
+            .map_err(|e| {
+                format!(
+                    "Failed to get vocabularies for collection {}: {}",
+                    collection_id, e
+                )
+            })?;
 
-        println!("  📚 Collection '{}': {} vocabularies", collection.name, vocabularies.len());
+        println!(
+            "  Collection '{}': {} vocabularies",
+            collection.name,
+            vocabularies.len()
+        );
 
         // Convert each vocabulary to CSV row
         for vocab in vocabularies {
@@ -147,11 +165,13 @@ pub fn export_collections_csv(
 
         // Write all rows
         for row in csv_rows {
-            writer.serialize(&row)
+            writer
+                .serialize(&row)
                 .map_err(|e| format!("Failed to write CSV row: {}", e))?;
         }
 
-        writer.flush()
+        writer
+            .flush()
             .map_err(|e| format!("Failed to flush CSV buffer: {}", e))?;
     }
 
@@ -161,33 +181,47 @@ pub fn export_collections_csv(
     // Ensure parent directory exists
     if let Some(parent) = write_path.parent() {
         if !parent.exists() {
-            println!("📁 Creating parent directory: {:?}", parent);
-            fs::create_dir_all(parent)
-                .map_err(|e| format!("Failed to create directory {:?}: {} (OS error: {})",
-                    parent, e, e.raw_os_error().unwrap_or(-1)))?;
+            println!("Creating parent directory: {:?}", parent);
+            fs::create_dir_all(parent).map_err(|e| {
+                format!(
+                    "Failed to create directory {:?}: {} (OS error: {})",
+                    parent,
+                    e,
+                    e.raw_os_error().unwrap_or(-1)
+                )
+            })?;
         }
     }
 
     // Write the CSV buffer to the file
-    println!("💾 Writing {} bytes to: {:?}", csv_buffer.len(), write_path);
-    fs::write(&write_path, csv_buffer)
-        .map_err(|e| {
-            let os_error = e.raw_os_error().unwrap_or(-1);
-            let err_msg = format!("Failed to save CSV file to {:?}: {} (OS error: {})", write_path, e, os_error);
-            eprintln!("❌ {}", err_msg);
-            err_msg
-        })?;
+    println!("Writing {} bytes to: {:?}", csv_buffer.len(), write_path);
+    fs::write(&write_path, csv_buffer).map_err(|e| {
+        let os_error = e.raw_os_error().unwrap_or(-1);
+        let err_msg = format!(
+            "Failed to save CSV file to {:?}: {} (OS error: {})",
+            write_path, e, os_error
+        );
+        eprintln!("{}", err_msg);
+        err_msg
+    })?;
 
-    println!("✅ CSV export complete: {} vocabularies exported to {}", total_vocabularies, file_path);
+    println!(
+        "CSV export complete: {} vocabularies exported to {}",
+        total_vocabularies, file_path
+    );
 
-    let file_name = write_path.file_name()
+    let file_name = write_path
+        .file_name()
         .and_then(|n| n.to_str())
         .unwrap_or("export.csv")
         .to_string();
 
     Ok(ExportResult {
-        message: format!("Successfully exported {} vocabularies from {} collections",
-                        total_vocabularies, request.collection_ids.len()),
+        message: format!(
+            "Successfully exported {} vocabularies from {} collections",
+            total_vocabularies,
+            request.collection_ids.len()
+        ),
         file_path: file_path.clone(),
         file_name,
     })
@@ -206,7 +240,9 @@ pub async fn choose_csv_save_location() -> Result<Option<String>, String> {
 #[tauri::command]
 pub fn get_export_directory(app: AppHandle) -> Result<String, String> {
     // Try to get the app's data directory
-    let data_dir = app.path().app_data_dir()
+    let data_dir = app
+        .path()
+        .app_data_dir()
         .map_err(|e| format!("Failed to get app data directory: {}", e))?;
 
     // Create an exports subdirectory
@@ -218,7 +254,8 @@ pub fn get_export_directory(app: AppHandle) -> Result<String, String> {
             .map_err(|e| format!("Failed to create exports directory: {}", e))?;
     }
 
-    export_dir.to_str()
+    export_dir
+        .to_str()
         .ok_or_else(|| "Failed to convert path to string".to_string())
         .map(|s| s.to_string())
 }
@@ -232,7 +269,10 @@ pub fn open_export_directory(app: AppHandle) -> Result<(), String> {
     {
         // On Android, we can't open the app's data directory in the file manager
         // because it's in a protected location. Return an error message.
-        Err(format!("Exports are saved to the app's data directory.\nPath: {}", export_dir))
+        Err(format!(
+            "Exports are saved to the app's data directory.\nPath: {}",
+            export_dir
+        ))
     }
 
     #[cfg(not(target_os = "android"))]
@@ -263,14 +303,14 @@ pub fn open_export_directory(app: AppHandle) -> Result<(), String> {
 /// Generate a CSV template with example data for users to follow
 #[tauri::command]
 pub fn generate_csv_template(file_path: String) -> Result<String, String> {
-    println!("📝 Generating CSV template at: {}", file_path);
+    println!("Generating CSV template at: {}", file_path);
 
     let path = PathBuf::from(&file_path);
 
     // Ensure parent directory exists
     if let Some(parent) = path.parent() {
         if !parent.exists() {
-            println!("📁 Creating parent directory: {:?}", parent);
+            println!("Creating parent directory: {:?}", parent);
             fs::create_dir_all(parent)
                 .map_err(|e| format!("Failed to create directory {:?}: {}", parent, e))?;
         }
@@ -280,23 +320,24 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
         .map_err(|e| format!("Failed to create CSV template file: {}", e))?;
 
     // Write header
-    writer.write_record(&[
-        "collection_name",
-        "collection_description",
-        "collection_language",
-        "word",
-        "word_type",
-        "level",
-        "ipa",
-        "concept",
-        "language",
-        "definitions",
-        "example_sentences",
-        "topics",
-        "tags",
-        "related_words",
-    ])
-    .map_err(|e| format!("Failed to write CSV header: {}", e))?;
+    writer
+        .write_record(&[
+            "collection_name",
+            "collection_description",
+            "collection_language",
+            "word",
+            "word_type",
+            "level",
+            "ipa",
+            "concept",
+            "language",
+            "definitions",
+            "example_sentences",
+            "topics",
+            "tags",
+            "related_words",
+        ])
+        .map_err(|e| format!("Failed to write CSV header: {}", e))?;
 
     // Write example rows
     let examples = vec![
@@ -351,14 +392,16 @@ pub fn generate_csv_template(file_path: String) -> Result<String, String> {
     ];
 
     for example in examples {
-        writer.write_record(&example)
+        writer
+            .write_record(&example)
             .map_err(|e| format!("Failed to write example row: {}", e))?;
     }
 
-    writer.flush()
+    writer
+        .flush()
         .map_err(|e| format!("Failed to save CSV template: {}", e))?;
 
-    println!("✅ CSV template generated successfully");
+    println!("CSV template generated successfully");
 
     Ok("CSV template generated successfully".to_string())
 }

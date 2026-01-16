@@ -1,14 +1,14 @@
-use rusqlite::{Connection, Result as SqlResult, params};
+use chrono::Utc;
+use rusqlite::{params, Connection, Result as SqlResult};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
-use chrono::Utc;
 
 // Submodules
-pub mod helpers;
-pub mod vocabularies;
 mod collections;
+pub mod helpers;
 mod practice;
 mod settings;
+pub mod vocabularies;
 
 /// Local SQLite database manager for offline-first functionality
 #[derive(Clone)]
@@ -139,21 +139,21 @@ impl LocalDatabase {
         )?;
 
         // Migration: Add audio_url column to vocabularies table if it doesn't exist
-        conn.execute(
-            "ALTER TABLE vocabularies ADD COLUMN audio_url TEXT",
-            [],
-        ).ok(); // Ignore error if column already exists
+        conn.execute("ALTER TABLE vocabularies ADD COLUMN audio_url TEXT", [])
+            .ok(); // Ignore error if column already exists
 
         // Migration: Add reminder settings columns to learning_settings table
         conn.execute(
             "ALTER TABLE learning_settings ADD COLUMN reminder_enabled INTEGER DEFAULT 0",
             [],
-        ).ok(); // Ignore error if column already exists
+        )
+        .ok(); // Ignore error if column already exists
 
         conn.execute(
             "ALTER TABLE learning_settings ADD COLUMN reminder_time TEXT DEFAULT '19:00'",
             [],
-        ).ok(); // Ignore error if column already exists
+        )
+        .ok(); // Ignore error if column already exists
 
         // Vocabulary definitions table (one-to-many)
         conn.execute(
@@ -296,7 +296,7 @@ impl LocalDatabase {
             )",
             [],
         )?;
-        
+
         // Practice progress table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_progress (
@@ -408,29 +408,65 @@ impl LocalDatabase {
         );
 
         // Create indexes
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_user ON vocabularies(user_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_collections_owner ON collections(owner_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_practice_sessions_user ON practice_sessions(user_id)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocabularies_user ON vocabularies(user_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_collections_owner ON collections(owner_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_practice_sessions_user ON practice_sessions(user_id)",
+            [],
+        )?;
 
         // Indexes for normalized vocabulary tables
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_definitions_vocab ON vocabulary_definitions(vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_examples_vocab ON vocabulary_example_sentences(vocabulary_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_topics_vocab ON vocabulary_topics(vocabulary_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_topics_topic ON vocabulary_topics(topic_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_tags_vocab ON vocabulary_tags(vocabulary_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_tags_tag ON vocabulary_tags(tag_id)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocab_topics_vocab ON vocabulary_topics(vocabulary_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocab_topics_topic ON vocabulary_topics(topic_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocab_tags_vocab ON vocabulary_tags(vocabulary_id)",
+            [],
+        )?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_vocab_tags_tag ON vocabulary_tags(tag_id)",
+            [],
+        )?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_related_vocab ON vocabulary_related_words(vocabulary_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_vocab_related_related ON vocabulary_related_words(related_vocabulary_id)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_topics_name ON topics(name)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_topics_name ON topics(name)",
+            [],
+        )?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)", [])?;
 
         // Indexes for normalized word progress tables
         conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_user_lang ON word_progress(user_id, language)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id)",
+            [],
+        )?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date)", [])?;
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box)",
+            [],
+        )?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_modes ON word_progress_completed_modes(word_progress_id)", [])?;
 
         // Indexes for normalized practice results
@@ -466,7 +502,8 @@ impl LocalDatabase {
         )?;
 
         // Parse the string to i64
-        version_str.parse::<i64>()
+        version_str
+            .parse::<i64>()
             .map_err(|e| rusqlite::Error::ToSqlConversionFailure(Box::new(e)))
     }
 
@@ -484,9 +521,8 @@ impl LocalDatabase {
     /// Get all languages that have collections
     pub fn get_all_languages(&self, user_id: &str) -> SqlResult<Vec<String>> {
         let conn = self.conn.lock().unwrap();
-        let mut stmt = conn.prepare(
-            "SELECT DISTINCT language FROM collections WHERE owner_id = ?1"
-        )?;
+        let mut stmt =
+            conn.prepare("SELECT DISTINCT language FROM collections WHERE owner_id = ?1")?;
 
         let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
         rows.collect()
@@ -501,7 +537,7 @@ impl LocalDatabase {
              JOIN vocabulary_topics vt ON t.id = vt.topic_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
              WHERE v.user_id = ?1
-             ORDER BY t.name"
+             ORDER BY t.name",
         )?;
 
         let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
@@ -517,7 +553,7 @@ impl LocalDatabase {
              JOIN vocabulary_tags vt ON t.id = vt.tag_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
              WHERE v.user_id = ?1
-             ORDER BY t.name"
+             ORDER BY t.name",
         )?;
 
         let rows = stmt.query_map(params![user_id], |row| row.get(0))?;

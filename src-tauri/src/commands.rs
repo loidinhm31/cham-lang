@@ -2,10 +2,9 @@ use tauri::State;
 
 use crate::local_db::LocalDatabase;
 use crate::models::{
-    BulkMoveRequest, BulkMoveResult, CreatePracticeSessionRequest,
-    CreateVocabularyRequest, LearningSettings, PracticeSession, UpdateLearningSettingsRequest,
-    UpdateProgressRequest, UpdateVocabularyRequest,
-    UserPracticeProgress, Vocabulary
+    BulkMoveRequest, BulkMoveResult, CreatePracticeSessionRequest, CreateVocabularyRequest,
+    LearningSettings, PracticeSession, UpdateLearningSettingsRequest, UpdateProgressRequest,
+    UpdateVocabularyRequest, UserPracticeProgress, Vocabulary,
 };
 
 // Vocabulary CRUD commands
@@ -118,10 +117,7 @@ pub fn update_vocabulary(
 }
 
 #[tauri::command]
-pub fn delete_vocabulary(
-    local_db: State<'_, LocalDatabase>,
-    id: String,
-) -> Result<String, String> {
+pub fn delete_vocabulary(local_db: State<'_, LocalDatabase>, id: String) -> Result<String, String> {
     local_db
         .delete_vocabulary(&id)
         .map_err(|e| format!("Database error: {}", e))?;
@@ -153,9 +149,7 @@ pub fn bulk_move_vocabularies(
 }
 
 #[tauri::command]
-pub fn get_all_topics(
-    local_db: State<'_, LocalDatabase>,
-) -> Result<Vec<String>, String> {
+pub fn get_all_topics(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
     let user_id = local_db.get_local_user_id();
     local_db
         .get_all_topics(user_id)
@@ -163,9 +157,7 @@ pub fn get_all_topics(
 }
 
 #[tauri::command]
-pub fn get_all_tags(
-    local_db: State<'_, LocalDatabase>,
-) -> Result<Vec<String>, String> {
+pub fn get_all_tags(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
     let user_id = local_db.get_local_user_id();
     local_db
         .get_all_tags(user_id)
@@ -227,9 +219,7 @@ pub fn get_level_configuration(language: String) -> Result<Vec<String>, String> 
 }
 
 #[tauri::command]
-pub fn get_all_languages(
-    local_db: State<'_, LocalDatabase>,
-) -> Result<Vec<String>, String> {
+pub fn get_all_languages(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
     let user_id = local_db.get_local_user_id();
     local_db
         .get_all_languages(user_id)

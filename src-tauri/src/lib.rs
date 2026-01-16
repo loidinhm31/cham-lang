@@ -9,8 +9,10 @@ mod models;
 mod notification_commands;
 mod scheduled_task_handler;
 
-// Desktop-only: Embedded web server for "Open in Browser" feature
-#[cfg(not(target_os = "android"))]
+// Desktop-only: Embedded web server and session management
+#[cfg(desktop)]
+mod session;
+#[cfg(desktop)]
 mod web_server;
 
 use collection_commands::*;
@@ -44,14 +46,81 @@ fn init_logging() {
     );
 }
 
-#[cfg(not(target_os = "android"))]
+#[cfg(desktop)]
 fn init_logging() {
     env_logger::init();
 }
 
+//=============================================================================
+// Browser Sync Commands (Desktop only)
+//=============================================================================
+
+/// Start the browser sync server and return the URL with session token
+#[cfg(desktop)]
+#[tauri::command]
+fn start_browser_sync(
+    db: tauri::State<'_, LocalDatabase>,
+    session_manager: tauri::State<'_, session::SharedSessionManager>,
+) -> Result<String, String> {
+    use session::SharedSessionManager;
+
+    // Check if already running
+    if web_server::is_server_running() {
+        return Err("Browser sync server is already running".to_string());
+    }
+
+    // Clone what we need for the web server
+    let db_clone = (*db).clone();
+    let session_manager_clone: SharedSessionManager = (*session_manager).clone();
+
+    // Start the web server and get the token
+    let token = web_server::start_web_server(db_clone, session_manager_clone);
+
+    // In dev mode, open browser to Vite dev server for HMR support
+    // In production, open to the embedded web server
+    let is_dev_mode =
+        std::env::var("TAURI_DEV_HOST").is_ok() || std::env::var("CARGO_MANIFEST_DIR").is_ok();
+
+    let browser_port = if is_dev_mode {
+        1420 // Vite dev server
+    } else {
+        web_server::WEB_SERVER_PORT // Embedded server (25091)
+    };
+
+    let url = format!("http://localhost:{}?session={}", browser_port, token);
+
+    println!("Browser sync started: {}", url);
+    if is_dev_mode {
+        println!("   Dev mode: Opening Vite (1420), API on 25091");
+    }
+    Ok(url)
+}
+
+/// Stop the browser sync server
+#[cfg(desktop)]
+#[tauri::command]
+fn stop_browser_sync(
+    session_manager: tauri::State<'_, session::SharedSessionManager>,
+) -> Result<String, String> {
+    // Stop the server
+    web_server::stop_web_server();
+
+    // Clear the session token
+    session_manager.clear_token();
+
+    Ok("Browser sync stopped".to_string())
+}
+
+/// Check if browser sync is currently active
+#[cfg(desktop)]
+#[tauri::command]
+fn is_browser_sync_active() -> bool {
+    web_server::is_server_running()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    println!("🚀 Starting Cham Lang (local-only mode)...");
+    println!("Starting Cham Lang (local-only mode)...");
 
     init_logging();
 
@@ -77,31 +146,24 @@ pub fn run() {
 
             // Initialize local SQLite database
             let db_path = app_data_dir.join("chamlang.db");
-            println!("📁 Database location: {:?}", db_path);
+            println!("Database location: {:?}", db_path);
 
             let local_db =
                 LocalDatabase::new(db_path.clone()).expect("Failed to initialize local database");
 
-            println!("✓ Local database initialized");
-            println!("✓ Cham Lang ready - all data stored locally!");
-            println!("💡 Google Drive sync available - configure in Profile");
+            println!("Local database initialized");
+            println!("Cham Lang ready - all data stored locally!");
+            println!("Google Drive sync available - configure in Profile");
 
             // Store the database in app state
             app.manage(local_db);
 
-            // Start embedded web server for "Open in Browser" feature (desktop only)
-            // This allows users to open the app in their default web browser
+            // Initialize session manager for browser sync (desktop only)
             #[cfg(desktop)]
             {
-                // Only start if not in dev mode (Vite dev server handles it)
-                // Check if TAURI_DEV_HOST is set (indicates dev mode)
-                if std::env::var("TAURI_DEV_HOST").is_err() {
-                    web_server::start_web_server();
-                } else {
-                    println!(
-                        "📝 Dev mode detected - skipping embedded web server (Vite handles it)"
-                    );
-                }
+                let session_manager = session::create_session_manager();
+                app.manage(session_manager);
+                println!("Browser sync available - use 'Open in Browser' in Profile");
             }
 
             // Setup tray icon (desktop only)
@@ -265,6 +327,13 @@ pub fn run() {
             schedule_test_notification_one_minute,
             schedule_daily_reminder,
             cancel_daily_reminder,
+            // Browser Sync (desktop only)
+            #[cfg(desktop)]
+            start_browser_sync,
+            #[cfg(desktop)]
+            stop_browser_sync,
+            #[cfg(desktop)]
+            is_browser_sync_active,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

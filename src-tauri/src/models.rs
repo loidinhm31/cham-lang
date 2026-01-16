@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaginatedResponse<T> {
@@ -31,7 +31,7 @@ pub struct Vocabulary {
     pub level: String, // Flexible level system (CEFR: A1-C2, Korean: Basic/Intermediate/Advanced, etc.)
     pub ipa: String,
     pub audio_url: Option<String>, // Optional audio pronunciation URL
-    pub concept: Option<String>, // Optional concept field for alternative learning mode
+    pub concept: Option<String>,   // Optional concept field for alternative learning mode
     pub definitions: Vec<Definition>,
     pub example_sentences: Vec<String>,
     pub topics: Vec<String>,
@@ -39,9 +39,9 @@ pub struct Vocabulary {
     pub related_words: Vec<RelatedWord>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
-    pub language: String, // "en", "vi", "ko", etc.
+    pub language: String,      // "en", "vi", "ko", etc.
     pub collection_id: String, // Reference to Collection
-    pub user_id: String, // Reference to User who created it
+    pub user_id: String,       // Reference to User who created it
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -118,7 +118,7 @@ pub struct Collection {
     pub name: String,
     pub description: String,
     pub language: String,
-    pub owner_id: String, // User ID
+    pub owner_id: String,         // User ID
     pub shared_with: Vec<String>, // User IDs who can access
     pub is_public: bool,
     pub word_count: i32,
@@ -235,18 +235,18 @@ pub struct WordProgress {
 
     // Spaced Repetition Fields
     pub next_review_date: DateTime<Utc>, // When this word should be reviewed next
-    pub interval_days: i32, // Current interval between reviews in days
-    pub easiness_factor: f32, // SM-2 easiness factor (1.3 - 2.5), default 2.5
+    pub interval_days: i32,              // Current interval between reviews in days
+    pub easiness_factor: f32,            // SM-2 easiness factor (1.3 - 2.5), default 2.5
     pub consecutive_correct_count: i32, // Number of consecutive correct answers (resets to 0 on failure)
 
     // Leitner System Fields
-    pub leitner_box: i32, // Current box number (1 to max_boxes)
+    pub leitner_box: i32,        // Current box number (1 to max_boxes)
     pub last_interval_days: i32, // Previous interval for tracking progression
 
     // Session Tracking
     pub total_reviews: i32, // Total number of times this word has been reviewed
     pub failed_in_session: bool, // Flag to track if word failed in current session (for re-queuing)
-    pub retry_count: i32, // Number of times word has been retried in current session
+    pub retry_count: i32,   // Number of times word has been retried in current session
 
     // Multi-Mode Completion Tracking
     #[serde(default)] // Provides empty Vec for backward compatibility with old data
@@ -329,11 +329,11 @@ pub struct LearningSettings {
 
     // UI Preferences
     pub auto_advance_timeout_seconds: i32, // Auto-advance timeout in seconds (default: 2)
-    pub show_hint_in_fillword: bool, // Show/hide hint in fill word mode (default: true)
+    pub show_hint_in_fillword: bool,       // Show/hide hint in fill word mode (default: true)
 
     // Daily Reminder Settings
     pub reminder_enabled: bool, // Enable/disable daily reminder (default: false)
-    pub reminder_time: String, // Time for daily reminder in HH:MM format (default: "19:00")
+    pub reminder_time: String,  // Time for daily reminder in HH:MM format (default: "19:00")
 
     // Timestamps
     pub created_at: DateTime<Utc>,

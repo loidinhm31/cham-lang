@@ -177,7 +177,19 @@
     "openInBrowser": "Open in Browser",
     "openInBrowserDescription": "Open the app in your default web browser",
     "openInBrowserButton": "Open in Web Browser",
-    "openInBrowserHint": "Opens http://127.0.0.1:25091 in your default browser"
+    "openInBrowserHint": "Opens http://localhost:25091 in your default browser",
+    "browserSync": "Browser Sync",
+    "browserSyncDescription": "Sync data between browser and desktop",
+    "browserSyncStarted": "Browser sync started. Your data is now accessible in the browser.",
+    "browserSyncStopped": "Browser sync stopped.",
+    "browserSyncActiveHint": "Your data is being shared on http://localhost:25091",
+    "starting": "Starting...",
+    "stopping": "Stopping...",
+    "stopSharing": "Stop Sharing",
+    "loadFromDesktop": "Load Data from Desktop",
+    "syncToDesktopButton": "Sync Changes to Desktop",
+    "loading": "Loading...",
+    "syncing": "Syncing..."
   },
   "reminder": {
     "title": "Cham Lang Reminder",

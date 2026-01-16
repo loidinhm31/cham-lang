@@ -177,7 +177,19 @@
     "openInBrowser": "Mở Trên Trình Duyệt",
     "openInBrowserDescription": "Mở ứng dụng trên trình duyệt web mặc định của bạn",
     "openInBrowserButton": "Mở Trên Trình Duyệt Web",
-    "openInBrowserHint": "Mở http://127.0.0.1:25091 trên trình duyệt mặc định của bạn"
+    "openInBrowserHint": "Mở http://localhost:25091 trên trình duyệt mặc định của bạn",
+    "browserSync": "Đồng Bộ Trình Duyệt",
+    "browserSyncDescription": "Đồng bộ dữ liệu giữa trình duyệt và ứng dụng",
+    "browserSyncStarted": "Đã bắt đầu đồng bộ trình duyệt. Dữ liệu của bạn có thể truy cập được trên trình duyệt.",
+    "browserSyncStopped": "Đã dừng đồng bộ trình duyệt.",
+    "browserSyncActiveHint": "Dữ liệu của bạn đang được chia sẻ tại http://localhost:25091",
+    "starting": "Đang bắt đầu...",
+    "stopping": "Đang dừng...",
+    "stopSharing": "Dừng Chia Sẻ",
+    "loadFromDesktop": "Tải Dữ Liệu Từ Desktop",
+    "syncToDesktopButton": "Đồng Bộ Thay Đổi Lên Desktop",
+    "loading": "Đang tải...",
+    "syncing": "Đang đồng bộ..."
   },
   "reminder": {
     "title": "Nhắc Nhở Cham Lang",

@@ -1,10 +1,8 @@
-use crate::models::{
-    Vocabulary, Definition, RelatedWord, WordRelationship, WordType
-};
 use crate::local_db::LocalDatabase;
+use crate::models::{Definition, RelatedWord, Vocabulary, WordRelationship, WordType};
 use serde::{Deserialize, Serialize};
-use tauri::State;
 use std::path::PathBuf;
+use tauri::State;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CsvImportRequest {
@@ -61,7 +59,8 @@ fn unflatten_definitions(definitions_str: &str) -> Vec<Definition> {
         return vec![];
     }
 
-    definitions_str.split(';')
+    definitions_str
+        .split(';')
         .filter_map(|def_str| {
             let parts: Vec<&str> = def_str.split('|').collect();
             if parts.is_empty() || parts[0].trim().is_empty() {
@@ -70,10 +69,12 @@ fn unflatten_definitions(definitions_str: &str) -> Vec<Definition> {
 
             Some(Definition {
                 meaning: parts[0].trim().to_string(),
-                translation: parts.get(1)
+                translation: parts
+                    .get(1)
                     .filter(|s| !s.trim().is_empty())
                     .map(|s| s.trim().to_string()),
-                example: parts.get(2)
+                example: parts
+                    .get(2)
                     .filter(|s| !s.trim().is_empty())
                     .map(|s| s.trim().to_string()),
             })
@@ -195,7 +196,8 @@ fn find_or_create_collection(
     create_if_missing: bool,
 ) -> Result<String, String> {
     // Try to find existing collection by name and language
-    let collections = local_db.get_user_collections("local")
+    let collections = local_db
+        .get_user_collections("local")
         .map_err(|e| format!("Failed to get collections: {}", e))?;
 
     for collection in collections {
@@ -206,19 +208,23 @@ fn find_or_create_collection(
 
     // If not found and creation is allowed, create new collection
     if create_if_missing {
-        let collection_id = local_db.create_collection(
-            name,
-            description.unwrap_or(""),
-            language,
-            "local",
-            false, // is_public
-        )
-        .map_err(|e| format!("Failed to create collection: {}", e))?;
+        let collection_id = local_db
+            .create_collection(
+                name,
+                description.unwrap_or(""),
+                language,
+                "local",
+                false, // is_public
+            )
+            .map_err(|e| format!("Failed to create collection: {}", e))?;
 
-        println!("  ✨ Created new collection: {} ({})", name, language);
+        println!("  Created new collection: {} ({})", name, language);
         Ok(collection_id)
     } else {
-        Err(format!("Collection '{}' with language '{}' not found and auto-create is disabled", name, language))
+        Err(format!(
+            "Collection '{}' with language '{}' not found and auto-create is disabled",
+            name, language
+        ))
     }
 }
 
@@ -241,7 +247,10 @@ pub fn import_simple_vocabularies(
     local_db: State<'_, LocalDatabase>,
     request: SimpleImportRequest,
 ) -> Result<CsvImportResult, String> {
-    println!("📥 Starting simple CSV import ({} bytes)", request.csv_text.len());
+    println!(
+        "Starting simple CSV import ({} bytes)",
+        request.csv_text.len()
+    );
 
     let mut rows_imported = 0;
     let mut rows_failed = 0;
@@ -267,7 +276,10 @@ pub fn import_simple_vocabularies(
             rows_failed += 1;
             errors.push(CsvImportError {
                 row_number,
-                error_message: format!("Expected 3 columns (collection_name, word, definition), found {}", parts.len()),
+                error_message: format!(
+                    "Expected 3 columns (collection_name, word, definition), found {}",
+                    parts.len()
+                ),
                 row_data: line.to_string(),
             });
             continue;
@@ -333,7 +345,7 @@ pub fn import_simple_vocabularies(
             id: None,
             word: word.to_string(),
             word_type: WordType::Noun, // Default to noun for simple import
-            level: "N/A".to_string(), // Default level
+            level: "N/A".to_string(),  // Default level
             ipa: String::new(),
             audio_url: None, // Simple import doesn't have audio_url
             concept: None,
@@ -371,14 +383,23 @@ pub fn import_simple_vocabularies(
     }
 
     // Update word counts for all affected collections
-    println!("📊 Updating word counts for {} affected collections...", affected_collections.len());
+    println!(
+        "Updating word counts for {} affected collections...",
+        affected_collections.len()
+    );
     for collection_id in &affected_collections {
         if let Err(e) = local_db.update_collection_word_count(collection_id) {
-            println!("⚠️ Warning: Failed to update word count for collection {}: {}", collection_id, e);
+            println!(
+                "Warning: Failed to update word count for collection {}: {}",
+                collection_id, e
+            );
         }
     }
 
-    println!("✅ Simple CSV import complete: {} imported, {} failed", rows_imported, rows_failed);
+    println!(
+        "Simple CSV import complete: {} imported, {} failed",
+        rows_imported, rows_failed
+    );
 
     Ok(CsvImportResult {
         success: rows_failed == 0,
@@ -396,21 +417,25 @@ pub fn import_vocabularies_csv(
     request: CsvImportRequest,
 ) -> Result<CsvImportResult, String> {
     // Determine the source of CSV data
-    let mut reader: csv::Reader<Box<dyn std::io::Read>> = if let Some(ref csv_text) = request.csv_text {
-        println!("📥 Starting CSV import from pasted text ({} bytes)", csv_text.len());
-        // Create reader from string
-        let cursor = std::io::Cursor::new(csv_text.clone());
-        csv::Reader::from_reader(Box::new(cursor) as Box<dyn std::io::Read>)
-    } else if let Some(ref file_path) = request.file_path {
-        println!("📥 Starting CSV import from file: {}", file_path);
-        // Create reader from file
-        let path = PathBuf::from(file_path);
-        let file = std::fs::File::open(&path)
-            .map_err(|e| format!("Failed to open CSV file: {}", e))?;
-        csv::Reader::from_reader(Box::new(file) as Box<dyn std::io::Read>)
-    } else {
-        return Err("Either file_path or csv_text must be provided".to_string());
-    };
+    let mut reader: csv::Reader<Box<dyn std::io::Read>> =
+        if let Some(ref csv_text) = request.csv_text {
+            println!(
+                "Starting CSV import from pasted text ({} bytes)",
+                csv_text.len()
+            );
+            // Create reader from string
+            let cursor = std::io::Cursor::new(csv_text.clone());
+            csv::Reader::from_reader(Box::new(cursor) as Box<dyn std::io::Read>)
+        } else if let Some(ref file_path) = request.file_path {
+            println!("Starting CSV import from file: {}", file_path);
+            // Create reader from file
+            let path = PathBuf::from(file_path);
+            let file = std::fs::File::open(&path)
+                .map_err(|e| format!("Failed to open CSV file: {}", e))?;
+            csv::Reader::from_reader(Box::new(file) as Box<dyn std::io::Read>)
+        } else {
+            return Err("Either file_path or csv_text must be provided".to_string());
+        };
 
     let mut rows_imported = 0;
     let mut rows_failed = 0;
@@ -524,14 +549,23 @@ pub fn import_vocabularies_csv(
     }
 
     // Update word counts for all affected collections
-    println!("📊 Updating word counts for {} affected collections...", affected_collections.len());
+    println!(
+        "Updating word counts for {} affected collections...",
+        affected_collections.len()
+    );
     for collection_id in &affected_collections {
         if let Err(e) = local_db.update_collection_word_count(collection_id) {
-            println!("⚠️ Warning: Failed to update word count for collection {}: {}", collection_id, e);
+            println!(
+                "Warning: Failed to update word count for collection {}: {}",
+                collection_id, e
+            );
         }
     }
 
-    println!("✅ CSV import complete: {} imported, {} failed", rows_imported, rows_failed);
+    println!(
+        "CSV import complete: {} imported, {} failed",
+        rows_imported, rows_failed
+    );
 
     Ok(CsvImportResult {
         success: rows_failed == 0,
