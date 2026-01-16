@@ -1,28 +1,18 @@
-import { invoke } from "@tauri-apps/api/core";
-import {
-  isPermissionGranted,
-  requestPermission,
-} from "@tauri-apps/plugin-notification";
-
 /**
- * Daily Reminder Request
- * Matches the Rust DailyReminderRequest struct
+ * Notification Service
+ * Uses platform adapter for cross-platform compatibility
  */
-export interface DailyReminderRequest {
-  time: string; // HH:MM format (e.g., "19:00")
-  title: string;
-  body: string;
-}
 
-/**
- * Schedule Notification Request
- * For one-time notifications
- */
-export interface ScheduleNotificationRequest {
-  title: string;
-  body: string;
-  delay_seconds: number;
-}
+import { getNotificationService } from "@/adapters/ServiceFactory";
+
+// Re-export types from the interface
+export type {
+  DailyReminderRequest,
+  ScheduleNotificationRequest,
+} from "@/adapters/interfaces/INotificationService";
+
+// Get the platform-specific service
+const service = getNotificationService();
 
 /**
  * Notification Service
@@ -33,14 +23,14 @@ export class NotificationService {
    * Check if notification permission is granted
    */
   static async isPermissionGranted(): Promise<boolean> {
-    return isPermissionGranted();
+    return service.isPermissionGranted();
   }
 
   /**
    * Request notification permission from user
    */
   static async requestPermission(): Promise<"granted" | "denied" | "default"> {
-    return requestPermission();
+    return service.requestPermission();
   }
 
   /**
@@ -48,37 +38,30 @@ export class NotificationService {
    * @returns true if permission granted, false otherwise
    */
   static async ensurePermission(): Promise<boolean> {
-    let permissionGranted = await this.isPermissionGranted();
-
-    if (!permissionGranted) {
-      const permission = await this.requestPermission();
-      permissionGranted = permission === "granted";
-    }
-
-    return permissionGranted;
+    return service.ensurePermission();
   }
 
   /**
    * Send a test notification immediately
    */
   static async sendTestNotification(): Promise<string> {
-    return invoke("send_test_notification");
+    return service.sendTestNotification();
   }
 
   /**
    * Schedule a one-time notification
    */
   static async scheduleNotification(
-    request: ScheduleNotificationRequest,
+    request: Parameters<typeof service.scheduleNotification>[0],
   ): Promise<string> {
-    return invoke("schedule_notification", { request });
+    return service.scheduleNotification(request);
   }
 
   /**
    * Schedule a test notification for 1 minute from now
    */
   static async scheduleTestNotificationOneMinute(): Promise<string> {
-    return invoke("schedule_test_notification_one_minute");
+    return service.scheduleTestNotificationOneMinute();
   }
 
   /**
@@ -86,16 +69,16 @@ export class NotificationService {
    * Automatically cancels any existing daily reminder before scheduling
    */
   static async scheduleDailyReminder(
-    request: DailyReminderRequest,
+    request: Parameters<typeof service.scheduleDailyReminder>[0],
   ): Promise<string> {
-    return invoke("schedule_daily_reminder", { request });
+    return service.scheduleDailyReminder(request);
   }
 
   /**
    * Cancel the daily reminder
    */
   static async cancelDailyReminder(): Promise<string> {
-    return invoke("cancel_daily_reminder");
+    return service.cancelDailyReminder();
   }
 
   /**
@@ -103,27 +86,9 @@ export class NotificationService {
    * @returns Object with success status and message
    */
   static async scheduleDailyReminderWithPermission(
-    request: DailyReminderRequest,
+    request: Parameters<typeof service.scheduleDailyReminder>[0],
   ): Promise<{ success: boolean; message: string }> {
-    const hasPermission = await this.ensurePermission();
-
-    if (!hasPermission) {
-      return {
-        success: false,
-        message:
-          "Notification permission denied. Please enable notifications in settings.",
-      };
-    }
-
-    try {
-      const message = await this.scheduleDailyReminder(request);
-      return { success: true, message };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Failed to schedule daily reminder: ${error}`,
-      };
-    }
+    return service.scheduleDailyReminderWithPermission(request);
   }
 
   /**
@@ -134,24 +99,6 @@ export class NotificationService {
     success: boolean;
     message: string;
   }> {
-    const hasPermission = await this.ensurePermission();
-
-    if (!hasPermission) {
-      return {
-        success: false,
-        message:
-          "Notification permission denied. Please enable notifications in settings.",
-      };
-    }
-
-    try {
-      const message = await this.scheduleTestNotificationOneMinute();
-      return { success: true, message };
-    } catch (error) {
-      return {
-        success: false,
-        message: `Failed to schedule notification: ${error}`,
-      };
-    }
+    return service.scheduleTestNotificationWithPermission();
   }
 }

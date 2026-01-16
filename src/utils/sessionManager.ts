@@ -269,10 +269,7 @@ export class SessionManager {
 
     // Pick randomly from the oldest portion for variety
     // Use at least half the candidates to ensure good distribution
-    const poolSize = Math.max(
-      1,
-      Math.ceil(availableCandidates.length / 2),
-    );
+    const poolSize = Math.max(1, Math.ceil(availableCandidates.length / 2));
     const pickPool = availableCandidates.slice(0, poolSize);
     const randomIndex = Math.floor(Math.random() * pickPool.length);
 

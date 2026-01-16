@@ -305,7 +305,9 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Word Header */}
         <Card variant="gradient">
           <div className="text-center">
-            <h1 className="text-5xl font-black mb-3 whitespace-pre-line">{vocabulary.word}</h1>
+            <h1 className="text-5xl font-black mb-3 whitespace-pre-line">
+              {vocabulary.word}
+            </h1>
             <div className="flex items-center justify-center gap-3 mb-4">
               <p className="text-2xl text-white/90">{vocabulary.ipa}</p>
               {vocabulary.audio_url && (

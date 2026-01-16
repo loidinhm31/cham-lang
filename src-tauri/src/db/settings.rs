@@ -4,9 +4,7 @@ use uuid::Uuid;
 
 use super::helpers::timestamp_to_datetime;
 use super::LocalDatabase;
-use crate::models::{
-    LearningSettings, SpacedRepetitionAlgorithm, UpdateLearningSettingsRequest
-};
+use crate::models::{LearningSettings, SpacedRepetitionAlgorithm, UpdateLearningSettingsRequest};
 
 impl LocalDatabase {
     //==========================================================================
@@ -14,10 +12,7 @@ impl LocalDatabase {
     //==========================================================================
 
     /// Get learning settings for a user
-    pub fn get_learning_settings(
-        &self,
-        user_id: &str,
-    ) -> SqlResult<Option<LearningSettings>> {
+    pub fn get_learning_settings(&self, user_id: &str) -> SqlResult<Option<LearningSettings>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
@@ -26,7 +21,7 @@ impl LocalDatabase {
                     reminder_enabled, reminder_time,
                     created_at, updated_at
              FROM learning_settings
-             WHERE user_id = ?1"
+             WHERE user_id = ?1",
         )?;
 
         let mut rows = stmt.query(params![user_id])?;
@@ -49,7 +44,9 @@ impl LocalDatabase {
                 auto_advance_timeout_seconds: row.get::<_, Option<i32>>(7)?.unwrap_or(2),
                 show_hint_in_fillword: row.get::<_, Option<i32>>(8)?.unwrap_or(1) != 0,
                 reminder_enabled: row.get::<_, Option<i32>>(9)?.unwrap_or(0) != 0,
-                reminder_time: row.get::<_, Option<String>>(10)?.unwrap_or_else(|| "19:00".to_string()),
+                reminder_time: row
+                    .get::<_, Option<String>>(10)?
+                    .unwrap_or_else(|| "19:00".to_string()),
                 created_at: timestamp_to_datetime(row.get(11)?),
                 updated_at: timestamp_to_datetime(row.get(12)?),
             }))
@@ -100,7 +97,7 @@ impl LocalDatabase {
                 daily_review_limit,
                 auto_advance_timeout_seconds,
                 if show_hint_in_fillword { 1 } else { 0 },
-                0, // reminder_enabled: false by default
+                0,       // reminder_enabled: false by default
                 "19:00", // reminder_time: "19:00" (7:00 PM) by default
                 now.timestamp(),
                 now.timestamp(),
@@ -141,7 +138,7 @@ impl LocalDatabase {
                     auto_advance_timeout_seconds, show_hint_in_fillword,
                     reminder_enabled, reminder_time, created_at
              FROM learning_settings
-             WHERE user_id = ?1"
+             WHERE user_id = ?1",
         )?;
 
         let mut rows = stmt.query(params![user_id])?;
@@ -162,7 +159,9 @@ impl LocalDatabase {
             let current_timeout: i32 = row.get::<_, Option<i32>>(7)?.unwrap_or(2);
             let current_show_hint: i32 = row.get::<_, Option<i32>>(8)?.unwrap_or(1);
             let current_reminder_enabled: i32 = row.get::<_, Option<i32>>(9)?.unwrap_or(0);
-            let current_reminder_time: String = row.get::<_, Option<String>>(10)?.unwrap_or_else(|| "19:00".to_string());
+            let current_reminder_time: String = row
+                .get::<_, Option<String>>(10)?
+                .unwrap_or_else(|| "19:00".to_string());
             let created_at = timestamp_to_datetime(row.get(11)?);
 
             drop(rows);
@@ -170,15 +169,31 @@ impl LocalDatabase {
 
             // Build update values
             let sr_algorithm = request.sr_algorithm.as_ref().unwrap_or(&current_algorithm);
-            let leitner_box_count = request.leitner_box_count.unwrap_or(current_leitner_box_count);
-            let consecutive_correct_required = request.consecutive_correct_required.unwrap_or(current_consecutive_correct);
-            let show_failed_words_in_session = request.show_failed_words_in_session.unwrap_or(current_show_failed != 0);
+            let leitner_box_count = request
+                .leitner_box_count
+                .unwrap_or(current_leitner_box_count);
+            let consecutive_correct_required = request
+                .consecutive_correct_required
+                .unwrap_or(current_consecutive_correct);
+            let show_failed_words_in_session = request
+                .show_failed_words_in_session
+                .unwrap_or(current_show_failed != 0);
             let new_words_per_day = request.new_words_per_day.or(current_new_words);
             let daily_review_limit = request.daily_review_limit.or(current_review_limit);
-            let auto_advance_timeout_seconds = request.auto_advance_timeout_seconds.unwrap_or(current_timeout);
-            let show_hint_in_fillword = request.show_hint_in_fillword.unwrap_or(current_show_hint != 0);
-            let reminder_enabled = request.reminder_enabled.unwrap_or(current_reminder_enabled != 0);
-            let reminder_time = request.reminder_time.as_ref().unwrap_or(&current_reminder_time).clone();
+            let auto_advance_timeout_seconds = request
+                .auto_advance_timeout_seconds
+                .unwrap_or(current_timeout);
+            let show_hint_in_fillword = request
+                .show_hint_in_fillword
+                .unwrap_or(current_show_hint != 0);
+            let reminder_enabled = request
+                .reminder_enabled
+                .unwrap_or(current_reminder_enabled != 0);
+            let reminder_time = request
+                .reminder_time
+                .as_ref()
+                .unwrap_or(&current_reminder_time)
+                .clone();
 
             let sr_algorithm_str = match sr_algorithm {
                 SpacedRepetitionAlgorithm::SM2 => "sm2",
@@ -228,7 +243,10 @@ impl LocalDatabase {
             })
         } else {
             // If no settings exist, create default ones first
-            let default_algorithm = request.sr_algorithm.as_ref().unwrap_or(&SpacedRepetitionAlgorithm::ModifiedSM2);
+            let default_algorithm = request
+                .sr_algorithm
+                .as_ref()
+                .unwrap_or(&SpacedRepetitionAlgorithm::ModifiedSM2);
             self.create_learning_settings(
                 user_id,
                 default_algorithm,
@@ -244,10 +262,7 @@ impl LocalDatabase {
     }
 
     /// Get learning settings for a user, creating default settings if none exist
-    pub fn get_or_create_learning_settings(
-        &self,
-        user_id: &str,
-    ) -> SqlResult<LearningSettings> {
+    pub fn get_or_create_learning_settings(&self, user_id: &str) -> SqlResult<LearningSettings> {
         if let Some(settings) = self.get_learning_settings(user_id)? {
             Ok(settings)
         } else {
@@ -255,13 +270,13 @@ impl LocalDatabase {
             self.create_learning_settings(
                 user_id,
                 &SpacedRepetitionAlgorithm::ModifiedSM2,
-                5, // 5 boxes
-                3, // 3 consecutive correct required
-                true, // show failed words in session
-                Some(20), // 20 new words per day
+                5,         // 5 boxes
+                3,         // 3 consecutive correct required
+                true,      // show failed words in session
+                Some(20),  // 20 new words per day
                 Some(100), // 100 daily review limit
-                2, // 2 seconds auto-advance timeout
-                true, // show hint in fillword
+                2,         // 2 seconds auto-advance timeout
+                true,      // show hint in fillword
             )
         }
     }

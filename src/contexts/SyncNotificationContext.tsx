@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
-import { refreshToken } from "@choochmeque/tauri-plugin-google-auth-api";
+import { isTauri } from "@/utils/platform";
+import { WebGDriveAdapter } from "@/adapters/web/WebGDriveAdapter";
 
 interface SyncNotificationContextType {
   hasSyncNotification: boolean;
@@ -12,6 +12,9 @@ const SyncNotificationContext = createContext<
   SyncNotificationContextType | undefined
 >(undefined);
 
+// Web adapter instance for web platform
+const webGDriveAdapter = new WebGDriveAdapter();
+
 export const SyncNotificationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
@@ -19,7 +22,7 @@ export const SyncNotificationProvider: React.FC<{
 
   const checkSyncStatus = async () => {
     try {
-      let accessToken = localStorage.getItem("gdrive_access_token");
+      const accessToken = localStorage.getItem("gdrive_access_token");
 
       if (!accessToken) {
         // No Google Drive configured, no notification needed
@@ -28,9 +31,19 @@ export const SyncNotificationProvider: React.FC<{
       }
 
       try {
-        const isDifferent = await invoke<boolean>("check_version_difference", {
-          accessToken: accessToken,
-        });
+        let isDifferent: boolean;
+
+        if (isTauri()) {
+          // Use Tauri invoke for native platform
+          const { invoke } = await import("@tauri-apps/api/core");
+          isDifferent = await invoke<boolean>("check_version_difference", {
+            accessToken: accessToken,
+          });
+        } else {
+          // Use WebGDriveAdapter for web platform
+          isDifferent =
+            await webGDriveAdapter.checkVersionDifference(accessToken);
+        }
 
         setHasSyncNotification(isDifferent);
       } catch (error) {
@@ -45,18 +58,35 @@ export const SyncNotificationProvider: React.FC<{
           console.log("Token expired during check, refreshing...");
 
           try {
-            const response = await refreshToken();
+            let newAccessToken: string;
+
+            if (isTauri()) {
+              // Use Tauri plugin for token refresh
+              const { refreshToken } = await import(
+                "@choochmeque/tauri-plugin-google-auth-api"
+              );
+              const response = await refreshToken();
+              newAccessToken = response.accessToken;
+            } else {
+              // Use WebGDriveAdapter for token refresh
+              const response = await webGDriveAdapter.refreshToken();
+              newAccessToken = response.accessToken;
+            }
 
             // Update stored token
-            localStorage.setItem("gdrive_access_token", response.accessToken);
+            localStorage.setItem("gdrive_access_token", newAccessToken);
 
             // Retry with new token
-            const isDifferent = await invoke<boolean>(
-              "check_version_difference",
-              {
-                accessToken: response.accessToken,
-              },
-            );
+            let isDifferent: boolean;
+            if (isTauri()) {
+              const { invoke } = await import("@tauri-apps/api/core");
+              isDifferent = await invoke<boolean>("check_version_difference", {
+                accessToken: newAccessToken,
+              });
+            } else {
+              isDifferent =
+                await webGDriveAdapter.checkVersionDifference(newAccessToken);
+            }
 
             setHasSyncNotification(isDifferent);
           } catch (refreshError) {

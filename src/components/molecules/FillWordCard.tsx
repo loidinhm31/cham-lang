@@ -233,7 +233,9 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
                 {!isCorrect && (
                   <p className="text-base font-semibold">
                     {t("practice.theCorrectAnswerIs")}{" "}
-                    <span className="font-black text-lg whitespace-pre-line">{correctAnswer}</span>
+                    <span className="font-black text-lg whitespace-pre-line">
+                      {correctAnswer}
+                    </span>
                   </p>
                 )}
               </div>

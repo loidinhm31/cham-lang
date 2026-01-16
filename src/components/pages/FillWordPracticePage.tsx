@@ -448,14 +448,14 @@ export const FillWordPracticePage: React.FC = () => {
     const testStats = isTestMode ? testSession.getResults() : null;
     const sessionStats = !isTestMode
       ? sessionManager?.getStatistics() || {
-        totalQuestions: 0,
-        correctAnswers: 0,
-        incorrectAnswers: 0,
-        accuracy: 0,
-        wordsCompleted: 0,
-        wordsRemaining: 0,
-        durationSeconds: 0,
-      }
+          totalQuestions: 0,
+          correctAnswers: 0,
+          incorrectAnswers: 0,
+          accuracy: 0,
+          wordsCompleted: 0,
+          wordsRemaining: 0,
+          durationSeconds: 0,
+        }
       : null;
 
     return (
@@ -529,11 +529,13 @@ export const FillWordPracticePage: React.FC = () => {
               <p className="text-xl text-white/80">
                 {isTestMode && testStats
                   ? testStats.accuracy
-                  : sessionStats?.accuracy || 0}% {t("practice.accuracy")}
+                  : sessionStats?.accuracy || 0}
+                % {t("practice.accuracy")}
               </p>
               {isTestMode && testMode === "intensive" && testStats && (
                 <p className="text-lg text-white/70">
-                  {testStats.totalAttempts} {t("practice.totalAttempts") || "total attempts"}
+                  {testStats.totalAttempts}{" "}
+                  {t("practice.totalAttempts") || "total attempts"}
                 </p>
               )}
             </div>
@@ -616,7 +618,10 @@ export const FillWordPracticePage: React.FC = () => {
       <div className="px-4 pt-6 space-y-6">
         {/* Test Mode Banner */}
         {isTestMode && (
-          <Card variant="glass" className="bg-green-50 border-2 border-green-200">
+          <Card
+            variant="glass"
+            className="bg-green-50 border-2 border-green-200"
+          >
             <div className="flex items-center gap-3">
               <BookOpen className="w-6 h-6 text-green-600" />
               <div className="flex-1">
@@ -625,7 +630,7 @@ export const FillWordPracticePage: React.FC = () => {
                   {testMode === "normal"
                     ? t("study.testNormalDescription") || "Each word shown once"
                     : t("study.testIntensiveDescription") ||
-                    "Wrong words repeat"}
+                      "Wrong words repeat"}
                 </p>
               </div>
             </div>
@@ -657,10 +662,10 @@ export const FillWordPracticePage: React.FC = () => {
             >
               {isTestMode
                 ? !showNext &&
-                `${testSession.getProgress().answeredWords} / ${testSession.getProgress().totalWords}`
+                  `${testSession.getProgress().answeredWords} / ${testSession.getProgress().totalWords}`
                 : sessionManager
                   ? !showNext &&
-                  `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
+                    `${sessionManager.getStatistics().wordsCompleted} / ${sessionManager.getTotalWordsCount()}`
                   : "0 / 0"}
             </span>
           </div>
@@ -714,7 +719,7 @@ export const FillWordPracticePage: React.FC = () => {
           <Button variant="primary" size="md" fullWidth onClick={handleNext}>
             {sessionManager && !sessionManager.isSessionComplete()
               ? // Show "(auto)" only when we're actually auto-advancing
-              autoAdvanceTimerRef.current !== null
+                autoAdvanceTimerRef.current !== null
                 ? `${t("practice.next")} (auto)`
                 : t("practice.next")
               : t("practice.finish")}

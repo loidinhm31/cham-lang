@@ -1,4 +1,9 @@
-import { invoke } from "@tauri-apps/api/core";
+/**
+ * Practice Service
+ * Uses platform adapter for cross-platform compatibility
+ */
+
+import { getPracticeService } from "@/adapters/ServiceFactory";
 import type {
   CreatePracticeSessionRequest,
   PracticeSession,
@@ -7,38 +12,41 @@ import type {
   WordProgress,
 } from "@/types/practice";
 
+// Get the platform-specific service
+const service = getPracticeService();
+
 export class PracticeService {
   // Practice session management
   static async createPracticeSession(
     request: CreatePracticeSessionRequest,
   ): Promise<string> {
-    return invoke("create_practice_session", { request });
+    return service.createPracticeSession(request);
   }
 
   static async getPracticeSessions(
     language: string,
     limit?: number,
   ): Promise<PracticeSession[]> {
-    return invoke("get_practice_sessions", { language, limit });
+    return service.getPracticeSessions(language, limit);
   }
 
   // Progress management
   static async updatePracticeProgress(
     request: UpdateProgressRequest,
   ): Promise<string> {
-    return invoke("update_practice_progress", { request });
+    return service.updatePracticeProgress(request);
   }
 
   static async getPracticeProgress(
     language: string,
   ): Promise<UserPracticeProgress | null> {
-    return invoke("get_practice_progress", { language });
+    return service.getPracticeProgress(language);
   }
 
   static async getWordProgress(
     language: string,
     vocabularyId: string,
   ): Promise<WordProgress | null> {
-    return invoke("get_word_progress", { language, vocabularyId });
+    return service.getWordProgress(language, vocabularyId);
   }
 }

@@ -78,7 +78,9 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">🎯</div>
-          <h3 className="text-4xl font-black text-gray-900 mb-3 whitespace-pre-line">{question}</h3>
+          <h3 className="text-4xl font-black text-gray-900 mb-3 whitespace-pre-line">
+            {question}
+          </h3>
           {subtitle && (
             <div className="flex items-center justify-center gap-3">
               <p className="text-xl font-semibold text-indigo-600">
@@ -104,7 +106,9 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
                   <div className="w-10 h-10 bg-indigo-500 text-white rounded-xl flex items-center justify-center font-black text-lg border-2 border-indigo-600 shadow-sm shrink-0">
                     {index + 1}
                   </div>
-                  <span className="text-left whitespace-pre-line">{option}</span>
+                  <span className="text-left whitespace-pre-line">
+                    {option}
+                  </span>
                 </div>
                 {answered && option === correctAnswer && (
                   <Check className="w-7 h-7 stroke-[3] shrink-0" />
@@ -133,7 +137,9 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
             {selectedOption !== correctAnswer && (
               <p className="text-base font-semibold mt-2">
                 Correct answer:{" "}
-                <span className="font-black whitespace-pre-line">{correctAnswer}</span>
+                <span className="font-black whitespace-pre-line">
+                  {correctAnswer}
+                </span>
               </p>
             )}
           </div>

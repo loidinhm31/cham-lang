@@ -1,66 +1,68 @@
-import { invoke } from "@tauri-apps/api/core";
+/**
+ * Collection Service
+ * Uses platform adapter for cross-platform compatibility
+ */
+
+import { getCollectionService } from "@/adapters/ServiceFactory";
 import type {
   Collection,
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@/types/collection";
 
+// Get the platform-specific service
+const service = getCollectionService();
+
 export class CollectionService {
   // Collection CRUD
   static async createCollection(
     request: CreateCollectionRequest,
   ): Promise<string> {
-    return invoke("create_collection", { request });
+    return service.createCollection(request);
   }
 
   static async getCollection(id: string): Promise<Collection> {
-    return invoke("get_collection", { id });
+    return service.getCollection(id);
   }
 
   static async getUserCollections(): Promise<Collection[]> {
-    return invoke("get_user_collections");
+    return service.getUserCollections();
   }
 
   static async getPublicCollections(language?: string): Promise<Collection[]> {
-    return invoke("get_public_collections", { language });
+    return service.getPublicCollections(language);
   }
 
   static async updateCollection(
     request: UpdateCollectionRequest,
   ): Promise<string> {
-    return invoke("update_collection", { request });
+    return service.updateCollection(request);
   }
 
   static async deleteCollection(id: string): Promise<string> {
-    return invoke("delete_collection", { id });
+    return service.deleteCollection(id);
   }
 
   static async shareCollection(
     collectionId: string,
     shareWithUsername: string,
   ): Promise<string> {
-    return invoke("share_collection", {
-      collectionId,
-      shareWithUsername,
-    });
+    return service.shareCollection(collectionId, shareWithUsername);
   }
 
   static async unshareCollection(
     collectionId: string,
     userIdToRemove: string,
   ): Promise<string> {
-    return invoke("unshare_collection", {
-      collectionId,
-      userIdToRemove,
-    });
+    return service.unshareCollection(collectionId, userIdToRemove);
   }
 
   static async updateCollectionWordCount(collectionId: string): Promise<void> {
-    return invoke("update_collection_word_count", { collectionId });
+    return service.updateCollectionWordCount(collectionId);
   }
 
   // Get level configuration for a language
   static async getLevelConfiguration(language: string): Promise<string[]> {
-    return invoke("get_level_configuration", { language });
+    return service.getLevelConfiguration(language);
   }
 }

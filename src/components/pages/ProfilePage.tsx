@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -7,22 +7,18 @@ import {
   Cloud,
   CloudOff,
   Download,
+  ExternalLink,
   Languages,
   LogIn,
   LogOut,
   Minus,
   Plus,
   Settings,
+  StopCircle,
   Trash2,
   Type,
   Upload,
 } from "lucide-react";
-import { invoke } from "@tauri-apps/api/core";
-import {
-  refreshToken,
-  signIn,
-  signOut,
-} from "@choochmeque/tauri-plugin-google-auth-api";
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
 import { useDialog, useSyncNotification } from "@/contexts";
@@ -31,11 +27,14 @@ import {
   LearningSettingsService,
   NotificationService,
 } from "@/services";
+import { getGDriveService } from "@/adapters/ServiceFactory";
 import type { FontSizeOption } from "@/services";
-
-// OAuth configuration - these should be environment variables in production
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
-const GOOGLE_CLIENT_SECRET = import.meta.env.VITE_GOOGLE_CLIENT_SECRET || "";
+import {
+  isDesktop,
+  openInBrowser,
+  isOpenedFromDesktop,
+} from "@/utils/platform";
+import { browserSyncService } from "@/services/BrowserSyncService";
 
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -43,6 +42,10 @@ export const ProfilePage: React.FC = () => {
   const { showAlert, showConfirm } = useDialog();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } =
     useSyncNotification();
+
+  // Get the GDrive service for the current platform
+  const gdriveService = useMemo(() => getGDriveService(), []);
+
   const [isConfigured, setIsConfigured] = useState(false);
   const [accessToken, setAccessToken] = useState<string>("");
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -59,9 +62,14 @@ export const ProfilePage: React.FC = () => {
   const [reminderEnabled, setReminderEnabled] = useState<boolean>(false);
   const [reminderTime, setReminderTime] = useState<string>("19:00"); // Default 7:00 PM
 
+  // Browser sync state (desktop only)
+  const [browserSyncActive, setBrowserSyncActive] = useState<boolean>(false);
+  const [browserSyncLoading, setBrowserSyncLoading] = useState<boolean>(false);
+
   useEffect(() => {
     checkGDriveConfig();
     loadReminderSettings();
+    checkBrowserSyncStatus();
 
     // Dismiss notification when user first visits profile page
     // Only dismiss on mount, not when hasSyncNotification changes
@@ -70,6 +78,19 @@ export const ProfilePage: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty deps - only run on mount
+
+  // Check browser sync status from backend (desktop only)
+  const checkBrowserSyncStatus = async () => {
+    if (!isDesktop()) return;
+
+    try {
+      const { invoke } = await import("@tauri-apps/api/core");
+      const isActive = await invoke<boolean>("is_browser_sync_active");
+      setBrowserSyncActive(isActive);
+    } catch (error) {
+      console.error("Failed to check browser sync status:", error);
+    }
+  };
 
   const loadReminderSettings = async () => {
     try {
@@ -118,7 +139,6 @@ export const ProfilePage: React.FC = () => {
       const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
       const storedEmail = localStorage.getItem("gdrive_user_email");
 
-      console.log("data", storedRefreshToken);
       if (storedToken) {
         setAccessToken(storedToken);
         setRefreshTokenState(storedRefreshToken || "");
@@ -133,10 +153,14 @@ export const ProfilePage: React.FC = () => {
 
   const loadBackupInfo = async (token: string) => {
     try {
-      const info = await invoke<string>("get_gdrive_backup_info", {
-        accessToken: token,
-      });
-      setBackupInfo(info);
+      const info = await gdriveService.getBackupInfo(token);
+      if (info) {
+        setBackupInfo(
+          `File: ${info.fileName}\nLast modified: ${info.modifiedTime}\nSize: ${info.sizeKB} KB`,
+        );
+      } else {
+        setBackupInfo(null);
+      }
     } catch (error) {
       console.error("Failed to load backup info:", error);
       setBackupInfo(null);
@@ -145,8 +169,8 @@ export const ProfilePage: React.FC = () => {
 
   const handleTokenRefresh = async (): Promise<string | null> => {
     try {
-      // Try using the plugin's refresh token method first
-      const response = await refreshToken();
+      // Use the adapter's refresh token method
+      const response = await gdriveService.refreshToken();
 
       // Update stored token
       localStorage.setItem("gdrive_access_token", response.accessToken);
@@ -160,48 +184,9 @@ export const ProfilePage: React.FC = () => {
 
       return response.accessToken;
     } catch (error) {
-      console.error("Token refresh failed via plugin:", error);
+      console.error("Token refresh failed:", error);
 
-      // Fallback: Try manual token refresh using stored refresh token
-      const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
-
-      if (storedRefreshToken && GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
-        try {
-          console.log("Attempting manual token refresh...");
-          const tokenResponse = await fetch(
-            "https://oauth2.googleapis.com/token",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-              },
-              body: new URLSearchParams({
-                client_id: GOOGLE_CLIENT_ID,
-                client_secret: GOOGLE_CLIENT_SECRET,
-                refresh_token: storedRefreshToken,
-                grant_type: "refresh_token",
-              }),
-            },
-          );
-
-          if (!tokenResponse.ok) {
-            throw new Error(`Token refresh failed: ${tokenResponse.status}`);
-          }
-
-          const tokenData = await tokenResponse.json();
-
-          // Update stored token
-          localStorage.setItem("gdrive_access_token", tokenData.access_token);
-          setAccessToken(tokenData.access_token);
-
-          console.log("Manual token refresh successful");
-          return tokenData.access_token;
-        } catch (manualError) {
-          console.error("Manual token refresh also failed:", manualError);
-        }
-      }
-
-      // If both methods fail, show session expired and clear tokens
+      // If refresh fails, show session expired and clear tokens
       showAlert(t("auth.sessionExpired"), {
         variant: "warning",
       });
@@ -220,7 +205,7 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handleSignIn = async () => {
-    if (!GOOGLE_CLIENT_ID) {
+    if (!gdriveService.isSupported()) {
       showAlert(t("auth.oauthNotConfigured"), { variant: "error" });
       return;
     }
@@ -228,197 +213,7 @@ export const ProfilePage: React.FC = () => {
     try {
       setLoading(true);
 
-      const signInOptions: any = {
-        clientId: GOOGLE_CLIENT_ID,
-        clientSecret: GOOGLE_CLIENT_SECRET,
-        scopes: [
-          "openid",
-          "email",
-          "profile",
-          "https://www.googleapis.com/auth/drive.file",
-        ],
-        successHtmlResponse: `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Sign In Successful</title>
-            <style>
-              * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-              }
-              body {
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                min-height: 100vh;
-                padding: 20px;
-              }
-              .container {
-                background: white;
-                border-radius: 16px;
-                padding: 48px 40px;
-                text-align: center;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-                max-width: 400px;
-                width: 100%;
-                animation: slideUp 0.4s ease-out;
-              }
-              @keyframes slideUp {
-                from {
-                  opacity: 0;
-                  transform: translateY(30px);
-                }
-                to {
-                  opacity: 1;
-                  transform: translateY(0);
-                }
-              }
-              .checkmark {
-                width: 80px;
-                height: 80px;
-                border-radius: 50%;
-                background: #10b981;
-                margin: 0 auto 24px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                animation: scaleIn 0.5s ease-out 0.2s both;
-              }
-              @keyframes scaleIn {
-                from {
-                  transform: scale(0);
-                }
-                to {
-                  transform: scale(1);
-                }
-              }
-              .checkmark svg {
-                width: 48px;
-                height: 48px;
-                stroke: white;
-                stroke-width: 3;
-                stroke-linecap: round;
-                stroke-linejoin: round;
-                fill: none;
-                stroke-dasharray: 100;
-                stroke-dashoffset: 100;
-                animation: drawCheck 0.5s ease-out 0.4s forwards;
-              }
-              @keyframes drawCheck {
-                to {
-                  stroke-dashoffset: 0;
-                }
-              }
-              h1 {
-                color: #1f2937;
-                font-size: 28px;
-                font-weight: 700;
-                margin-bottom: 12px;
-              }
-              p {
-                color: #6b7280;
-                font-size: 16px;
-                line-height: 1.6;
-                margin-bottom: 32px;
-              }
-              .close-btn {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                border: none;
-                border-radius: 8px;
-                padding: 14px 32px;
-                font-size: 16px;
-                font-weight: 600;
-                cursor: pointer;
-                width: 100%;
-                transition: transform 0.2s, box-shadow 0.2s;
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-              }
-              .close-btn:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
-              }
-              .close-btn:active {
-                transform: translateY(0);
-              }
-              .auto-close {
-                color: #9ca3af;
-                font-size: 14px;
-                margin-top: 16px;
-              }
-              .signature {
-                margin-top: 32px;
-                padding-top: 24px;
-                border-top: 1px solid #e5e7eb;
-              }
-              .signature .brand {
-                font-size: 18px;
-                font-weight: 700;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                background-clip: text;
-                margin-bottom: 4px;
-              }
-              .signature .tagline {
-                font-size: 13px;
-                color: #9ca3af;
-                margin-bottom: 0;
-              }
-            </style>
-          </head>
-          <body>
-            <div class="container">
-              <div class="checkmark">
-                <svg viewBox="0 0 52 52">
-                  <polyline points="14,26 22,34 38,18"/>
-                </svg>
-              </div>
-              <h1>Sign In Successful!</h1>
-              <p>You have successfully signed in with Google. You can now close this window and return to the app.</p>
-              <button class="close-btn" onclick="closeWindow()">Close Window</button>
-              <p class="auto-close">This window will close automatically in <span id="countdown">5</span> seconds</p>
-              <div class="signature">
-                <div class="brand">Cham Lang</div>
-                <p class="tagline">Adapt to Learn</p>
-              </div>
-            </div>
-            <script>
-              let countdown = 5;
-              const countdownEl = document.getElementById('countdown');
-
-              const timer = setInterval(() => {
-                countdown--;
-                countdownEl.textContent = countdown;
-                if (countdown <= 0) {
-                  clearInterval(timer);
-                  closeWindow();
-                }
-              }, 1000);
-
-              function closeWindow() {
-                // Try multiple methods to close the window
-                if (window.close) {
-                  window.close();
-                }
-                // Fallback for browsers that prevent window.close()
-                setTimeout(() => {
-                  window.location.href = 'about:blank';
-                }, 100);
-              }
-            </script>
-          </body>
-          </html>
-        `,
-      };
-
-      const response = await signIn(signInOptions);
+      const response = await gdriveService.signIn();
 
       console.log("Sign in successful:", response);
 
@@ -435,17 +230,10 @@ export const ProfilePage: React.FC = () => {
         console.warn("No refresh token received - token refresh may not work");
       }
 
-      // Parse ID token to get email
-      if (response.idToken) {
-        try {
-          const payload = JSON.parse(atob(response.idToken.split(".")[1]));
-          if (payload.email) {
-            localStorage.setItem("gdrive_user_email", payload.email);
-            setUserEmail(payload.email);
-          }
-        } catch (e) {
-          console.error("Failed to parse ID token:", e);
-        }
+      // Store email if provided
+      if (response.email) {
+        localStorage.setItem("gdrive_user_email", response.email);
+        setUserEmail(response.email);
       }
 
       setIsConfigured(true);
@@ -462,7 +250,7 @@ export const ProfilePage: React.FC = () => {
   const handleSignOut = async () => {
     try {
       setLoading(true);
-      await signOut();
+      await gdriveService.signOut();
 
       // Clear stored tokens
       localStorage.removeItem("gdrive_access_token");
@@ -497,9 +285,7 @@ export const ProfilePage: React.FC = () => {
       let currentToken = accessToken;
 
       try {
-        const result = await invoke<string>("backup_to_gdrive", {
-          accessToken: currentToken,
-        });
+        const result = await gdriveService.backupToGDrive(currentToken);
         showAlert(result, { variant: "success" });
         loadBackupInfo(currentToken);
         // Recheck sync status after backup
@@ -518,9 +304,7 @@ export const ProfilePage: React.FC = () => {
 
           if (newToken) {
             // Retry with new token
-            const result = await invoke<string>("backup_to_gdrive", {
-              accessToken: newToken,
-            });
+            const result = await gdriveService.backupToGDrive(newToken);
             showAlert(result, { variant: "success" });
             loadBackupInfo(newToken);
             await checkSyncStatus();
@@ -550,9 +334,7 @@ export const ProfilePage: React.FC = () => {
       setLoading(true);
 
       try {
-        const result = await invoke<string>("restore_from_gdrive", {
-          accessToken: accessToken,
-        });
+        const result = await gdriveService.restoreFromGDrive(accessToken);
         showAlert(result + t("gdrive.restartPrompt"), { variant: "success" });
         // Recheck sync status after restore
         await checkSyncStatus();
@@ -570,9 +352,7 @@ export const ProfilePage: React.FC = () => {
 
           if (newToken) {
             // Retry with new token
-            const result = await invoke<string>("restore_from_gdrive", {
-              accessToken: newToken,
-            });
+            const result = await gdriveService.restoreFromGDrive(newToken);
             showAlert(result + t("gdrive.restartPrompt"), {
               variant: "success",
             });
@@ -610,7 +390,7 @@ export const ProfilePage: React.FC = () => {
 
     try {
       setLoading(true);
-      const result = await invoke<string>("clear_local_database");
+      const result = await gdriveService.clearLocalDatabase();
       showAlert(result, { variant: "success" });
     } catch (error) {
       console.error("Clear database failed:", error);
@@ -774,6 +554,228 @@ export const ProfilePage: React.FC = () => {
       <TopBar title={t("nav.profile")} showBack={false} />
 
       <div className="min-h-screen px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 space-y-6">
+        {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
+        {(isDesktop() || isOpenedFromDesktop()) && (
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Cloud className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {t("settings.browserSync") || "Browser Sync"}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {isDesktop()
+                        ? t("settings.openInBrowserDescription") ||
+                          "Open the app in your default web browser"
+                        : t("settings.browserSyncDescription") ||
+                          "Sync data between browser and desktop"}
+                    </p>
+                  </div>
+                </div>
+                {isDesktop() && browserSyncActive && (
+                  <span className="flex items-center gap-2 text-sm font-medium text-green-600">
+                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    Active
+                  </span>
+                )}
+              </div>
+
+              <div className="pt-2 space-y-3">
+                {/* Desktop: Open in Browser / Stop Sharing buttons */}
+                {isDesktop() && (
+                  <>
+                    {!browserSyncActive ? (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setBrowserSyncLoading(true);
+                            const { invoke } = await import(
+                              "@tauri-apps/api/core"
+                            );
+                            const url =
+                              await invoke<string>("start_browser_sync");
+                            setBrowserSyncActive(true);
+                            await openInBrowser(url);
+                            showAlert(
+                              t("settings.browserSyncStarted") ||
+                                "Browser sync started. Your data is now accessible in the browser.",
+                              { variant: "success" },
+                            );
+                          } catch (error) {
+                            console.error(
+                              "Failed to start browser sync:",
+                              error,
+                            );
+                            showAlert(
+                              `Failed to start browser sync: ${error}`,
+                              {
+                                variant: "error",
+                              },
+                            );
+                          } finally {
+                            setBrowserSyncLoading(false);
+                          }
+                        }}
+                        disabled={browserSyncLoading}
+                        variant="primary"
+                        fullWidth
+                        icon={ExternalLink}
+                      >
+                        {browserSyncLoading
+                          ? t("settings.starting") || "Starting..."
+                          : t("settings.openInBrowserButton") ||
+                            "Open in Web Browser"}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setBrowserSyncLoading(true);
+                            const { invoke } = await import(
+                              "@tauri-apps/api/core"
+                            );
+                            await invoke("stop_browser_sync");
+                            setBrowserSyncActive(false);
+                            showAlert(
+                              t("settings.browserSyncStopped") ||
+                                "Browser sync stopped.",
+                              { variant: "success" },
+                            );
+                          } catch (error) {
+                            console.error(
+                              "Failed to stop browser sync:",
+                              error,
+                            );
+                            showAlert(`Failed to stop browser sync: ${error}`, {
+                              variant: "error",
+                            });
+                          } finally {
+                            setBrowserSyncLoading(false);
+                          }
+                        }}
+                        disabled={browserSyncLoading}
+                        variant="danger"
+                        fullWidth
+                        icon={StopCircle}
+                      >
+                        {browserSyncLoading
+                          ? t("settings.stopping") || "Stopping..."
+                          : t("settings.stopSharing") || "Stop Sharing"}
+                      </Button>
+                    )}
+                    <p className="text-xs text-gray-500 text-center">
+                      {browserSyncActive
+                        ? t("settings.browserSyncActiveHint") ||
+                          "Your data is being shared on http://localhost:25091"
+                        : t("settings.openInBrowserHint") ||
+                          "Opens http://localhost:25091 in your default browser"}
+                    </p>
+                  </>
+                )}
+
+                {/* Browser: Load from Desktop / Sync to Desktop buttons */}
+                {isOpenedFromDesktop() && (
+                  <>
+                    {/* Load from Desktop button */}
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          console.log(
+                            "📥 Manual load from desktop triggered...",
+                          );
+                          const result =
+                            await browserSyncService.loadFromDesktop();
+                          console.log("📥 Load result:", result);
+                          if (result.success) {
+                            showAlert(result.message, { variant: "success" });
+                            // Reload using full current URL to preserve session token
+                            window.location.href = window.location.href;
+                          } else {
+                            showAlert(result.message, { variant: "error" });
+                          }
+                        } catch (error) {
+                          console.error("Failed to load from desktop:", error);
+                          showAlert(`Load failed: ${error}`, {
+                            variant: "error",
+                          });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      variant="secondary"
+                      fullWidth
+                      icon={Download}
+                    >
+                      {loading
+                        ? t("settings.loading") || "Loading..."
+                        : t("settings.loadFromDesktop") ||
+                          "Load Data from Desktop"}
+                    </Button>
+
+                    {/* Sync to Desktop button */}
+                    <Button
+                      onClick={async () => {
+                        try {
+                          setLoading(true);
+                          console.log("📤 Manual sync to desktop triggered...");
+                          const result =
+                            await browserSyncService.syncToDesktop();
+                          console.log("📤 Sync result:", result);
+                          if (result.success) {
+                            showAlert(result.message, { variant: "success" });
+                          } else {
+                            showAlert(result.message, { variant: "error" });
+                          }
+                        } catch (error) {
+                          console.error("Failed to sync to desktop:", error);
+                          showAlert(`Sync failed: ${error}`, {
+                            variant: "error",
+                          });
+                        } finally {
+                          setLoading(false);
+                        }
+                      }}
+                      disabled={loading}
+                      variant="primary"
+                      fullWidth
+                      icon={Upload}
+                    >
+                      {loading
+                        ? t("settings.syncing") || "Syncing..."
+                        : t("settings.syncToDesktopButton") ||
+                          "Sync Changes to Desktop"}
+                    </Button>
+
+                    {/* Session info */}
+                    <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded space-y-1">
+                      <p>
+                        <strong>Session:</strong>{" "}
+                        {browserSyncService.getToken()?.slice(0, 16)}...
+                      </p>
+                      <p>
+                        <strong>Last Load:</strong>{" "}
+                        {browserSyncService
+                          .getLastLoadTime()
+                          ?.toLocaleString() || "Never"}
+                      </p>
+                      <p>
+                        <strong>Last Sync:</strong>{" "}
+                        {browserSyncService
+                          .getLastSyncTime()
+                          ?.toLocaleString() || "Never"}
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+
         {/* Language Settings Section */}
         <Card variant="glass">
           <div className="space-y-4">
