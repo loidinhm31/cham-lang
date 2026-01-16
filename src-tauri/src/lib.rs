@@ -124,7 +124,23 @@ pub fn run() {
 
     init_logging();
 
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+
+    // IMPORTANT: Single-instance plugin must be registered FIRST to work correctly
+    // This ensures only one instance of the app can run at a time (desktop only)
+    #[cfg(desktop)]
+    {
+        builder = builder.plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            // When a new instance is attempted, focus the existing window
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }));
+    }
+
+    builder
         // IMPORTANT: schedule-task plugin must be initialized first to allow
         // desktop scheduling routines to execute before full app startup
         .plugin(tauri_plugin_schedule_task::init_with_handler(
