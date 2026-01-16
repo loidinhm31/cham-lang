@@ -50,4 +50,7 @@ mime_guess = "2"
 # Session token generation
 rand = "0.9"
 hex = "0.4"
+# Async streams for SSE
+futures = "0.3"
+async-stream = "0.3"
 

@@ -12,15 +12,19 @@ use axum::{
     extract::{Query, State},
     http::{header, Request, Response, StatusCode, Uri},
     middleware::{self, Next},
+    response::sse::{Event, KeepAlive, Sse},
     routing::{get, post},
     Json, Router,
 };
+use futures::stream::Stream;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
+use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::sync::Mutex;
+use std::time::Duration;
 use tokio::runtime::Runtime;
-use tokio::sync::oneshot;
+use tokio::sync::{broadcast, oneshot};
 
 use crate::local_db::LocalDatabase;
 use crate::models::{
@@ -41,17 +45,29 @@ struct Asset;
 pub struct AppState {
     pub db: LocalDatabase,
     pub session_manager: SharedSessionManager,
+    /// Broadcast channel for SSE shutdown notifications
+    pub shutdown_broadcast: broadcast::Sender<String>,
 }
 
 /// Handle for graceful shutdown
 pub struct ServerHandle {
     shutdown_tx: Option<oneshot::Sender<()>>,
+    shutdown_broadcast_tx: Option<broadcast::Sender<String>>,
     thread_handle: Option<std::thread::JoinHandle<()>>,
 }
 
 impl ServerHandle {
-    /// Shutdown the server gracefully
+    /// Shutdown the server gracefully, notifying connected browsers first
     pub fn shutdown(mut self) {
+        // First, notify all connected browsers via SSE that we're shutting down
+        if let Some(tx) = &self.shutdown_broadcast_tx {
+            println!("Sending shutdown notification to browsers...");
+            let _ = tx.send("shutdown".to_string());
+            // Give browsers a moment to receive the message
+            std::thread::sleep(Duration::from_millis(500));
+        }
+
+        // Then proceed with actual server shutdown
         if let Some(tx) = self.shutdown_tx.take() {
             let _ = tx.send(());
         }
@@ -73,9 +89,15 @@ pub fn start_web_server(db: LocalDatabase, session_manager: SharedSessionManager
 
     let (shutdown_tx, shutdown_rx) = oneshot::channel::<()>();
 
+    // Create a broadcast channel for SSE shutdown notifications
+    // Capacity of 16 should be plenty for shutdown events
+    let (shutdown_broadcast_tx, _) = broadcast::channel::<String>(16);
+    let shutdown_broadcast_for_state = shutdown_broadcast_tx.clone();
+
     let state = AppState {
         db,
         session_manager,
+        shutdown_broadcast: shutdown_broadcast_for_state,
     };
 
     let thread_handle = std::thread::spawn(move || {
@@ -104,6 +126,8 @@ pub fn start_web_server(db: LocalDatabase, session_manager: SharedSessionManager
                 .route("/api/export", get(api_export))
                 .route("/api/import", post(api_import))
                 .route("/api/health", get(api_health))
+                // SSE route for shutdown notifications (no auth required - just for shutdown signal)
+                .route("/api/events", get(sse_handler))
                 .layer(middleware::from_fn_with_state(
                     state.clone(),
                     security_middleware,
@@ -160,6 +184,7 @@ pub fn start_web_server(db: LocalDatabase, session_manager: SharedSessionManager
     // Store the handle for later shutdown
     let handle = ServerHandle {
         shutdown_tx: Some(shutdown_tx),
+        shutdown_broadcast_tx: Some(shutdown_broadcast_tx),
         thread_handle: Some(thread_handle),
     };
 
@@ -210,6 +235,12 @@ async fn security_middleware(
     // Skip security for health check
     if path == "/api/health" {
         println!("   Health check, passing through");
+        return Ok(next.run(request).await);
+    }
+
+    // Skip security for SSE events (only sends shutdown notifications)
+    if path == "/api/events" {
+        println!("   SSE events, passing through");
         return Ok(next.run(request).await);
     }
 
@@ -300,6 +331,51 @@ impl<T> ApiResponse<T> {
 /// Health check endpoint
 async fn api_health() -> Json<ApiResponse<String>> {
     Json(ApiResponse::success("OK".to_string()))
+}
+
+/// SSE endpoint for shutdown notifications
+/// Browsers connect to this endpoint and receive events when the server is about to shut down
+async fn sse_handler(
+    State(state): State<AppState>,
+) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
+    let mut rx = state.shutdown_broadcast.subscribe();
+
+    let stream = async_stream::stream! {
+        // Send an initial "connected" event
+        yield Ok(Event::default().event("connected").data("Browser connected to desktop server"));
+
+        // Keep connection alive and wait for shutdown event
+        loop {
+            tokio::select! {
+                // Check for shutdown broadcast
+                result = rx.recv() => {
+                    match result {
+                        Ok(msg) => {
+                            println!("SSE: Sending {} event to browser", msg);
+                            yield Ok(Event::default().event(&msg).data("Server is shutting down"));
+                            // After sending shutdown, we can close the stream
+                            break;
+                        }
+                        Err(broadcast::error::RecvError::Closed) => {
+                            // Channel closed, server is shutting down
+                            yield Ok(Event::default().event("shutdown").data("Server connection closed"));
+                            break;
+                        }
+                        Err(broadcast::error::RecvError::Lagged(_)) => {
+                            // We missed some messages, but keep listening
+                            continue;
+                        }
+                    }
+                }
+                // Send keepalive ping every 30 seconds
+                _ = tokio::time::sleep(Duration::from_secs(30)) => {
+                    yield Ok(Event::default().event("ping").data("keepalive"));
+                }
+            }
+        }
+    };
+
+    Sse::new(stream).keep_alive(KeepAlive::default())
 }
 
 /// Export endpoint - returns all SQLite data as JSON

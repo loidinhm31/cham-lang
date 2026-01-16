@@ -3,11 +3,14 @@
  *
  * Wrapper component that automatically loads data from desktop SQLite
  * when the app is opened in browser mode from the desktop.
+ * Also maintains an SSE connection to detect when the server shuts down.
  */
 
 import React, { useEffect, useState } from "react";
 import { isOpenedFromDesktop } from "@/utils/platform";
 import { browserSyncService } from "@/services/BrowserSyncService";
+import { useServerConnection } from "@/hooks/useServerConnection";
+import { ServerDisconnectedOverlay } from "@/components/organisms/ServerDisconnectedOverlay";
 
 interface BrowserSyncInitializerProps {
   children: React.ReactNode;
@@ -19,6 +22,9 @@ export const BrowserSyncInitializer: React.FC<BrowserSyncInitializerProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const [initialized, setInitialized] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  // SSE connection to detect server shutdown
+  const { isDisconnected, acknowledgeDisconnect } = useServerConnection();
 
   useEffect(() => {
     const initializeFromDesktop = async () => {
@@ -105,5 +111,16 @@ export const BrowserSyncInitializer: React.FC<BrowserSyncInitializerProps> = ({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {/* Show disconnected overlay when server shuts down */}
+      {isDisconnected && (
+        <ServerDisconnectedOverlay
+          onDismiss={acknowledgeDisconnect}
+          onRefresh={() => window.location.reload()}
+        />
+      )}
+      {children}
+    </>
+  );
 };
