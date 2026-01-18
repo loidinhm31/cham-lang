@@ -236,7 +236,7 @@ export const PracticeModePage: React.FC = () => {
                   label={t("vocabulary.collection")}
                   options={collectionOptions}
                   value={selectedCollection}
-                  onChange={(e) => handleCollectionChange(e.target.value)}
+                  onValueChange={handleCollectionChange}
                   placeholder={t("practice.selectCollection")}
                 />
 

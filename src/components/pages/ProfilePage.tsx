@@ -553,606 +553,619 @@ export const ProfilePage: React.FC = () => {
     <>
       <TopBar title={t("nav.profile")} showBack={false} />
 
-      <div className="min-h-screen px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 py-6 space-y-6">
-        {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
-        {(isDesktop() || isOpenedFromDesktop()) && (
+      <div className="min-h-screen px-4 md:px-6 lg:px-8 py-6 pb-24">
+        {/* Settings Grid - 2 columns on large screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
+          {(isDesktop() || isOpenedFromDesktop()) && (
+            <Card variant="glass">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Cloud className="w-6 h-6 text-blue-600" />
+                    <div>
+                      <h3 className="text-lg font-bold text-gray-800">
+                        {t("settings.browserSync") || "Browser Sync"}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        {isDesktop()
+                          ? t("settings.openInBrowserDescription") ||
+                            "Open the app in your default web browser"
+                          : t("settings.browserSyncDescription") ||
+                            "Sync data between browser and desktop"}
+                      </p>
+                    </div>
+                  </div>
+                  {isDesktop() && browserSyncActive && (
+                    <span className="flex items-center gap-2 text-sm font-medium text-green-600">
+                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      Active
+                    </span>
+                  )}
+                </div>
+
+                <div className="pt-2 space-y-3">
+                  {/* Desktop: Open in Browser / Stop Sharing buttons */}
+                  {isDesktop() && (
+                    <>
+                      {!browserSyncActive ? (
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setBrowserSyncLoading(true);
+                              const { invoke } = await import(
+                                "@tauri-apps/api/core"
+                              );
+                              const url =
+                                await invoke<string>("start_browser_sync");
+                              setBrowserSyncActive(true);
+                              await openInBrowser(url);
+                              showAlert(
+                                t("settings.browserSyncStarted") ||
+                                  "Browser sync started. Your data is now accessible in the browser.",
+                                { variant: "success" },
+                              );
+                            } catch (error) {
+                              console.error(
+                                "Failed to start browser sync:",
+                                error,
+                              );
+                              showAlert(
+                                `Failed to start browser sync: ${error}`,
+                                {
+                                  variant: "error",
+                                },
+                              );
+                            } finally {
+                              setBrowserSyncLoading(false);
+                            }
+                          }}
+                          disabled={browserSyncLoading}
+                          variant="primary"
+                          fullWidth
+                          icon={ExternalLink}
+                        >
+                          {browserSyncLoading
+                            ? t("settings.starting") || "Starting..."
+                            : t("settings.openInBrowserButton") ||
+                              "Open in Web Browser"}
+                        </Button>
+                      ) : (
+                        <Button
+                          onClick={async () => {
+                            try {
+                              setBrowserSyncLoading(true);
+                              const { invoke } = await import(
+                                "@tauri-apps/api/core"
+                              );
+                              await invoke("stop_browser_sync");
+                              setBrowserSyncActive(false);
+                              showAlert(
+                                t("settings.browserSyncStopped") ||
+                                  "Browser sync stopped.",
+                                { variant: "success" },
+                              );
+                            } catch (error) {
+                              console.error(
+                                "Failed to stop browser sync:",
+                                error,
+                              );
+                              showAlert(
+                                `Failed to stop browser sync: ${error}`,
+                                {
+                                  variant: "error",
+                                },
+                              );
+                            } finally {
+                              setBrowserSyncLoading(false);
+                            }
+                          }}
+                          disabled={browserSyncLoading}
+                          variant="danger"
+                          fullWidth
+                          icon={StopCircle}
+                        >
+                          {browserSyncLoading
+                            ? t("settings.stopping") || "Stopping..."
+                            : t("settings.stopSharing") || "Stop Sharing"}
+                        </Button>
+                      )}
+                      <p className="text-xs text-gray-500 text-center">
+                        {browserSyncActive
+                          ? t("settings.browserSyncActiveHint") ||
+                            "Your data is being shared on http://localhost:25091"
+                          : t("settings.openInBrowserHint") ||
+                            "Opens http://localhost:25091 in your default browser"}
+                      </p>
+                    </>
+                  )}
+
+                  {/* Browser: Load from Desktop / Sync to Desktop buttons */}
+                  {isOpenedFromDesktop() && (
+                    <>
+                      {/* Load from Desktop button */}
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setLoading(true);
+                            console.log(
+                              "📥 Manual load from desktop triggered...",
+                            );
+                            const result =
+                              await browserSyncService.loadFromDesktop();
+                            console.log("📥 Load result:", result);
+                            if (result.success) {
+                              showAlert(result.message, { variant: "success" });
+                              // Reload using full current URL to preserve session token
+                              window.location.href = window.location.href;
+                            } else {
+                              showAlert(result.message, { variant: "error" });
+                            }
+                          } catch (error) {
+                            console.error(
+                              "Failed to load from desktop:",
+                              error,
+                            );
+                            showAlert(`Load failed: ${error}`, {
+                              variant: "error",
+                            });
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        variant="secondary"
+                        fullWidth
+                        icon={Download}
+                      >
+                        {loading
+                          ? t("settings.loading") || "Loading..."
+                          : t("settings.loadFromDesktop") ||
+                            "Load Data from Desktop"}
+                      </Button>
+
+                      {/* Sync to Desktop button */}
+                      <Button
+                        onClick={async () => {
+                          try {
+                            setLoading(true);
+                            console.log(
+                              "📤 Manual sync to desktop triggered...",
+                            );
+                            const result =
+                              await browserSyncService.syncToDesktop();
+                            console.log("📤 Sync result:", result);
+                            if (result.success) {
+                              showAlert(result.message, { variant: "success" });
+                            } else {
+                              showAlert(result.message, { variant: "error" });
+                            }
+                          } catch (error) {
+                            console.error("Failed to sync to desktop:", error);
+                            showAlert(`Sync failed: ${error}`, {
+                              variant: "error",
+                            });
+                          } finally {
+                            setLoading(false);
+                          }
+                        }}
+                        disabled={loading}
+                        variant="primary"
+                        fullWidth
+                        icon={Upload}
+                      >
+                        {loading
+                          ? t("settings.syncing") || "Syncing..."
+                          : t("settings.syncToDesktopButton") ||
+                            "Sync Changes to Desktop"}
+                      </Button>
+
+                      {/* Session info */}
+                      <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded space-y-1">
+                        <p>
+                          <strong>Session:</strong>{" "}
+                          {browserSyncService.getToken()?.slice(0, 16)}...
+                        </p>
+                        <p>
+                          <strong>Last Load:</strong>{" "}
+                          {browserSyncService
+                            .getLastLoadTime()
+                            ?.toLocaleString() || "Never"}
+                        </p>
+                        <p>
+                          <strong>Last Sync:</strong>{" "}
+                          {browserSyncService
+                            .getLastSyncTime()
+                            ?.toLocaleString() || "Never"}
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </Card>
+          )}
+
+          {/* Language Settings Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Languages className="w-6 h-6 text-blue-600" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {t("settings.language") || "Interface Language"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("settings.languageDescription") ||
+                      "Choose your preferred language for the app"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Select
+                  options={[
+                    { value: "en", label: "English" },
+                    { value: "vi", label: "Tiếng Việt" },
+                  ]}
+                  value={currentLanguage}
+                  onValueChange={handleLanguageChange}
+                />
+              </div>
+            </div>
+          </Card>
+
+          {/* Font Size Settings Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Type className="w-6 h-6 text-purple-600" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {t("settings.fontSize") || "Text Size"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("settings.fontSizeDescription") ||
+                      "Adjust the size of text throughout the app"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2 space-y-4">
+                {/* Quick Increase/Decrease Buttons */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                  <Button
+                    onClick={handleDecreaseFontSize}
+                    disabled={currentFontSize === "small"}
+                    variant="secondary"
+                    icon={Minus}
+                    className="sm:flex-1"
+                  >
+                    {t("settings.decrease") || "Decrease"}
+                  </Button>
+                  <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 sm:min-w-[140px] text-center">
+                    <span className="text-sm font-bold text-indigo-900">
+                      {t(`fontSizes.${currentFontSize}`) ||
+                        FontSizeService.getConfig(currentFontSize).label}
+                    </span>
+                  </div>
+                  <Button
+                    onClick={handleIncreaseFontSize}
+                    disabled={currentFontSize === "extra-large"}
+                    variant="secondary"
+                    icon={Plus}
+                    className="sm:flex-1"
+                  >
+                    {t("settings.increase") || "Increase"}
+                  </Button>
+                </div>
+
+                {/* Dropdown Selector */}
+                <Select
+                  label={t("settings.selectFontSize") || "Select Font Size"}
+                  options={FontSizeService.getOptions().map((config) => ({
+                    value: config.value,
+                    label: t(`fontSizes.${config.value}`) || config.label,
+                  }))}
+                  value={currentFontSize}
+                  onValueChange={(value) =>
+                    handleFontSizeChange(value as FontSizeOption)
+                  }
+                />
+
+                {/* Preview Text */}
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <p className="text-xs text-gray-500 mb-2">
+                    {t("settings.preview") || "Preview:"}
+                  </p>
+                  <p className="text-gray-800">
+                    {t("app.tagline") || "Adapt to Learn"}
+                  </p>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {t("settings.fontSizePreviewText") ||
+                      "The quick brown fox jumps over the lazy dog"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Notification Test Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Bell className="w-6 h-6 text-orange-600" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {t("settings.notifications") || "Notifications Test"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("settings.notificationsDescription") ||
+                      "Test scheduled notifications"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={handleTestNotification}
+                  disabled={loading}
+                  variant="primary"
+                  fullWidth
+                  icon={Bell}
+                >
+                  {loading
+                    ? t("settings.scheduling") || "Scheduling..."
+                    : t("settings.scheduleNotification") ||
+                      "Schedule Notification (+1 minute)"}
+                </Button>
+                <p className="text-xs text-gray-500 text-center mt-2">
+                  {t("settings.notificationHint") ||
+                    "This will schedule a notification to appear in 1 minute"}
+                </p>
+              </div>
+            </div>
+          </Card>
+
+          {/* Daily Reminder Section */}
           <Card variant="glass">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Cloud className="w-6 h-6 text-blue-600" />
+                  <Clock className="w-6 h-6 text-indigo-600" />
                   <div>
                     <h3 className="text-lg font-bold text-gray-800">
-                      {t("settings.browserSync") || "Browser Sync"}
+                      {t("reminder.dailyReminder") || "Daily Reminder"}
                     </h3>
                     <p className="text-sm text-gray-600">
-                      {isDesktop()
-                        ? t("settings.openInBrowserDescription") ||
-                          "Open the app in your default web browser"
-                        : t("settings.browserSyncDescription") ||
-                          "Sync data between browser and desktop"}
+                      {t("reminder.dailyReminderDescription") ||
+                        "Get reminded to practice every day"}
                     </p>
                   </div>
                 </div>
-                {isDesktop() && browserSyncActive && (
-                  <span className="flex items-center gap-2 text-sm font-medium text-green-600">
-                    <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                    Active
-                  </span>
-                )}
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={reminderEnabled}
+                    onChange={(e) => handleReminderToggle(e.target.checked)}
+                    disabled={loading}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                </label>
               </div>
 
-              <div className="pt-2 space-y-3">
-                {/* Desktop: Open in Browser / Stop Sharing buttons */}
-                {isDesktop() && (
-                  <>
-                    {!browserSyncActive ? (
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setBrowserSyncLoading(true);
-                            const { invoke } = await import(
-                              "@tauri-apps/api/core"
-                            );
-                            const url =
-                              await invoke<string>("start_browser_sync");
-                            setBrowserSyncActive(true);
-                            await openInBrowser(url);
-                            showAlert(
-                              t("settings.browserSyncStarted") ||
-                                "Browser sync started. Your data is now accessible in the browser.",
-                              { variant: "success" },
-                            );
-                          } catch (error) {
-                            console.error(
-                              "Failed to start browser sync:",
-                              error,
-                            );
-                            showAlert(
-                              `Failed to start browser sync: ${error}`,
-                              {
-                                variant: "error",
-                              },
-                            );
-                          } finally {
-                            setBrowserSyncLoading(false);
-                          }
-                        }}
-                        disabled={browserSyncLoading}
-                        variant="primary"
-                        fullWidth
-                        icon={ExternalLink}
-                      >
-                        {browserSyncLoading
-                          ? t("settings.starting") || "Starting..."
-                          : t("settings.openInBrowserButton") ||
-                            "Open in Web Browser"}
-                      </Button>
-                    ) : (
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setBrowserSyncLoading(true);
-                            const { invoke } = await import(
-                              "@tauri-apps/api/core"
-                            );
-                            await invoke("stop_browser_sync");
-                            setBrowserSyncActive(false);
-                            showAlert(
-                              t("settings.browserSyncStopped") ||
-                                "Browser sync stopped.",
-                              { variant: "success" },
-                            );
-                          } catch (error) {
-                            console.error(
-                              "Failed to stop browser sync:",
-                              error,
-                            );
-                            showAlert(`Failed to stop browser sync: ${error}`, {
-                              variant: "error",
-                            });
-                          } finally {
-                            setBrowserSyncLoading(false);
-                          }
-                        }}
-                        disabled={browserSyncLoading}
-                        variant="danger"
-                        fullWidth
-                        icon={StopCircle}
-                      >
-                        {browserSyncLoading
-                          ? t("settings.stopping") || "Stopping..."
-                          : t("settings.stopSharing") || "Stop Sharing"}
-                      </Button>
-                    )}
-                    <p className="text-xs text-gray-500 text-center">
-                      {browserSyncActive
-                        ? t("settings.browserSyncActiveHint") ||
-                          "Your data is being shared on http://localhost:25091"
-                        : t("settings.openInBrowserHint") ||
-                          "Opens http://localhost:25091 in your default browser"}
+              <div className="pt-2 space-y-4 border-t border-gray-200">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {t("reminder.reminderTime") || "Reminder Time"}
+                  </label>
+                  <input
+                    type="time"
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    disabled={loading}
+                    className="w-full px-3 py-2 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-gray-900"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    {t("reminder.currentTime") || "Selected time:"}{" "}
+                    {reminderTime}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleSaveReminderTime}
+                  disabled={loading}
+                  variant="primary"
+                  fullWidth
+                  icon={Clock}
+                >
+                  {loading
+                    ? t("settings.saving") || "Saving..."
+                    : t("reminder.saveTime") || "Save Reminder Time"}
+                </Button>
+
+                {reminderEnabled && (
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                    <p className="text-sm text-indigo-800 font-medium">
+                      {t("reminder.reminderActive") ||
+                        "Daily reminder is active"}
                     </p>
-                  </>
-                )}
-
-                {/* Browser: Load from Desktop / Sync to Desktop buttons */}
-                {isOpenedFromDesktop() && (
-                  <>
-                    {/* Load from Desktop button */}
-                    <Button
-                      onClick={async () => {
-                        try {
-                          setLoading(true);
-                          console.log(
-                            "📥 Manual load from desktop triggered...",
-                          );
-                          const result =
-                            await browserSyncService.loadFromDesktop();
-                          console.log("📥 Load result:", result);
-                          if (result.success) {
-                            showAlert(result.message, { variant: "success" });
-                            // Reload using full current URL to preserve session token
-                            window.location.href = window.location.href;
-                          } else {
-                            showAlert(result.message, { variant: "error" });
-                          }
-                        } catch (error) {
-                          console.error("Failed to load from desktop:", error);
-                          showAlert(`Load failed: ${error}`, {
-                            variant: "error",
-                          });
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
-                      disabled={loading}
-                      variant="secondary"
-                      fullWidth
-                      icon={Download}
-                    >
-                      {loading
-                        ? t("settings.loading") || "Loading..."
-                        : t("settings.loadFromDesktop") ||
-                          "Load Data from Desktop"}
-                    </Button>
-
-                    {/* Sync to Desktop button */}
-                    <Button
-                      onClick={async () => {
-                        try {
-                          setLoading(true);
-                          console.log("📤 Manual sync to desktop triggered...");
-                          const result =
-                            await browserSyncService.syncToDesktop();
-                          console.log("📤 Sync result:", result);
-                          if (result.success) {
-                            showAlert(result.message, { variant: "success" });
-                          } else {
-                            showAlert(result.message, { variant: "error" });
-                          }
-                        } catch (error) {
-                          console.error("Failed to sync to desktop:", error);
-                          showAlert(`Sync failed: ${error}`, {
-                            variant: "error",
-                          });
-                        } finally {
-                          setLoading(false);
-                        }
-                      }}
-                      disabled={loading}
-                      variant="primary"
-                      fullWidth
-                      icon={Upload}
-                    >
-                      {loading
-                        ? t("settings.syncing") || "Syncing..."
-                        : t("settings.syncToDesktopButton") ||
-                          "Sync Changes to Desktop"}
-                    </Button>
-
-                    {/* Session info */}
-                    <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded space-y-1">
-                      <p>
-                        <strong>Session:</strong>{" "}
-                        {browserSyncService.getToken()?.slice(0, 16)}...
-                      </p>
-                      <p>
-                        <strong>Last Load:</strong>{" "}
-                        {browserSyncService
-                          .getLastLoadTime()
-                          ?.toLocaleString() || "Never"}
-                      </p>
-                      <p>
-                        <strong>Last Sync:</strong>{" "}
-                        {browserSyncService
-                          .getLastSyncTime()
-                          ?.toLocaleString() || "Never"}
-                      </p>
-                    </div>
-                  </>
+                    <p className="text-xs text-indigo-700 mt-1">
+                      {t("reminder.reminderActiveDescription") ||
+                        `You will receive a notification every day at ${reminderTime}`}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
           </Card>
-        )}
 
-        {/* Language Settings Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Languages className="w-6 h-6 text-blue-600" />
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {t("settings.language") || "Interface Language"}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {t("settings.languageDescription") ||
-                    "Choose your preferred language for the app"}
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Select
-                options={[
-                  { value: "en", label: "English" },
-                  { value: "vi", label: "Tiếng Việt" },
-                ]}
-                value={currentLanguage}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-              />
-            </div>
-          </div>
-        </Card>
-
-        {/* Font Size Settings Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Type className="w-6 h-6 text-purple-600" />
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {t("settings.fontSize") || "Text Size"}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {t("settings.fontSizeDescription") ||
-                    "Adjust the size of text throughout the app"}
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2 space-y-4">
-              {/* Quick Increase/Decrease Buttons */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-                <Button
-                  onClick={handleDecreaseFontSize}
-                  disabled={currentFontSize === "small"}
-                  variant="secondary"
-                  icon={Minus}
-                  className="sm:flex-1"
-                >
-                  {t("settings.decrease") || "Decrease"}
-                </Button>
-                <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 sm:min-w-[140px] text-center">
-                  <span className="text-sm font-bold text-indigo-900">
-                    {t(`fontSizes.${currentFontSize}`) ||
-                      FontSizeService.getConfig(currentFontSize).label}
-                  </span>
-                </div>
-                <Button
-                  onClick={handleIncreaseFontSize}
-                  disabled={currentFontSize === "extra-large"}
-                  variant="secondary"
-                  icon={Plus}
-                  className="sm:flex-1"
-                >
-                  {t("settings.increase") || "Increase"}
-                </Button>
-              </div>
-
-              {/* Dropdown Selector */}
-              <Select
-                label={t("settings.selectFontSize") || "Select Font Size"}
-                options={FontSizeService.getOptions().map((config) => ({
-                  value: config.value,
-                  label: t(`fontSizes.${config.value}`) || config.label,
-                }))}
-                value={currentFontSize}
-                onChange={(e) =>
-                  handleFontSizeChange(e.target.value as FontSizeOption)
-                }
-              />
-
-              {/* Preview Text */}
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                <p className="text-xs text-gray-500 mb-2">
-                  {t("settings.preview") || "Preview:"}
-                </p>
-                <p className="text-gray-800">
-                  {t("app.tagline") || "Adapt to Learn"}
-                </p>
-                <p className="text-sm text-gray-600 mt-1">
-                  {t("settings.fontSizePreviewText") ||
-                    "The quick brown fox jumps over the lazy dog"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Notification Test Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <Bell className="w-6 h-6 text-orange-600" />
-              <div>
-                <h3 className="text-lg font-bold text-gray-800">
-                  {t("settings.notifications") || "Notifications Test"}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {t("settings.notificationsDescription") ||
-                    "Test scheduled notifications"}
-                </p>
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <Button
-                onClick={handleTestNotification}
-                disabled={loading}
-                variant="primary"
-                fullWidth
-                icon={Bell}
-              >
-                {loading
-                  ? t("settings.scheduling") || "Scheduling..."
-                  : t("settings.scheduleNotification") ||
-                    "Schedule Notification (+1 minute)"}
-              </Button>
-              <p className="text-xs text-gray-500 text-center mt-2">
-                {t("settings.notificationHint") ||
-                  "This will schedule a notification to appear in 1 minute"}
-              </p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Daily Reminder Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Clock className="w-6 h-6 text-indigo-600" />
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {t("reminder.dailyReminder") || "Daily Reminder"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {t("reminder.dailyReminderDescription") ||
-                      "Get reminded to practice every day"}
-                  </p>
-                </div>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={reminderEnabled}
-                  onChange={(e) => handleReminderToggle(e.target.checked)}
-                  disabled={loading}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-              </label>
-            </div>
-
-            <div className="pt-2 space-y-4 border-t border-gray-200">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("reminder.reminderTime") || "Reminder Time"}
-                </label>
-                <input
-                  type="time"
-                  value={reminderTime}
-                  onChange={(e) => setReminderTime(e.target.value)}
-                  disabled={loading}
-                  className="w-full px-3 py-2 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-gray-900"
-                />
-                <p className="text-xs text-gray-500 mt-2">
-                  {t("reminder.currentTime") || "Selected time:"} {reminderTime}
-                </p>
-              </div>
-
-              <Button
-                onClick={handleSaveReminderTime}
-                disabled={loading}
-                variant="primary"
-                fullWidth
-                icon={Clock}
-              >
-                {loading
-                  ? t("settings.saving") || "Saving..."
-                  : t("reminder.saveTime") || "Save Reminder Time"}
-              </Button>
-
-              {reminderEnabled && (
-                <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                  <p className="text-sm text-indigo-800 font-medium">
-                    {t("reminder.reminderActive") || "Daily reminder is active"}
-                  </p>
-                  <p className="text-xs text-indigo-700 mt-1">
-                    {t("reminder.reminderActiveDescription") ||
-                      `You will receive a notification every day at ${reminderTime}`}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </Card>
-
-        {/* Google Drive Sync Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                {isConfigured ? (
-                  <Cloud className="w-6 h-6 text-green-600" />
-                ) : (
-                  <CloudOff className="w-6 h-6 text-gray-400" />
-                )}
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {t("gdrive.title")}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {isConfigured
-                      ? `${t("gdrive.connected")} ${userEmail}`
-                      : t("gdrive.notConnected")}
-                  </p>
-                </div>
-              </div>
-              {isConfigured && (
-                <Button
-                  onClick={handleSignOut}
-                  disabled={loading}
-                  variant="secondary"
-                  icon={LogOut}
-                >
-                  {t("gdrive.signOut")}
-                </Button>
-              )}
-            </div>
-
-            {!isConfigured && (
-              <div className="space-y-3 pt-4 border-t border-gray-200">
-                <p className="text-sm text-gray-600">
-                  {t("gdrive.signInDescription")}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {t("gdrive.scopeDescription")}
-                </p>
-                <Button
-                  onClick={handleSignIn}
-                  disabled={loading}
-                  variant="primary"
-                  fullWidth
-                  icon={LogIn}
-                >
-                  {loading ? t("gdrive.signingIn") : t("gdrive.signIn")}
-                </Button>
-              </div>
-            )}
-
-            {isConfigured && (
-              <div className="space-y-3 pt-4 border-t border-gray-200">
-                {backupInfo && (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                    <p className="text-sm text-green-800 font-medium">
-                      {t("gdrive.backupFound")}
+          {/* Google Drive Sync Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {isConfigured ? (
+                    <Cloud className="w-6 h-6 text-green-600" />
+                  ) : (
+                    <CloudOff className="w-6 h-6 text-gray-400" />
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {t("gdrive.title")}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {isConfigured
+                        ? `${t("gdrive.connected")} ${userEmail}`
+                        : t("gdrive.notConnected")}
                     </p>
-                    <pre className="text-xs text-green-700 mt-1 overflow-auto">
-                      {backupInfo}
-                    </pre>
                   </div>
-                )}
-
-                <div className="grid grid-cols-2 gap-3">
+                </div>
+                {isConfigured && (
                   <Button
-                    onClick={handleBackup}
-                    disabled={loading}
-                    variant="primary"
-                    icon={Upload}
-                  >
-                    {loading ? t("gdrive.processing") : t("gdrive.backupNow")}
-                  </Button>
-                  <Button
-                    onClick={handleRestore}
+                    onClick={handleSignOut}
                     disabled={loading}
                     variant="secondary"
-                    icon={Download}
+                    icon={LogOut}
                   >
-                    {loading ? t("gdrive.processing") : t("gdrive.restore")}
+                    {t("gdrive.signOut")}
+                  </Button>
+                )}
+              </div>
+
+              {!isConfigured && (
+                <div className="space-y-3 pt-4 border-t border-gray-200">
+                  <p className="text-sm text-gray-600">
+                    {t("gdrive.signInDescription")}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {t("gdrive.scopeDescription")}
+                  </p>
+                  <Button
+                    onClick={handleSignIn}
+                    disabled={loading}
+                    variant="primary"
+                    fullWidth
+                    icon={LogIn}
+                  >
+                    {loading ? t("gdrive.signingIn") : t("gdrive.signIn")}
                   </Button>
                 </div>
+              )}
 
-                <p className="text-xs text-gray-500 text-center">
-                  {t("gdrive.lastSyncInfo")}
-                </p>
-              </div>
-            )}
-          </div>
-        </Card>
+              {isConfigured && (
+                <div className="space-y-3 pt-4 border-t border-gray-200">
+                  {backupInfo && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p className="text-sm text-green-800 font-medium">
+                        {t("gdrive.backupFound")}
+                      </p>
+                      <pre className="text-xs text-green-700 mt-1 overflow-auto">
+                        {backupInfo}
+                      </pre>
+                    </div>
+                  )}
 
-        {/* Learning Settings Section */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Settings className="w-6 h-6 text-purple-600" />
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
-                    {t("settings.learning") || "Learning Settings"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {t("settings.learningDescription") ||
-                      "Customize spaced repetition and learning preferences"}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      onClick={handleBackup}
+                      disabled={loading}
+                      variant="primary"
+                      icon={Upload}
+                    >
+                      {loading ? t("gdrive.processing") : t("gdrive.backupNow")}
+                    </Button>
+                    <Button
+                      onClick={handleRestore}
+                      disabled={loading}
+                      variant="secondary"
+                      icon={Download}
+                    >
+                      {loading ? t("gdrive.processing") : t("gdrive.restore")}
+                    </Button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center">
+                    {t("gdrive.lastSyncInfo")}
                   </p>
                 </div>
-              </div>
+              )}
             </div>
+          </Card>
 
-            <div className="pt-2">
-              <Button
-                onClick={() => navigate("/settings/learning")}
-                variant="primary"
-                fullWidth
-                icon={Settings}
-              >
-                {t("settings.configure") || "Configure Learning Settings"}
-              </Button>
-            </div>
-          </div>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card variant="glass">
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-bold text-red-600">
-                {t("settings.dangerZone")}
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                {t("settings.dangerZoneDescription")}
-              </p>
-            </div>
-
-            <div className="border-t border-red-200 pt-4 space-y-3">
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-800 font-medium">
-                  {t("database.clearLocalDatabase")}
-                </p>
-                <p className="text-xs text-red-700 mt-1">
-                  {t("database.clearDatabaseWarning")}
-                </p>
+          {/* Learning Settings Section */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Settings className="w-6 h-6 text-purple-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-800">
+                      {t("settings.learning") || "Learning Settings"}
+                    </h3>
+                    <p className="text-sm text-gray-600">
+                      {t("settings.learningDescription") ||
+                        "Customize spaced repetition and learning preferences"}
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <Button
-                onClick={handleClearDatabase}
-                disabled={loading}
-                variant="secondary"
-                fullWidth
-                icon={Trash2}
-              >
-                {loading
-                  ? t("database.clearing")
-                  : t("database.clearLocalDatabase")}
-              </Button>
-
-              <p className="text-xs text-gray-500 text-center">
-                {t("database.recommendedWorkflow")}
-              </p>
+              <div className="pt-2">
+                <Button
+                  onClick={() => navigate("/settings/learning")}
+                  variant="primary"
+                  fullWidth
+                  icon={Settings}
+                >
+                  {t("settings.configure") || "Configure Learning Settings"}
+                </Button>
+              </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card variant="glass">
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-bold text-red-600">
+                  {t("settings.dangerZone")}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  {t("settings.dangerZoneDescription")}
+                </p>
+              </div>
+
+              <div className="border-t border-red-200 pt-4 space-y-3">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-800 font-medium">
+                    {t("database.clearLocalDatabase")}
+                  </p>
+                  <p className="text-xs text-red-700 mt-1">
+                    {t("database.clearDatabaseWarning")}
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleClearDatabase}
+                  disabled={loading}
+                  variant="secondary"
+                  fullWidth
+                  icon={Trash2}
+                >
+                  {loading
+                    ? t("database.clearing")
+                    : t("database.clearLocalDatabase")}
+                </Button>
+
+                <p className="text-xs text-gray-500 text-center">
+                  {t("database.recommendedWorkflow")}
+                </p>
+              </div>
+            </div>
+          </Card>
+        </div>
       </div>
     </>
   );

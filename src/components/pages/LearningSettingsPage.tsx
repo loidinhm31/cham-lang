@@ -159,8 +159,8 @@ export const LearningSettingsPage: React.FC = () => {
             <Select
               options={algorithmOptions}
               value={algorithm}
-              onChange={(e) =>
-                setAlgorithm(e.target.value as SpacedRepetitionAlgorithm)
+              onValueChange={(value) =>
+                setAlgorithm(value as SpacedRepetitionAlgorithm)
               }
             />
             <div className="flex gap-2 p-3 bg-blue-50 rounded-xl">
@@ -189,8 +189,8 @@ export const LearningSettingsPage: React.FC = () => {
             <Select
               options={boxCountOptions}
               value={String(boxCount)}
-              onChange={(e) =>
-                setBoxCount(Number(e.target.value) as LeitnerBoxCount)
+              onValueChange={(value) =>
+                setBoxCount(Number(value) as LeitnerBoxCount)
               }
             />
             <div className="p-3 bg-gray-50 rounded-xl space-y-2">

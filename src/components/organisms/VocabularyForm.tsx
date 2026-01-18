@@ -272,40 +272,45 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     <form onSubmit={handleSubmit} className="space-y-6">
       <Card variant="glass">
         <div className="space-y-4">
-          {loadingCollections ? (
-            <div className="text-center py-4 text-gray-600">
-              {t("common.loading")}
-            </div>
-          ) : collections.length === 0 ? (
-            <div className="bg-amber-100 border border-amber-400 text-amber-700 px-4 py-3 rounded-2xl">
-              {t("vocabulary.noCollectionsWarning")}
-            </div>
-          ) : (
-            <Select
-              label={t("vocabulary.collection")}
-              options={collectionOptions}
-              value={formData.collection_id}
-              onChange={(e) => handleCollectionChange(e.target.value)}
+          {/* Collection & Word - 2 column grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {loadingCollections ? (
+              <div className="text-center py-4 text-gray-600">
+                {t("common.loading")}
+              </div>
+            ) : collections.length === 0 ? (
+              <div className="bg-amber-100 border border-amber-400 text-amber-700 px-4 py-3 rounded-2xl">
+                {t("vocabulary.noCollectionsWarning")}
+              </div>
+            ) : (
+              <Select
+                label={t("vocabulary.collection")}
+                options={collectionOptions}
+                value={formData.collection_id}
+                onValueChange={handleCollectionChange}
+              />
+            )}
+
+            <Input
+              label={t("vocabulary.word")}
+              value={formData.word}
+              onChange={(e) =>
+                setFormData({ ...formData, word: e.target.value })
+              }
               required
             />
-          )}
+          </div>
 
-          <Input
-            label={t("vocabulary.word")}
-            value={formData.word}
-            onChange={(e) => setFormData({ ...formData, word: e.target.value })}
-            required
-          />
-
+          {/* Word Type & Level - 2 column grid */}
           <div className="grid grid-cols-2 gap-4">
             <Select
               label={t("vocabulary.wordType")}
               options={wordTypeOptions}
               value={formData.word_type}
-              onChange={(e) =>
+              onValueChange={(value) =>
                 setFormData({
                   ...formData,
-                  word_type: e.target.value as WordType,
+                  word_type: value as WordType,
                 })
               }
             />
@@ -314,51 +319,57 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
               label={t("vocabulary.level")}
               options={levelOptions}
               value={formData.level}
-              onChange={(e) =>
+              onValueChange={(value) =>
                 setFormData({
                   ...formData,
-                  level: e.target.value as LanguageLevel,
+                  level: value as LanguageLevel,
                 })
               }
             />
           </div>
 
-          <Input
-            label={t("vocabulary.pronunciation")}
-            value={formData.ipa}
-            onChange={(e) => setFormData({ ...formData, ipa: e.target.value })}
-            placeholder="/həˈloʊ/"
-          />
-
-          <div className="space-y-2">
+          {/* Pronunciation & Audio URL - 2 column grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
-              label={t("vocabulary.audioUrl") || "Audio URL (Optional)"}
-              value={formData.audio_url || ""}
+              label={t("vocabulary.pronunciation")}
+              value={formData.ipa}
               onChange={(e) =>
-                setFormData({ ...formData, audio_url: e.target.value })
+                setFormData({ ...formData, ipa: e.target.value })
               }
-              placeholder="https://example.com/audio.mp3"
+              placeholder="/həˈloʊ/"
             />
-            {formData.audio_url &&
-              formData.audio_url.trim() !== "" &&
-              !validateAudioUrl(formData.audio_url) && (
-                <p className="text-sm text-red-600">
-                  {t("vocabulary.invalidAudioUrl") ||
-                    "Invalid audio URL. Must be .mp3, .wav, .ogg, .m4a, or .aac"}
-                </p>
-              )}
-            {formData.audio_url &&
-              formData.audio_url.trim() !== "" &&
-              validateAudioUrl(formData.audio_url) && (
-                <div className="flex items-center gap-2">
-                  <AudioPlayer audioUrl={formData.audio_url} size="sm" />
-                  <span className="text-sm text-gray-600">
-                    {t("vocabulary.previewAudio") || "Preview"}
-                  </span>
-                </div>
-              )}
+
+            <div className="space-y-2">
+              <Input
+                label={t("vocabulary.audioUrl") || "Audio URL"}
+                value={formData.audio_url || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, audio_url: e.target.value })
+                }
+                placeholder="https://example.com/audio.mp3"
+              />
+              {formData.audio_url &&
+                formData.audio_url.trim() !== "" &&
+                !validateAudioUrl(formData.audio_url) && (
+                  <p className="text-sm text-red-600">
+                    {t("vocabulary.invalidAudioUrl") ||
+                      "Invalid audio URL format"}
+                  </p>
+                )}
+              {formData.audio_url &&
+                formData.audio_url.trim() !== "" &&
+                validateAudioUrl(formData.audio_url) && (
+                  <div className="flex items-center gap-2">
+                    <AudioPlayer audioUrl={formData.audio_url} size="sm" />
+                    <span className="text-sm text-gray-600">
+                      {t("vocabulary.previewAudio") || "Preview"}
+                    </span>
+                  </div>
+                )}
+            </div>
           </div>
 
+          {/* Concept - full width text area */}
           <TextArea
             label={t("vocabulary.concept") || "Concept (Optional)"}
             value={formData.concept || ""}
@@ -369,7 +380,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
               t("vocabulary.conceptPlaceholder") ||
               "Core idea or concept behind the word..."
             }
-            rows={3}
+            rows={2}
           />
         </div>
       </Card>

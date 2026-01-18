@@ -296,13 +296,13 @@ export const CollectionDetailPage: React.FC = () => {
 
         {/* Action Buttons */}
         {!selectionMode ? (
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Button
               variant="primary"
               size="sm"
               icon={Plus}
-              fullWidth
               onClick={() => navigate("/vocabulary/add")}
+              className="col-span-2 md:col-span-1"
             >
               {t("vocabulary.add")}
             </Button>

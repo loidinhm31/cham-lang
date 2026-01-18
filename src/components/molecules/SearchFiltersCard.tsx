@@ -50,8 +50,8 @@ export const SearchFiltersCard: React.FC<SearchFiltersCardProps> = ({
 
         {/* Filter Accordion */}
         <Accordion title={t("buttons.filter")} defaultOpen={false}>
-          {/* Topic and Tag Filters */}
-          <div className="flex flex-col md:flex-row gap-4 pt-4">
+          {/* Filter Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
             <SearchableMultiSelect
               label={t("vocabulary.topics")}
               options={availableTopics}
@@ -66,33 +66,31 @@ export const SearchFiltersCard: React.FC<SearchFiltersCardProps> = ({
               onChange={onTagsChange}
               placeholder={t("vocabulary.selectTags")}
             />
+            <Select
+              label={t("collections.sortBy")}
+              value={sortBy}
+              onValueChange={onSortChange}
+              options={[
+                {
+                  value: "latestUpdated",
+                  label: t("collections.sortLatestUpdated"),
+                },
+                {
+                  value: "latestCreated",
+                  label: t("collections.sortLatestCreated"),
+                },
+                {
+                  value: "oldestUpdated",
+                  label: t("collections.sortOldestUpdated"),
+                },
+                {
+                  value: "oldestCreated",
+                  label: t("collections.sortOldestCreated"),
+                },
+                { value: "name", label: t("collections.sortName") },
+              ]}
+            />
           </div>
-
-          {/* Sort Selector */}
-          <Select
-            label={t("collections.sortBy")}
-            value={sortBy}
-            onChange={(e) => onSortChange(e.target.value)}
-            options={[
-              {
-                value: "latestUpdated",
-                label: t("collections.sortLatestUpdated"),
-              },
-              {
-                value: "latestCreated",
-                label: t("collections.sortLatestCreated"),
-              },
-              {
-                value: "oldestUpdated",
-                label: t("collections.sortOldestUpdated"),
-              },
-              {
-                value: "oldestCreated",
-                label: t("collections.sortOldestCreated"),
-              },
-              { value: "name", label: t("collections.sortName") },
-            ]}
-          />
         </Accordion>
       </div>
     </Card>
