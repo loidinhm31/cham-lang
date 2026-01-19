@@ -12,6 +12,7 @@ interface SelectProps {
   onValueChange?: (value: string) => void;
   disabled?: boolean;
   className?: string;
+  fullWidth?: boolean;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -23,9 +24,10 @@ const Select: React.FC<SelectProps> = ({
   onValueChange,
   disabled,
   className,
+  fullWidth = false,
 }) => {
   return (
-    <div className={cn("w-full", className)}>
+    <div className={cn(fullWidth && "w-full", className)}>
       {label && (
         <label className="block text-sm font-bold text-gray-800 mb-2">
           {label}
@@ -38,7 +40,8 @@ const Select: React.FC<SelectProps> = ({
       >
         <SelectPrimitive.Trigger
           className={cn(
-            "flex h-12 w-full items-center justify-between rounded-2xl border-[3px] bg-white px-4 py-3 text-base text-gray-800 transition-all duration-200",
+            "flex h-12 items-center justify-between rounded-2xl border-[3px] bg-white px-4 py-3 text-base text-gray-800 transition-all duration-200",
+            fullWidth && "w-full",
             "shadow-[0_4px_0_rgba(0,0,0,0.1),0_2px_6px_rgba(0,0,0,0.05),inset_0_-1px_2px_rgba(0,0,0,0.05)]",
             "focus:outline-none focus:border-indigo-500 focus:shadow-[0_4px_0_rgba(79,70,229,0.3),0_2px_8px_rgba(79,70,229,0.2),inset_0_-1px_2px_rgba(0,0,0,0.05)]",
             "disabled:cursor-not-allowed disabled:opacity-50",

@@ -67,6 +67,7 @@ export const SearchFiltersCard: React.FC<SearchFiltersCardProps> = ({
               placeholder={t("vocabulary.selectTags")}
             />
             <Select
+              fullWidth
               label={t("collections.sortBy")}
               value={sortBy}
               onValueChange={onSortChange}

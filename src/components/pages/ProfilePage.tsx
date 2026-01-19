@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,19 +22,14 @@ import {
 import { TopBar } from "@/components/molecules";
 import { Button, Card, Select } from "@/components/atoms";
 import { useDialog, useSyncNotification } from "@/contexts";
+import type { FontSizeOption } from "@/services";
 import {
   FontSizeService,
   LearningSettingsService,
   NotificationService,
 } from "@/services";
 import { getGDriveService } from "@/adapters/ServiceFactory";
-import type { FontSizeOption } from "@/services";
-import {
-  isDesktop,
-  openInBrowser,
-  isOpenedFromDesktop,
-} from "@/utils/platform";
-import { browserSyncService } from "@/services/BrowserSyncService";
+import { isDesktop, openInBrowser } from "@/utils/platform";
 
 export const ProfilePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -557,7 +552,7 @@ export const ProfilePage: React.FC = () => {
         {/* Settings Grid - 2 columns on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
-          {(isDesktop() || isOpenedFromDesktop()) && (
+          {isDesktop() && (
             <Card variant="glass">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
@@ -584,7 +579,7 @@ export const ProfilePage: React.FC = () => {
                   )}
                 </div>
 
-                <div className="pt-2 space-y-3">
+                <div className="pt-2 space-y-3 flex flex-col items-center">
                   {/* Desktop: Open in Browser / Stop Sharing buttons */}
                   {isDesktop() && (
                     <>
@@ -593,9 +588,8 @@ export const ProfilePage: React.FC = () => {
                           onClick={async () => {
                             try {
                               setBrowserSyncLoading(true);
-                              const { invoke } = await import(
-                                "@tauri-apps/api/core"
-                              );
+                              const { invoke } =
+                                await import("@tauri-apps/api/core");
                               const url =
                                 await invoke<string>("start_browser_sync");
                               setBrowserSyncActive(true);
@@ -622,7 +616,6 @@ export const ProfilePage: React.FC = () => {
                           }}
                           disabled={browserSyncLoading}
                           variant="primary"
-                          fullWidth
                           icon={ExternalLink}
                         >
                           {browserSyncLoading
@@ -635,9 +628,8 @@ export const ProfilePage: React.FC = () => {
                           onClick={async () => {
                             try {
                               setBrowserSyncLoading(true);
-                              const { invoke } = await import(
-                                "@tauri-apps/api/core"
-                              );
+                              const { invoke } =
+                                await import("@tauri-apps/api/core");
                               await invoke("stop_browser_sync");
                               setBrowserSyncActive(false);
                               showAlert(
@@ -662,7 +654,6 @@ export const ProfilePage: React.FC = () => {
                           }}
                           disabled={browserSyncLoading}
                           variant="danger"
-                          fullWidth
                           icon={StopCircle}
                         >
                           {browserSyncLoading
@@ -679,171 +670,77 @@ export const ProfilePage: React.FC = () => {
                       </p>
                     </>
                   )}
-
-                  {/* Browser: Load from Desktop / Sync to Desktop buttons */}
-                  {isOpenedFromDesktop() && (
-                    <>
-                      {/* Load from Desktop button */}
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setLoading(true);
-                            console.log(
-                              "📥 Manual load from desktop triggered...",
-                            );
-                            const result =
-                              await browserSyncService.loadFromDesktop();
-                            console.log("📥 Load result:", result);
-                            if (result.success) {
-                              showAlert(result.message, { variant: "success" });
-                              // Reload using full current URL to preserve session token
-                              window.location.href = window.location.href;
-                            } else {
-                              showAlert(result.message, { variant: "error" });
-                            }
-                          } catch (error) {
-                            console.error(
-                              "Failed to load from desktop:",
-                              error,
-                            );
-                            showAlert(`Load failed: ${error}`, {
-                              variant: "error",
-                            });
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        disabled={loading}
-                        variant="secondary"
-                        fullWidth
-                        icon={Download}
-                      >
-                        {loading
-                          ? t("settings.loading") || "Loading..."
-                          : t("settings.loadFromDesktop") ||
-                            "Load Data from Desktop"}
-                      </Button>
-
-                      {/* Sync to Desktop button */}
-                      <Button
-                        onClick={async () => {
-                          try {
-                            setLoading(true);
-                            console.log(
-                              "📤 Manual sync to desktop triggered...",
-                            );
-                            const result =
-                              await browserSyncService.syncToDesktop();
-                            console.log("📤 Sync result:", result);
-                            if (result.success) {
-                              showAlert(result.message, { variant: "success" });
-                            } else {
-                              showAlert(result.message, { variant: "error" });
-                            }
-                          } catch (error) {
-                            console.error("Failed to sync to desktop:", error);
-                            showAlert(`Sync failed: ${error}`, {
-                              variant: "error",
-                            });
-                          } finally {
-                            setLoading(false);
-                          }
-                        }}
-                        disabled={loading}
-                        variant="primary"
-                        fullWidth
-                        icon={Upload}
-                      >
-                        {loading
-                          ? t("settings.syncing") || "Syncing..."
-                          : t("settings.syncToDesktopButton") ||
-                            "Sync Changes to Desktop"}
-                      </Button>
-
-                      {/* Session info */}
-                      <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded space-y-1">
-                        <p>
-                          <strong>Session:</strong>{" "}
-                          {browserSyncService.getToken()?.slice(0, 16)}...
-                        </p>
-                        <p>
-                          <strong>Last Load:</strong>{" "}
-                          {browserSyncService
-                            .getLastLoadTime()
-                            ?.toLocaleString() || "Never"}
-                        </p>
-                        <p>
-                          <strong>Last Sync:</strong>{" "}
-                          {browserSyncService
-                            .getLastSyncTime()
-                            ?.toLocaleString() || "Never"}
-                        </p>
-                      </div>
-                    </>
-                  )}
                 </div>
               </div>
             </Card>
           )}
 
-          {/* Language Settings Section */}
+          {/* Display Settings Section - Language & Text Size */}
           <Card variant="glass">
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Section Header */}
               <div className="flex items-center gap-3">
-                <Languages className="w-6 h-6 text-blue-600" />
+                <Settings className="w-6 h-6 text-blue-600" />
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">
+                    {t("settings.displaySettings") || "Display Settings"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("settings.displaySettingsDescription") ||
+                      "Customize language and text appearance"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Interface Language */}
+              <div className="space-y-3 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  <Languages className="w-5 h-5 text-blue-600" />
+                  <h4 className="font-semibold text-gray-700">
                     {t("settings.language") || "Interface Language"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {t("settings.languageDescription") ||
-                      "Choose your preferred language for the app"}
-                  </p>
+                  </h4>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {t("settings.languageDescription") ||
+                    "Choose your preferred language for the app"}
+                </p>
+                <div className="flex justify-center">
+                  <Select
+                    options={[
+                      { value: "en", label: "English" },
+                      { value: "vi", label: "Tiếng Việt" },
+                    ]}
+                    value={currentLanguage}
+                    onValueChange={handleLanguageChange}
+                  />
                 </div>
               </div>
 
-              <div className="pt-2">
-                <Select
-                  options={[
-                    { value: "en", label: "English" },
-                    { value: "vi", label: "Tiếng Việt" },
-                  ]}
-                  value={currentLanguage}
-                  onValueChange={handleLanguageChange}
-                />
-              </div>
-            </div>
-          </Card>
-
-          {/* Font Size Settings Section */}
-          <Card variant="glass">
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <Type className="w-6 h-6 text-purple-600" />
-                <div>
-                  <h3 className="text-lg font-bold text-gray-800">
+              {/* Text Size */}
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  <Type className="w-5 h-5 text-purple-600" />
+                  <h4 className="font-semibold text-gray-700">
                     {t("settings.fontSize") || "Text Size"}
-                  </h3>
-                  <p className="text-sm text-gray-600">
-                    {t("settings.fontSizeDescription") ||
-                      "Adjust the size of text throughout the app"}
-                  </p>
+                  </h4>
                 </div>
-              </div>
+                <p className="text-sm text-gray-600">
+                  {t("settings.fontSizeDescription") ||
+                    "Adjust the size of text throughout the app"}
+                </p>
 
-              <div className="pt-2 space-y-4">
                 {/* Quick Increase/Decrease Buttons */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 justify-center">
                   <Button
                     onClick={handleDecreaseFontSize}
                     disabled={currentFontSize === "small"}
                     variant="secondary"
                     icon={Minus}
-                    className="sm:flex-1"
+                    size="md"
                   >
                     {t("settings.decrease") || "Decrease"}
                   </Button>
-                  <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 sm:min-w-[140px] text-center">
+                  <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 text-center">
                     <span className="text-sm font-bold text-indigo-900">
                       {t(`fontSizes.${currentFontSize}`) ||
                         FontSizeService.getConfig(currentFontSize).label}
@@ -854,108 +751,117 @@ export const ProfilePage: React.FC = () => {
                     disabled={currentFontSize === "extra-large"}
                     variant="secondary"
                     icon={Plus}
-                    className="sm:flex-1"
+                    size="md"
                   >
                     {t("settings.increase") || "Increase"}
                   </Button>
                 </div>
 
-                {/* Dropdown Selector */}
-                <Select
-                  label={t("settings.selectFontSize") || "Select Font Size"}
-                  options={FontSizeService.getOptions().map((config) => ({
-                    value: config.value,
-                    label: t(`fontSizes.${config.value}`) || config.label,
-                  }))}
-                  value={currentFontSize}
-                  onValueChange={(value) =>
-                    handleFontSizeChange(value as FontSizeOption)
-                  }
-                />
+                <div className="flex flex-wrap gap-3 justify-center items-start">
+                  {/* Dropdown Selector */}
+                  <Select
+                    label={t("settings.selectFontSize") || "Select Font Size"}
+                    options={FontSizeService.getOptions().map((config) => ({
+                      value: config.value,
+                      label: t(`fontSizes.${config.value}`) || config.label,
+                    }))}
+                    value={currentFontSize}
+                    onValueChange={(value) =>
+                      handleFontSizeChange(value as FontSizeOption)
+                    }
+                  />
 
-                {/* Preview Text */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <p className="text-xs text-gray-500 mb-2">
-                    {t("settings.preview") || "Preview:"}
-                  </p>
-                  <p className="text-gray-800">
-                    {t("app.tagline") || "Adapt to Learn"}
-                  </p>
-                  <p className="text-sm text-gray-600 mt-1">
-                    {t("settings.fontSizePreviewText") ||
-                      "The quick brown fox jumps over the lazy dog"}
-                  </p>
+                  {/* Preview Text */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                    <p className="text-xs text-gray-500 mb-2">
+                      {t("settings.preview") || "Preview:"}
+                    </p>
+                    <p className="text-gray-800">
+                      {t("app.tagline") || "Adapt to Learn"}
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {t("settings.fontSizePreviewText") ||
+                        "The quick brown fox jumps over the lazy dog"}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
           </Card>
 
-          {/* Notification Test Section */}
+          {/* Notifications Section - Test & Daily Reminder */}
           <Card variant="glass">
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Section Header */}
               <div className="flex items-center gap-3">
                 <Bell className="w-6 h-6 text-orange-600" />
                 <div>
                   <h3 className="text-lg font-bold text-gray-800">
-                    {t("settings.notifications") || "Notifications Test"}
+                    {t("settings.notificationsSection") || "Notifications"}
                   </h3>
                   <p className="text-sm text-gray-600">
-                    {t("settings.notificationsDescription") ||
-                      "Test scheduled notifications"}
+                    {t("settings.notificationsSectionDescription") ||
+                      "Manage reminders and notification preferences"}
                   </p>
                 </div>
               </div>
 
-              <div className="pt-2">
-                <Button
-                  onClick={handleTestNotification}
-                  disabled={loading}
-                  variant="primary"
-                  fullWidth
-                  icon={Bell}
-                >
-                  {loading
-                    ? t("settings.scheduling") || "Scheduling..."
-                    : t("settings.scheduleNotification") ||
-                      "Schedule Notification (+1 minute)"}
-                </Button>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  {t("settings.notificationHint") ||
-                    "This will schedule a notification to appear in 1 minute"}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Daily Reminder Section */}
-          <Card variant="glass">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-6 h-6 text-indigo-600" />
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">
-                      {t("reminder.dailyReminder") || "Daily Reminder"}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {t("reminder.dailyReminderDescription") ||
-                        "Get reminded to practice every day"}
-                    </p>
-                  </div>
+              {/* Notification Test */}
+              <div className="space-y-3 pt-4 border-t border-gray-200">
+                <div className="flex items-center gap-2">
+                  <Bell className="w-5 h-5 text-orange-600" />
+                  <h4 className="font-semibold text-gray-700">
+                    {t("settings.notifications") || "Notification Test"}
+                  </h4>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={reminderEnabled}
-                    onChange={(e) => handleReminderToggle(e.target.checked)}
+                <p className="text-sm text-gray-600">
+                  {t("settings.notificationsDescription") ||
+                    "Test scheduled notifications"}
+                </p>
+                <div className="flex flex-col items-center">
+                  <Button
+                    onClick={handleTestNotification}
                     disabled={loading}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                </label>
+                    variant="primary"
+                    icon={Bell}
+                  >
+                    {loading
+                      ? t("settings.scheduling") || "Scheduling..."
+                      : t("settings.scheduleNotification") ||
+                        "Schedule Notification (+1 minute)"}
+                  </Button>
+                  <p className="text-xs text-gray-500 text-center mt-2">
+                    {t("settings.notificationHint") ||
+                      "This will schedule a notification to appear in 1 minute"}
+                  </p>
+                </div>
               </div>
 
-              <div className="pt-2 space-y-4 border-t border-gray-200">
+              {/* Daily Reminder */}
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-indigo-600" />
+                    <h4 className="font-semibold text-gray-700">
+                      {t("reminder.dailyReminder") || "Daily Reminder"}
+                    </h4>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={reminderEnabled}
+                      onChange={(e) => handleReminderToggle(e.target.checked)}
+                      disabled={loading}
+                      className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                  </label>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {t("reminder.dailyReminderDescription") ||
+                    "Get reminded to practice every day"}
+                </p>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("reminder.reminderTime") || "Reminder Time"}
@@ -973,17 +879,18 @@ export const ProfilePage: React.FC = () => {
                   </p>
                 </div>
 
-                <Button
-                  onClick={handleSaveReminderTime}
-                  disabled={loading}
-                  variant="primary"
-                  fullWidth
-                  icon={Clock}
-                >
-                  {loading
-                    ? t("settings.saving") || "Saving..."
-                    : t("reminder.saveTime") || "Save Reminder Time"}
-                </Button>
+                <div className="flex justify-center">
+                  <Button
+                    onClick={handleSaveReminderTime}
+                    disabled={loading}
+                    variant="primary"
+                    icon={Clock}
+                  >
+                    {loading
+                      ? t("settings.saving") || "Saving..."
+                      : t("reminder.saveTime") || "Save Reminder Time"}
+                  </Button>
+                </div>
 
                 {reminderEnabled && (
                   <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
@@ -1001,96 +908,151 @@ export const ProfilePage: React.FC = () => {
             </div>
           </Card>
 
-          {/* Google Drive Sync Section */}
+          {/* Data Management Section - Google Drive Sync & Danger Zone */}
           <Card variant="glass">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  {isConfigured ? (
-                    <Cloud className="w-6 h-6 text-green-600" />
-                  ) : (
-                    <CloudOff className="w-6 h-6 text-gray-400" />
-                  )}
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">
+            <div className="space-y-6">
+              {/* Section Header */}
+              <div className="flex items-center gap-3">
+                <Cloud className="w-6 h-6 text-green-600" />
+                <div>
+                  <h3 className="text-lg font-bold text-gray-800">
+                    {t("settings.dataManagement") || "Data Management"}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {t("settings.dataManagementDescription") ||
+                      "Backup, sync, and manage your data"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Google Drive Sync */}
+              <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {isConfigured ? (
+                      <Cloud className="w-5 h-5 text-green-600" />
+                    ) : (
+                      <CloudOff className="w-5 h-5 text-gray-400" />
+                    )}
+                    <h4 className="font-semibold text-gray-700">
                       {t("gdrive.title")}
-                    </h3>
+                    </h4>
+                  </div>
+                  {isConfigured && (
+                    <Button
+                      onClick={handleSignOut}
+                      disabled={loading}
+                      variant="secondary"
+                      icon={LogOut}
+                    >
+                      {t("gdrive.signOut")}
+                    </Button>
+                  )}
+                </div>
+                <p className="text-sm text-gray-600">
+                  {isConfigured
+                    ? `${t("gdrive.connected")} ${userEmail}`
+                    : t("gdrive.notConnected")}
+                </p>
+
+                {!isConfigured && (
+                  <div className="space-y-3 flex flex-col items-center">
                     <p className="text-sm text-gray-600">
-                      {isConfigured
-                        ? `${t("gdrive.connected")} ${userEmail}`
-                        : t("gdrive.notConnected")}
+                      {t("gdrive.signInDescription")}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {t("gdrive.scopeDescription")}
+                    </p>
+                    <Button
+                      onClick={handleSignIn}
+                      disabled={loading}
+                      variant="primary"
+                      icon={LogIn}
+                    >
+                      {loading ? t("gdrive.signingIn") : t("gdrive.signIn")}
+                    </Button>
+                  </div>
+                )}
+
+                {isConfigured && (
+                  <div className="space-y-3">
+                    {backupInfo && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <p className="text-sm text-green-800 font-medium">
+                          {t("gdrive.backupFound")}
+                        </p>
+                        <pre className="text-xs text-green-700 mt-1 overflow-auto">
+                          {backupInfo}
+                        </pre>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={handleBackup}
+                        disabled={loading}
+                        variant="primary"
+                        icon={Upload}
+                      >
+                        {loading
+                          ? t("gdrive.processing")
+                          : t("gdrive.backupNow")}
+                      </Button>
+                      <Button
+                        onClick={handleRestore}
+                        disabled={loading}
+                        variant="secondary"
+                        icon={Download}
+                      >
+                        {loading ? t("gdrive.processing") : t("gdrive.restore")}
+                      </Button>
+                    </div>
+
+                    <p className="text-xs text-gray-500 text-center">
+                      {t("gdrive.lastSyncInfo")}
                     </p>
                   </div>
-                </div>
-                {isConfigured && (
-                  <Button
-                    onClick={handleSignOut}
-                    disabled={loading}
-                    variant="secondary"
-                    icon={LogOut}
-                  >
-                    {t("gdrive.signOut")}
-                  </Button>
                 )}
               </div>
 
-              {!isConfigured && (
-                <div className="space-y-3 pt-4 border-t border-gray-200">
-                  <p className="text-sm text-gray-600">
-                    {t("gdrive.signInDescription")}
+              {/* Danger Zone */}
+              <div className="space-y-4 pt-4 border-t border-red-200">
+                <div className="flex items-center gap-2">
+                  <Trash2 className="w-5 h-5 text-red-600" />
+                  <h4 className="font-semibold text-red-600">
+                    {t("settings.dangerZone")}
+                  </h4>
+                </div>
+                <p className="text-sm text-gray-600">
+                  {t("settings.dangerZoneDescription")}
+                </p>
+
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm text-red-800 font-medium">
+                    {t("database.clearLocalDatabase")}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {t("gdrive.scopeDescription")}
+                  <p className="text-xs text-red-700 mt-1">
+                    {t("database.clearDatabaseWarning")}
                   </p>
+                </div>
+
+                <div className="flex justify-center">
                   <Button
-                    onClick={handleSignIn}
+                    onClick={handleClearDatabase}
                     disabled={loading}
-                    variant="primary"
-                    fullWidth
-                    icon={LogIn}
+                    variant="danger"
+                    icon={Trash2}
                   >
-                    {loading ? t("gdrive.signingIn") : t("gdrive.signIn")}
+                    {loading
+                      ? t("database.clearing")
+                      : t("database.clearLocalDatabase")}
                   </Button>
                 </div>
-              )}
 
-              {isConfigured && (
-                <div className="space-y-3 pt-4 border-t border-gray-200">
-                  {backupInfo && (
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p className="text-sm text-green-800 font-medium">
-                        {t("gdrive.backupFound")}
-                      </p>
-                      <pre className="text-xs text-green-700 mt-1 overflow-auto">
-                        {backupInfo}
-                      </pre>
-                    </div>
-                  )}
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      onClick={handleBackup}
-                      disabled={loading}
-                      variant="primary"
-                      icon={Upload}
-                    >
-                      {loading ? t("gdrive.processing") : t("gdrive.backupNow")}
-                    </Button>
-                    <Button
-                      onClick={handleRestore}
-                      disabled={loading}
-                      variant="secondary"
-                      icon={Download}
-                    >
-                      {loading ? t("gdrive.processing") : t("gdrive.restore")}
-                    </Button>
-                  </div>
-
-                  <p className="text-xs text-gray-500 text-center">
-                    {t("gdrive.lastSyncInfo")}
-                  </p>
-                </div>
-              )}
+                <p className="text-xs text-gray-500 text-center">
+                  {t("database.recommendedWorkflow")}
+                </p>
+              </div>
             </div>
           </Card>
 
@@ -1112,56 +1074,14 @@ export const ProfilePage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col items-center">
                 <Button
                   onClick={() => navigate("/settings/learning")}
                   variant="primary"
-                  fullWidth
                   icon={Settings}
                 >
                   {t("settings.configure") || "Configure Learning Settings"}
                 </Button>
-              </div>
-            </div>
-          </Card>
-
-          {/* Danger Zone */}
-          <Card variant="glass">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-bold text-red-600">
-                  {t("settings.dangerZone")}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  {t("settings.dangerZoneDescription")}
-                </p>
-              </div>
-
-              <div className="border-t border-red-200 pt-4 space-y-3">
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800 font-medium">
-                    {t("database.clearLocalDatabase")}
-                  </p>
-                  <p className="text-xs text-red-700 mt-1">
-                    {t("database.clearDatabaseWarning")}
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleClearDatabase}
-                  disabled={loading}
-                  variant="secondary"
-                  fullWidth
-                  icon={Trash2}
-                >
-                  {loading
-                    ? t("database.clearing")
-                    : t("database.clearLocalDatabase")}
-                </Button>
-
-                <p className="text-xs text-gray-500 text-center">
-                  {t("database.recommendedWorkflow")}
-                </p>
               </div>
             </div>
           </Card>

@@ -71,6 +71,7 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
           {/* Language & Visibility - 2 column grid */}
           <div className="grid grid-cols-2 gap-4">
             <Select
+              fullWidth
               label={t("collections.language")}
               options={languageOptions}
               value={formData.language}
@@ -80,6 +81,7 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
             />
 
             <Select
+              fullWidth
               label={t("collections.visibility")}
               options={visibilityOptions}
               value={formData.is_public.toString()}
@@ -91,17 +93,17 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
         </div>
       </Card>
 
-      <div className="flex gap-3">
+      <div className="flex gap-3 justify-center">
         <Button
           type="button"
           variant="secondary"
-          fullWidth
           onClick={onCancel}
           disabled={loading}
+          size="md"
         >
           {t("buttons.cancel")}
         </Button>
-        <Button type="submit" variant="primary" fullWidth disabled={loading}>
+        <Button type="submit" variant="primary" size="md" disabled={loading}>
           {loading ? t("messages.connecting") : t("buttons.save")}
         </Button>
       </div>

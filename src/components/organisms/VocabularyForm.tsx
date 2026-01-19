@@ -284,6 +284,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
               </div>
             ) : (
               <Select
+                fullWidth
                 label={t("vocabulary.collection")}
                 options={collectionOptions}
                 value={formData.collection_id}
@@ -304,6 +305,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
           {/* Word Type & Level - 2 column grid */}
           <div className="grid grid-cols-2 gap-4">
             <Select
+              fullWidth
               label={t("vocabulary.wordType")}
               options={wordTypeOptions}
               value={formData.word_type}
@@ -316,6 +318,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
             />
 
             <Select
+              fullWidth
               label={t("vocabulary.level")}
               options={levelOptions}
               value={formData.level}

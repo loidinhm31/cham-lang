@@ -186,10 +186,12 @@
     "starting": "Starting...",
     "stopping": "Stopping...",
     "stopSharing": "Stop Sharing",
-    "loadFromDesktop": "Load Data from Desktop",
-    "syncToDesktopButton": "Sync Changes to Desktop",
-    "loading": "Loading...",
-    "syncing": "Syncing..."
+    "displaySettings": "Display Settings",
+    "displaySettingsDescription": "Customize language and text appearance",
+    "notificationsSection": "Notifications",
+    "notificationsSectionDescription": "Manage reminders and notification preferences",
+    "dataManagement": "Data Management",
+    "dataManagementDescription": "Backup, sync, and manage your data"
   },
   "reminder": {
     "title": "Cham Lang Reminder",

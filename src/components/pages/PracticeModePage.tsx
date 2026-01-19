@@ -233,6 +233,7 @@ export const PracticeModePage: React.FC = () => {
             <Card variant="glass">
               <div className="space-y-4">
                 <Select
+                  fullWidth
                   label={t("vocabulary.collection")}
                   options={collectionOptions}
                   value={selectedCollection}

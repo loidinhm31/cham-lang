@@ -60,7 +60,7 @@ export const openInBrowser = async (url: string): Promise<void> => {
     await openUrl(url);
   } else {
     // In web, just open in new tab
-    window.open(url, "_blank");
+    window.open(url, "_blank", "");
   }
 };
 

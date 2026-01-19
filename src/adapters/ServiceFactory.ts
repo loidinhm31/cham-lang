@@ -23,14 +23,14 @@ import { TauriNotificationAdapter } from "./tauri/TauriNotificationAdapter";
 import { TauriCSVAdapter } from "./tauri/TauriCSVAdapter";
 import { TauriGDriveAdapter } from "./tauri/TauriGDriveAdapter";
 
-// Web Adapters
-import { WebVocabularyAdapter } from "./web/WebVocabularyAdapter";
-import { WebCollectionAdapter } from "./web/WebCollectionAdapter";
-import { WebPracticeAdapter } from "./web/WebPracticeAdapter";
-import { WebLearningSettingsAdapter } from "./web/WebLearningSettingsAdapter";
-import { WebNotificationAdapter } from "./web/WebNotificationAdapter";
-import { WebCSVAdapter } from "./web/WebCSVAdapter";
-import { WebGDriveAdapter } from "./web/WebGDriveAdapter";
+// Web Adapters (HTTP-based, communicate with desktop SQLite backend)
+import { HttpVocabularyAdapter } from "./web/HttpVocabularyAdapter";
+import { HttpCollectionAdapter } from "./web/HttpCollectionAdapter";
+import { HttpPracticeAdapter } from "./web/HttpPracticeAdapter";
+import { HttpLearningSettingsAdapter } from "./web/HttpLearningSettingsAdapter";
+import { HttpNotificationAdapter } from "./web/HttpNotificationAdapter";
+import { HttpCSVAdapter } from "./web/HttpCSVAdapter";
+import { HttpGDriveAdapter } from "./web/HttpGDriveAdapter";
 
 // Singleton instances (lazy initialized)
 let vocabularyService: IVocabularyService | null = null;
@@ -48,7 +48,7 @@ export const getVocabularyService = (): IVocabularyService => {
   if (!vocabularyService) {
     vocabularyService = isTauri()
       ? new TauriVocabularyAdapter()
-      : new WebVocabularyAdapter();
+      : new HttpVocabularyAdapter();
   }
   return vocabularyService;
 };
@@ -60,7 +60,7 @@ export const getCollectionService = (): ICollectionService => {
   if (!collectionService) {
     collectionService = isTauri()
       ? new TauriCollectionAdapter()
-      : new WebCollectionAdapter();
+      : new HttpCollectionAdapter();
   }
   return collectionService;
 };
@@ -72,7 +72,7 @@ export const getPracticeService = (): IPracticeService => {
   if (!practiceService) {
     practiceService = isTauri()
       ? new TauriPracticeAdapter()
-      : new WebPracticeAdapter();
+      : new HttpPracticeAdapter();
   }
   return practiceService;
 };
@@ -84,7 +84,7 @@ export const getLearningSettingsService = (): ILearningSettingsService => {
   if (!learningSettingsService) {
     learningSettingsService = isTauri()
       ? new TauriLearningSettingsAdapter()
-      : new WebLearningSettingsAdapter();
+      : new HttpLearningSettingsAdapter();
   }
   return learningSettingsService;
 };
@@ -96,7 +96,7 @@ export const getNotificationService = (): INotificationService => {
   if (!notificationService) {
     notificationService = isTauri()
       ? new TauriNotificationAdapter()
-      : new WebNotificationAdapter();
+      : new HttpNotificationAdapter();
   }
   return notificationService;
 };
@@ -106,7 +106,7 @@ export const getNotificationService = (): INotificationService => {
  */
 export const getCSVService = (): ICSVService => {
   if (!csvService) {
-    csvService = isTauri() ? new TauriCSVAdapter() : new WebCSVAdapter();
+    csvService = isTauri() ? new TauriCSVAdapter() : new HttpCSVAdapter();
   }
   return csvService;
 };
@@ -118,7 +118,7 @@ export const getGDriveService = (): IGDriveService => {
   if (!gdriveService) {
     gdriveService = isTauri()
       ? new TauriGDriveAdapter()
-      : new WebGDriveAdapter();
+      : new HttpGDriveAdapter();
   }
   return gdriveService;
 };

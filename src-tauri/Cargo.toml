@@ -23,7 +23,7 @@ tauri-plugin-opener = "2"
 tauri-plugin-google-auth = "0.3"
 tauri-plugin-notification = "2"
 tauri-plugin-schedule-task = { git = "https://github.com/loidinhm31/tauri-plugin-schedule-task", branch = "main" }
-tauri-plugin-dialog = "2.5.0"
+tauri-plugin-dialog = "2.6.0"
 
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -51,3 +51,7 @@ mime_guess = "2"
 # Session token generation
 rand = "0.9"
 hex = "0.4"
+# Async streams for SSE
+futures = "0.3"
+async-stream = "0.3"
+
