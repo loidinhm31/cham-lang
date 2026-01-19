@@ -26,6 +26,7 @@ use std::time::Duration;
 use tokio::runtime::Runtime;
 use tokio::sync::{broadcast, oneshot};
 
+use crate::http_api::routes::api_routes;
 use crate::local_db::LocalDatabase;
 use crate::models::{
     Collection, LearningSettings, PracticeSession, UserPracticeProgress, Vocabulary,
@@ -35,10 +36,24 @@ use crate::session::SharedSessionManager;
 /// Port for the embedded web server
 pub const WEB_SERVER_PORT: u16 = 25091;
 
-/// Embed the dist folder at compile time
+/// Embed the dist folder at compile time (only in release mode)
+/// In debug mode, assets are served by Vite dev server, so we provide a dummy implementation
+#[cfg(not(debug_assertions))]
 #[derive(RustEmbed)]
 #[folder = "../dist"]
 struct Asset;
+
+/// Dummy Asset struct for debug/dev mode - returns None for all assets
+/// since the Vite dev server handles asset serving on port 1420
+#[cfg(debug_assertions)]
+struct Asset;
+
+#[cfg(debug_assertions)]
+impl Asset {
+    fn get(_path: &str) -> Option<rust_embed::EmbeddedFile> {
+        None // In dev mode, assets are served by Vite
+    }
+}
 
 /// Shared state for the web server
 #[derive(Clone)]
@@ -121,19 +136,24 @@ pub fn start_web_server(db: LocalDatabase, session_manager: SharedSessionManager
                 ])
                 .allow_headers([axum::http::header::CONTENT_TYPE, axum::http::header::ACCEPT]);
 
-            let app = Router::new()
-                // API routes with security middleware
-                .route("/api/export", get(api_export))
-                .route("/api/import", post(api_import))
-                .route("/api/health", get(api_health))
-                // SSE route for shutdown notifications (no auth required - just for shutdown signal)
-                .route("/api/events", get(sse_handler))
+            // Create the main API router (already has state applied)
+            let api_router = api_routes(state.clone());
+
+            // Create legacy sync routes router
+            let legacy_router = Router::new()
+                .route("/export", get(api_export))
+                .route("/import", post(api_import))
                 .layer(middleware::from_fn_with_state(
                     state.clone(),
                     security_middleware,
                 ))
-                .layer(cors)
-                .with_state(state.clone())
+                .layer(cors.clone())
+                .with_state(state.clone());
+
+            // Merge routers
+            let app = Router::new()
+                .nest("/api", api_router)
+                .nest("/api", legacy_router)
                 // Static assets fallback (no auth required for assets)
                 .fallback(get(serve_asset));
 

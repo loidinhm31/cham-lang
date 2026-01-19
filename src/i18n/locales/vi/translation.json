@@ -186,10 +186,12 @@
     "starting": "Đang bắt đầu...",
     "stopping": "Đang dừng...",
     "stopSharing": "Dừng Chia Sẻ",
-    "loadFromDesktop": "Tải Dữ Liệu Từ Desktop",
-    "syncToDesktopButton": "Đồng Bộ Thay Đổi Lên Desktop",
-    "loading": "Đang tải...",
-    "syncing": "Đang đồng bộ..."
+    "displaySettings": "Cài Đặt Hiển Thị",
+    "displaySettingsDescription": "Tùy chỉnh ngôn ngữ và giao diện văn bản",
+    "notificationsSection": "Thông Báo",
+    "notificationsSectionDescription": "Quản lý nhắc nhở và tùy chọn thông báo",
+    "dataManagement": "Quản Lý Dữ Liệu",
+    "dataManagementDescription": "Sao lưu, đồng bộ và quản lý dữ liệu của bạn"
   },
   "reminder": {
     "title": "Nhắc Nhở Cham Lang",

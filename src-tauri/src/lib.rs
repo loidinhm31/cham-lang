@@ -11,6 +11,8 @@ mod scheduled_task_handler;
 
 // Desktop-only: Embedded web server and session management
 #[cfg(desktop)]
+mod http_api;
+#[cfg(desktop)]
 mod session;
 #[cfg(desktop)]
 mod web_server;

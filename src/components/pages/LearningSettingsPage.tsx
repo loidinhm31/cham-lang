@@ -157,6 +157,7 @@ export const LearningSettingsPage: React.FC = () => {
               {t("settings.algorithm") || "Learning Algorithm"}
             </label>
             <Select
+              fullWidth
               options={algorithmOptions}
               value={algorithm}
               onValueChange={(value) =>
@@ -187,6 +188,7 @@ export const LearningSettingsPage: React.FC = () => {
               {t("settings.boxCount") || "Number of Leitner Boxes"}
             </label>
             <Select
+              fullWidth
               options={boxCountOptions}
               value={String(boxCount)}
               onValueChange={(value) =>
