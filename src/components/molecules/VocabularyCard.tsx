@@ -77,6 +77,11 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
             <h3 className="text-2xl font-bold text-gray-900 mb-1 whitespace-pre-line">
               {vocabulary.word}
             </h3>
+            {vocabulary.concept && (
+              <p className="font-medium text-gray-600 -mt-1 mb-1 italic">
+                {vocabulary.concept}
+              </p>
+            )}
             <p className="text-sm font-semibold text-indigo-600">
               {vocabulary.ipa}
             </p>
@@ -90,7 +95,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
       </div>
 
       {vocabulary.definitions.length > 0 && (
-        <p className="text-gray-800 font-medium mb-4 line-clamp-2">
+        <p className="text-xl text-gray-800 font-semibold mb-4 line-clamp-2">
           {vocabulary.definitions[0].meaning}
         </p>
       )}
