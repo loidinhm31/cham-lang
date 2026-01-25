@@ -476,7 +476,7 @@ export const PracticeModePage: React.FC = () => {
             {/* Mode Selection Label */}
             <div className="text-center">
               <h3 className="text-xl font-bold text-gray-800">
-                {t("practice.selectPracticeMode") || "Select Practice Mode"}
+                {t("practice.selectPracticeMode")}
               </h3>
             </div>
 
