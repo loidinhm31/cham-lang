@@ -7,11 +7,13 @@ This document describes how to create a new release for Code Notes.
 The app version is synchronized across multiple files:
 
 **Desktop:**
+
 - `package.json`
 - `src-tauri/Cargo.toml`
 - `src-tauri/tauri.conf.json`
 
 **Android:**
+
 - `src-tauri/gen/android/app/tauri.properties`
   - `versionName`: Human-readable version (e.g., "0.1.1")
   - `versionCode`: Integer code auto-calculated from version
@@ -59,6 +61,7 @@ git push && git push --tags
 ### 3. GitHub Actions
 
 When you push a tag starting with `v`, GitHub Actions will automatically:
+
 - Build the app for Windows and Linux
 - Create a GitHub release draft
 - Upload the installers as release assets
@@ -89,11 +92,13 @@ pnpm tauri android build
 ## Version Conventions
 
 We follow [Semantic Versioning](https://semver.org/):
+
 - **MAJOR** version: incompatible API changes
 - **MINOR** version: new functionality (backwards compatible)
 - **PATCH** version: bug fixes (backwards compatible)
 
 ### Examples
+
 - `0.1.0` → `0.1.1`: Bug fix
 - `0.1.0` → `0.2.0`: New feature
 - `0.1.0` → `1.0.0`: Major release or breaking changes

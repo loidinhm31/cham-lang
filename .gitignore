@@ -25,18 +25,24 @@ dist-ssr
 
 .env
 
+# Turbo
+.turbo
+
 # Android signing
 *.jks
 *.keystore
 keystore.properties
-src-tauri/gen/android/keystore.properties
-src-tauri/gen/android/keystore.jks
-src-tauri/gen/android/*.keystore
+apps/tauri/src-tauri/gen/android/keystore.properties
+apps/tauri/src-tauri/gen/android/keystore.jks
+apps/tauri/src-tauri/gen/android/*.keystore
 
 # Android build artifacts
-src-tauri/gen/android/.gradle/
-src-tauri/gen/android/app/build/
-src-tauri/gen/android/buildSrc/.gradle/
-src-tauri/gen/android/buildSrc/build/
+apps/tauri/src-tauri/gen/android/.gradle/
+apps/tauri/src-tauri/gen/android/app/build/
+apps/tauri/src-tauri/gen/android/buildSrc/.gradle/
+apps/tauri/src-tauri/gen/android/buildSrc/build/
+
+# Rust target
+apps/tauri/src-tauri/target/
 
 cham-lang-keystore.jks

@@ -1,0 +1,197 @@
+{
+  "appId": "cham-lang",
+  "schema": {
+    "collections": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "description", "type": "string", "nullable": true },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "owner_id", "type": "string", "nullable": false },
+        { "name": "is_public", "type": "boolean", "nullable": true },
+        { "name": "word_count", "type": "integer", "nullable": true },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "updated_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "vocabularies": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "word", "type": "string", "nullable": false },
+        { "name": "word_type", "type": "string", "nullable": false },
+        { "name": "level", "type": "string", "nullable": false },
+        { "name": "ipa", "type": "string", "nullable": true },
+        { "name": "concept", "type": "string", "nullable": true },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "collection_id", "type": "string", "nullable": false },
+        { "name": "audio_url", "type": "string", "nullable": true },
+        { "name": "definitions", "type": "array", "nullable": true },
+        { "name": "exampleSentences", "type": "array", "nullable": true },
+        { "name": "topics", "type": "array", "nullable": true },
+        { "name": "tags", "type": "array", "nullable": true },
+        { "name": "relatedWords", "type": "array", "nullable": true },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "updated_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "word_progress": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "vocabulary_id", "type": "string", "nullable": false },
+        { "name": "word", "type": "string", "nullable": false },
+        { "name": "correct_count", "type": "integer", "nullable": false },
+        { "name": "incorrect_count", "type": "integer", "nullable": false },
+        { "name": "total_reviews", "type": "integer", "nullable": false },
+        { "name": "mastery_level", "type": "integer", "nullable": false },
+        { "name": "next_review_date", "type": "integer", "nullable": false },
+        { "name": "interval_days", "type": "integer", "nullable": false },
+        { "name": "easiness_factor", "type": "number", "nullable": false },
+        {
+          "name": "consecutive_correct_count",
+          "type": "integer",
+          "nullable": false
+        },
+        { "name": "leitner_box", "type": "integer", "nullable": false },
+        { "name": "last_interval_days", "type": "integer", "nullable": false },
+        { "name": "failed_in_session", "type": "integer", "nullable": false },
+        { "name": "retry_count", "type": "integer", "nullable": false },
+        { "name": "completedModesInCycle", "type": "array", "nullable": true },
+        { "name": "last_practiced", "type": "integer", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "updated_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "learning_settings": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "sr_algorithm", "type": "string", "nullable": false },
+        { "name": "leitner_box_count", "type": "integer", "nullable": false },
+        {
+          "name": "consecutive_correct_required",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "show_failed_words_in_session",
+          "type": "integer",
+          "nullable": false
+        },
+        { "name": "new_words_per_day", "type": "integer", "nullable": true },
+        { "name": "daily_review_limit", "type": "integer", "nullable": true },
+        {
+          "name": "auto_advance_timeout_seconds",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "show_hint_in_fillword",
+          "type": "integer",
+          "nullable": false
+        },
+        { "name": "reminder_enabled", "type": "integer", "nullable": false },
+        { "name": "reminder_time", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "updated_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "practice_sessions": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "collection_id", "type": "string", "nullable": false },
+        { "name": "mode", "type": "string", "nullable": false },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "topic", "type": "string", "nullable": true },
+        { "name": "level", "type": "string", "nullable": true },
+        { "name": "results", "type": "array", "nullable": true },
+        { "name": "total_questions", "type": "integer", "nullable": false },
+        { "name": "correct_answers", "type": "integer", "nullable": false },
+        { "name": "started_at", "type": "integer", "nullable": false },
+        { "name": "completed_at", "type": "integer", "nullable": false },
+        { "name": "duration_seconds", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "practice_progress": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "total_sessions", "type": "integer", "nullable": true },
+        {
+          "name": "total_words_practiced",
+          "type": "integer",
+          "nullable": true
+        },
+        { "name": "current_streak", "type": "integer", "nullable": true },
+        { "name": "longest_streak", "type": "integer", "nullable": true },
+        { "name": "last_practice_date", "type": "integer", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "updated_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "user_learning_languages": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "language", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "topics": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "tags": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "name", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    },
+    "collection_shared_users": {
+      "columns": [
+        { "name": "id", "type": "string", "nullable": false },
+        { "name": "collection_id", "type": "string", "nullable": false },
+        { "name": "user_id", "type": "string", "nullable": false },
+        { "name": "created_at", "type": "integer", "nullable": false },
+        { "name": "sync_version", "type": "integer", "nullable": false },
+        { "name": "synced_at", "type": "integer", "nullable": true }
+      ],
+      "primaryKey": "id"
+    }
+  }
+}

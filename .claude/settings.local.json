@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(tree:*)",
+      "Bash(for f in src/adapters/interfaces/*.ts)",
+      "Bash(do cp \"$f\" packages/shared/src/services/)",
+      "Bash(done)",
+      "Bash(xargs sed:*)",
+      "Bash(__NEW_LINE_7a353395dd0d4282__ echo \"Done\")",
+      "Bash(grep:*)",
+      "Bash(for p in \"adapters/http/HttpGDriveAdapter\" \"adapters/ServiceFactory\" \"components/atoms/index\" \"components/molecules/index\" \"components/organisms/index\" \"components/organisms/BrowserSyncInitializer\" \"components/organisms/ServerDisconnectedOverlay\" \"components/pages/index\" \"components/templates/AppShell\" \"contexts/index\" \"hooks/useServerConnection\" \"hooks/useTestSession\" \"services/index\" \"services/collection.service\" \"services/csv.service\" \"services/learningSettings.service\" \"services/practice.service\" \"services/vocabulary.service\" \"services/wordSelection.service\" \"utils/platform\" \"utils/sessionManager\" \"utils/spacedRepetition/index\" \"utils/spacedRepetition/leitnerBoxes\" \"utils/spacedRepetition/types\")",
+      "Bash(do)",
+      "Bash(found=0)",
+      "Bash(for ext in \".ts\" \".tsx\")",
+      "Bash(if [ -f \"$p$ext\" ])",
+      "Bash(then found=1)",
+      "Bash(break)",
+      "Bash(fi)",
+      "Bash(if [ $found -eq 0 ])",
+      "Bash(then echo \"MISSING: $p\")",
+      "Bash(xargs -0 sed -i:*)"
+    ]
+  }
+}

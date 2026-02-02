@@ -28,12 +28,12 @@ This guide will help you set up Google OAuth authentication for Google Drive syn
 1. Go to "APIs & Services" → "Credentials"
 2. Click "Create Credentials" → "OAuth 2.0 Client ID"
 3. If prompted, configure the OAuth consent screen:
-    - Choose "External" user type
-    - Fill in the app name (e.g., "Cham Lang")
-    - Add your email as support email
-    - Add scopes: `drive.file`, `openid`, `email`, `profile`
-    - Add test users (your email)
-    - Save and continue
+   - Choose "External" user type
+   - Fill in the app name (e.g., "Cham Lang")
+   - Add your email as support email
+   - Add scopes: `drive.file`, `openid`, `email`, `profile`
+   - Add test users (your email)
+   - Save and continue
 4. For application type, choose **"Web application"**
 5. Give it a name (e.g., "Cham Lang Desktop")
 6. Under "Authorized redirect URIs", add:
@@ -46,6 +46,7 @@ This guide will help you set up Google OAuth authentication for Google Drive syn
 ### 4. Configure Environment Variables
 
 1. Copy `.env.example` to `.env`:
+
    ```bash
    cp .env.example .env
    ```

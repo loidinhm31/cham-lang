@@ -20,15 +20,15 @@ A modern, offline-first vocabulary learning application built with Tauri 2, Reac
 ### Vocabulary Management
 
 - **Comprehensive Word Information**
-    - Word definitions with translations
-    - IPA pronunciation guide
-    - Audio pronunciation (supports MP3, WAV, OGG, M4A, AAC formats)
-    - Example sentences
-    - Word types (noun, verb, adjective, etc.)
-    - Language-specific proficiency levels (CEFR for European languages, Basic/Intermediate/Advanced for Asian languages)
-    - Topic categorization
-    - Related words (synonyms, antonyms, derivatives)
-    - Optional concept field for alternative learning prompts
+  - Word definitions with translations
+  - IPA pronunciation guide
+  - Audio pronunciation (supports MP3, WAV, OGG, M4A, AAC formats)
+  - Example sentences
+  - Word types (noun, verb, adjective, etc.)
+  - Language-specific proficiency levels (CEFR for European languages, Basic/Intermediate/Advanced for Asian languages)
+  - Topic categorization
+  - Related words (synonyms, antonyms, derivatives)
+  - Optional concept field for alternative learning prompts
 - **Audio Playback**: Integrated audio player with support for online audio URLs
 - **Pagination**: Efficient lazy loading for large vocabulary lists
 
@@ -50,6 +50,7 @@ Three comprehensive practice modes with spaced repetition:
 3. **Multiple Choice Practice**: Choose correct definition from options
 
 **Special Features**:
+
 - **Concept Mode**: Toggle between Definition Mode and Concept Mode for alternative learning prompts
 - **Study Mode vs Practice Mode**: Choose to practice with or without progress tracking
 - **Multi-Mode Completion**: Words must complete all three modes in a review cycle to advance boxes
@@ -58,9 +59,9 @@ Three comprehensive practice modes with spaced repetition:
 ### Spaced Repetition Learning
 
 - **Three Algorithm Options**:
-    - SM-2 (SuperMemo 2) with dynamic easiness factor
-    - Modified SM-2 with fixed intervals per Leitner box
-    - Simple Doubling (interval doubles on each success)
+  - SM-2 (SuperMemo 2) with dynamic easiness factor
+  - Modified SM-2 with fixed intervals per Leitner box
+  - Simple Doubling (interval doubles on each success)
 
 - **Leitner Box System**: Configurable 3, 5, or 7 boxes with progressive review intervals
 - **Smart Word Selection**: Prioritizes due words, limits new words per session
@@ -95,12 +96,13 @@ Three comprehensive practice modes with spaced repetition:
 - **Interface Languages**: English and Vietnamese (extensible i18n system)
 - **Learning Languages**: Supports English, Vietnamese, Spanish, French, German, Korean, Japanese, Chinese
 - **Language-Specific Levels**:
-    - CEFR (A1-C2) for European languages
-    - Basic/Intermediate/Advanced for Asian languages
+  - CEFR (A1-C2) for European languages
+  - Basic/Intermediate/Advanced for Asian languages
 
 ### Daily Reminders & Notifications
 
 **Daily Reminder** (New in v0.0.15):
+
 - **Schedule Study Reminders**: Set a daily reminder at a specific time to practice vocabulary
 - **Persistent Reminders**: Notifications persist through app closure and device reboots
 - **Auto-Rescheduling**: Automatically reschedules for the next day after the reminder fires
@@ -108,6 +110,7 @@ Three comprehensive practice modes with spaced repetition:
 - **Easy Configuration**: Enable/disable and set time from Learning Settings page
 
 **Scheduled Notifications**:
+
 - Schedule one-time or recurring notifications
 - Works on both Desktop and Android
 - Runtime permission handling on Android 13+
@@ -116,8 +119,12 @@ Three comprehensive practice modes with spaced repetition:
 **Implementation:**
 
 1. **Frontend (ProfilePage.tsx)**
+
    ```typescript
-   import { isPermissionGranted, requestPermission } from "@tauri-apps/plugin-notification";
+   import {
+     isPermissionGranted,
+     requestPermission,
+   } from "@tauri-apps/plugin-notification";
 
    // Check/request permission
    let permissionGranted = await isPermissionGranted();
@@ -131,6 +138,7 @@ Three comprehensive practice modes with spaced repetition:
    ```
 
 2. **Backend (notification_commands.rs)**
+
    ```rust
    use tauri_plugin_schedule_task::{ScheduleTaskRequest, ScheduleTime, ScheduleTaskExt};
 
@@ -151,6 +159,7 @@ Three comprehensive practice modes with spaced repetition:
    ```
 
 3. **Task Handler (scheduled_task_handler.rs)**
+
    ```rust
    impl<R: Runtime> ScheduledTaskHandler<R> for NotificationTaskHandler {
      fn handle_scheduled_task(&self, task_name: &str, parameters: HashMap<String, String>, app: &AppHandle<R>) {
@@ -210,6 +219,7 @@ dependencies {
 ```
 
 **Plugin Initialization (lib.rs):**
+
 ```rust
 // IMPORTANT: schedule-task must be initialized FIRST
 tauri::Builder::default()
@@ -228,11 +238,11 @@ tauri::Builder::default()
 ### Architecture
 
 - **Atomic Design Pattern**:
-    - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal, AudioPlayer
-    - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
-    - **Organisms**: VocabularyList, VocabularyForm, CollectionList, PracticeModeSelector
-    - **Templates**: MainLayout
-    - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes (Flashcard, Fill Word, Multiple Choice), Settings, Learning Settings, Profile, Statistics
+  - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal, AudioPlayer
+  - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
+  - **Organisms**: VocabularyList, VocabularyForm, CollectionList, PracticeModeSelector
+  - **Templates**: MainLayout
+  - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes (Flashcard, Fill Word, Multiple Choice), Settings, Learning Settings, Profile, Statistics
 
 - **Offline-First**: All data stored locally in SQLite
 - **Service Layer**: Clean separation between frontend and Tauri backend
@@ -292,17 +302,20 @@ tauri::Builder::default()
 ### Setup Steps
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd cham-lang
    ```
 
 2. **Install dependencies**
+
    ```bash
    pnpm install
    ```
 
 3. **Run in development mode**
+
    ```bash
    # Desktop
    pnpm tauri dev
@@ -332,15 +345,15 @@ tauri::Builder::default()
 1. Select a collection
 2. Click "Add Word" button
 3. Fill in word details:
-    - Word text
-    - Word type
-    - Proficiency level
-    - IPA pronunciation
-    - Definitions (with translations)
-    - Optional concept (alternative learning prompt)
-    - Example sentences
-    - Topics
-    - Related words
+   - Word text
+   - Word type
+   - Proficiency level
+   - IPA pronunciation
+   - Definitions (with translations)
+   - Optional concept (alternative learning prompt)
+   - Example sentences
+   - Topics
+   - Related words
 4. Click "Save"
 
 ### Practicing Vocabulary
@@ -381,6 +394,7 @@ tauri::Builder::default()
 4. Database is uploaded to your Google Drive
 
 To restore:
+
 1. Click "Restore from Google Drive"
 2. System checks for version conflicts
 3. Confirm restore operation
