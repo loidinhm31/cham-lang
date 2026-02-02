@@ -167,7 +167,7 @@ export const CSVImportPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("csv.importTitle")} showBack backTo="/profile" />
+      <TopBar title={t("csv.importTitle")} showBack backTo="/settings" />
       <div className="min-h-screen p-6 space-y-6">
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">

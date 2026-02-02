@@ -26,7 +26,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   const { hasSyncNotification } = useSyncNotification();
 
   const handleNotificationClick = () => {
-    navigate("/profile");
+    navigate("/settings");
   };
 
   const handleBackClick = () => {

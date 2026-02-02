@@ -107,7 +107,7 @@ export const CSVExportPage: React.FC = () => {
 
   return (
     <>
-      <TopBar title={t("csv.exportTitle")} showBack backTo="/profile" />
+      <TopBar title={t("csv.exportTitle")} showBack backTo="/settings" />
       <div className="min-h-screen p-6 space-y-6">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
