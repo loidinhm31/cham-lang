@@ -65,72 +65,17 @@ export const OAuthCallbackPage: React.FC = () => {
   }, [searchParams]);
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        padding: "20px",
-      }}
-    >
-      <div
-        style={{
-          background: "white",
-          borderRadius: "16px",
-          padding: "48px 40px",
-          textAlign: "center",
-          boxShadow: "0 20px 60px rgba(0, 0, 0, 0.3)",
-          maxWidth: "400px",
-          width: "100%",
-        }}
-      >
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] p-5">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center shadow-2xl max-w-sm w-full">
         {status === "processing" && (
-          <>
-            <div
-              style={{
-                width: "60px",
-                height: "60px",
-                border: "4px solid #e5e7eb",
-                borderTopColor: "#667eea",
-                borderRadius: "50%",
-                margin: "0 auto 24px",
-                animation: "spin 1s linear infinite",
-              }}
-            />
-            <style>
-              {`
-                                @keyframes spin {
-                                    to { transform: rotate(360deg); }
-                                }
-                            `}
-            </style>
-          </>
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-[#667eea] rounded-full mx-auto mb-6 animate-spin" />
         )}
 
         {status === "success" && (
-          <div
-            style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "50%",
-              background: "#10b981",
-              margin: "0 auto 24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div className="w-20 h-20 rounded-full bg-emerald-500 mx-auto mb-6 flex items-center justify-center">
             <svg
               viewBox="0 0 52 52"
-              style={{
-                width: "48px",
-                height: "48px",
-                stroke: "white",
-                strokeWidth: 3,
-                fill: "none",
-              }}
+              className="w-12 h-12 stroke-white stroke-[3] fill-none"
             >
               <polyline points="14,26 22,34 38,18" />
             </svg>
@@ -138,27 +83,10 @@ export const OAuthCallbackPage: React.FC = () => {
         )}
 
         {status === "error" && (
-          <div
-            style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "50%",
-              background: "#ef4444",
-              margin: "0 auto 24px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
+          <div className="w-20 h-20 rounded-full bg-red-500 mx-auto mb-6 flex items-center justify-center">
             <svg
               viewBox="0 0 52 52"
-              style={{
-                width: "48px",
-                height: "48px",
-                stroke: "white",
-                strokeWidth: 3,
-                fill: "none",
-              }}
+              className="w-12 h-12 stroke-white stroke-[3] fill-none"
             >
               <line x1="16" y1="16" x2="36" y2="36" />
               <line x1="36" y1="16" x2="16" y2="36" />
@@ -166,71 +94,30 @@ export const OAuthCallbackPage: React.FC = () => {
           </div>
         )}
 
-        <h1
-          style={{
-            color: "#1f2937",
-            fontSize: "24px",
-            fontWeight: 700,
-            marginBottom: "12px",
-          }}
-        >
+        <h1 className="text-gray-800 dark:text-white text-2xl font-bold mb-3">
           {status === "processing" && "Processing..."}
           {status === "success" && "Success!"}
           {status === "error" && "Authentication Failed"}
         </h1>
 
-        <p
-          style={{
-            color: "#6b7280",
-            fontSize: "16px",
-            lineHeight: 1.6,
-            marginBottom: "24px",
-          }}
-        >
+        <p className="text-gray-600 dark:text-gray-300 text-base leading-relaxed mb-6">
           {message}
         </p>
 
         {status !== "processing" && (
           <button
             onClick={() => window.close()}
-            style={{
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              padding: "14px 32px",
-              fontSize: "16px",
-              fontWeight: 600,
-              cursor: "pointer",
-              width: "100%",
-            }}
+            className="w-full bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white border-none rounded-lg py-3.5 px-8 text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
           >
             Close Window
           </button>
         )}
 
-        <div
-          style={{
-            marginTop: "24px",
-            paddingTop: "24px",
-            borderTop: "1px solid #e5e7eb",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "18px",
-              fontWeight: 700,
-              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
+        <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+          <div className="text-lg font-bold bg-gradient-to-br from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
             Cham Lang
           </div>
-          <p style={{ fontSize: "13px", color: "#9ca3af", marginTop: "4px" }}>
-            Adapt to Learn
-          </p>
+          <p className="text-xs text-gray-400 mt-1">Adapt to Learn</p>
         </div>
       </div>
     </div>

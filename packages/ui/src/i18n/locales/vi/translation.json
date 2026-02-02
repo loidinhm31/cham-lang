@@ -314,6 +314,7 @@
   },
   "auth": {
     "login": "Đăng Nhập",
+    "loginButton": "Đăng Nhập",
     "register": "Đăng Ký",
     "logout": "Đăng Xuất",
     "username": "Tên Đăng Nhập",
@@ -342,7 +343,12 @@
     "signOutSuccess": "Đã đăng xuất thành công",
     "signInFailed": "Đăng nhập thất bại",
     "unknownUser": "Người dùng không xác định",
-    "loginRequired": "Bạn phải đăng nhập để đồng bộ hóa"
+    "loginRequired": "Bạn phải đăng nhập để đồng bộ hóa",
+    "loggedOut": "Đã đăng xuất thành công",
+    "fillAllFields": "Vui lòng điền đầy đủ thông tin",
+    "loginSuccess": "Đăng nhập thành công",
+    "registerSuccess": "Tạo tài khoản thành công",
+    "registerButton": "Tạo Tài Khoản"
   },
   "sync": {
     "pendingChanges": "thay đổi đang chờ",

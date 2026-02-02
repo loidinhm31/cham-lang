@@ -82,7 +82,9 @@ export const EditCollectionPage: React.FC = () => {
           backTo={id ? `/collections/${id}` : "/collections"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t("app.loading")}</div>
+          <div className="text-[var(--color-text-secondary)]">
+            {t("app.loading")}
+          </div>
         </div>
       </>
     );

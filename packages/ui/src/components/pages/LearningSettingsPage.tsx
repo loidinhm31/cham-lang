@@ -106,8 +106,10 @@ export const LearningSettingsPage: React.FC = () => {
     const intervals = BOX_INTERVAL_PRESETS[boxCount];
     return intervals.map((days, index) => (
       <div key={index} className="flex justify-between text-sm">
-        <span className="text-gray-600">Box {index + 1}:</span>
-        <span className="font-semibold text-gray-800">
+        <span className="text-[var(--color-text-secondary)]">
+          Box {index + 1}:
+        </span>
+        <span className="font-semibold text-[var(--color-text-primary)]">
           {days} {days === 1 ? "day" : "days"}
         </span>
       </div>
@@ -123,7 +125,9 @@ export const LearningSettingsPage: React.FC = () => {
           backTo="/settings"
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t("app.loading")}</div>
+          <div className="text-[var(--color-text-secondary)]">
+            {t("app.loading")}
+          </div>
         </div>
       </>
     );
@@ -141,10 +145,10 @@ export const LearningSettingsPage: React.FC = () => {
         {/* Header */}
         <div className="text-center py-4">
           <div className="text-5xl mb-3">⚙️</div>
-          <h1 className="text-3xl font-black text-gray-800 mb-2">
+          <h1 className="text-3xl font-black text-[var(--color-text-primary)] mb-2">
             {t("settings.learningTitle") || "Spaced Repetition Settings"}
           </h1>
-          <p className="text-gray-600">
+          <p className="text-[var(--color-text-secondary)]">
             {t("settings.learningDescription") ||
               "Customize how you learn vocabulary"}
           </p>
@@ -164,9 +168,9 @@ export const LearningSettingsPage: React.FC = () => {
                 setAlgorithm(value as SpacedRepetitionAlgorithm)
               }
             />
-            <div className="flex gap-2 p-3 bg-blue-50 rounded-xl">
-              <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-blue-900">
+            <div className="flex gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <p className="text-sm text-blue-900 dark:text-blue-100">
                 {algorithm === "sm2" &&
                   (t("settings.sm2Description") ||
                     "Dynamic intervals based on performance. Best for advanced learners.")}
@@ -195,8 +199,8 @@ export const LearningSettingsPage: React.FC = () => {
                 setBoxCount(Number(value) as LeitnerBoxCount)
               }
             />
-            <div className="p-3 bg-gray-50 rounded-xl space-y-2">
-              <p className="text-xs font-semibold text-gray-600 uppercase">
+            <div className="p-3 bg-[var(--color-bg-secondary)] rounded-xl space-y-2">
+              <p className="text-xs font-semibold text-[var(--color-text-secondary)] uppercase">
                 {t("settings.intervalPreview") || "Interval Preview"}
               </p>
               {getIntervalPreview()}
@@ -217,17 +221,17 @@ export const LearningSettingsPage: React.FC = () => {
               max="10"
               value={consecutiveCorrect}
               onChange={(e) => setConsecutiveCorrect(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
             />
             <div className="text-center">
-              <span className="text-3xl font-black text-teal-600">
+              <span className="text-3xl font-black text-teal-600 dark:text-teal-400">
                 {consecutiveCorrect}
               </span>
-              <span className="text-sm text-gray-600 ml-2">
+              <span className="text-sm text-[var(--color-text-muted)] ml-2">
                 {t("settings.times") || "times"}
               </span>
             </div>
-            <p className="text-xs text-gray-600 text-center">
+            <p className="text-xs text-[var(--color-text-secondary)] text-center">
               {t("settings.consecutiveCorrectDescription") ||
                 "How many correct answers needed to move to next box"}
             </p>
@@ -247,11 +251,11 @@ export const LearningSettingsPage: React.FC = () => {
                 max="100"
                 value={newWordsPerDay}
                 onChange={(e) => setNewWordsPerDay(Number(e.target.value))}
-                className="w-full px-4 py-3 bg-white/60 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 bg-white/60 dark:bg-white/5 border-2 border-[var(--color-border-light)] rounded-xl focus:border-teal-500 focus:outline-none transition-colors text-[var(--color-text-primary)]"
               />
             </div>
             <div className="space-y-3">
-              <label className="block text-sm font-semibold text-gray-700">
+              <label className="block text-sm font-semibold text-[var(--color-text-primary)]">
                 {t("settings.dailyReviewLimit") || "Daily Review Limit"}
               </label>
               <input
@@ -260,7 +264,7 @@ export const LearningSettingsPage: React.FC = () => {
                 max="500"
                 value={dailyReviewLimit}
                 onChange={(e) => setDailyReviewLimit(Number(e.target.value))}
-                className="w-full px-4 py-3 bg-white/60 border-2 border-gray-200 rounded-xl focus:border-teal-500 focus:outline-none transition-colors"
+                className="w-full px-4 py-3 bg-white/60 dark:bg-white/5 border-2 border-[var(--color-border-light)] rounded-xl focus:border-teal-500 focus:outline-none transition-colors text-[var(--color-text-primary)]"
               />
             </div>
           </div>
@@ -270,11 +274,11 @@ export const LearningSettingsPage: React.FC = () => {
         <Card variant="glass">
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-[var(--color-text-primary)] mb-1">
                 {t("settings.showFailedWords") ||
                   "Show Failed Words in Session"}
               </label>
-              <p className="text-xs text-gray-600">
+              <p className="text-xs text-[var(--color-text-secondary)]">
                 {t("settings.showFailedWordsDescription") ||
                   "Retry incorrect words immediately in the same session"}
               </p>
@@ -283,7 +287,9 @@ export const LearningSettingsPage: React.FC = () => {
               type="button"
               onClick={() => setShowFailedWords(!showFailedWords)}
               className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                showFailedWords ? "bg-teal-600" : "bg-gray-300"
+                showFailedWords
+                  ? "bg-teal-600 dark:bg-teal-500"
+                  : "bg-gray-300 dark:bg-gray-600"
               }`}
             >
               <span
@@ -314,10 +320,10 @@ export const LearningSettingsPage: React.FC = () => {
               max="10"
               value={autoAdvanceTimeout}
               onChange={(e) => setAutoAdvanceTimeout(Number(e.target.value))}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
             />
             <div className="text-center">
-              <span className="text-3xl font-black text-teal-600">
+              <span className="text-3xl font-black text-teal-600 dark:text-teal-400">
                 {autoAdvanceTimeout}
               </span>
               <span className="text-sm text-gray-600 ml-2">
@@ -348,7 +354,9 @@ export const LearningSettingsPage: React.FC = () => {
               type="button"
               onClick={() => setShowHint(!showHint)}
               className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
-                showHint ? "bg-teal-600" : "bg-gray-300"
+                showHint
+                  ? "bg-teal-600 dark:bg-teal-500"
+                  : "bg-gray-300 dark:bg-gray-600"
               }`}
             >
               <span

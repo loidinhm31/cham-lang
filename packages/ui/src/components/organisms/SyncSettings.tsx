@@ -131,10 +131,10 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
         <div className="flex items-center gap-3">
           <Cloud className="w-6 h-6 text-blue-500" />
           <div>
-            <h3 className="text-lg font-bold text-gray-800">
+            <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
               {t("settings.cloudSync") || "Cloud Sync"}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[var(--color-text-secondary)]">
               {t("settings.cloudSyncDescription") ||
                 "Keep your data synchronized across devices"}
             </p>
@@ -143,17 +143,19 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
 
         {/* Status Section */}
         {authStatus?.isAuthenticated ? (
-          <div className="rounded-xl p-4 bg-white/50 border border-gray-200 shadow-sm space-y-4">
+          <div className="rounded-xl p-4 bg-[var(--color-bg-white)] border border-[var(--color-border-light)] shadow-sm space-y-4">
             {/* Account Info */}
             <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
               <div className="bg-blue-100 p-2 rounded-full">
                 <User className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-[var(--color-text-primary)]">
                   {authStatus.username || t("auth.unknownUser")}
                 </p>
-                <p className="text-xs text-gray-500">{authStatus.email}</p>
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  {authStatus.email}
+                </p>
               </div>
             </div>
 
@@ -265,7 +267,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
         ) : (
           /* Auth Form if not authenticated */
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-[var(--color-text-secondary)]">
               {t("sync.loginPrompt") ||
                 "Sign in to sync your vocabulary and collections across all your devices."}
             </p>

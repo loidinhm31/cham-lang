@@ -440,7 +440,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
           backTo={isStudyMode ? "/" : "/practice"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t("app.loading")}</div>
+          <div className="text-[var(--color-text-secondary)]">
+            {t("app.loading")}
+          </div>
         </div>
       </>
     );
@@ -478,16 +480,16 @@ export const MultipleChoicePracticePage: React.FC = () => {
           {isTestMode && (
             <Card
               variant="glass"
-              className="bg-green-50 border-2 border-green-200"
+              className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
             >
               <div className="text-center">
-                <p className="font-semibold text-green-900">
+                <p className="font-semibold text-green-900 dark:text-green-100">
                   📝{" "}
                   {testMode === "normal"
                     ? t("study.testNormal") || "Normal Test"
                     : t("study.testIntensive") || "Intensive Test"}
                 </p>
-                <p className="text-sm text-green-700">
+                <p className="text-sm text-green-700 dark:text-green-300">
                   {t("study.testComplete") || "Test completed!"}
                 </p>
               </div>
@@ -496,14 +498,14 @@ export const MultipleChoicePracticePage: React.FC = () => {
           {isStudyMode && !isTestMode && (
             <Card
               variant="glass"
-              className="bg-blue-50 border-2 border-blue-200"
+              className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800"
             >
               <div className="text-center">
-                <p className="font-semibold text-blue-900">
+                <p className="font-semibold text-blue-900 dark:text-blue-100">
                   {t("study.progressNotTracked") ||
                     "Progress was not tracked for this session"}
                 </p>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   {t("study.studyCompleteDescription") ||
                     "This was a study session"}
                 </p>
@@ -583,7 +585,9 @@ export const MultipleChoicePracticePage: React.FC = () => {
         />
         <div className="px-4 pt-6">
           <Card variant="glass" className="text-center p-8">
-            <p className="text-gray-600">{t("vocabulary.noResults")}</p>
+            <p className="text-[var(--color-text-secondary)]">
+              {t("vocabulary.noResults")}
+            </p>
             <Button
               variant="primary"
               size="md"
@@ -619,12 +623,12 @@ export const MultipleChoicePracticePage: React.FC = () => {
         {isTestMode && (
           <Card
             variant="glass"
-            className="bg-green-50 border-2 border-green-200"
+            className="bg-green-50 dark:bg-green-900/20 border-2 border-green-200 dark:border-green-800"
           >
             <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-green-600" />
+              <BookOpen className="w-6 h-6 text-green-600 dark:text-green-400" />
               <div className="flex-1">
-                <p className="font-semibold text-green-900 text-sm">
+                <p className="font-semibold text-green-900 dark:text-green-100 text-sm">
                   📝{" "}
                   {testMode === "normal"
                     ? t("study.testNormalDescription") || "Each word shown once"
@@ -638,11 +642,14 @@ export const MultipleChoicePracticePage: React.FC = () => {
 
         {/* Study Mode Banner */}
         {isStudyMode && !isTestMode && (
-          <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+          <Card
+            variant="glass"
+            className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800"
+          >
             <div className="flex items-center gap-3">
-              <BookOpen className="w-6 h-6 text-blue-600" />
+              <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               <div className="flex-1">
-                <p className="font-semibold text-blue-900 text-sm">
+                <p className="font-semibold text-blue-900 dark:text-blue-100 text-sm">
                   {t("study.banner") || "Study Mode - Progress Not Tracked"}
                 </p>
               </div>
@@ -695,7 +702,7 @@ export const MultipleChoicePracticePage: React.FC = () => {
                   ).requiredRepetitions
                 }
               />
-              <div className="text-sm text-gray-600">
+              <div className="text-sm text-[var(--color-text-secondary)]">
                 Question {sessionManager.getSessionStats().totalQuestions + 1}
               </div>
             </div>

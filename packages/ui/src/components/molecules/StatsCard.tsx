@@ -22,8 +22,8 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, title }) => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         {/* Title section */}
         <div className="flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-teal-600" />
-          <h3 className="text-base font-bold text-gray-800">
+          <TrendingUp className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+          <h3 className="text-base font-bold text-[var(--color-text-primary)]">
             {title || t("stats.totalWords")}
           </h3>
         </div>
@@ -35,7 +35,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({ stats, title }) => {
               <div className={`text-2xl font-black ${stat.color}`}>
                 {stat.value}
               </div>
-              <div className="text-xs text-gray-600 whitespace-nowrap">
+              <div className="text-xs text-[var(--color-text-secondary)] whitespace-nowrap">
                 {stat.label}
               </div>
             </div>

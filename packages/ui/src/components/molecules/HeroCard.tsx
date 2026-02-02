@@ -18,10 +18,10 @@ export const HeroCard: React.FC = () => {
 
         {/* Title and Tagline */}
         <div className="text-center lg:text-left flex-grow">
-          <h1 className="text-5xl lg:text-6xl font-black text-gray-900 mb-3 tracking-tight">
+          <h1 className="text-5xl lg:text-6xl font-black text-[var(--color-text-primary)] mb-3 tracking-tight">
             {t("app.name").toUpperCase()}
           </h1>
-          <p className="text-xl lg:text-2xl font-semibold text-indigo-600">
+          <p className="text-xl lg:text-2xl font-semibold text-indigo-600 dark:text-indigo-400">
             {t("app.tagline")}
           </p>
         </div>

@@ -12,6 +12,7 @@ import {
   LogIn,
   LogOut,
   Minus,
+  Palette,
   Plus,
   Settings,
   StopCircle,
@@ -574,10 +575,10 @@ export const SettingsPage: React.FC = () => {
                   <div className="flex items-center gap-3">
                     <Cloud className="w-6 h-6 text-blue-600" />
                     <div>
-                      <h3 className="text-lg font-bold text-gray-800">
+                      <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                         {t("settings.browserSync") || "Browser Sync"}
                       </h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-[var(--color-text-secondary)]">
                         {isDesktop()
                           ? t("settings.openInBrowserDescription") ||
                             "Open the app in your default web browser"
@@ -676,7 +677,7 @@ export const SettingsPage: React.FC = () => {
                             : t("settings.stopSharing") || "Stop Sharing"}
                         </Button>
                       )}
-                      <p className="text-xs text-gray-500 text-center">
+                      <p className="text-xs text-[var(--color-text-secondary)] text-center">
                         {browserSyncActive
                           ? t("settings.browserSyncActiveHint") ||
                             "Your data is being shared on http://localhost:25091"
@@ -697,10 +698,10 @@ export const SettingsPage: React.FC = () => {
               <div className="flex items-center gap-3">
                 <Settings className="w-6 h-6 text-blue-600" />
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">
+                  <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                     {t("settings.displaySettings") || "Display Settings"}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
                     {t("settings.displaySettingsDescription") ||
                       "Customize language and text appearance"}
                   </p>
@@ -708,14 +709,37 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Interface Language */}
-              <div className="space-y-3 pt-4 border-t border-gray-200">
+              <div className="space-y-3 pt-4 border-t border-[var(--color-border-light)]">
+                <div className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-pink-500" />
+                  <h4 className="font-semibold text-[var(--color-text-primary)]">
+                    {t("settings.theme") || "Theme Preview"}
+                  </h4>
+                </div>
+                <p className="text-sm text-[var(--color-text-secondary)]">
+                  {t("settings.themeDescription") ||
+                    "Preview and verify different themes"}
+                </p>
+                <div className="flex justify-center">
+                  <Button
+                    onClick={() => navigate("/settings/theme-preview")}
+                    variant="primary"
+                    icon={Palette}
+                  >
+                    Open Theme Preview
+                  </Button>
+                </div>
+              </div>
+
+              {/* Interface Language */}
+              <div className="space-y-3 pt-4 border-t border-[var(--color-border-light)]">
                 <div className="flex items-center gap-2">
                   <Languages className="w-5 h-5 text-blue-600" />
-                  <h4 className="font-semibold text-gray-700">
+                  <h4 className="font-semibold text-[var(--color-text-primary)]">
                     {t("settings.language") || "Interface Language"}
                   </h4>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[var(--color-text-secondary)]">
                   {t("settings.languageDescription") ||
                     "Choose your preferred language for the app"}
                 </p>
@@ -732,14 +756,14 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Text Size */}
-              <div className="space-y-4 pt-4 border-t border-gray-200">
+              <div className="space-y-4 pt-4 border-t border-[var(--color-border-light)]">
                 <div className="flex items-center gap-2">
                   <Type className="w-5 h-5 text-purple-600" />
-                  <h4 className="font-semibold text-gray-700">
+                  <h4 className="font-semibold text-[var(--color-text-primary)]">
                     {t("settings.fontSize") || "Text Size"}
                   </h4>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[var(--color-text-secondary)]">
                   {t("settings.fontSizeDescription") ||
                     "Adjust the size of text throughout the app"}
                 </p>
@@ -755,8 +779,8 @@ export const SettingsPage: React.FC = () => {
                   >
                     {t("settings.decrease") || "Decrease"}
                   </Button>
-                  <div className="px-4 py-2 bg-indigo-50 rounded-lg border-2 border-indigo-200 text-center">
-                    <span className="text-sm font-bold text-indigo-900">
+                  <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border-2 border-indigo-200 dark:border-indigo-800 text-center">
+                    <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300">
                       {t(`fontSizes.${currentFontSize}`) ||
                         FontSizeService.getConfig(currentFontSize).label}
                     </span>
@@ -787,14 +811,14 @@ export const SettingsPage: React.FC = () => {
                   />
 
                   {/* Preview Text */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <p className="text-xs text-gray-500 mb-2">
+                  <div className="bg-gray-50 dark:bg-slate-700/30 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
+                    <p className="text-xs text-[var(--color-text-secondary)] mb-2">
                       {t("settings.preview") || "Preview:"}
                     </p>
-                    <p className="text-gray-800">
+                    <p className="text-[var(--color-text-primary)]">
                       {t("app.tagline") || "Adapt to Learn"}
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-[var(--color-text-secondary)] mt-1">
                       {t("settings.fontSizePreviewText") ||
                         "The quick brown fox jumps over the lazy dog"}
                     </p>
@@ -809,12 +833,12 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-6">
               {/* Section Header */}
               <div className="flex items-center gap-3">
-                <Bell className="w-6 h-6 text-orange-600" />
+                <Bell className="w-6 h-6 text-orange-600 dark:text-orange-400" />
                 <div>
-                  <h3 className="text-lg font-bold text-gray-800">
+                  <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                     {t("settings.notificationsSection") || "Notifications"}
                   </h3>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
                     {t("settings.notificationsSectionDescription") ||
                       "Manage reminders and notification preferences"}
                   </p>
@@ -822,14 +846,14 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Notification Test */}
-              <div className="space-y-3 pt-4 border-t border-gray-200">
+              <div className="space-y-3 pt-4 border-t border-[var(--color-border-light)]">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-5 h-5 text-orange-600" />
-                  <h4 className="font-semibold text-gray-700">
+                  <Bell className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                  <h4 className="font-semibold text-[var(--color-text-primary)]">
                     {t("settings.notifications") || "Notification Test"}
                   </h4>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[var(--color-text-secondary)]">
                   {t("settings.notificationsDescription") ||
                     "Test scheduled notifications"}
                 </p>
@@ -853,11 +877,11 @@ export const SettingsPage: React.FC = () => {
               </div>
 
               {/* Daily Reminder */}
-              <div className="space-y-4 pt-4 border-t border-gray-200">
+              <div className="space-y-4 pt-4 border-t border-[var(--color-border-light)]">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-indigo-600" />
-                    <h4 className="font-semibold text-gray-700">
+                    <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <h4 className="font-semibold text-[var(--color-text-primary)]">
                       {t("reminder.dailyReminder") || "Daily Reminder"}
                     </h4>
                   </div>
@@ -872,13 +896,13 @@ export const SettingsPage: React.FC = () => {
                     <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                   </label>
                 </div>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-[var(--color-text-secondary)]">
                   {t("reminder.dailyReminderDescription") ||
                     "Get reminded to practice every day"}
                 </p>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
                     {t("reminder.reminderTime") || "Reminder Time"}
                   </label>
                   <input
@@ -886,9 +910,9 @@ export const SettingsPage: React.FC = () => {
                     value={reminderTime}
                     onChange={(e) => setReminderTime(e.target.value)}
                     disabled={loading}
-                    className="w-full px-3 py-2 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white text-gray-900"
+                    className="w-full px-3 py-2 text-lg border border-[var(--color-border-light)] rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-800 text-[var(--color-text-primary)]"
                   />
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-[var(--color-text-secondary)] mt-2">
                     {t("reminder.currentTime") || "Selected time:"}{" "}
                     {reminderTime}
                   </p>
@@ -929,12 +953,12 @@ export const SettingsPage: React.FC = () => {
               <div className="space-y-6">
                 {/* Section Header */}
                 <div className="flex items-center gap-3">
-                  <Cloud className="w-6 h-6 text-green-600" />
+                  <Cloud className="w-6 h-6 text-green-600 dark:text-green-400" />
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">
+                    <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                       {t("settings.dataManagement") || "Data Management"}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[var(--color-text-secondary)]">
                       {t("settings.dataManagementDescription") ||
                         "Backup, sync, and manage your data"}
                     </p>
@@ -942,15 +966,15 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* Google Drive Sync */}
-                <div className="space-y-4 pt-4 border-t border-gray-200">
+                <div className="space-y-4 pt-4 border-t border-[var(--color-border-light)]">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       {isConfigured ? (
-                        <Cloud className="w-5 h-5 text-green-600" />
+                        <Cloud className="w-5 h-5 text-green-600 dark:text-green-400" />
                       ) : (
-                        <CloudOff className="w-5 h-5 text-gray-400" />
+                        <CloudOff className="w-5 h-5 text-[var(--color-text-secondary)]" />
                       )}
-                      <h4 className="font-semibold text-gray-700">
+                      <h4 className="font-semibold text-[var(--color-text-primary)]">
                         {t("gdrive.title")}
                       </h4>
                     </div>
@@ -965,7 +989,7 @@ export const SettingsPage: React.FC = () => {
                       </Button>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
                     {isConfigured
                       ? `${t("gdrive.connected")} ${userEmail}`
                       : t("gdrive.notConnected")}
@@ -973,10 +997,10 @@ export const SettingsPage: React.FC = () => {
 
                   {!isConfigured && (
                     <div className="space-y-3 flex flex-col items-center">
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-[var(--color-text-secondary)]">
                         {t("gdrive.signInDescription")}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-[var(--color-text-muted)]">
                         {t("gdrive.scopeDescription")}
                       </p>
                       <Button
@@ -1034,14 +1058,14 @@ export const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* Danger Zone */}
-                <div className="space-y-4 pt-4 border-t border-red-200">
+                <div className="space-y-4 pt-4 border-t border-red-200 dark:border-red-900/30">
                   <div className="flex items-center gap-2">
-                    <Trash2 className="w-5 h-5 text-red-600" />
-                    <h4 className="font-semibold text-red-600">
+                    <Trash2 className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <h4 className="font-semibold text-red-600 dark:text-red-400">
                       {t("settings.dangerZone")}
                     </h4>
                   </div>
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-[var(--color-text-secondary)]">
                     {t("settings.dangerZoneDescription")}
                   </p>
 
@@ -1080,12 +1104,12 @@ export const SettingsPage: React.FC = () => {
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Settings className="w-6 h-6 text-purple-600" />
+                  <Settings className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                   <div>
-                    <h3 className="text-lg font-bold text-gray-800">
+                    <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
                       {t("settings.learning") || "Learning Settings"}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[var(--color-text-secondary)]">
                       {t("settings.learningDescription") ||
                         "Customize spaced repetition and learning preferences"}
                     </p>

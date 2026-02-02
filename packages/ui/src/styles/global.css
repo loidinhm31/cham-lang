@@ -1,9 +1,18 @@
-@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@300;400;500;600;700&display=swap");
 @import "tailwindcss";
+
+@import "@fontsource/fredoka/300.css";
+@import "@fontsource/fredoka/400.css";
+@import "@fontsource/fredoka/500.css";
+@import "@fontsource/fredoka/600.css";
+@import "@fontsource/fredoka/700.css";
 
 @source "../**/*.{ts,tsx}";
 
 /* Tailwind v4 CSS-First Configuration */
+
+@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant chameleon (&:where(.chameleon, .chameleon *));
+@custom-variant simple (&:where(.simple, .simple *));
 
 @theme {
   /* Claymorphism Vibrant Colors */
@@ -60,6 +69,13 @@
   /* Border Colors */
   --color-border-light: #c7d2fe;
 
+  /* Glass Backgrounds */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+
+  /* Theme Backgrounds */
+  --bg-gradient: linear-gradient(to bottom right, #fde68a, #cffafe, #99f6e4);
+  /* amber-200 via cyan-100 to teal-200 */
+
   /* Custom Animations */
   --animate-float: float 3s ease-in-out infinite;
   --animate-fade-in-up: fadeInUp 0.6s ease-out forwards;
@@ -76,10 +92,195 @@
   --font-family-sans:
     "Nunito", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     "Roboto", sans-serif;
+
+  /* Clay Shadows */
+  --shadow-clay-card: 0 8px 0 var(--color-clay-shadow-1),
+    0 4px 12px var(--color-clay-shadow-2),
+    inset 0 -2px 4px var(--color-clay-shadow-inset);
+  --shadow-clay-card-hover: 0 10px 0 var(--color-clay-shadow-1),
+    0 6px 16px var(--color-clay-shadow-2),
+    inset 0 -2px 4px var(--color-clay-shadow-inset);
+  --shadow-clay-card-active: 0 4px 0 var(--color-clay-shadow-1),
+    0 2px 8px var(--color-clay-shadow-2),
+    inset 0 -1px 2px var(--color-clay-shadow-inset);
+
+  --shadow-clay-btn: 0 6px 0 var(--color-clay-shadow-1),
+    0 3px 8px var(--color-clay-shadow-2),
+    inset 0 -2px 3px var(--color-clay-shadow-inset);
+  --shadow-clay-btn-hover: 0 8px 0 var(--color-clay-shadow-1),
+    0 4px 12px var(--color-clay-shadow-2),
+    inset 0 -2px 3px var(--color-clay-shadow-inset);
+  --shadow-clay-btn-active: 0 3px 0 var(--color-clay-shadow-1),
+    0 1px 4px var(--color-clay-shadow-2),
+    inset 0 -1px 2px var(--color-clay-shadow-inset);
+
+  --shadow-clay-input: 0 4px 0 var(--color-clay-shadow-1),
+    0 2px 6px var(--color-clay-shadow-2),
+    inset 0 -1px 2px var(--color-clay-shadow-inset);
+  --shadow-clay-input-focus: 0 4px 0 var(--color-shadow-primary),
+    0 2px 8px var(--color-shadow-primary-soft),
+    inset 0 -1px 2px var(--color-clay-shadow-inset);
+}
+
+@layer base {
+  :root {
+    /* Clay Shadow Colors - Light Mode Defaults */
+    --color-clay-shadow-1: rgba(0, 0, 0, 0.1);
+    --color-clay-shadow-2: rgba(0, 0, 0, 0.08);
+    --color-clay-shadow-inset: rgba(0, 0, 0, 0.05);
+
+    --color-shadow-primary: rgba(79, 70, 229, 0.3);
+    --color-shadow-primary-soft: rgba(79, 70, 229, 0.2);
+  }
+
+  .chameleon {
+    /* Chameleon Theme - Nature inspired with glassmorphism */
+    --color-bg-light: #9ace57;
+    /* Body Green */
+
+    --color-primary-50: #f2f9e6;
+    --color-primary-100: #e5f3cc;
+    --color-primary-200: #cce799;
+    --color-primary-300: #b3db66;
+    --color-primary-400: #9ace57;
+    --color-primary-500: #ca5f38;
+    /* Accent Orange */
+    --color-primary-600: #b24d2d;
+    --color-primary-700: #993b22;
+    --color-primary-800: #802f17;
+    --color-primary-900: #66220d;
+
+    --color-secondary-50: #f0ebeb;
+    --color-secondary-100: #e0d6d6;
+    --color-secondary-200: #c2adad;
+    --color-secondary-300: #a38585;
+    --color-secondary-400: #855c5c;
+    --color-secondary-500: #663333;
+    /* Details Brown */
+    --color-secondary-600: #522929;
+    --color-secondary-700: #3d1f1f;
+    --color-secondary-800: #291414;
+    --color-secondary-900: #140a0a;
+
+    --color-accent-50: #fef4e6;
+    --color-accent-100: #fce8cc;
+    --color-accent-200: #fad199;
+    --color-accent-300: #f8ba66;
+    --color-accent-400: #f6a333;
+    --color-accent-500: #f58d00;
+    /* Eye Orange/Yellow */
+    --color-accent-600: #c47100;
+    --color-accent-700: #935400;
+    --color-accent-800: #623800;
+    --color-accent-900: #311c00;
+
+    --color-bg-white: rgba(255, 255, 255, 0.25);
+    --color-text-primary: #1e1b4b;
+    --color-text-secondary: #333333;
+    --color-border-light: rgba(255, 255, 255, 0.4);
+
+    /* Override clay colors to be more nature-themed if needed, or keep pastel */
+    --color-clay-peach: #fad199;
+    --color-clay-blue: #b3db66;
+    --color-clay-mint: #9ace57;
+    --color-clay-lilac: #e0d6d6;
+    --color-clay-yellow: #f8ba66;
+    --color-clay-pink: #f2f9e6;
+
+    --glass-bg: rgba(255, 255, 255, 0.25);
+    --bg-gradient: linear-gradient(135deg, #e5f3cc 0%, #9ace57 50%, #b3db66 100%);
+  }
+
+  .dark {
+    --color-bg-light: #0f172a;
+    /* Slate-900 - Darker/Desaturated background for text pop */
+    --color-bg-white: #1e293b;
+    /* Slate-800 - Slightly lighter for cards */
+    --color-text-primary: #f8fafc;
+    /* Slate-50 - Brightest White */
+    --color-text-secondary: #cbd5e1;
+    /* Slate-300 - High legibility secondary */
+    --color-text-muted: #94a3b8;
+    /* Slate-400 - Readable muted */
+    --color-border-light: #334155;
+    /* Slate-700 - Subtle border */
+
+    /* Dark Mode Shadows - Stronger / Adjusted opacity */
+    --color-clay-shadow-1: rgba(0, 0, 0, 0.5);
+    --color-clay-shadow-2: rgba(0, 0, 0, 0.4);
+    --color-clay-shadow-inset: rgba(255, 255, 255, 0.05);
+
+    --glass-bg: rgba(30, 27, 75, 0.6);
+    --bg-gradient: linear-gradient(to bottom right, #1e1b4b, #312e81, #1e1b4b);
+  }
+
+  .simple {
+    /* Simple Theme - Strict Black & White */
+    --color-bg-light: #ffffff;
+    --color-bg-white: #ffffff;
+    --color-text-primary: #000000;
+    --color-text-secondary: #000000;
+    --color-text-muted: #666666;
+    --color-border-light: #000000;
+
+    /* Grayscale Primary */
+    --color-primary-50: #ffffff;
+    --color-primary-100: #f5f5f5;
+    --color-primary-200: #e5e5e5;
+    --color-primary-300: #d4d4d4;
+    --color-primary-400: #a3a3a3;
+    --color-primary-500: #737373;
+    --color-primary-600: #525252;
+    --color-primary-700: #404040;
+    --color-primary-800: #262626;
+    --color-primary-900: #171717;
+
+    /* Grayscale Secondary */
+    --color-secondary-50: #fafafa;
+    --color-secondary-100: #f4f4f5;
+    --color-secondary-200: #e4e4e7;
+    --color-secondary-300: #d4d4d8;
+    --color-secondary-400: #a1a1aa;
+    --color-secondary-500: #71717a;
+    --color-secondary-600: #52525b;
+    --color-secondary-700: #3f3f46;
+    --color-secondary-800: #27272a;
+    --color-secondary-900: #18181b;
+
+    /* Grayscale Accent */
+    --color-accent-50: #ffffff;
+    --color-accent-100: #efefef;
+    --color-accent-200: #dcdcdc;
+    --color-accent-300: #bdbdbd;
+    --color-accent-400: #989898;
+    --color-accent-500: #7c7c7c;
+    --color-accent-600: #656565;
+    --color-accent-700: #525252;
+    --color-accent-800: #333333;
+    --color-accent-900: #1a1a1a;
+
+    /* Simple Clay adjustments - flat or sharp */
+    --color-clay-peach: #eeeeee;
+    --color-clay-blue: #dddddd;
+    --color-clay-mint: #cccccc;
+    --color-clay-lilac: #bbbbbb;
+    --color-clay-yellow: #aaaaaa;
+    --color-clay-pink: #999999;
+
+    /* High contrast shadows */
+    --color-clay-shadow-1: #000000;
+    --color-clay-shadow-2: #000000;
+    --color-clay-shadow-inset: transparent;
+
+    --glass-bg: rgba(255, 255, 255, 0.9);
+    --bg-gradient: none;
+    /* No gradient, just white */
+  }
 }
 
 /* Animation Keyframes */
 @keyframes float {
+
   0%,
   100% {
     transform: translateY(0) rotate(0deg);
@@ -177,6 +378,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--color-bg-light);
+  color: var(--color-text-primary);
 }
 
 h1,
@@ -211,40 +413,28 @@ h6 {
 
 /* Clay Card - The signature chunky, soft 3D look */
 .clay-card {
-  background: var(--color-bg-white);
+  background-color: var(--color-bg-white);
   border-radius: 20px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  box-shadow:
-    0 8px 0 rgba(0, 0, 0, 0.1),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-clay-card);
   transition: all 200ms ease-out;
 }
 
 .clay-card:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 10px 0 rgba(0, 0, 0, 0.1),
-    0 6px 16px rgba(0, 0, 0, 0.12),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-clay-card-hover);
 }
 
 .clay-card:active {
   transform: translateY(2px);
-  box-shadow:
-    0 4px 0 rgba(0, 0, 0, 0.1),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-clay-card-active);
 }
 
 /* Clay Button - Chunky, playful buttons */
 .clay-btn {
   border-radius: 16px;
   border: 3px solid rgba(0, 0, 0, 0.15);
-  box-shadow:
-    0 6px 0 rgba(0, 0, 0, 0.15),
-    0 3px 8px rgba(0, 0, 0, 0.1),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn);
   transition: all 200ms ease-out;
   font-weight: 600;
   cursor: pointer;
@@ -252,18 +442,12 @@ h6 {
 
 .clay-btn:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.12),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-hover);
 }
 
 .clay-btn:active {
   transform: translateY(3px);
-  box-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.15),
-    0 1px 4px rgba(0, 0, 0, 0.1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-active);
 }
 
 /* Clay Badge - Small, chunky labels */
@@ -349,11 +533,9 @@ h6 {
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(
-    135deg,
-    var(--color-accent-500) 0%,
-    var(--color-primary-500) 100%
-  );
+  background: linear-gradient(135deg,
+      var(--color-accent-500) 0%,
+      var(--color-primary-500) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -363,10 +545,7 @@ h6 {
 .btn-primary {
   border-radius: 16px;
   border: 3px solid rgba(0, 0, 0, 0.15);
-  box-shadow:
-    0 6px 0 rgba(0, 0, 0, 0.15),
-    0 3px 8px rgba(0, 0, 0, 0.1),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn);
   transition: all 200ms ease-out;
   font-weight: 600;
   cursor: pointer;
@@ -377,27 +556,18 @@ h6 {
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.12),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-hover);
 }
 
 .btn-primary:active {
   transform: translateY(3px);
-  box-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.15),
-    0 1px 4px rgba(0, 0, 0, 0.1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-active);
 }
 
 .btn-secondary {
   border-radius: 16px;
   border: 3px solid rgba(0, 0, 0, 0.15);
-  box-shadow:
-    0 6px 0 rgba(0, 0, 0, 0.15),
-    0 3px 8px rgba(0, 0, 0, 0.1),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn);
   transition: all 200ms ease-out;
   font-weight: 600;
   cursor: pointer;
@@ -408,29 +578,20 @@ h6 {
 
 .btn-secondary:hover {
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 rgba(0, 0, 0, 0.15),
-    0 4px 12px rgba(0, 0, 0, 0.12),
-    inset 0 -2px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-hover);
 }
 
 .btn-secondary:active {
   transform: translateY(3px);
-  box-shadow:
-    0 3px 0 rgba(0, 0, 0, 0.15),
-    0 1px 4px rgba(0, 0, 0, 0.1),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-clay-btn-active);
 }
 
 /* Card Styles - Updated for Claymorphism */
 .card-clay {
-  background: var(--color-bg-white);
+  background-color: var(--color-bg-white);
   border-radius: 20px;
   border: 3px solid rgba(0, 0, 0, 0.1);
-  box-shadow:
-    0 8px 0 rgba(0, 0, 0, 0.1),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-clay-card);
   transition: all 200ms ease-out;
 }
 
@@ -438,10 +599,234 @@ h6 {
   cursor: pointer;
 }
 
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="chameleon"] .clay-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+}
+
+[data-theme="chameleon"] .clay-btn {
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="simple"] .clay-card {
+  background: white;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  background: white;
+  border: 2px solid black;
+  box-shadow: 4px 4px 0 0 black;
+  border-radius: 0;
+  color: black;
+}
+
+/* Force override text colors in simple theme for cards to avoid white-on-white */
+[data-theme="simple"] .clay-card .text-white,
+[data-theme="simple"] .clay-card .text-white\/90,
+[data-theme="simple"] .clay-card.text-white {
+  color: black;
+}
+
+[data-theme="simple"] .clay-btn {
+  background: white;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 black;
+  border-radius: 0;
+  color: black;
+}
+
+[data-theme="simple"] .clay-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 0 black;
+}
+
+[data-theme="simple"] .clay-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 black;
+}
+
+[data-theme="simple"] .clay-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 0 black;
+}
+
+/* Ensure no gradients in simple theme */
+[data-theme="simple"] .gradient-text {
+  background: none;
+  -webkit-text-fill-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+}
+
+/* Fix visibility of black text on dark cards in dark mode */
+.dark .clay-card h3.text-gray-900,
+[data-theme="dark"] .clay-card h3.text-gray-900 {
+  color: var(--color-text-primary);
+}
+
+/* Simple Theme - Distinct Grayscale Buttons */
+
+/* Darkest to Less Dark: Primary -> Secondary -> Success -> Danger */
+[data-theme="simple"] button[data-variant="primary"] {
+  background-image: none;
+  background-color: #000000;
+  /* Darkest */
+  color: white !important;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="simple"] button[data-variant="secondary"] {
+  background-image: none;
+  background-color: #333333;
+  /* Dark Gray */
+  color: white !important;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="simple"] button[data-variant="success"] {
+  background-image: none;
+  background-color: #555555;
+  /* Medium Dark Gray */
+  color: white !important;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="simple"] button[data-variant="danger"] {
+  background-image: none;
+  background-color: #777777;
+  /* Light Dark Gray */
+  color: white !important;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 rgba(0, 0, 0, 0.5);
+}
+
+/* Lightest to Less Light: Outline -> Glass */
+[data-theme="simple"] button[data-variant="outline"] {
+  background-image: none;
+  background-color: #ffffff;
+  /* Lightest */
+  color: black;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 black;
+}
+
+[data-theme="simple"] button[data-variant="glass"] {
+  background-image: none;
+  background-color: #e5e5e5;
+  /* Less Light (Light Gray) */
+  color: black;
+  border: 2px solid black;
+  box-shadow: 2px 2px 0 0 black;
+}
+
+/* Word Type Badges - Simple Theme Grayscale Gradient */
+
+/* Noun: Darkest (Black) */
+[data-theme="simple"] .clay-card span[class*="bg-[#98FF98]"] {
+  background-color: #000000 !important;
+  color: white !important;
+  border-color: #000000 !important;
+  box-shadow: none !important;
+}
+
+/* Verb: Very Dark Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#ADD8E6]"] {
+  background-color: #222222 !important;
+  color: white !important;
+  border-color: #222222 !important;
+  box-shadow: none !important;
+}
+
+/* Adjective: Dark Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#E6E6FA]"] {
+  background-color: #444444 !important;
+  color: white !important;
+  border-color: #444444 !important;
+  box-shadow: none !important;
+}
+
+/* Adverb: Medium Dark Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#FFF9C4]"] {
+  background-color: #666666 !important;
+  color: white !important;
+  border-color: #666666 !important;
+  box-shadow: none !important;
+}
+
+/* Pronoun: Medium Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#FDBCB4]"] {
+  background-color: #888888 !important;
+  color: white !important;
+  border-color: #888888 !important;
+  box-shadow: none !important;
+}
+
+/* Preposition: Light Gray (Switch to Black Text) */
+[data-theme="simple"] .clay-card span[class*="bg-[#FFD1DC]"] {
+  background-color: #AAAAAA !important;
+  color: black !important;
+  border-color: #AAAAAA !important;
+  box-shadow: none !important;
+}
+
+/* Conjunction: Lighter Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#FFE4B5]"] {
+  background-color: #CCCCCC !important;
+  color: black !important;
+  border-color: #CCCCCC !important;
+  box-shadow: none !important;
+}
+
+/* Interjection: Very Light Gray */
+[data-theme="simple"] .clay-card span[class*="bg-[#DDA0DD]"] {
+  background-color: #DDDDDD !important;
+  color: black !important;
+  border-color: #DDDDDD !important;
+  box-shadow: none !important;
+}
+
+/* Phrase: Near White */
+[data-theme="simple"] .clay-card span[class*="bg-[#F0E68C]"] {
+  background-color: #EEEEEE !important;
+  color: black !important;
+  border-color: #EEEEEE !important;
+  box-shadow: none !important;
+}
+
+/* N/A: White/Gray */
+[data-theme="simple"] .clay-card span[class*="bg-gray-200"] {
+  background-color: #F8F8F8 !important;
+  color: black !important;
+  border-color: #DDDDDD !important;
+  box-shadow: none !important;
+}
+
+/* Handle Badges specifically if they use .clay-badge */
+[data-theme="simple"] .clay-badge {
+  background-color: white !important;
+  color: black !important;
+  border: 1px solid black !important;
+}
+
 /* Browser Compatibility */
-@supports (
-  (-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))
-) {
+@supports ((-webkit-backdrop-filter: blur(12px)) or (backdrop-filter: blur(12px))) {
+
   .glass-effect,
   .glass-effect-dark {
     -webkit-backdrop-filter: blur(12px);

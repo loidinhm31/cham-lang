@@ -111,12 +111,14 @@ export const CSVExportPage: React.FC = () => {
       <div className="min-h-screen p-6 space-y-6">
         <Card className="p-6">
           <div className="flex items-center gap-3 mb-4">
-            <FileDown className="w-8 h-8 text-chameleon-600" />
+            <FileDown className="w-8 h-8 text-chameleon-600 dark:text-chameleon-400" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
                 {t("csv.exportCollections")}
               </h2>
-              <p className="text-gray-600">{t("csv.exportDescription")}</p>
+              <p className="text-[var(--color-text-secondary)]">
+                {t("csv.exportDescription")}
+              </p>
             </div>
           </div>
 
@@ -140,7 +142,7 @@ export const CSVExportPage: React.FC = () => {
               <div className="flex justify-between items-center mb-4 pb-4 border-b">
                 <button
                   onClick={toggleSelectAll}
-                  className="flex items-center gap-2 text-chameleon-600 hover:text-chameleon-700 font-medium"
+                  className="flex items-center gap-2 text-chameleon-600 dark:text-chameleon-400 hover:text-chameleon-700 dark:hover:text-chameleon-300 font-medium"
                 >
                   {selectedIds.size === collections.length ? (
                     <CheckSquare className="w-5 h-5" />
@@ -152,7 +154,7 @@ export const CSVExportPage: React.FC = () => {
                     : t("csv.selectAll")}
                 </button>
 
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-[var(--color-text-secondary)]">
                   {t("csv.selectedCount", {
                     selected: selectedIds.size,
                     total: collections.length,
@@ -174,21 +176,21 @@ export const CSVExportPage: React.FC = () => {
                         onClick={() => toggleSelection(id)}
                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                           isSelected
-                            ? "border-chameleon-600 bg-chameleon-50"
-                            : "border-gray-200 bg-white hover:border-gray-300"
+                            ? "border-chameleon-600 bg-chameleon-50 dark:bg-chameleon-900/30 dark:border-chameleon-500"
+                            : "border-[var(--color-border-light)] bg-[var(--color-bg-white)] hover:border-gray-300 dark:hover:border-slate-600"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           {isSelected ? (
-                            <CheckSquare className="w-5 h-5 text-chameleon-600 flex-shrink-0" />
+                            <CheckSquare className="w-5 h-5 text-chameleon-600 dark:text-chameleon-400 flex-shrink-0" />
                           ) : (
-                            <Square className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                            <Square className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" />
                           )}
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800">
+                            <div className="font-semibold text-[var(--color-text-primary)]">
                               {collection.name}
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-[var(--color-text-secondary)]">
                               {collection.language.toUpperCase()} •{" "}
                               {collection.word_count} {t("collections.words")}
                             </div>

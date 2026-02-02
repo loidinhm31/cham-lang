@@ -314,6 +314,7 @@
   },
   "auth": {
     "login": "Login",
+    "loginButton": "Log In",
     "register": "Register",
     "logout": "Logout",
     "username": "Username",
@@ -342,7 +343,12 @@
     "signOutSuccess": "Signed out successfully",
     "signInFailed": "Sign in failed",
     "unknownUser": "Unknown User",
-    "loginRequired": "You must be logged in to sync"
+    "loginRequired": "You must be logged in to sync",
+    "loggedOut": "Logged out successfully",
+    "fillAllFields": "Please fill in all fields",
+    "loginSuccess": "Logged in successfully",
+    "registerSuccess": "Account created successfully",
+    "registerButton": "Create Account"
   },
   "sync": {
     "pendingChanges": "pending changes",

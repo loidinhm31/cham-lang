@@ -223,7 +223,7 @@ export const CollectionDetailPage: React.FC = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-[var(--color-bg-light)] transition-colors duration-200 pb-10">
       <TopBar title={collection.name} showBack backTo={backRoute} />
 
       {/* Bulk Action Toolbar */}
@@ -267,16 +267,19 @@ export const CollectionDetailPage: React.FC = () => {
 
         {/* Study Mode Button */}
         {!selectionMode && vocabularies.length > 0 && (
-          <Card variant="glass" className="bg-blue-50 border-2 border-blue-200">
+          <Card
+            variant="glass"
+            className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800"
+          >
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-blue-900 mb-1">
+                <h3 className="text-lg font-bold text-blue-900 dark:text-blue-100 mb-1">
                   {t("study.studyMode") || "Study Mode"}
                 </h3>
-                <p className="text-sm text-blue-700">
+                <p className="text-sm text-blue-700 dark:text-blue-300">
                   {t("study.practiceWithoutTracking") ||
                     "Practice all words without tracking progress"}
                 </p>
@@ -338,10 +341,10 @@ export const CollectionDetailPage: React.FC = () => {
 
         {/* Vocabulary List */}
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
             {t("vocabulary.title")}{" "}
             {totalCount > 0 && (
-              <span className="text-gray-500 text-lg font-normal">
+              <span className="text-[var(--color-text-muted)] text-lg font-normal">
                 ({vocabularies.length}/{totalCount})
               </span>
             )}
@@ -367,6 +370,6 @@ export const CollectionDetailPage: React.FC = () => {
         onConfirm={handleBulkMove}
         currentCollectionId={collection.id || ""}
       />
-    </>
+    </div>
   );
 };

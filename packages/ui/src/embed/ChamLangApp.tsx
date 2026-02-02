@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import {
   AddVocabularyPage,
@@ -20,10 +20,12 @@ import {
   CSVImportPage,
   StudyModePage,
   OAuthCallbackPage,
+  ThemePreviewPage,
 } from "@cham-lang/ui/components/pages";
 import {
   SyncNotificationProvider,
   DialogProvider,
+  ThemeProvider,
 } from "@cham-lang/ui/contexts";
 import { FontSizeService } from "@cham-lang/ui/services";
 import "@cham-lang/ui/i18n/config";
@@ -54,76 +56,82 @@ const AppContent: React.FC = () => {
   }, []);
 
   return (
-    <DialogProvider>
-      <BrowserSyncInitializer>
-        <SyncNotificationProvider>
-          <Routes>
-            <Route element={<AppShell />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
-              <Route
-                path="/vocabulary/edit/:id"
-                element={<EditVocabularyPage />}
-              />
-              <Route
-                path="/vocabulary/:id"
-                element={<VocabularyDetailPage />}
-              />
-              <Route path="/progress" element={<ProgressPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/collections" element={<CollectionsPage />} />
-              <Route
-                path="/collections/new"
-                element={<CreateCollectionPage />}
-              />
-              <Route
-                path="/collections/:id/edit"
-                element={<EditCollectionPage />}
-              />
-              <Route
-                path="/collections/:id"
-                element={<CollectionDetailPage />}
-              />
-              <Route path="/csv/export" element={<CSVExportPage />} />
-              <Route path="/csv/import" element={<CSVImportPage />} />
-              <Route path="/practice" element={<PracticeModePage />} />
-              <Route
-                path="/practice/flashcard"
-                element={<FlashcardPracticePage />}
-              />
-              <Route
-                path="/practice/fill-word"
-                element={<FillWordPracticePage />}
-              />
-              <Route
-                path="/practice/multiple-choice"
-                element={<MultipleChoicePracticePage />}
-              />
-              {/* Study Mode Routes */}
-              <Route path="/practice/study" element={<StudyModePage />} />
-              <Route
-                path="/practice/study/flashcard"
-                element={<FlashcardPracticePage />}
-              />
-              <Route
-                path="/practice/study/fill-word"
-                element={<FillWordPracticePage />}
-              />
-              <Route
-                path="/practice/study/multiple-choice"
-                element={<MultipleChoicePracticePage />}
-              />
-              <Route
-                path="/settings/learning"
-                element={<LearningSettingsPage />}
-              />
-            </Route>
-            {/* OAuth Callback - Outside AppShell (popup window) */}
-            <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
-          </Routes>
-        </SyncNotificationProvider>
-      </BrowserSyncInitializer>
-    </DialogProvider>
+    <ThemeProvider>
+      <DialogProvider>
+        <BrowserSyncInitializer>
+          <SyncNotificationProvider>
+            <Routes>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/vocabulary/add" element={<AddVocabularyPage />} />
+                <Route
+                  path="/vocabulary/edit/:id"
+                  element={<EditVocabularyPage />}
+                />
+                <Route
+                  path="/vocabulary/:id"
+                  element={<VocabularyDetailPage />}
+                />
+                <Route path="/progress" element={<ProgressPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/collections" element={<CollectionsPage />} />
+                <Route
+                  path="/collections/new"
+                  element={<CreateCollectionPage />}
+                />
+                <Route
+                  path="/collections/:id/edit"
+                  element={<EditCollectionPage />}
+                />
+                <Route
+                  path="/collections/:id"
+                  element={<CollectionDetailPage />}
+                />
+                <Route path="/csv/export" element={<CSVExportPage />} />
+                <Route path="/csv/import" element={<CSVImportPage />} />
+                <Route path="/practice" element={<PracticeModePage />} />
+                <Route
+                  path="/practice/flashcard"
+                  element={<FlashcardPracticePage />}
+                />
+                <Route
+                  path="/practice/fill-word"
+                  element={<FillWordPracticePage />}
+                />
+                <Route
+                  path="/practice/multiple-choice"
+                  element={<MultipleChoicePracticePage />}
+                />
+                {/* Study Mode Routes */}
+                <Route path="/practice/study" element={<StudyModePage />} />
+                <Route
+                  path="/practice/study/flashcard"
+                  element={<FlashcardPracticePage />}
+                />
+                <Route
+                  path="/practice/study/fill-word"
+                  element={<FillWordPracticePage />}
+                />
+                <Route
+                  path="/practice/study/multiple-choice"
+                  element={<MultipleChoicePracticePage />}
+                />
+                <Route
+                  path="/settings/learning"
+                  element={<LearningSettingsPage />}
+                />
+                <Route
+                  path="/settings/theme-preview"
+                  element={<ThemePreviewPage />}
+                />
+              </Route>
+              {/* OAuth Callback - Outside AppShell (popup window) */}
+              <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
+            </Routes>
+          </SyncNotificationProvider>
+        </BrowserSyncInitializer>
+      </DialogProvider>
+    </ThemeProvider>
   );
 };
 

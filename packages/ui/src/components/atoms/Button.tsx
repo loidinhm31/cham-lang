@@ -4,21 +4,22 @@ import { LucideIcon } from "lucide-react";
 import { cn } from "@cham-lang/shared/utils";
 
 const buttonVariants = cva(
-  "font-bold rounded-2xl border-[3px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_6px_0_rgba(0,0,0,0.15),0_3px_8px_rgba(0,0,0,0.1),inset_0_-2px_3px_rgba(0,0,0,0.1)] hover:translate-y-[-2px] hover:shadow-[0_8px_0_rgba(0,0,0,0.15),0_4px_12px_rgba(0,0,0,0.12),inset_0_-2px_3px_rgba(0,0,0,0.1)] active:translate-y-[3px] active:shadow-[0_3px_0_rgba(0,0,0,0.15),0_1px_4px_rgba(0,0,0,0.1),inset_0_-1px_2px_rgba(0,0,0,0.1)] disabled:translate-y-0 disabled:shadow-[0_6px_0_rgba(0,0,0,0.15),0_3px_8px_rgba(0,0,0,0.1),inset_0_-2px_3px_rgba(0,0,0,0.1)]",
+  "font-bold rounded-2xl border-[3px] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-clay-btn hover:translate-y-[-2px] hover:shadow-clay-btn-hover active:translate-y-[3px] active:shadow-clay-btn-active disabled:translate-y-0 disabled:shadow-clay-btn",
   {
     variants: {
       variant: {
         primary:
-          "text-white bg-gradient-to-br from-amber-400 to-orange-500 border-amber-600",
+          "text-white bg-linear-to-br from-[var(--color-primary-400)] to-[var(--color-primary-600)] border-[var(--color-primary-600)]",
         secondary:
-          "text-white bg-gradient-to-br from-indigo-500 to-purple-500 border-indigo-700",
-        glass: "text-gray-800 bg-white border-gray-300 hover:bg-gray-50",
+          "text-white bg-linear-to-br from-[var(--color-secondary-400)] to-[var(--color-secondary-600)] border-[var(--color-secondary-600)]",
+        glass:
+          "text-[var(--color-text-primary)] bg-[var(--color-bg-white)] border-[var(--color-border-light)] hover:bg-[var(--color-bg-white)]/80 backdrop-blur-md",
         outline:
-          "text-indigo-600 bg-white border-indigo-500 hover:bg-indigo-50 shadow-[0_4px_0_rgba(79,70,229,0.2)]",
+          "text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)] bg-[var(--color-bg-white)] border-[var(--color-primary-500)] hover:bg-indigo-50 dark:hover:bg-indigo-950/50 shadow-[0_4px_0_rgba(79,70,229,0.2)] dark:shadow-[0_4px_0_rgba(56,189,248,0.2)]",
         success:
-          "text-white bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-700",
+          "text-white bg-linear-to-br from-emerald-400 to-teal-500 border-emerald-700",
         danger:
-          "text-white bg-gradient-to-br from-red-400 to-pink-500 border-red-700",
+          "text-white bg-linear-to-br from-red-400 to-pink-500 border-red-700",
       },
       size: {
         xs: "py-1.5 px-3 text-xs",
@@ -72,6 +73,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           fullWidth && "w-full",
           className,
         )}
+        data-variant={variant}
         {...props}
       >
         {Icon && iconPosition === "left" && (

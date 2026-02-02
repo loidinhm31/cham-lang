@@ -63,7 +63,7 @@ export const CollectionsPage: React.FC = () => {
       <TopBar title={t("collections.title")} showBack={false} />
       <div className="min-h-screen p-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+          <h2 className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)]">
             {t("collections.myCollections")}
           </h2>
           <div className="flex gap-2 flex-wrap">
@@ -103,15 +103,17 @@ export const CollectionsPage: React.FC = () => {
 
         {isLoading ? (
           <div className="text-center py-12">
-            <div className="text-gray-600">{t("common.loading")}</div>
+            <div className="text-[var(--color-text-secondary)]">
+              {t("common.loading")}
+            </div>
           </div>
         ) : collections.length === 0 ? (
           <Card className="p-12 text-center">
-            <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <BookOpen className="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
               {t("collections.noCollections")}
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--color-text-secondary)] mb-6">
               {t("collections.noCollectionsDescription")}
             </p>
             <Button
@@ -133,13 +135,13 @@ export const CollectionsPage: React.FC = () => {
               >
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800 mb-1 hover:text-teal-600 transition-colors">
+                    <h3 className="text-xl font-bold text-[var(--color-text-primary)] mb-1 hover:text-teal-600 dark:hover:text-teal-400 transition-colors">
                       {collection.name}
                     </h3>
-                    <p className="text-gray-600 text-sm mb-2">
+                    <p className="text-[var(--color-text-secondary)] text-sm mb-2">
                       {collection.description}
                     </p>
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-[var(--color-text-muted)]">
                       <span className="flex items-center gap-1">
                         <BookOpen className="w-4 h-4" />
                         {collection.word_count} {t("collections.words")}

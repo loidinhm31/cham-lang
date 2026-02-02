@@ -40,12 +40,14 @@ export class IndexedDBSyncStorage {
             ownerId: collection.owner_id || "local",
             isPublic: collection.is_public,
             wordCount: collection.word_count,
-            createdAt: typeof collection.created_at === "string"
-              ? Math.floor(new Date(collection.created_at).getTime() / 1000)
-              : collection.created_at,
-            updatedAt: typeof collection.updated_at === "string"
-              ? Math.floor(new Date(collection.updated_at).getTime() / 1000)
-              : now,
+            createdAt:
+              typeof collection.created_at === "string"
+                ? Math.floor(new Date(collection.created_at).getTime() / 1000)
+                : collection.created_at,
+            updatedAt:
+              typeof collection.updated_at === "string"
+                ? Math.floor(new Date(collection.updated_at).getTime() / 1000)
+                : now,
             syncVersion: collection.sync_version || 1,
           },
           version: collection.sync_version || 1,
@@ -78,12 +80,14 @@ export class IndexedDBSyncStorage {
             tags: vocab.tags,
             relatedWords: vocab.related_words,
             userId: vocab.user_id || "local",
-            createdAt: typeof vocab.created_at === "string"
-              ? Math.floor(new Date(vocab.created_at).getTime() / 1000)
-              : vocab.created_at,
-            updatedAt: typeof vocab.updated_at === "string"
-              ? Math.floor(new Date(vocab.updated_at).getTime() / 1000)
-              : vNow,
+            createdAt:
+              typeof vocab.created_at === "string"
+                ? Math.floor(new Date(vocab.created_at).getTime() / 1000)
+                : vocab.created_at,
+            updatedAt:
+              typeof vocab.updated_at === "string"
+                ? Math.floor(new Date(vocab.updated_at).getTime() / 1000)
+                : vNow,
             syncVersion: vocab.sync_version || 1,
           },
           version: vocab.sync_version || 1,
@@ -102,9 +106,10 @@ export class IndexedDBSyncStorage {
           data: {
             id: topic.id,
             name: topic.name,
-            createdAt: typeof topic.created_at === "string"
-              ? Math.floor(new Date(topic.created_at).getTime() / 1000)
-              : topic.created_at,
+            createdAt:
+              typeof topic.created_at === "string"
+                ? Math.floor(new Date(topic.created_at).getTime() / 1000)
+                : topic.created_at,
             syncVersion: topic.sync_version || 1,
           },
           version: topic.sync_version || 1,
@@ -123,9 +128,10 @@ export class IndexedDBSyncStorage {
           data: {
             id: tag.id,
             name: tag.name,
-            createdAt: typeof tag.created_at === "string"
-              ? Math.floor(new Date(tag.created_at).getTime() / 1000)
-              : tag.created_at,
+            createdAt:
+              typeof tag.created_at === "string"
+                ? Math.floor(new Date(tag.created_at).getTime() / 1000)
+                : tag.created_at,
             syncVersion: tag.sync_version || 1,
           },
           version: tag.sync_version || 1,
@@ -145,9 +151,10 @@ export class IndexedDBSyncStorage {
             id: lang.id,
             userId: (lang as any).user_id || "local",
             language: lang.language,
-            createdAt: typeof lang.created_at === "string"
-              ? Math.floor(new Date(lang.created_at).getTime() / 1000)
-              : lang.created_at,
+            createdAt:
+              typeof lang.created_at === "string"
+                ? Math.floor(new Date(lang.created_at).getTime() / 1000)
+                : lang.created_at,
             syncVersion: lang.sync_version || 1,
           },
           version: lang.sync_version || 1,
@@ -167,9 +174,10 @@ export class IndexedDBSyncStorage {
             id: su.id,
             collectionId: su.collection_id,
             userId: su.user_id,
-            createdAt: typeof su.created_at === "string"
-              ? Math.floor(new Date(su.created_at).getTime() / 1000)
-              : su.created_at,
+            createdAt:
+              typeof su.created_at === "string"
+                ? Math.floor(new Date(su.created_at).getTime() / 1000)
+                : su.created_at,
             syncVersion: su.sync_version || 1,
           },
           version: su.sync_version || 1,
@@ -193,15 +201,18 @@ export class IndexedDBSyncStorage {
             totalWordsPracticed: pp.total_words_practiced,
             currentStreak: pp.current_streak,
             longestStreak: pp.longest_streak,
-            lastPracticeDate: typeof pp.last_practice_date === "string"
-              ? Math.floor(new Date(pp.last_practice_date).getTime() / 1000)
-              : pp.last_practice_date,
-            createdAt: typeof pp.created_at === "string"
-              ? Math.floor(new Date(pp.created_at).getTime() / 1000)
-              : pp.created_at,
-            updatedAt: typeof pp.updated_at === "string"
-              ? Math.floor(new Date(pp.updated_at).getTime() / 1000)
-              : pp.updated_at,
+            lastPracticeDate:
+              typeof pp.last_practice_date === "string"
+                ? Math.floor(new Date(pp.last_practice_date).getTime() / 1000)
+                : pp.last_practice_date,
+            createdAt:
+              typeof pp.created_at === "string"
+                ? Math.floor(new Date(pp.created_at).getTime() / 1000)
+                : pp.created_at,
+            updatedAt:
+              typeof pp.updated_at === "string"
+                ? Math.floor(new Date(pp.updated_at).getTime() / 1000)
+                : pp.updated_at,
             syncVersion: pp.sync_version || 1,
           },
           version: pp.sync_version || 1,

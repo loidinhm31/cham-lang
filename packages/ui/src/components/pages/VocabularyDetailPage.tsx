@@ -209,7 +209,9 @@ export const VocabularyDetailPage: React.FC = () => {
           backTo={collectionId ? `/collections/${collectionId}` : "/"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-gray-600">{t("app.loading")}</div>
+          <div className="text-[var(--color-text-secondary)]">
+            {t("app.loading")}
+          </div>
         </div>
       </>
     );
@@ -282,7 +284,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {vocabularyIds && currentIndex !== undefined && (
           <>
             {/* Progress Indicator */}
-            <div className="text-center text-sm text-gray-500 mb-4">
+            <div className="text-center text-sm text-[var(--color-text-muted)] mb-4">
               {currentIndex + 1} / {totalWords || vocabularyIds.length}
             </div>
 
@@ -291,18 +293,18 @@ export const VocabularyDetailPage: React.FC = () => {
               {currentIndex > 0 && (
                 <button
                   onClick={goToPrevious}
-                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                  className="pointer-events-auto p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 rounded-full shadow-lg transition-all hover:scale-110"
                 >
-                  <ChevronLeft className="w-8 h-8 text-gray-700" />
+                  <ChevronLeft className="w-8 h-8 text-[var(--color-text-primary)]" />
                 </button>
               )}
               <div className="flex-1" />
               {currentIndex < vocabularyIds.length - 1 && (
                 <button
                   onClick={goToNext}
-                  className="pointer-events-auto p-3 bg-white/90 hover:bg-white rounded-full shadow-lg transition-all hover:scale-110"
+                  className="pointer-events-auto p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 rounded-full shadow-lg transition-all hover:scale-110"
                 >
-                  <ChevronRight className="w-8 h-8 text-gray-700" />
+                  <ChevronRight className="w-8 h-8 text-[var(--color-text-primary)]" />
                 </button>
               )}
             </div>
@@ -338,11 +340,11 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Concept */}
         {vocabulary.concept && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.concept") || "Concept"}
             </h2>
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
-              <p className="text-lg text-gray-800 leading-relaxed">
+            <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+              <p className="text-lg text-[var(--color-text-primary)] leading-relaxed">
                 💡 {vocabulary.concept}
               </p>
             </div>
@@ -351,22 +353,25 @@ export const VocabularyDetailPage: React.FC = () => {
 
         {/* Definitions */}
         <Card variant="glass">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
+          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
             {t("vocabulary.definitions")}
           </h2>
           <div className="space-y-4">
             {vocabulary.definitions.map((def, idx) => (
-              <div key={idx} className="p-4 bg-white/40 rounded-2xl">
-                <p className="text-lg font-semibold text-gray-800 mb-2">
+              <div
+                key={idx}
+                className="p-4 bg-white/40 dark:bg-white/5 rounded-2xl"
+              >
+                <p className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
                   {def.meaning}
                 </p>
                 {def.translation && (
-                  <p className="text-base text-teal-700 mb-2">
+                  <p className="text-base text-teal-700 dark:text-teal-400 mb-2">
                     📝 {def.translation}
                   </p>
                 )}
                 {def.example && (
-                  <p className="text-sm text-gray-600 italic">
+                  <p className="text-sm text-[var(--color-text-secondary)] italic">
                     "{def.example}"
                   </p>
                 )}
@@ -378,13 +383,18 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Example Sentences */}
         {vocabulary.example_sentences.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.exampleSentences")}
             </h2>
             <div className="space-y-3">
               {vocabulary.example_sentences.map((sentence, idx) => (
-                <div key={idx} className="p-3 bg-white/40 rounded-xl">
-                  <p className="text-gray-700">💬 {sentence}</p>
+                <div
+                  key={idx}
+                  className="p-3 bg-white/40 dark:bg-white/5 rounded-xl"
+                >
+                  <p className="text-[var(--color-text-secondary)]">
+                    💬 {sentence}
+                  </p>
                 </div>
               ))}
             </div>
@@ -394,7 +404,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Topics */}
         {vocabulary.topics.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.topics")}
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -410,16 +420,16 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Related Words */}
         {vocabulary.related_words.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.relatedWords")}
             </h2>
             <div className="space-y-3">
               {vocabulary.related_words.map((related, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center justify-between p-3 bg-white/40 rounded-xl"
+                  className="flex items-center justify-between p-3 bg-white/40 dark:bg-white/5 rounded-xl"
                 >
-                  <span className="font-semibold text-gray-800">
+                  <span className="font-semibold text-[var(--color-text-primary)]">
                     {related.word}
                   </span>
                   <Badge variant="glass" className="text-xs">

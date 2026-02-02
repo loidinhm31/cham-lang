@@ -184,7 +184,9 @@ export const PracticeModePage: React.FC = () => {
       <>
         <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-xl text-gray-600">{t("common.loading")}</div>
+          <div className="text-xl text-[var(--color-text-secondary)]">
+            {t("common.loading")}
+          </div>
         </div>
       </>
     );
@@ -196,11 +198,11 @@ export const PracticeModePage: React.FC = () => {
         <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="px-4 pt-6">
           <Card variant="glass" className="p-12 text-center">
-            <Library className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            <Library className="w-16 h-16 text-[var(--color-text-muted)] mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-[var(--color-text-primary)] mb-2">
               {t("practice.noCollections")}
             </h3>
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--color-text-secondary)] mb-6">
               {t("practice.noCollectionsDescription")}
             </p>
             <Button variant="primary" onClick={() => navigate("/collections")}>
@@ -222,10 +224,10 @@ export const PracticeModePage: React.FC = () => {
             {/* Collection Selection */}
             <div className="text-center py-6">
               <div className="text-6xl mb-4">📚</div>
-              <h1 className="text-4xl font-black text-gray-800 mb-2">
+              <h1 className="text-4xl font-black text-[var(--color-text-primary)] mb-2">
                 {t("practice.selectCollection")}
               </h1>
-              <p className="text-lg text-gray-700">
+              <p className="text-lg text-[var(--color-text-secondary)]">
                 {t("practice.selectCollectionDescription")}
               </p>
             </div>
@@ -242,24 +244,24 @@ export const PracticeModePage: React.FC = () => {
                 />
 
                 {selectedCollectionData && (
-                  <div className="p-4 bg-white/40 rounded-2xl space-y-2">
+                  <div className="p-4 bg-white/40 dark:bg-white/5 rounded-2xl space-y-2 border border-white/50 dark:border-white/10">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
+                      <span className="text-[var(--color-text-secondary)]">
                         {t("collections.language")}:
                       </span>
-                      <span className="font-semibold text-gray-800">
+                      <span className="font-semibold text-[var(--color-text-primary)]">
                         {selectedCollectionData.language}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">
+                      <span className="text-[var(--color-text-secondary)]">
                         {t("collections.words")}:
                       </span>
-                      <span className="font-semibold text-gray-800">
+                      <span className="font-semibold text-[var(--color-text-primary)]">
                         {selectedCollectionData.word_count}
                       </span>
                     </div>
-                    <div className="text-sm text-gray-600 mt-2">
+                    <div className="text-sm text-[var(--color-text-secondary)] mt-2">
                       {selectedCollectionData.description}
                     </div>
                   </div>
@@ -281,10 +283,10 @@ export const PracticeModePage: React.FC = () => {
             {/* Mode Selection */}
             <div className="text-center py-6">
               <div className="text-6xl mb-4">🎓</div>
-              <h1 className="text-4xl font-black text-gray-800 mb-2">
+              <h1 className="text-4xl font-black text-[var(--color-text-primary)] mb-2">
                 {t("practice.selectMode")}
               </h1>
-              <p className="text-lg text-gray-700">
+              <p className="text-lg text-[var(--color-text-secondary)]">
                 {t("practice.selectModeDescription")}
               </p>
             </div>
@@ -297,10 +299,10 @@ export const PracticeModePage: React.FC = () => {
                     <Clock className="w-8 h-8 text-white" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-[var(--color-text-secondary)]">
                       {t("practice.dueForReview") || "Due for review"}
                     </p>
-                    <p className="text-3xl font-black text-teal-600">
+                    <p className="text-3xl font-black text-teal-600 dark:text-teal-400">
                       {dueWordsCount} {t("practice.words") || "words"}
                     </p>
                   </div>
@@ -311,7 +313,7 @@ export const PracticeModePage: React.FC = () => {
             {/* Content Mode Selection */}
             <Card variant="glass">
               <div className="space-y-4">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-[var(--color-text-primary)]">
                   {t("practice.contentMode") || "Content to Display"}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -320,17 +322,17 @@ export const PracticeModePage: React.FC = () => {
                     onClick={() => handleContentModeChange("definition")}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       contentMode === "definition"
-                        ? "border-purple-500 bg-purple-50"
-                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30 dark:border-purple-500"
+                        : "border-[var(--color-border-light)] bg-white/40 dark:bg-white/5 hover:border-gray-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <div className="text-2xl mb-2">📖</div>
                     <div
-                      className={`font-semibold ${contentMode === "definition" ? "text-purple-700" : "text-gray-700"}`}
+                      className={`font-semibold ${contentMode === "definition" ? "text-purple-700 dark:text-purple-400" : "text-[var(--color-text-primary)]"}`}
                     >
                       {t("practice.useDefinition") || "Definition"}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
                       {t("practice.useDefinitionDescription") ||
                         "Standard meaning"}
                     </div>
@@ -340,17 +342,17 @@ export const PracticeModePage: React.FC = () => {
                     onClick={() => handleContentModeChange("concept")}
                     className={`p-4 rounded-xl border-2 transition-all ${
                       contentMode === "concept"
-                        ? "border-purple-500 bg-purple-50"
-                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                        ? "border-purple-500 bg-purple-50 dark:bg-purple-900/30 dark:border-purple-500"
+                        : "border-[var(--color-border-light)] bg-white/40 dark:bg-white/5 hover:border-gray-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <div className="text-2xl mb-2">💡</div>
                     <div
-                      className={`font-semibold ${contentMode === "concept" ? "text-purple-700" : "text-gray-700"}`}
+                      className={`font-semibold ${contentMode === "concept" ? "text-purple-700 dark:text-purple-400" : "text-[var(--color-text-primary)]"}`}
                     >
                       {t("practice.useConcept") || "Concept"}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
                       {t("practice.useConceptDescription") || "Core idea"}
                     </div>
                   </button>
@@ -361,14 +363,14 @@ export const PracticeModePage: React.FC = () => {
             {/* Batch Size Selection */}
             <Card variant="glass">
               <div className="space-y-4">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-[var(--color-text-primary)]">
                   {t("practice.batchSize") || "Words per Session"}
                 </label>
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
                     onClick={() => handleBatchSizeChange(batchSize - 5)}
-                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    className="w-12 h-12 rounded-xl bg-white/60 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border-2 border-[var(--color-border-light)] flex items-center justify-center font-bold text-[var(--color-text-primary)] transition-all"
                     disabled={batchSize <= 5}
                   >
                     −
@@ -385,13 +387,13 @@ export const PracticeModePage: React.FC = () => {
                           handleBatchSizeChange(value);
                         }
                       }}
-                      className="w-full px-4 py-3 text-center text-2xl font-bold text-purple-700 bg-purple-50 rounded-xl border-2 border-purple-200 focus:border-purple-500 focus:outline-none transition-all"
+                      className="w-full px-4 py-3 text-center text-2xl font-bold text-purple-700 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 rounded-xl border-2 border-purple-200 dark:border-purple-600 focus:border-purple-500 focus:outline-none transition-all"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={() => handleBatchSizeChange(batchSize + 5)}
-                    className="w-12 h-12 rounded-xl bg-white/60 hover:bg-white/80 border-2 border-gray-200 flex items-center justify-center font-bold text-gray-700 transition-all"
+                    className="w-12 h-12 rounded-xl bg-white/60 dark:bg-white/10 hover:bg-white/80 dark:hover:bg-white/20 border-2 border-[var(--color-border-light)] flex items-center justify-center font-bold text-[var(--color-text-primary)] transition-all"
                     disabled={batchSize >= 100}
                   >
                     +
@@ -406,14 +408,14 @@ export const PracticeModePage: React.FC = () => {
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                         batchSize === size
                           ? "bg-purple-500 text-white"
-                          : "bg-white/60 text-gray-700 hover:bg-white/80 border border-gray-200"
+                          : "bg-white/60 dark:bg-white/10 text-[var(--color-text-primary)] hover:bg-white/80 dark:hover:bg-white/20 border border-[var(--color-border-light)]"
                       }`}
                     >
                       {size}
                     </button>
                   ))}
                 </div>
-                <p className="text-xs text-gray-600 text-center">
+                <p className="text-xs text-[var(--color-text-secondary)] text-center">
                   {t("practice.batchSizeDescription") ||
                     "Choose how many words you want to practice in each session"}
                 </p>
@@ -423,7 +425,7 @@ export const PracticeModePage: React.FC = () => {
             {/* Fill Word Direction Selection */}
             <Card variant="glass">
               <div className="space-y-4">
-                <label className="block text-sm font-semibold text-gray-700">
+                <label className="block text-sm font-semibold text-[var(--color-text-primary)]">
                   {t("practice.fillWordDirection")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -434,17 +436,17 @@ export const PracticeModePage: React.FC = () => {
                     }
                     className={`p-4 rounded-xl border-2 transition-all ${
                       fillWordDirection === "definition_to_word"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500"
+                        : "border-[var(--color-border-light)] bg-white/40 dark:bg-white/5 hover:border-gray-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <div className="text-2xl mb-2">📖→✍️</div>
                     <div
-                      className={`font-semibold ${fillWordDirection === "definition_to_word" ? "text-blue-700" : "text-gray-700"}`}
+                      className={`font-semibold ${fillWordDirection === "definition_to_word" ? "text-blue-700 dark:text-blue-400" : "text-[var(--color-text-primary)]"}`}
                     >
                       {t("practice.definitionToWord")}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
                       {t("practice.definitionToWordDescription")}
                     </div>
                   </button>
@@ -455,17 +457,17 @@ export const PracticeModePage: React.FC = () => {
                     }
                     className={`p-4 rounded-xl border-2 transition-all ${
                       fillWordDirection === "word_to_definition"
-                        ? "border-blue-500 bg-blue-50"
-                        : "border-gray-200 bg-white/40 hover:border-gray-300"
+                        ? "border-blue-500 bg-blue-50 dark:bg-blue-900/30 dark:border-blue-500"
+                        : "border-[var(--color-border-light)] bg-white/40 dark:bg-white/5 hover:border-gray-300 dark:hover:border-slate-600"
                     }`}
                   >
                     <div className="text-2xl mb-2">✍️→📖</div>
                     <div
-                      className={`font-semibold ${fillWordDirection === "word_to_definition" ? "text-blue-700" : "text-gray-700"}`}
+                      className={`font-semibold ${fillWordDirection === "word_to_definition" ? "text-blue-700 dark:text-blue-400" : "text-[var(--color-text-primary)]"}`}
                     >
                       {t("practice.wordToDefinition")}
                     </div>
-                    <div className="text-xs text-gray-600 mt-1">
+                    <div className="text-xs text-[var(--color-text-secondary)] mt-1">
                       {t("practice.wordToDefinitionDescription")}
                     </div>
                   </button>
@@ -475,7 +477,7 @@ export const PracticeModePage: React.FC = () => {
 
             {/* Mode Selection Label */}
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-800">
+              <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
                 {t("practice.selectPracticeMode")}
               </h3>
             </div>
@@ -511,10 +513,12 @@ export const PracticeModePage: React.FC = () => {
                         <Icon className="w-10 h-10 text-white" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                        <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-2">
                           {mode.title}
                         </h3>
-                        <p className="text-gray-600">{mode.description}</p>
+                        <p className="text-[var(--color-text-secondary)]">
+                          {mode.description}
+                        </p>
                       </div>
                     </div>
                   </Card>

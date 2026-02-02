@@ -45,7 +45,8 @@
     "react-i18next": "^16.3.3",
     "react-router-dom": "^7.9.6",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.17"
+    "tailwindcss": "^4.1.17",
+    "@fontsource/fredoka": "^5.1.0"
   },
   "devDependencies": {
     "@cham-lang/tsconfig": "workspace:*",

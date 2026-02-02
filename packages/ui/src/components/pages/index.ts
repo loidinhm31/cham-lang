@@ -17,3 +17,4 @@ export { LearningSettingsPage } from "./LearningSettingsPage";
 export { CSVExportPage } from "./CSVExportPage";
 export { CSVImportPage } from "./CSVImportPage";
 export { OAuthCallbackPage } from "./OAuthCallbackPage";
+export { ThemePreviewPage } from "./ThemePreviewPage";
