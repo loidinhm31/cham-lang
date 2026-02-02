@@ -120,7 +120,7 @@ export const LearningSettingsPage: React.FC = () => {
         <TopBar
           title={t("settings.learning") || "Learning Settings"}
           showBack
-          backTo="/profile"
+          backTo="/settings"
         />
         <div className="flex items-center justify-center h-64">
           <div className="text-gray-600">{t("app.loading")}</div>
@@ -134,7 +134,7 @@ export const LearningSettingsPage: React.FC = () => {
       <TopBar
         title={t("settings.learning") || "Learning Settings"}
         showBack
-        backTo="/profile"
+        backTo="/settings"
       />
 
       <div className="px-4 pt-6 space-y-6 pb-20">

@@ -28,16 +28,25 @@ export class IndexedDBSyncStorage {
     const collections = await db.collections.toArray();
     for (const collection of collections) {
       if (collection.synced_at === undefined || collection.synced_at === null) {
+        const now = Math.floor(Date.now() / 1000);
         records.push({
           tableName: "collections",
           rowId: collection.id,
           data: {
+            id: collection.id,
             name: collection.name,
             description: collection.description,
             language: collection.language,
+            ownerId: collection.owner_id || "local",
             isPublic: collection.is_public,
             wordCount: collection.word_count,
-            createdAt: collection.created_at,
+            createdAt: typeof collection.created_at === "string"
+              ? Math.floor(new Date(collection.created_at).getTime() / 1000)
+              : collection.created_at,
+            updatedAt: typeof collection.updated_at === "string"
+              ? Math.floor(new Date(collection.updated_at).getTime() / 1000)
+              : now,
+            syncVersion: collection.sync_version || 1,
           },
           version: collection.sync_version || 1,
           deleted: false,
@@ -49,10 +58,12 @@ export class IndexedDBSyncStorage {
     const vocabularies = await db.vocabularies.toArray();
     for (const vocab of vocabularies) {
       if (vocab.synced_at === undefined || vocab.synced_at === null) {
+        const vNow = Math.floor(Date.now() / 1000);
         records.push({
           tableName: "vocabularies",
           rowId: vocab.id,
           data: {
+            id: vocab.id,
             word: vocab.word,
             wordType: vocab.word_type,
             level: vocab.level,
@@ -60,13 +71,20 @@ export class IndexedDBSyncStorage {
             audioUrl: vocab.audio_url,
             concept: vocab.concept,
             language: vocab.language,
-            collectionSyncUuid: vocab.collection_id,
+            collectionId: vocab.collection_id,
             definitions: vocab.definitions,
             exampleSentences: vocab.example_sentences,
             topics: vocab.topics,
             tags: vocab.tags,
             relatedWords: vocab.related_words,
-            createdAt: vocab.created_at,
+            userId: vocab.user_id || "local",
+            createdAt: typeof vocab.created_at === "string"
+              ? Math.floor(new Date(vocab.created_at).getTime() / 1000)
+              : vocab.created_at,
+            updatedAt: typeof vocab.updated_at === "string"
+              ? Math.floor(new Date(vocab.updated_at).getTime() / 1000)
+              : vNow,
+            syncVersion: vocab.sync_version || 1,
           },
           version: vocab.sync_version || 1,
           deleted: false,
@@ -81,7 +99,14 @@ export class IndexedDBSyncStorage {
         records.push({
           tableName: "topics",
           rowId: topic.id,
-          data: { name: topic.name, createdAt: topic.created_at },
+          data: {
+            id: topic.id,
+            name: topic.name,
+            createdAt: typeof topic.created_at === "string"
+              ? Math.floor(new Date(topic.created_at).getTime() / 1000)
+              : topic.created_at,
+            syncVersion: topic.sync_version || 1,
+          },
           version: topic.sync_version || 1,
           deleted: false,
         });
@@ -95,7 +120,14 @@ export class IndexedDBSyncStorage {
         records.push({
           tableName: "tags",
           rowId: tag.id,
-          data: { name: tag.name, createdAt: tag.created_at },
+          data: {
+            id: tag.id,
+            name: tag.name,
+            createdAt: typeof tag.created_at === "string"
+              ? Math.floor(new Date(tag.created_at).getTime() / 1000)
+              : tag.created_at,
+            syncVersion: tag.sync_version || 1,
+          },
           version: tag.sync_version || 1,
           deleted: false,
         });
@@ -107,9 +139,17 @@ export class IndexedDBSyncStorage {
     for (const lang of langs) {
       if (lang.synced_at === undefined || lang.synced_at === null) {
         records.push({
-          tableName: "user_learning_languages",
+          tableName: "userLearningLanguages",
           rowId: lang.id,
-          data: { language: lang.language, createdAt: lang.created_at },
+          data: {
+            id: lang.id,
+            userId: (lang as any).user_id || "local",
+            language: lang.language,
+            createdAt: typeof lang.created_at === "string"
+              ? Math.floor(new Date(lang.created_at).getTime() / 1000)
+              : lang.created_at,
+            syncVersion: lang.sync_version || 1,
+          },
           version: lang.sync_version || 1,
           deleted: false,
         });
@@ -121,12 +161,16 @@ export class IndexedDBSyncStorage {
     for (const su of sharedUsers) {
       if (su.synced_at === undefined || su.synced_at === null) {
         records.push({
-          tableName: "collection_shared_users",
+          tableName: "collectionSharedUsers",
           rowId: su.id,
           data: {
+            id: su.id,
             collectionId: su.collection_id,
             userId: su.user_id,
-            createdAt: su.created_at,
+            createdAt: typeof su.created_at === "string"
+              ? Math.floor(new Date(su.created_at).getTime() / 1000)
+              : su.created_at,
+            syncVersion: su.sync_version || 1,
           },
           version: su.sync_version || 1,
           deleted: false,
@@ -139,17 +183,26 @@ export class IndexedDBSyncStorage {
     for (const pp of practiceProgress) {
       if (pp.synced_at === undefined || pp.synced_at === null) {
         records.push({
-          tableName: "practice_progress",
+          tableName: "practiceProgress",
           rowId: pp.id,
           data: {
+            id: pp.id,
+            userId: "local",
             language: pp.language,
             totalSessions: pp.total_sessions,
             totalWordsPracticed: pp.total_words_practiced,
             currentStreak: pp.current_streak,
             longestStreak: pp.longest_streak,
-            lastPracticeDate: pp.last_practice_date,
-            createdAt: pp.created_at,
-            updatedAt: pp.updated_at,
+            lastPracticeDate: typeof pp.last_practice_date === "string"
+              ? Math.floor(new Date(pp.last_practice_date).getTime() / 1000)
+              : pp.last_practice_date,
+            createdAt: typeof pp.created_at === "string"
+              ? Math.floor(new Date(pp.created_at).getTime() / 1000)
+              : pp.created_at,
+            updatedAt: typeof pp.updated_at === "string"
+              ? Math.floor(new Date(pp.updated_at).getTime() / 1000)
+              : pp.updated_at,
+            syncVersion: pp.sync_version || 1,
           },
           version: pp.sync_version || 1,
           deleted: false,
@@ -249,7 +302,7 @@ export class IndexedDBSyncStorage {
             sync_version: (tag.sync_version || 1) + 1,
           });
         }
-      } else if (tableName === "user_learning_languages") {
+      } else if (tableName === "userLearningLanguages") {
         const lang = await db.userLearningLanguages.get(rowId);
         if (lang) {
           await db.userLearningLanguages.update(rowId, {
@@ -257,7 +310,7 @@ export class IndexedDBSyncStorage {
             sync_version: (lang.sync_version || 1) + 1,
           });
         }
-      } else if (tableName === "collection_shared_users") {
+      } else if (tableName === "collectionSharedUsers") {
         const su = await db.collectionSharedUsers.get(rowId);
         if (su) {
           await db.collectionSharedUsers.update(rowId, {
@@ -265,7 +318,7 @@ export class IndexedDBSyncStorage {
             sync_version: (su.sync_version || 1) + 1,
           });
         }
-      } else if (tableName === "practice_progress") {
+      } else if (tableName === "practiceProgress") {
         const pp = await db.practiceProgress.get(rowId);
         if (pp) {
           await db.practiceProgress.update(rowId, {
@@ -295,13 +348,13 @@ export class IndexedDBSyncStorage {
         topics: 0,
         tags: 1,
         collections: 2,
-        user_learning_languages: 3,
-        collection_shared_users: 4,
+        userLearningLanguages: 3,
+        collectionSharedUsers: 4,
         vocabularies: 5,
-        word_progress: 6,
-        learning_settings: 7,
-        practice_sessions: 8,
-        practice_progress: 9,
+        wordProgress: 6,
+        learningSettings: 7,
+        practiceSessions: 8,
+        practiceProgress: 9,
       };
       return (order[a.tableName] ?? 10) - (order[b.tableName] ?? 10);
     });
@@ -309,14 +362,14 @@ export class IndexedDBSyncStorage {
     // Sort deleted: children first, parents last
     deleted.sort((a, b) => {
       const order: Record<string, number> = {
-        practice_progress: 0,
-        practice_sessions: 1,
-        word_progress: 2,
-        collection_shared_users: 3,
+        practiceProgress: 0,
+        practiceSessions: 1,
+        wordProgress: 2,
+        collectionSharedUsers: 3,
         vocabularies: 4,
-        user_learning_languages: 5,
+        userLearningLanguages: 5,
         collections: 6,
-        learning_settings: 7,
+        learningSettings: 7,
         topics: 8,
         tags: 9,
       };
@@ -335,11 +388,11 @@ export class IndexedDBSyncStorage {
         await this.applyTopicChange(record, now);
       } else if (record.tableName === "tags") {
         await this.applyTagChange(record, now);
-      } else if (record.tableName === "user_learning_languages") {
+      } else if (record.tableName === "userLearningLanguages") {
         await this.applyUserLearningLanguageChange(record, now);
-      } else if (record.tableName === "collection_shared_users") {
+      } else if (record.tableName === "collectionSharedUsers") {
         await this.applyCollectionSharedUserChange(record, now);
-      } else if (record.tableName === "practice_progress") {
+      } else if (record.tableName === "practiceProgress") {
         await this.applyPracticeProgressChange(record, now);
       }
     }
@@ -359,11 +412,11 @@ export class IndexedDBSyncStorage {
         await db.topics.delete(record.rowId);
       } else if (record.tableName === "tags") {
         await db.tags.delete(record.rowId);
-      } else if (record.tableName === "user_learning_languages") {
+      } else if (record.tableName === "userLearningLanguages") {
         await db.userLearningLanguages.delete(record.rowId);
-      } else if (record.tableName === "collection_shared_users") {
+      } else if (record.tableName === "collectionSharedUsers") {
         await db.collectionSharedUsers.delete(record.rowId);
-      } else if (record.tableName === "practice_progress") {
+      } else if (record.tableName === "practiceProgress") {
         await db.practiceProgress.delete(record.rowId);
       }
       // Clean up any pending changes for this record
@@ -426,7 +479,7 @@ export class IndexedDBSyncStorage {
       tags: Array.isArray(data.tags) ? data.tags : [],
       related_words: Array.isArray(data.relatedWords) ? data.relatedWords : [],
       language: String(data.language || ""),
-      collection_id: String(data.collectionSyncUuid || ""),
+      collection_id: String(data.collectionId || ""),
       user_id: "local",
       created_at: String(data.createdAt || new Date().toISOString()),
       updated_at: new Date().toISOString(),

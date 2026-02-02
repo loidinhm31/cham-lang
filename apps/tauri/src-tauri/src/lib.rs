@@ -10,6 +10,7 @@ mod models;
 mod notification_commands;
 mod scheduled_task_handler;
 mod sync;
+mod sync_table_map;
 
 // Desktop-only: Embedded web server and session management
 #[cfg(desktop)]

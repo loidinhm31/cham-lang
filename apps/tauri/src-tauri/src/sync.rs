@@ -7,19 +7,20 @@ use qm_sync_client::{Checkpoint, ReqwestHttpClient, QmSyncClient, SyncClientConf
 
 use crate::auth::AuthService;
 use crate::db::LocalDatabase;
+use crate::sync_table_map::sync_to_db;
 
 /// All synced table names
 const SYNCED_TABLES: &[&str] = &[
     "collections",
     "vocabularies",
-    "word_progress",
-    "learning_settings",
-    "practice_sessions",
-    "practice_progress",
-    "user_learning_languages",
+    "wordProgress",
+    "learningSettings",
+    "practiceSessions",
+    "practiceProgress",
+    "userLearningLanguages",
     "topics",
     "tags",
-    "collection_shared_users",
+    "collectionSharedUsers",
 ];
 
 /// Sync service for synchronizing local data with qm-sync
@@ -156,11 +157,12 @@ impl SyncService {
         let mut records = Vec::new();
 
         // Collect soft-deleted records from all synced tables
-        for table_name in SYNCED_TABLES {
-            let deleted_records = self.db.query_deleted_records(table_name).map_err(|e| e.to_string())?;
+        for sync_name in SYNCED_TABLES {
+            let db_name = sync_to_db(sync_name);
+            let deleted_records = self.db.query_deleted_records(db_name).map_err(|e| e.to_string())?;
             for (id, sync_version) in deleted_records {
                 records.push(SyncRecord {
-                    table_name: table_name.to_string(),
+                    table_name: sync_name.to_string(),
                     row_id: id,
                     data: serde_json::json!({}),
                     version: sync_version,
@@ -213,12 +215,16 @@ impl SyncService {
 
     fn collection_to_sync_record(&self, collection: &crate::models::Collection) -> Result<SyncRecord, String> {
         let mut data = serde_json::json!({
+            "id": collection.id,
             "name": collection.name,
             "description": collection.description,
             "language": collection.language,
+            "ownerId": collection.owner_id,
             "isPublic": collection.is_public,
             "wordCount": collection.word_count,
             "createdAt": collection.created_at.timestamp(),
+            "updatedAt": collection.updated_at.timestamp(),
+            "syncVersion": collection.sync_version,
         });
 
         if let Some(obj) = data.as_object_mut() {
@@ -251,7 +257,9 @@ impl SyncService {
             })
         }).collect();
 
+        let row_id = vocab.id.clone().unwrap_or_default();
         let mut data = serde_json::json!({
+            "id": row_id,
             "word": vocab.word,
             "wordType": format!("{:?}", vocab.word_type).to_lowercase(),
             "level": vocab.level,
@@ -259,13 +267,16 @@ impl SyncService {
             "audioUrl": vocab.audio_url,
             "concept": vocab.concept,
             "language": vocab.language,
-            "collectionSyncUuid": vocab.collection_id,
+            "collectionId": vocab.collection_id,
             "definitions": definitions,
             "exampleSentences": vocab.example_sentences,
             "topics": vocab.topics,
             "tags": vocab.tags,
             "relatedWords": related_words,
+            "userId": vocab.user_id,
             "createdAt": vocab.created_at.timestamp(),
+            "updatedAt": vocab.updated_at.timestamp(),
+            "syncVersion": vocab.sync_version,
         });
 
         if let Some(obj) = data.as_object_mut() {
@@ -274,7 +285,7 @@ impl SyncService {
 
         Ok(SyncRecord {
             table_name: "vocabularies".to_string(),
-            row_id: vocab.id.clone().unwrap_or_default(),
+            row_id,
             data,
             version: vocab.sync_version,
             deleted: false,
@@ -282,7 +293,12 @@ impl SyncService {
     }
 
     fn word_progress_to_sync_record(&self, progress: &crate::models::WordProgress) -> Result<SyncRecord, String> {
+        let id = progress.id.clone().unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+        let now = Utc::now().timestamp();
         let mut data = serde_json::json!({
+            "id": id,
+            "userId": self.db.get_local_user_id(),
+            "language": "",
             "vocabularyId": progress.vocabulary_id,
             "word": progress.word,
             "correctCount": progress.correct_count,
@@ -299,16 +315,17 @@ impl SyncService {
             "failedInSession": progress.failed_in_session,
             "retryCount": progress.retry_count,
             "completedModesInCycle": progress.completed_modes_in_cycle,
+            "createdAt": now,
+            "updatedAt": now,
+            "syncVersion": progress.sync_version,
         });
 
         if let Some(obj) = data.as_object_mut() {
              obj.retain(|_, v| !v.is_null());
         }
 
-        let id = progress.id.clone().unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
-
         Ok(SyncRecord {
-            table_name: "word_progress".to_string(),
+            table_name: "wordProgress".to_string(),
             row_id: id,
             data,
             version: progress.sync_version,
@@ -318,6 +335,8 @@ impl SyncService {
 
     fn learning_settings_to_sync_record(&self, settings: &crate::models::LearningSettings) -> Result<SyncRecord, String> {
         let mut data = serde_json::json!({
+            "id": settings.id,
+            "userId": settings.user_id,
             "srAlgorithm": format!("{:?}", settings.sr_algorithm).to_lowercase(),
             "leitnerBoxCount": settings.leitner_box_count,
             "consecutiveCorrectRequired": settings.consecutive_correct_required,
@@ -330,6 +349,7 @@ impl SyncService {
             "reminderTime": settings.reminder_time,
             "createdAt": settings.created_at.timestamp(),
             "updatedAt": settings.updated_at.timestamp(),
+            "syncVersion": settings.sync_version,
         });
 
         if let Some(obj) = data.as_object_mut() {
@@ -337,7 +357,7 @@ impl SyncService {
         }
 
         Ok(SyncRecord {
-            table_name: "learning_settings".to_string(),
+            table_name: "learningSettings".to_string(),
             row_id: settings.id.clone(),
             data,
             version: settings.sync_version,
@@ -357,6 +377,8 @@ impl SyncService {
         }).collect();
 
         let mut data = serde_json::json!({
+            "id": session.id,
+            "userId": session.user_id,
             "collectionId": session.collection_id,
             "mode": format!("{:?}", session.mode).to_lowercase(),
             "language": session.language,
@@ -368,6 +390,7 @@ impl SyncService {
             "completedAt": session.completed_at.timestamp(),
             "durationSeconds": session.duration_seconds,
             "results": results,
+            "syncVersion": session.sync_version,
         });
 
         if let Some(obj) = data.as_object_mut() {
@@ -375,7 +398,7 @@ impl SyncService {
         }
 
         Ok(SyncRecord {
-            table_name: "practice_sessions".to_string(),
+            table_name: "practiceSessions".to_string(),
             row_id: session.id.clone(),
             data,
             version: session.sync_version,
@@ -394,26 +417,26 @@ impl SyncService {
             "topics" => 0,
             "tags" => 1,
             "collections" => 2,
-            "user_learning_languages" => 3,
-            "collection_shared_users" => 4,
+            "userLearningLanguages" => 3,
+            "collectionSharedUsers" => 4,
             "vocabularies" => 5,
-            "word_progress" => 6,
-            "learning_settings" => 7,
-            "practice_sessions" => 8,
-            "practice_progress" => 9,
+            "wordProgress" => 6,
+            "learningSettings" => 7,
+            "practiceSessions" => 8,
+            "practiceProgress" => 9,
             _ => 10,
         });
 
         // Deleted: children first, parents last
         deleted.sort_by_key(|r| match r.table_name.as_str() {
-            "practice_progress" => 0,
-            "practice_sessions" => 1,
-            "word_progress" => 2,
-            "collection_shared_users" => 3,
+            "practiceProgress" => 0,
+            "practiceSessions" => 1,
+            "wordProgress" => 2,
+            "collectionSharedUsers" => 3,
             "vocabularies" => 4,
-            "user_learning_languages" => 5,
+            "userLearningLanguages" => 5,
             "collections" => 6,
-            "learning_settings" => 7,
+            "learningSettings" => 7,
             "topics" => 8,
             "tags" => 9,
             _ => 10,
@@ -423,14 +446,14 @@ impl SyncService {
             match record.table_name.as_str() {
                 "collections" => self.apply_collection_change(record)?,
                 "vocabularies" => self.apply_vocabulary_change(record)?,
-                "word_progress" => self.apply_word_progress_change(record)?,
-                "learning_settings" => self.apply_learning_settings_change(record)?,
-                "practice_sessions" => self.apply_practice_session_change(record)?,
-                "practice_progress" => self.apply_practice_progress_change(record)?,
-                "user_learning_languages" => self.apply_user_learning_language_change(record)?,
+                "wordProgress" => self.apply_word_progress_change(record)?,
+                "learningSettings" => self.apply_learning_settings_change(record)?,
+                "practiceSessions" => self.apply_practice_session_change(record)?,
+                "practiceProgress" => self.apply_practice_progress_change(record)?,
+                "userLearningLanguages" => self.apply_user_learning_language_change(record)?,
                 "topics" => self.apply_topic_change(record)?,
                 "tags" => self.apply_tag_change(record)?,
-                "collection_shared_users" => self.apply_collection_shared_user_change(record)?,
+                "collectionSharedUsers" => self.apply_collection_shared_user_change(record)?,
                 _ => {
                     eprintln!("Unknown table: {}", record.table_name);
                 }
@@ -439,7 +462,8 @@ impl SyncService {
 
         for record in deleted {
             // For remote deletes, just hard-delete locally
-            self.db.hard_delete_record(&record.table_name, &record.row_id)
+            let db_table = sync_to_db(&record.table_name);
+            self.db.hard_delete_record(db_table, &record.row_id)
                 .map_err(|e| e.to_string())?;
         }
 
@@ -484,8 +508,8 @@ impl SyncService {
         let data = &record.data;
         let exists = self.db.get_vocabulary(&record.row_id).map_err(|e| e.to_string())?.is_some();
 
-        let collection_id = data["collectionSyncUuid"].as_str()
-            .ok_or("Missing collectionSyncUuid")?
+        let collection_id = data["collectionId"].as_str()
+            .ok_or("Missing collectionId")?
             .to_string();
 
         let definitions: Vec<crate::models::Definition> = data["definitions"]
@@ -726,14 +750,15 @@ impl SyncService {
 
     fn mark_records_synced(&self, records: &[SyncRecord], synced_at: i64) -> Result<(), String> {
         for record in records {
+            let db_table = sync_to_db(&record.table_name);
             if record.deleted {
                 // After push confirmed, hard-delete the soft-deleted record
-                self.db.hard_delete_record(&record.table_name, &record.row_id)
+                self.db.hard_delete_record(db_table, &record.row_id)
                     .map_err(|e| e.to_string())?;
             } else {
                 let query = format!(
                     "UPDATE {} SET synced_at = ?, sync_version = sync_version + 1 WHERE id = ?",
-                    record.table_name
+                    db_table
                 );
                 self.db
                     .execute_sql(&query, &[&synced_at.to_string(), &record.row_id])
@@ -779,10 +804,11 @@ impl SyncService {
         let mut count = 0;
 
         // Count unsynced active records
-        for table_name in SYNCED_TABLES {
+        for sync_name in SYNCED_TABLES {
+            let db_table = sync_to_db(sync_name);
             let query = format!(
                 "SELECT COUNT(*) FROM {} WHERE synced_at IS NULL",
-                table_name
+                db_table
             );
             count += self.db
                 .query_count(&query)
