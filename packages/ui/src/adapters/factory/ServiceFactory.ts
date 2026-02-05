@@ -6,48 +6,48 @@
 import { isTauri, isOpenedFromDesktop } from "@cham-lang/ui/utils";
 
 // Interfaces
-import type { IVocabularyService } from "@cham-lang/shared/services";
-import type { ICollectionService } from "@cham-lang/shared/services";
-import type { IPracticeService } from "@cham-lang/shared/services";
-import type { ILearningSettingsService } from "@cham-lang/shared/services";
-import type { INotificationService } from "@cham-lang/shared/services";
-import type { ICSVService } from "@cham-lang/shared/services";
-import type { IGDriveService } from "@cham-lang/shared/services";
-import type { ISyncService } from "@cham-lang/shared/services";
-import type { IAuthService } from "@cham-lang/shared/services";
+import type { IVocabularyService } from "./interfaces";
+import type { ICollectionService } from "./interfaces";
+import type { IPracticeService } from "./interfaces";
+import type { ILearningSettingsService } from "./interfaces";
+import type { INotificationService } from "./interfaces";
+import type { ICSVService } from "./interfaces";
+import type { IGDriveService } from "./interfaces";
+import type { ISyncService } from "./interfaces";
+import type { IAuthService } from "./interfaces";
 
 // Tauri Adapters
-import { TauriVocabularyAdapter } from "./tauri/TauriVocabularyAdapter";
-import { TauriCollectionAdapter } from "./tauri/TauriCollectionAdapter";
-import { TauriPracticeAdapter } from "./tauri/TauriPracticeAdapter";
-import { TauriLearningSettingsAdapter } from "./tauri/TauriLearningSettingsAdapter";
-import { TauriNotificationAdapter } from "./tauri/TauriNotificationAdapter";
-import { TauriCSVAdapter } from "./tauri/TauriCSVAdapter";
-import { TauriGDriveAdapter } from "./tauri/TauriGDriveAdapter";
+import { TauriVocabularyAdapter } from "../tauri/TauriVocabularyAdapter";
+import { TauriCollectionAdapter } from "../tauri/TauriCollectionAdapter";
+import { TauriPracticeAdapter } from "../tauri/TauriPracticeAdapter";
+import { TauriLearningSettingsAdapter } from "../tauri/TauriLearningSettingsAdapter";
+import { TauriNotificationAdapter } from "../tauri/TauriNotificationAdapter";
+import { TauriCSVAdapter } from "../tauri/TauriCSVAdapter";
+import { TauriGDriveAdapter } from "../tauri/TauriGDriveAdapter";
 
 // HTTP Adapters (communicate with desktop SQLite backend via HTTP)
-import { HttpVocabularyAdapter } from "./http/HttpVocabularyAdapter";
-import { HttpCollectionAdapter } from "./http/HttpCollectionAdapter";
-import { HttpPracticeAdapter } from "./http/HttpPracticeAdapter";
-import { HttpLearningSettingsAdapter } from "./http/HttpLearningSettingsAdapter";
-import { HttpNotificationAdapter } from "./http/HttpNotificationAdapter";
-import { HttpCSVAdapter } from "./http/HttpCSVAdapter";
-import { HttpGDriveAdapter } from "./http/HttpGDriveAdapter";
+import { HttpVocabularyAdapter } from "../http/HttpVocabularyAdapter";
+import { HttpCollectionAdapter } from "../http/HttpCollectionAdapter";
+import { HttpPracticeAdapter } from "../http/HttpPracticeAdapter";
+import { HttpLearningSettingsAdapter } from "../http/HttpLearningSettingsAdapter";
+import { HttpNotificationAdapter } from "../http/HttpNotificationAdapter";
+import { HttpCSVAdapter } from "../http/HttpCSVAdapter";
+import { HttpGDriveAdapter } from "../http/HttpGDriveAdapter";
 
 // IndexedDB Adapters (standalone web app)
-import { IndexedDBVocabularyAdapter } from "./web/IndexedDBVocabularyAdapter";
-import { IndexedDBCollectionAdapter } from "./web/IndexedDBCollectionAdapter";
-import { IndexedDBPracticeAdapter } from "./web/IndexedDBPracticeAdapter";
-import { IndexedDBLearningSettingsAdapter } from "./web/IndexedDBLearningSettingsAdapter";
-import { IndexedDBCSVAdapter } from "./web/IndexedDBCSVAdapter";
-import { BrowserNotificationAdapter } from "./web/BrowserNotificationAdapter";
-import { NoOpGDriveAdapter } from "./web/NoOpGDriveAdapter";
+import { IndexedDBVocabularyAdapter } from "../web/IndexedDBVocabularyAdapter";
+import { IndexedDBCollectionAdapter } from "../web/IndexedDBCollectionAdapter";
+import { IndexedDBPracticeAdapter } from "../web/IndexedDBPracticeAdapter";
+import { IndexedDBLearningSettingsAdapter } from "../web/IndexedDBLearningSettingsAdapter";
+import { IndexedDBCSVAdapter } from "../web/IndexedDBCSVAdapter";
+import { BrowserNotificationAdapter } from "../web/BrowserNotificationAdapter";
+import { NoOpGDriveAdapter } from "../web/NoOpGDriveAdapter";
 
 // Sync & Auth Adapters
-import { TauriSyncAdapter } from "./tauri/TauriSyncAdapter";
-import { TauriAuthAdapter } from "./tauri/TauriAuthAdapter";
-import { IndexedDBSyncAdapter } from "./web/sync/IndexedDBSyncAdapter";
-import { QmServerAuthAdapter } from "./shared/QmServerAuthAdapter";
+import { TauriSyncAdapter } from "../tauri/TauriSyncAdapter";
+import { TauriAuthAdapter } from "../tauri/TauriAuthAdapter";
+import { IndexedDBSyncAdapter } from "../web/sync/IndexedDBSyncAdapter";
+import { QmServerAuthAdapter } from "../shared/QmServerAuthAdapter";
 import { env } from "@cham-lang/shared/utils";
 
 // Singleton instances (lazy initialized)

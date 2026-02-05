@@ -7,7 +7,7 @@ import { getLearningSettingsService } from "@cham-lang/ui/adapters";
 import type { LearningSettings } from "@cham-lang/shared/types";
 
 // Re-export the request type from the interface
-export type { UpdateLearningSettingsRequest } from "@cham-lang/shared/services";
+export type { UpdateLearningSettingsRequest } from "@cham-lang/ui/adapters/factory/interfaces";
 
 // Get the platform-specific service
 const service = getLearningSettingsService();

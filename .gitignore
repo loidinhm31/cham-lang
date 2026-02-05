@@ -32,17 +32,17 @@ dist-ssr
 *.jks
 *.keystore
 keystore.properties
-apps/tauri/src-tauri/gen/android/keystore.properties
-apps/tauri/src-tauri/gen/android/keystore.jks
-apps/tauri/src-tauri/gen/android/*.keystore
+apps/native/src-tauri/gen/android/keystore.properties
+apps/native/src-tauri/gen/android/keystore.jks
+apps/native/src-tauri/gen/android/*.keystore
 
 # Android build artifacts
-apps/tauri/src-tauri/gen/android/.gradle/
-apps/tauri/src-tauri/gen/android/app/build/
-apps/tauri/src-tauri/gen/android/buildSrc/.gradle/
-apps/tauri/src-tauri/gen/android/buildSrc/build/
+apps/native/src-tauri/gen/android/.gradle/
+apps/native/src-tauri/gen/android/app/build/
+apps/native/src-tauri/gen/android/buildSrc/.gradle/
+apps/native/src-tauri/gen/android/buildSrc/build/
 
 # Rust target
-apps/tauri/src-tauri/target/
+apps/native/src-tauri/target/
 
 cham-lang-keystore.jks

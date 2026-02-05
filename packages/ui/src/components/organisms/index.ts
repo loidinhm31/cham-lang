@@ -7,3 +7,4 @@ export { BrowserSyncInitializer } from "./BrowserSyncInitializer";
 export { ServerDisconnectedOverlay } from "./ServerDisconnectedOverlay";
 export { AuthForm } from "./AuthForm";
 export { SyncSettings } from "./SyncSettings";
+export { Sidebar } from "./Sidebar";

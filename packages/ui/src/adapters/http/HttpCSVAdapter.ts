@@ -3,12 +3,12 @@
  * CSV import/export are desktop-only features, not supported in web browser mode
  */
 
-import type { ICSVService } from "@cham-lang/shared/services";
+import type { ICSVService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type {
   ImportCSVRequest,
   SimpleImportRequest,
   ImportResult,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class HttpCSVAdapter implements ICSVService {
   async getExportDirectory(): Promise<string> {

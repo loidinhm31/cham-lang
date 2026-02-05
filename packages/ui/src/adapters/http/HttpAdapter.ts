@@ -15,21 +15,31 @@ export class HttpAdapter {
   }
 
   /**
-   * Perform a GET request
+   * Get authorization headers with session token
+   * Uses Authorization header instead of query params for security
    */
-  protected async get<T>(
-    endpoint: string,
-    params?: Record<string, any>,
-  ): Promise<T> {
+  protected getAuthHeaders(): Record<string, string> {
     const token = this.getToken();
     if (!token) {
       throw new Error(
         "No session token. Please open from desktop app using 'Open in Browser'.",
       );
     }
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  }
+
+  /**
+   * Perform a GET request
+   */
+  protected async get<T>(
+    endpoint: string,
+    params?: Record<string, any>,
+  ): Promise<T> {
+    const headers = this.getAuthHeaders();
 
     const url = new URL(`${this.baseUrl}${endpoint}`);
-    url.searchParams.append("token", token);
 
     if (params) {
       Object.entries(params).forEach(([key, value]) => {
@@ -39,7 +49,7 @@ export class HttpAdapter {
       });
     }
 
-    const response = await fetch(url.toString());
+    const response = await fetch(url.toString(), { headers });
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
@@ -59,20 +69,15 @@ export class HttpAdapter {
    * Perform a POST request
    */
   protected async post<T>(endpoint: string, body: any): Promise<T> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error(
-        "No session token. Please open from desktop app using 'Open in Browser'.",
-      );
-    }
+    const authHeaders = this.getAuthHeaders();
 
     const url = new URL(`${this.baseUrl}${endpoint}`);
-    url.searchParams.append("token", token);
 
     const response = await fetch(url.toString(), {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders,
       },
       body: JSON.stringify(body),
     });
@@ -96,20 +101,15 @@ export class HttpAdapter {
    * Perform a PUT request
    */
   protected async put<T>(endpoint: string, body: any): Promise<T> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error(
-        "No session token. Please open from desktop app using 'Open in Browser'.",
-      );
-    }
+    const authHeaders = this.getAuthHeaders();
 
     const url = new URL(`${this.baseUrl}${endpoint}`);
-    url.searchParams.append("token", token);
 
     const response = await fetch(url.toString(), {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders,
       },
       body: JSON.stringify(body),
     });
@@ -133,18 +133,13 @@ export class HttpAdapter {
    * Perform a DELETE request
    */
   protected async delete<T>(endpoint: string): Promise<T> {
-    const token = this.getToken();
-    if (!token) {
-      throw new Error(
-        "No session token. Please open from desktop app using 'Open in Browser'.",
-      );
-    }
+    const authHeaders = this.getAuthHeaders();
 
     const url = new URL(`${this.baseUrl}${endpoint}`);
-    url.searchParams.append("token", token);
 
     const response = await fetch(url.toString(), {
       method: "DELETE",
+      headers: authHeaders,
     });
 
     if (!response.ok) {

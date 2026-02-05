@@ -3,7 +3,7 @@ import type {
   ImportCSVRequest,
   SimpleImportRequest,
   ImportResult,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 import { db, generateId, getCurrentTimestamp } from "./database";
 
 export class IndexedDBCSVAdapter implements ICSVService {

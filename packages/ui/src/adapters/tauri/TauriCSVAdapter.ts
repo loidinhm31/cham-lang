@@ -9,7 +9,7 @@ import type {
   ImportCSVRequest,
   SimpleImportRequest,
   ImportResult,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class TauriCSVAdapter implements ICSVService {
   async getExportDirectory(): Promise<string> {

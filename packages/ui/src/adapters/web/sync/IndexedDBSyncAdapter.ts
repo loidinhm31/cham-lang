@@ -2,7 +2,7 @@
  * IndexedDB Sync Adapter for cham-lang
  */
 
-import type { ISyncService } from "@cham-lang/shared/services";
+import type { ISyncService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type { SyncResult, SyncStatus } from "@cham-lang/shared/types";
 import {
   createSyncClientConfig,

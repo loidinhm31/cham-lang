@@ -7,7 +7,7 @@ import { HttpAdapter } from "./HttpAdapter";
 import type {
   ILearningSettingsService,
   UpdateLearningSettingsRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 import type { LearningSettings } from "@cham-lang/shared/types";
 
 export class HttpLearningSettingsAdapter

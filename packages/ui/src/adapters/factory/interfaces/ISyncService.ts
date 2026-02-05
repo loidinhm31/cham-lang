@@ -1,4 +1,7 @@
-import type { SyncResult, SyncStatus } from "../types/sync";
+import type {
+  SyncResult,
+  SyncStatus,
+} from "../../../../../shared/src/types/sync";
 
 /**
  * Sync service interface for data synchronization

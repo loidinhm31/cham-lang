@@ -18,7 +18,7 @@ importers:
         specifier: ^4.0.17
         version: 4.0.18(jiti@2.6.1)(lightningcss@1.30.2)
 
-  apps/tauri:
+  apps/native:
     dependencies:
       '@cham-lang/shared':
         specifier: workspace:*
@@ -163,6 +163,9 @@ importers:
       '@choochmeque/tauri-plugin-google-auth-api':
         specifier: ^0.3
         version: 0.3.6
+      '@fontsource/fredoka':
+        specifier: ^5.1.0
+        version: 5.2.10
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -549,6 +552,9 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/fredoka@5.2.10':
+    resolution: {integrity: sha512-DyzPCmTf0PkBbAu+gNvnPzfD/dYIXlyp+Zcb76jEQyt/vmRKGZgkH8FFF9W2sICDaA5p+GLk1XGFjWh5PPX+lg==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -2933,6 +2939,8 @@ snapshots:
       react-dom: 19.2.4(react@19.2.4)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/fredoka@5.2.10': {}
 
   '@humanfs/core@0.19.1': {}
 

@@ -9,7 +9,7 @@ import { getNotificationService } from "@cham-lang/ui/adapters";
 export type {
   DailyReminderRequest,
   ScheduleNotificationRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 // Get the platform-specific service
 const service = getNotificationService();

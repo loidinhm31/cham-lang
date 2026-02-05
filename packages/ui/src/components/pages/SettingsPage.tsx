@@ -38,12 +38,23 @@ import {
   openInBrowser,
 } from "@cham-lang/ui/utils";
 
-export const SettingsPage: React.FC = () => {
+export interface SettingsPageProps {
+  /**
+   * Callback when user requests logout - allows parent app to handle logout
+   * Consistent with fin-catch pattern for embedded apps
+   */
+  onLogout?: () => void;
+}
+
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
   const { t, i18n } = useTranslation();
   const { navigate } = useNav();
   const { showAlert, showConfirm } = useDialog();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } =
     useSyncNotification();
+
+  // Use the onLogout prop directly (passed from AppShell)
+  const onLogoutRequest = onLogout;
 
   // Get the GDrive service for the current platform
   const gdriveService = useMemo(() => getGDriveService(), []);
@@ -564,6 +575,8 @@ export const SettingsPage: React.FC = () => {
               showAlert(t("auth.loggedOut") || "Logged out successfully", {
                 variant: "success",
               });
+              // Notify parent app of logout (for SSO when embedded)
+              onLogoutRequest?.();
             }}
           />
 

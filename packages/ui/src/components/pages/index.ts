@@ -3,7 +3,7 @@ export { AddVocabularyPage } from "./AddVocabularyPage";
 export { EditVocabularyPage } from "./EditVocabularyPage";
 export { VocabularyDetailPage } from "./VocabularyDetailPage";
 export { ProgressPage } from "./ProgressPage";
-export { SettingsPage } from "./SettingsPage";
+export { SettingsPage, type SettingsPageProps } from "./SettingsPage";
 export { PracticeModePage } from "./PracticeModePage";
 export { StudyModePage } from "./StudyModePage";
 export { FlashcardPracticePage } from "./FlashcardPracticePage";

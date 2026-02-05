@@ -1,9 +1,9 @@
-import type { IAuthService } from "@cham-lang/shared/services";
 import type {
   AuthResponse,
   AuthStatus,
   SyncConfig,
 } from "@cham-lang/shared/types";
+import type { IAuthService } from "@cham-lang/ui/adapters/factory/interfaces";
 import { invoke } from "@tauri-apps/api/core";
 
 export class TauriAuthAdapter implements IAuthService {

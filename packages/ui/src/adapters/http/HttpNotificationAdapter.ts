@@ -3,11 +3,11 @@
  * Notifications are desktop-only features, not supported in web browser mode
  */
 
-import type { INotificationService } from "@cham-lang/shared/services";
+import type { INotificationService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type {
   DailyReminderRequest,
   ScheduleNotificationRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class HttpNotificationAdapter implements INotificationService {
   async isPermissionGranted(): Promise<boolean> {

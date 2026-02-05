@@ -1,12 +1,20 @@
 import React, { createContext, useContext } from "react";
-import type { IVocabularyService } from "@cham-lang/shared/services";
-import type { ICollectionService } from "@cham-lang/shared/services";
-import type { IPracticeService } from "@cham-lang/shared/services";
-import type { ILearningSettingsService } from "@cham-lang/shared/services";
-import type { INotificationService } from "@cham-lang/shared/services";
-import type { ICSVService } from "@cham-lang/shared/services";
-import type { IGDriveService } from "@cham-lang/shared/services";
+import type {
+  IVocabularyService,
+  ICollectionService,
+  IPracticeService,
+  ILearningSettingsService,
+  INotificationService,
+  ICSVService,
+  IGDriveService,
+  ISyncService,
+  IAuthService,
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
+/**
+ * Platform services interface for dependency injection
+ * Different platforms (Tauri, Web, HTTP) provide different implementations
+ */
 export interface IPlatformServices {
   vocabulary: IVocabularyService;
   collection: ICollectionService;
@@ -15,6 +23,8 @@ export interface IPlatformServices {
   notification: INotificationService;
   csv: ICSVService;
   gdrive: IGDriveService;
+  sync: ISyncService;
+  auth: IAuthService;
 }
 
 export interface PlatformProviderProps {

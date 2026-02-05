@@ -2,7 +2,7 @@ import type {
   IGDriveService,
   GoogleAuthResponse,
   BackupInfo,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 /**
  * No-op Google Drive adapter for standalone web mode.

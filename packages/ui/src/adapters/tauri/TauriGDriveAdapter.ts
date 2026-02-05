@@ -13,7 +13,7 @@ import {
   BackupInfo,
   GoogleAuthResponse,
   IGDriveService,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 // OAuth configuration from environment
 const GOOGLE_CLIENT_ID = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || "";

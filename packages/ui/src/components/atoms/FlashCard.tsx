@@ -3,6 +3,14 @@ import { AudioPlayer } from "./AudioPlayer";
 
 import chameleonIcon from "../../assets/chameleon.svg";
 
+interface FlashCardProps {
+  front: string;
+  back: string;
+  subtitle?: string;
+  audioUrl?: string;
+  onFlip?: (isFlipped: boolean) => void;
+}
+
 export const FlashCard: React.FC<FlashCardProps> = ({
   front,
   back,

@@ -12,7 +12,7 @@ import type {
   INotificationService,
   DailyReminderRequest,
   ScheduleNotificationRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class TauriNotificationAdapter implements INotificationService {
   async isPermissionGranted(): Promise<boolean> {

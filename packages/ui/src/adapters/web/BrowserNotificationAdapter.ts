@@ -2,7 +2,7 @@ import type {
   INotificationService,
   DailyReminderRequest,
   ScheduleNotificationRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 import chameleonIcon from "../../assets/chameleon.svg";
 
 export class BrowserNotificationAdapter implements INotificationService {

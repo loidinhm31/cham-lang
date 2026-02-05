@@ -4,7 +4,7 @@
  */
 
 import { HttpAdapter } from "./HttpAdapter";
-import type { IPracticeService } from "@cham-lang/shared/services";
+import type { IPracticeService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type {
   CreatePracticeSessionRequest,
   PracticeSession,

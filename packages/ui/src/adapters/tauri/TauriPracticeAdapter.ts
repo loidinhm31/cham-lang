@@ -11,7 +11,7 @@ import type {
   UserPracticeProgress,
   WordProgress,
 } from "@cham-lang/shared/types";
-import { IPracticeService } from "@cham-lang/shared/services";
+import { IPracticeService } from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class TauriPracticeAdapter implements IPracticeService {
   async createPracticeSession(

@@ -3,7 +3,7 @@ import type {
   AuthStatus,
   SyncConfig,
 } from "@cham-lang/shared/types";
-import type { IAuthService } from "@cham-lang/shared/services";
+import type { IAuthService } from "@cham-lang/ui/adapters/factory/interfaces";
 import { AUTH_STORAGE_KEYS } from "@cham-lang/shared/constants";
 import { env } from "@cham-lang/shared/utils";
 
@@ -11,12 +11,6 @@ export interface QmServerAuthConfig {
   baseUrl?: string;
   appId?: string;
   apiKey?: string;
-}
-
-interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
 }
 
 const STORAGE_KEYS = AUTH_STORAGE_KEYS;
@@ -77,12 +71,7 @@ export class QmServerAuthAdapter implements IAuthService {
       throw new Error(`API error ${response.status}: ${errorText}`);
     }
 
-    const result: ApiResponse<TRes> = await response.json();
-    if (!result.success || !result.data) {
-      throw new Error(result.error || "Unknown error");
-    }
-
-    return result.data;
+    return await response.json();
   }
 
   async configureSync(config: SyncConfig): Promise<void> {
@@ -108,7 +97,7 @@ export class QmServerAuthAdapter implements IAuthService {
     const result = await this.post<
       { username: string; email: string; password: string },
       AuthResponse
-    >("/api/auth/register", { username, email, password });
+    >("/api/v1/auth/register", { username, email, password });
 
     this.storeAuthData(result);
     return result;
@@ -118,7 +107,7 @@ export class QmServerAuthAdapter implements IAuthService {
     const result = await this.post<
       { email: string; password: string },
       AuthResponse
-    >("/api/auth/login", { email, password });
+    >("/api/v1/auth/login", { email, password });
 
     this.storeAuthData(result);
     return result;
@@ -143,7 +132,7 @@ export class QmServerAuthAdapter implements IAuthService {
       { refreshToken: string },
       { accessToken: string; refreshToken: string }
     >(
-      "/api/auth/refresh",
+      "/api/v1/auth/refresh",
       { refreshToken },
       {
         Authorization: `Bearer ${accessToken}`,
@@ -220,7 +209,32 @@ export class QmServerAuthAdapter implements IAuthService {
   }
 
   async getAccessToken(): Promise<string | null> {
-    return this.getStoredValue(STORAGE_KEYS.ACCESS_TOKEN);
+    const token = this.getStoredValue(STORAGE_KEYS.ACCESS_TOKEN);
+    if (!token) return null;
+
+    if (this.isTokenExpired(token)) {
+      try {
+        await this.refreshToken();
+        return this.getStoredValue(STORAGE_KEYS.ACCESS_TOKEN);
+      } catch {
+        return null;
+      }
+    }
+
+    return token;
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const parts = token.split(".");
+      if (parts.length !== 3) return true;
+      const payload = JSON.parse(atob(parts[1]));
+      const exp = payload.exp;
+      if (!exp) return false;
+      return exp * 1000 < Date.now();
+    } catch {
+      return true;
+    }
   }
 
   async getTokens(): Promise<{

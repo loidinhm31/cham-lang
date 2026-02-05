@@ -9,7 +9,7 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
-import { ICollectionService } from "@cham-lang/shared/services";
+import { ICollectionService } from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class TauriCollectionAdapter implements ICollectionService {
   async createCollection(request: CreateCollectionRequest): Promise<string> {

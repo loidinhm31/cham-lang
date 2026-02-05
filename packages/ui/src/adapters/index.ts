@@ -1,3 +1,3 @@
-export * from "./interfaces";
-export * from "./ServiceFactory";
+export * from "./factory/interfaces";
+export * from "./factory/ServiceFactory";
 export * from "./http";

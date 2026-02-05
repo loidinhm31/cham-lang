@@ -38,11 +38,27 @@ export const BottomNavigation: React.FC = () => {
     },
   ];
 
+  // Check if the current path matches or starts with the nav item path
+  const isPathActive = (navPath: string) => {
+    const fullPath = to(navPath);
+    if (navPath === "/") {
+      return location.pathname === fullPath;
+    }
+    return (
+      location.pathname === fullPath || location.pathname.startsWith(fullPath)
+    );
+  };
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 pb-safe px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 sm:pb-6 pb-13">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 px-4 md:hidden"
+      style={{
+        paddingBottom: "max(env(safe-area-inset-bottom, 12px), 12px)",
+      }}
+    >
       <div className="grid grid-cols-4 gap-2 bg-[var(--glass-bg)] backdrop-blur-md rounded-[28px] border-[3px] border-[var(--color-border-light)] shadow-[0_8px_0_rgba(0,0,0,0.1),0_4px_16px_rgba(0,0,0,0.12),inset_0_-2px_4px_rgba(0,0,0,0.05)] p-3 transition-colors duration-300">
         {navItems.map((item) => {
-          const isActive = location.pathname === to(item.path);
+          const isActive = isPathActive(item.path);
           const Icon = item.icon;
 
           return (
@@ -61,6 +77,6 @@ export const BottomNavigation: React.FC = () => {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };

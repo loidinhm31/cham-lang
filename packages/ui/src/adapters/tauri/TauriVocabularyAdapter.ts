@@ -4,7 +4,7 @@
  */
 
 import { invoke } from "@tauri-apps/api/core";
-import type { IVocabularyService } from "@cham-lang/shared/services";
+import type { IVocabularyService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type {
   Vocabulary,
   CreateVocabularyRequest,

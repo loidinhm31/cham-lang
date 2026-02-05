@@ -7,7 +7,7 @@ import type {
   IGDriveService,
   GoogleAuthResponse,
   BackupInfo,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 
 export class HttpGDriveAdapter implements IGDriveService {
   isSupported(): boolean {

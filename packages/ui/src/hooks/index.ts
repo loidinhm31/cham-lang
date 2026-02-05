@@ -6,3 +6,6 @@ export {
   PortalContainerContext,
   usePortalContainer,
 } from "./useNav";
+export { useAuth, type UseAuthOptions } from "./useAuth";
+export { useVocabularies } from "./useVocabularies";
+export { useCollections } from "./useCollections";

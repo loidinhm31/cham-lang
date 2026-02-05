@@ -26,6 +26,12 @@ export default defineConfig(async () => ({
     },
   },
   resolve: {
-    alias: [{ find: "@", replacement: path.resolve(__dirname, "src") }],
+    alias: [
+      { find: "@", replacement: path.resolve(__dirname, "src") },
+      {
+        find: "@cham-lang/ui/assets",
+        replacement: path.resolve(__dirname, "../../packages/ui/src/assets"),
+      },
+    ],
   },
 }));

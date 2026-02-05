@@ -1,7 +1,7 @@
 import type {
   ILearningSettingsService,
   UpdateLearningSettingsRequest,
-} from "@cham-lang/shared/services";
+} from "@cham-lang/ui/adapters/factory/interfaces";
 import type { LearningSettings } from "@cham-lang/shared/types";
 import { DEFAULT_LEARNING_SETTINGS } from "@cham-lang/shared/types";
 import { db, generateId, getCurrentTimestamp } from "./database";

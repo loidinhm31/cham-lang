@@ -9,10 +9,25 @@ use tower_http::cors::CorsLayer;
 
 use crate::web_server::AppState;
 
-/// Token query parameter
+/// Token query parameter (kept for backwards compatibility)
 #[derive(Deserialize)]
 pub struct TokenQuery {
     pub token: Option<String>,
+}
+
+/// Extract token from Authorization header (Bearer scheme) or query params (fallback)
+fn extract_token(request: &Request<Body>, query: &TokenQuery) -> String {
+    // First try Authorization header (preferred for security)
+    if let Some(auth_header) = request.headers().get(header::AUTHORIZATION) {
+        if let Ok(auth_str) = auth_header.to_str() {
+            if let Some(token) = auth_str.strip_prefix("Bearer ") {
+                return token.to_string();
+            }
+        }
+    }
+
+    // Fall back to query param for backwards compatibility
+    query.token.clone().unwrap_or_default()
 }
 
 /// Security middleware that validates session token and Host header
@@ -49,13 +64,13 @@ pub async fn security_middleware(
         }
     }
 
-    // Validate session token
-    let token = query.token.as_deref().unwrap_or("");
+    // Validate session token (from Authorization header or query param)
+    let token = extract_token(&request, &query);
     println!(
         "   Token received: {}...",
         &token.chars().take(16).collect::<String>()
     );
-    if !state.session_manager.validate_token(token) {
+    if !state.session_manager.validate_token(&token) {
         eprintln!("Rejected request with invalid token");
         return Err(StatusCode::UNAUTHORIZED);
     }
@@ -98,5 +113,5 @@ pub fn cors_layer() -> CorsLayer {
                 .unwrap(),
         ])
         .allow_methods([Method::GET, Method::POST, Method::PUT, Method::DELETE, Method::OPTIONS])
-        .allow_headers([header::CONTENT_TYPE, header::ACCEPT])
+        .allow_headers([header::CONTENT_TYPE, header::ACCEPT, header::AUTHORIZATION])
 }

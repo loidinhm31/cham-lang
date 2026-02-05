@@ -1,4 +1,8 @@
-import type { AuthResponse, AuthStatus, SyncConfig } from "../types/auth";
+import type {
+  AuthResponse,
+  AuthStatus,
+  SyncConfig,
+} from "../../../../../shared/src/types/auth";
 
 /**
  * Auth service interface for user authentication

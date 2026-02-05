@@ -1,4 +1,4 @@
-import type { ICollectionService } from "@cham-lang/shared/services";
+import type { ICollectionService } from "@cham-lang/ui/adapters/factory/interfaces";
 import type {
   Collection,
   CreateCollectionRequest,
