@@ -7,20 +7,15 @@ import {
   Clock,
   User,
   Server,
-  LogOut,
   Cloud,
+  CloudOff,
   AlertTriangle,
 } from "lucide-react";
 import { Button, Input, Card } from "@cham-lang/ui/components/atoms";
 import { getAuthService, getSyncService } from "@cham-lang/ui/adapters";
 import { AuthStatus, SyncResult, SyncStatus } from "@cham-lang/shared/types";
-import { AuthForm } from "./AuthForm";
 
-interface SyncSettingsProps {
-  onLogout?: () => void;
-}
-
-export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
+export const SyncSettings: React.FC = () => {
   const { t } = useTranslation();
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
@@ -98,19 +93,6 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const authService = getAuthService();
-      await authService.logout();
-      setAuthStatus({ isAuthenticated: false });
-      setSyncResult(null);
-      setError(null);
-      onLogout?.();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to logout");
-    }
-  };
-
   const formatTimestamp = (timestamp?: string | number) => {
     if (!timestamp) return t("common.never") || "Never";
     try {
@@ -125,198 +107,180 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ onLogout }) => {
   };
 
   return (
-    <Card variant="glass">
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <Cloud className="w-6 h-6 text-blue-500" />
-          <div>
-            <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
-              {t("settings.cloudSync") || "Cloud Sync"}
-            </h3>
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {t("settings.cloudSyncDescription") ||
-                "Keep your data synchronized across devices"}
-            </p>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* Cloud Sync Status Card */}
+      <Card variant="glass">
+        <div className="p-2">
+          <div className="flex items-start gap-4">
+            <Cloud className="w-6 h-6 text-blue-500" />
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
+                {t("settings.cloudSync") || "Cloud Sync"}
+              </h2>
+              <p className="mb-4 text-[var(--color-text-secondary)]">
+                {t("settings.cloudSyncDescription") ||
+                  "Keep your data synchronized across devices"}
+              </p>
 
-        {/* Status Section */}
-        {authStatus?.isAuthenticated ? (
-          <div className="rounded-xl p-4 bg-[var(--color-bg-white)] border border-[var(--color-border-light)] shadow-sm space-y-4">
-            {/* Account Info */}
-            <div className="flex items-center gap-3 border-b border-gray-200 pb-3">
-              <div className="bg-blue-100 p-2 rounded-full">
-                <User className="w-5 h-5 text-blue-600" />
+              {/* Status indicator */}
+              <div className="flex items-center gap-2 mb-4">
+                {isSyncing ? (
+                  <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+                ) : authStatus?.isAuthenticated ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                ) : (
+                  <CloudOff className="w-4 h-4 text-gray-400" />
+                )}
+                <span className="text-sm text-[var(--color-text-secondary)]">
+                  {isSyncing
+                    ? t("sync.syncing") || "Syncing..."
+                    : authStatus?.isAuthenticated
+                      ? t("auth.connected") || "Connected"
+                      : t("auth.notLoggedIn") || "Not logged in"}
+                </span>
+                {syncStatus?.lastSyncAt && (
+                  <span className="text-xs text-[var(--color-text-muted)]">
+                    — {t("sync.lastSync") || "Last sync"}:{" "}
+                    {formatTimestamp(syncStatus.lastSyncAt)}
+                  </span>
+                )}
               </div>
-              <div>
-                <p className="font-medium text-[var(--color-text-primary)]">
-                  {authStatus.username || t("auth.unknownUser")}
-                </p>
-                <p className="text-xs text-[var(--color-text-muted)]">
-                  {authStatus.email}
-                </p>
-              </div>
-            </div>
 
-            {/* Pending Changes Badge */}
-            {syncStatus?.pendingChanges !== undefined &&
-              syncStatus.pendingChanges > 0 && (
-                <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 p-2 rounded-lg">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>
+              {/* Pending changes badge */}
+              {syncStatus?.pendingChanges !== undefined &&
+                syncStatus.pendingChanges > 0 && (
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-blue-50 text-blue-600 border border-blue-100">
+                    <AlertCircle className="w-3 h-3" />
                     {syncStatus.pendingChanges}{" "}
                     {t("sync.pendingChanges") || "pending changes"}
-                  </span>
-                </div>
-              )}
-
-            {/* Sync Result */}
-            {syncResult && (
-              <div
-                className={`p-3 rounded-lg text-sm border ${
-                  syncResult.success
-                    ? "bg-green-50 border-green-200 text-green-700"
-                    : "bg-red-50 border-red-200 text-red-700"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-1 font-medium">
-                  {syncResult.success ? (
-                    <CheckCircle2 className="w-4 h-4" />
-                  ) : (
-                    <AlertTriangle className="w-4 h-4" />
-                  )}
-                  {syncResult.success
-                    ? t("sync.success") || "Sync completed"
-                    : t("sync.failed") || "Sync failed"}
-                </div>
-                {syncResult.success && (
-                  <div className="grid grid-cols-3 gap-2 mt-2 text-center text-xs">
-                    <div className="bg-white/50 p-1 rounded">
-                      <span className="block font-bold">
-                        {syncResult.pushed}
-                      </span>
-                      <span className="text-gray-500">
-                        {t("sync.pushed") || "Pushed"}
-                      </span>
-                    </div>
-                    <div className="bg-white/50 p-1 rounded">
-                      <span className="block font-bold">
-                        {syncResult.pulled}
-                      </span>
-                      <span className="text-gray-500">
-                        {t("sync.pulled") || "Pulled"}
-                      </span>
-                    </div>
-                    <div className="bg-white/50 p-1 rounded">
-                      <span className="block font-bold text-orange-600">
-                        {syncResult.conflicts}
-                      </span>
-                      <span className="text-gray-500">
-                        {t("sync.conflicts") || "Conflicts"}
-                      </span>
-                    </div>
                   </div>
                 )}
-                {!syncResult.success && syncResult.error && (
-                  <p className="mt-1 opacity-90">{syncResult.error}</p>
-                )}
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button
-                onClick={handleSync}
-                disabled={isSyncing || isLoadingStatus}
-                variant="primary"
-                fullWidth
-                icon={RefreshCw}
-                className={isSyncing ? "animate-pulse" : ""}
-              >
-                {isSyncing
-                  ? t("sync.syncing") || "Syncing..."
-                  : t("sync.syncNow") || "Sync Now"}
-              </Button>
-
-              <Button
-                onClick={handleLogout}
-                disabled={isLoadingStatus}
-                variant="secondary"
-                fullWidth
-                icon={LogOut}
-              >
-                {t("auth.logout") || "Logout"}
-              </Button>
             </div>
+          </div>
 
-            {syncStatus?.lastSyncAt ? (
-              <div className="flex items-center justify-center gap-1 text-xs text-gray-500">
-                <Clock className="w-3 h-3" />
-                <span>
-                  {t("sync.lastSync") || "Last sync"}:{" "}
-                  {formatTimestamp(syncStatus.lastSyncAt)}
+          {/* Sync Result */}
+          {syncResult && (
+            <div
+              className={`mt-4 p-4 rounded-lg border ${
+                syncResult.success
+                  ? "bg-green-50 border-green-200"
+                  : "bg-red-50 border-red-200"
+              }`}
+            >
+              <div className="flex items-center gap-2 mb-3">
+                {syncResult.success ? (
+                  <CheckCircle2 className="w-4 h-4 text-green-500" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 text-red-500" />
+                )}
+                <span
+                  className={`text-sm font-semibold ${syncResult.success ? "text-green-700" : "text-red-700"}`}
+                >
+                  {syncResult.success
+                    ? t("sync.success") || "Sync completed"
+                    : `${t("sync.failed") || "Sync failed"}${syncResult.error ? `: ${syncResult.error}` : ""}`}
                 </span>
               </div>
-            ) : (
-              <p className="text-xs text-gray-500 text-center">
-                {t("sync.neverSynced") || "Never synced"}
-              </p>
+
+              {syncResult.success && (
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                      {syncResult.pushed}
+                    </div>
+                    <div className="text-xs text-[var(--color-text-muted)]">
+                      {t("sync.pushed") || "Pushed"}
+                    </div>
+                  </div>
+                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                      {syncResult.pulled}
+                    </div>
+                    <div className="text-xs text-[var(--color-text-muted)]">
+                      {t("sync.pulled") || "Pulled"}
+                    </div>
+                  </div>
+                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                      {syncResult.conflicts}
+                    </div>
+                    <div className="text-xs text-[var(--color-text-muted)]">
+                      {t("sync.conflicts") || "Conflicts"}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Error */}
+          {error && (
+            <div className="mt-4 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-600">
+              {error}
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="mt-4 flex flex-col gap-3">
+            {authStatus?.isAuthenticated && (
+              <>
+                <Button
+                  variant="primary"
+                  onClick={handleSync}
+                  disabled={isSyncing || isLoadingStatus}
+                  fullWidth
+                  icon={RefreshCw}
+                  className={isSyncing ? "animate-pulse" : ""}
+                >
+                  {isSyncing
+                    ? t("sync.syncing") || "Syncing..."
+                    : t("sync.syncNow") || "Sync Now"}
+                </Button>
+              </>
             )}
           </div>
-        ) : (
-          /* Auth Form if not authenticated */
-          <div className="space-y-4">
-            <p className="text-sm text-[var(--color-text-secondary)]">
-              {t("sync.loginPrompt") ||
-                "Sign in to sync your vocabulary and collections across all your devices."}
-            </p>
-            <AuthForm onSuccess={() => loadStatus()} />
-          </div>
-        )}
+        </div>
+      </Card>
 
-        {/* Server Config (Collapsed) */}
-        <div className="pt-4 border-t border-gray-200">
-          <details className="text-sm group">
-            <summary className="cursor-pointer text-gray-500 hover:text-gray-700 font-medium mb-2 flex items-center gap-2 select-none">
-              <Server className="w-4 h-4" />
-              {t("settings.serverConfig") || "Server Configuration"}
-              <span className="ml-auto text-xs opacity-0 group-open:opacity-100 transition-opacity">
-                {serverUrl}
-              </span>
-            </summary>
-            <div className="space-y-2 pl-2 pt-2 animate-in slide-in-from-top-1 duration-200">
-              <label className="block text-xs text-gray-500">
-                {t("settings.serverUrl") || "Server URL"}
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  value={serverUrl}
-                  onChange={(e) => setServerUrl(e.target.value)}
-                  placeholder="http://localhost:3000"
-                  className="text-xs py-1"
-                />
+      {/* Server Configuration Card */}
+      <Card variant="glass">
+        <div className="p-2">
+          <div className="flex items-start gap-4">
+            <Server className="w-6 h-6 text-blue-500" />
+            <div className="flex-1">
+              <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
+                {t("settings.serverConfig") || "Server Configuration"}
+              </h2>
+              <p className="mb-4 text-[var(--color-text-secondary)]">
+                {t("settings.serverConfigDescription") ||
+                  "Configure the sync server connection"}
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
+                    {t("settings.serverUrl") || "Server URL"}
+                  </label>
+                  <Input
+                    value={serverUrl}
+                    onChange={(e) => setServerUrl(e.target.value)}
+                    placeholder="http://localhost:3000"
+                    className="text-sm"
+                  />
+                </div>
                 <Button
-                  onClick={handleConfigureSync}
-                  size="sm"
                   variant="secondary"
-                  disabled={isLoadingStatus}
+                  size="sm"
+                  onClick={handleConfigureSync}
+                  disabled={isLoadingStatus || !serverUrl}
                 >
-                  {t("buttons.save") || "Save"}
+                  {t("sync.saveConfig") || "Save Configuration"}
                 </Button>
               </div>
             </div>
-          </details>
-        </div>
-
-        {/* Error Display */}
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600 flex items-center gap-2 animate-in fade-in slide-in-from-bottom-2">
-            <AlertCircle className="w-4 h-4 flex-shrink-0" />
-            <p>{error}</p>
           </div>
-        )}
-      </div>
-    </Card>
+        </div>
+      </Card>
+    </div>
   );
 };

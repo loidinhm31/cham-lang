@@ -1,5 +1,6 @@
 import React, { lazy, Suspense, useState } from "react";
 import { Navigate, Route, Routes, useOutletContext } from "react-router-dom";
+import { useNav } from "@cham-lang/ui/hooks";
 import { BottomNavigation } from "@cham-lang/ui/components/molecules";
 import {
   BrowserSyncInitializer,
@@ -111,6 +112,11 @@ const OAuthCallbackPage = lazy(() =>
     default: m.OAuthCallbackPage,
   })),
 );
+const LoginPage = lazy(() =>
+  import("@cham-lang/ui/components/pages").then((m) => ({
+    default: m.LoginPage,
+  })),
+);
 
 /**
  * Props for AppShell component (matching fin-catch pattern)
@@ -152,16 +158,15 @@ export const AppShell: React.FC<AppShellProps> = ({
   embedded = false,
   onLogoutRequest,
 }) => {
+  const { navigate } = useNav();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [localSkipAuth, setLocalSkipAuth] = useState(false);
 
   // Skip initial auth check if tokens are provided externally (embedded mode)
   // This prevents unnecessary /api/v1/auth/me calls when already authenticated
-  const {
-    isAuthenticated,
-    isLoading: isAuthLoading,
-    checkAuthStatus,
-  } = useAuth({ skipInitialCheck: skipAuthProp });
+  const { isLoading: isAuthLoading, checkAuthStatus } = useAuth({
+    skipInitialCheck: skipAuthProp,
+  });
 
   // Use either the prop or local state for skip auth
   const skipAuth = skipAuthProp || localSkipAuth;
@@ -198,7 +203,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           className="min-h-screen relative overflow-hidden"
           style={{ background: "var(--bg-gradient)" }}
         >
-          {showNavigation && (isAuthenticated || skipAuth) && (
+          {showNavigation && (
             <Sidebar
               isCollapsed={isCollapsed}
               onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
@@ -230,6 +235,17 @@ export const AppShell: React.FC<AppShellProps> = ({
                   <Route
                     path="/settings"
                     element={<SettingsPage onLogout={handleLogout} />}
+                  />
+                  <Route
+                    path="/login"
+                    element={
+                      <LoginPage
+                        onLoginSuccess={() => {
+                          checkAuthStatus();
+                          navigate("/");
+                        }}
+                      />
+                    }
                   />
                   <Route path="/collections" element={<CollectionsPage />} />
                   <Route
@@ -293,9 +309,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             </ErrorBoundary>
           </div>
 
-          {showNavigation && (isAuthenticated || skipAuth) && (
-            <BottomNavigation />
-          )}
+          {showNavigation && <BottomNavigation />}
         </div>
       </SyncNotificationProvider>
     </BrowserSyncInitializer>

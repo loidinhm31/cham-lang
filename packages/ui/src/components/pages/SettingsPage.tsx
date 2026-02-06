@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { useNav } from "@cham-lang/ui/hooks";
+import React, { useMemo, useEffect, useState } from "react";
+import { useAuth, useNav } from "@cham-lang/ui/hooks";
 import { useTranslation } from "react-i18next";
 import {
   Bell,
@@ -19,6 +19,7 @@ import {
   Trash2,
   Type,
   Upload,
+  User,
 } from "lucide-react";
 import { TopBar } from "@cham-lang/ui/components/molecules";
 import { Button, Card, Select } from "@cham-lang/ui/components/atoms";
@@ -49,6 +50,7 @@ export interface SettingsPageProps {
 export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
   const { t, i18n } = useTranslation();
   const { navigate } = useNav();
+  const { isAuthenticated, authStatus, logout } = useAuth();
   const { showAlert, showConfirm } = useDialog();
   const { hasSyncNotification, checkSyncStatus, dismissNotification } =
     useSyncNotification();
@@ -570,15 +572,69 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
         {/* Settings Grid - 2 columns on large screens */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* QM Cloud Sync Section - Added */}
-          <SyncSettings
-            onLogout={() => {
-              showAlert(t("auth.loggedOut") || "Logged out successfully", {
-                variant: "success",
-              });
-              // Notify parent app of logout (for SSO when embedded)
-              onLogoutRequest?.();
-            }}
-          />
+          {isAuthenticated ? (
+            <Card variant="glass">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <User className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
+                      {t("auth.account") || "Account"}
+                    </h3>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {authStatus?.username ||
+                        authStatus?.email ||
+                        t("auth.manageAccount") ||
+                        "Manage your account connection"}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={async () => {
+                    await logout();
+                    showAlert(
+                      t("auth.loggedOut") || "Logged out successfully",
+                      {
+                        variant: "success",
+                      },
+                    );
+                    onLogoutRequest?.();
+                  }}
+                  variant="secondary"
+                  icon={LogOut}
+                  fullWidth
+                >
+                  {t("auth.logout") || "Logout"}
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <Card variant="glass">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <LogIn className="w-6 h-6 text-blue-600" />
+                  <div>
+                    <h3 className="text-lg font-bold text-[var(--color-text-primary)]">
+                      {t("auth.loginToConnect") || "Login to connect to server"}
+                    </h3>
+                    <p className="text-sm text-[var(--color-text-secondary)]">
+                      {t("auth.loginPrompt") || "Log in to sync your progress"}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => navigate("/login")}
+                  variant="primary"
+                  icon={LogIn}
+                  fullWidth
+                >
+                  {t("auth.login") || "Login"}
+                </Button>
+              </div>
+            </Card>
+          )}
+
+          <SyncSettings />
 
           {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
           {isDesktop() && (
