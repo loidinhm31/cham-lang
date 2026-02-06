@@ -83,13 +83,13 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
     <div ref={containerRef} className={className}>
       <PlatformProvider services={services}>
         <ThemeProvider embedded={embedded}>
-          <DialogProvider>
-            <BasePathContext.Provider value={basePath || ""}>
-              <PortalContainerContext.Provider value={portalContainer}>
+          <BasePathContext.Provider value={basePath || ""}>
+            <PortalContainerContext.Provider value={portalContainer}>
+              <DialogProvider>
                 {useRouter ? <BrowserRouter>{content}</BrowserRouter> : content}
-              </PortalContainerContext.Provider>
-            </BasePathContext.Provider>
-          </DialogProvider>
+              </DialogProvider>
+            </PortalContainerContext.Provider>
+          </BasePathContext.Provider>
         </ThemeProvider>
       </PlatformProvider>
     </div>
