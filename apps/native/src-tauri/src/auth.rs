@@ -12,6 +12,15 @@ use base64::{Engine as _, engine::general_purpose::STANDARD as BASE64};
 use jsonwebtoken::{decode, decode_header, DecodingKey, Validation};
 use tokio::sync::RwLock;
 
+
+/// Public user info returned by lookup
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PublicUserInfo {
+    pub user_id: String,
+    pub username: String,
+}
+
 /// Authentication service for managing user authentication with qm-sync
 pub struct AuthService {
     sync_client: Arc<RwLock<QmSyncClient<ReqwestHttpClient>>>,
@@ -346,6 +355,62 @@ impl AuthService {
             .ok_or_else(|| "No access token found".to_string())?;
 
         crypto::decrypt(&encrypted)
+    }
+
+    pub async fn lookup_user(
+        &self,
+        app_handle: &tauri::AppHandle,
+        username: String,
+    ) -> Result<Option<PublicUserInfo>, String> {
+        // Ensure authenticated before calling (although client.lookup_user will use cached token,
+        // we might want to refresh if needed, similar to is_authenticated)
+        if !self.is_authenticated(app_handle).await {
+            return Err("Not authenticated".to_string());
+        }
+
+        let access_token = self.get_access_token(app_handle).await.unwrap_or_default();
+        let api_key = self.get_stored_api_key(app_handle).unwrap_or(self.default_api_key.clone());
+        let app_id = self.get_stored_app_id(app_handle).await.unwrap_or(self.default_app_id.clone());
+        
+        // Refresh token if needed
+        let refresh_token = self.get_refresh_token(app_handle).await.unwrap_or_default();
+        {
+            let client = self.sync_client.read().await;
+            client.set_tokens(access_token.clone(), refresh_token, None).await;
+        }
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "camelCase")]
+        struct LookupResponse {
+            user: Option<PublicUserInfo>,
+        }
+
+        let url = format!("{}/api/v1/auth/lookup?username={}", self.server_url, username);
+        let client = reqwest::Client::new();
+        
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", access_token))
+            .header("X-App-ID", app_id)
+            .header("X-API-Key", api_key)
+            .send()
+            .await
+            .map_err(|e| format!("Request failed: {}", e))?;
+
+        if !response.status().is_success() {
+             return Err(format!(
+                "Lookup failed: {} - {}",
+                response.status(),
+                response.text().await.unwrap_or_default()
+            ));
+        }
+
+        let result: LookupResponse = response
+            .json()
+            .await
+            .map_err(|e| format!("Failed to parse response: {}", e))?;
+
+        Ok(result.user)
     }
 
     pub async fn get_refresh_token(

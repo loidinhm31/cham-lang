@@ -13,7 +13,6 @@ impl LocalDatabase {
         name: &str,
         description: &str,
         language: &str,
-        owner_id: &str,
         is_public: bool,
     ) -> SqlResult<String> {
         let id = Uuid::new_v4().to_string();
@@ -22,9 +21,9 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         conn.execute(
             "INSERT INTO collections
-             (id, name, description, language, owner_id, is_public, word_count, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?8)",
-            params![id, name, description, language, owner_id, is_public, now, now],
+             (id, name, description, language, is_public, word_count, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, 0, ?6, ?7)",
+            params![id, name, description, language, is_public, now, now],
         )?;
 
         Ok(id)
@@ -37,7 +36,7 @@ impl LocalDatabase {
         name: &str,
         description: &str,
         language: &str,
-        owner_id: &str,
+        shared_by: Option<&str>,
         is_public: bool,
     ) -> SqlResult<()> {
         let now = Utc::now().timestamp();
@@ -45,9 +44,9 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         conn.execute(
             "INSERT INTO collections
-             (id, name, description, language, owner_id, is_public, word_count, created_at, updated_at)
+             (id, name, description, language, shared_by, is_public, word_count, created_at, updated_at)
              VALUES (?1, ?2, ?3, ?4, ?5, ?6, 0, ?7, ?8)",
-            params![collection_id, name, description, language, owner_id, is_public, now, now],
+            params![collection_id, name, description, language, shared_by, is_public, now, now],
         )?;
 
         Ok(())
@@ -57,7 +56,7 @@ impl LocalDatabase {
     pub fn get_collection(&self, collection_id: &str) -> SqlResult<Option<Collection>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
-            "SELECT id, name, description, language, owner_id, is_public,
+            "SELECT id, name, description, language, shared_by, is_public,
                     word_count, created_at, updated_at, sync_version, synced_at
              FROM collections WHERE id = ?1",
         )?;
@@ -70,7 +69,7 @@ impl LocalDatabase {
             let name: String = row.get(1)?;
             let description: Option<String> = row.get(2)?;
             let language: String = row.get(3)?;
-            let owner_id: String = row.get(4)?;
+            let shared_by: Option<String> = row.get(4)?;
             let is_public: i32 = row.get::<_, Option<i32>>(5)?.unwrap_or(0);
             let word_count: i32 = row.get::<_, Option<i32>>(6)?.unwrap_or(0);
             let created_at = timestamp_to_datetime(row.get(7)?);
@@ -81,11 +80,16 @@ impl LocalDatabase {
             drop(rows);
             drop(stmt);
 
-            // Fetch shared users from normalized table
+            // Fetch shared users with permissions from normalized table
             let mut shared_stmt = conn
-                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
-            let shared_with: Vec<String> = shared_stmt
-                .query_map(params![&collection_id_local], |r| r.get(0))?
+                .prepare("SELECT user_id, permission FROM collection_shared_users WHERE collection_id = ?1 AND deleted = 0")?;
+            let shared_with: Vec<crate::models::SharedUser> = shared_stmt
+                .query_map(params![&collection_id_local], |r| {
+                    Ok(crate::models::SharedUser {
+                        user_id: r.get(0)?,
+                        permission: r.get::<_, String>(1).unwrap_or_else(|_| "viewer".to_string()),
+                    })
+                })?
                 .collect::<Result<Vec<_>, _>>()?;
 
             Ok(Some(Collection {
@@ -93,7 +97,7 @@ impl LocalDatabase {
                 name,
                 description: description.unwrap_or_default(),
                 language,
-                owner_id,
+                shared_by,
                 shared_with,
                 is_public: is_public != 0,
                 word_count,
@@ -107,25 +111,25 @@ impl LocalDatabase {
         }
     }
 
-    /// Get all collections for a user (normalized version)
-    pub fn get_user_collections(&self, user_id: &str) -> SqlResult<Vec<Collection>> {
+    /// Get all collections (owned + shared, all non-deleted)
+    pub fn get_user_collections(&self) -> SqlResult<Vec<Collection>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
-            "SELECT id, name, description, language, owner_id, is_public,
+            "SELECT id, name, description, language, shared_by, is_public,
                     word_count, created_at, updated_at, sync_version, synced_at
              FROM collections
-             WHERE owner_id = ?1 AND deleted = 0
+             WHERE deleted = 0
              ORDER BY updated_at DESC, name COLLATE NOCASE ASC",
         )?;
 
         let collection_rows: Vec<_> = stmt
-            .query_map(params![user_id], |row| {
+            .query_map([], |row| {
                 Ok((
                     row.get::<_, String>(0)?,                   // id
                     row.get::<_, String>(1)?,                   // name
                     row.get::<_, Option<String>>(2)?,           // description
                     row.get::<_, String>(3)?,                   // language
-                    row.get::<_, String>(4)?,                   // owner_id
+                    row.get::<_, Option<String>>(4)?,           // shared_by
                     row.get::<_, Option<i32>>(5)?.unwrap_or(0), // is_public
                     row.get::<_, Option<i32>>(6)?.unwrap_or(0), // word_count
                     row.get::<_, i64>(7)?,                      // created_at
@@ -145,7 +149,7 @@ impl LocalDatabase {
             name,
             description,
             language,
-            owner_id,
+            shared_by,
             is_public,
             word_count,
             created_at,
@@ -155,9 +159,14 @@ impl LocalDatabase {
         ) in collection_rows
         {
             let mut shared_stmt = conn
-                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
-            let shared_with: Vec<String> = shared_stmt
-                .query_map(params![&id], |r| r.get(0))?
+                .prepare("SELECT user_id, permission FROM collection_shared_users WHERE collection_id = ?1 AND deleted = 0")?;
+            let shared_with: Vec<crate::models::SharedUser> = shared_stmt
+                .query_map(params![&id], |r| {
+                    Ok(crate::models::SharedUser {
+                        user_id: r.get(0)?,
+                        permission: r.get::<_, String>(1).unwrap_or_else(|_| "viewer".to_string()),
+                    })
+                })?
                 .collect::<Result<Vec<_>, _>>()?;
 
             collections.push(Collection {
@@ -165,7 +174,7 @@ impl LocalDatabase {
                 name,
                 description: description.unwrap_or_default(),
                 language,
-                owner_id,
+                shared_by,
                 shared_with,
                 is_public: is_public != 0,
                 word_count,
@@ -184,13 +193,13 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
 
         let sql = if language.is_some() {
-            "SELECT id, name, description, language, owner_id, is_public,
+            "SELECT id, name, description, language, shared_by, is_public,
                     word_count, created_at, updated_at, sync_version, synced_at
              FROM collections
              WHERE is_public = 1 AND language = ?1 AND deleted = 0
              ORDER BY updated_at DESC, name COLLATE NOCASE ASC"
         } else {
-            "SELECT id, name, description, language, owner_id, is_public,
+            "SELECT id, name, description, language, shared_by, is_public,
                     word_count, created_at, updated_at, sync_version, synced_at
              FROM collections
              WHERE is_public = 1 AND deleted = 0
@@ -205,7 +214,7 @@ impl LocalDatabase {
                 row.get::<_, String>(1)?,
                 row.get::<_, Option<String>>(2)?,
                 row.get::<_, String>(3)?,
-                row.get::<_, String>(4)?,
+                row.get::<_, Option<String>>(4)?,
                 row.get::<_, Option<i32>>(5)?.unwrap_or(0),
                 row.get::<_, Option<i32>>(6)?.unwrap_or(0),
                 row.get::<_, i64>(7)?,
@@ -232,7 +241,7 @@ impl LocalDatabase {
             name,
             description,
             language,
-            owner_id,
+            shared_by,
             is_public,
             word_count,
             created_at,
@@ -242,9 +251,14 @@ impl LocalDatabase {
         ) in collection_rows
         {
             let mut shared_stmt = conn
-                .prepare("SELECT user_id FROM collection_shared_users WHERE collection_id = ?1")?;
-            let shared_with: Vec<String> = shared_stmt
-                .query_map(params![&id], |r| r.get(0))?
+                .prepare("SELECT user_id, permission FROM collection_shared_users WHERE collection_id = ?1 AND deleted = 0")?;
+            let shared_with: Vec<crate::models::SharedUser> = shared_stmt
+                .query_map(params![&id], |r| {
+                    Ok(crate::models::SharedUser {
+                        user_id: r.get(0)?,
+                        permission: r.get::<_, String>(1).unwrap_or_else(|_| "viewer".to_string()),
+                    })
+                })?
                 .collect::<Result<Vec<_>, _>>()?;
 
             collections.push(Collection {
@@ -252,7 +266,7 @@ impl LocalDatabase {
                 name,
                 description: description.unwrap_or_default(),
                 language,
-                owner_id,
+                shared_by,
                 shared_with,
                 is_public: is_public != 0,
                 word_count,
@@ -330,7 +344,7 @@ impl LocalDatabase {
     }
 
     /// Share a collection with a user (normalized version)
-    pub fn share_collection(&self, collection_id: &str, user_id: &str) -> SqlResult<()> {
+    pub fn share_collection(&self, collection_id: &str, user_id: &str, permission: &str) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         let id = Uuid::new_v4().to_string();
         let now = Utc::now().timestamp();
@@ -338,9 +352,9 @@ impl LocalDatabase {
         // Insert into collection_shared_users (UNIQUE constraint prevents duplicates)
         conn.execute(
             "INSERT OR IGNORE INTO collection_shared_users
-             (id, collection_id, user_id, created_at)
-             VALUES (?1, ?2, ?3, ?4)",
-            params![id, collection_id, user_id, now],
+             (id, collection_id, user_id, permission, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5)",
+            params![id, collection_id, user_id, permission, now],
         )?;
 
         // Update collection updated_at timestamp

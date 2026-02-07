@@ -18,7 +18,6 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
       withSyncTracking({
         id,
         ...request,
-        user_id: "local",
         created_at: now,
         updated_at: now,
       }),

@@ -250,6 +250,32 @@ export class QmServerAuthAdapter implements IAuthService {
     };
   }
 
+  async lookupUserByUsername(
+    username: string,
+  ): Promise<{ userId: string; username: string } | null> {
+    const accessToken = await this.getAccessToken();
+    if (!accessToken) throw new Error("Not authenticated");
+
+    const url = new URL(`${this.baseUrl}/api/v1/auth/lookup`);
+    url.searchParams.set("username", username);
+
+    const response = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "X-App-Id": this.appId,
+        "X-Api-Key": this.apiKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Lookup failed: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.user;
+  }
+
   async saveTokensExternal(
     accessToken: string,
     refreshToken: string,

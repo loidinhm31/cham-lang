@@ -13,7 +13,6 @@ impl LocalDatabase {
     pub fn update_practice_progress(
         &self,
         request: &UpdateProgressRequest,
-        user_id: &str,
     ) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
         let now = Utc::now().timestamp();
@@ -22,8 +21,8 @@ impl LocalDatabase {
         let existing_word_progress: Option<String> = conn
             .query_row(
                 "SELECT id FROM word_progress
-                 WHERE user_id = ?1 AND language = ?2 AND vocabulary_id = ?3",
-                params![user_id, request.language, request.vocabulary_id],
+                 WHERE language = ?1 AND vocabulary_id = ?2",
+                params![request.language, request.vocabulary_id],
                 |row| row.get(0),
             )
             .ok();
@@ -83,14 +82,13 @@ impl LocalDatabase {
 
             conn.execute(
                 "INSERT INTO word_progress
-                 (id, user_id, language, vocabulary_id, word, correct_count, incorrect_count,
+                 (id, language, vocabulary_id, word, correct_count, incorrect_count,
                   total_reviews, mastery_level, next_review_date, interval_days, easiness_factor,
                   consecutive_correct_count, leitner_box, last_interval_days, failed_in_session,
                   retry_count, last_practiced, created_at, updated_at)
-                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20)",
+                 VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19)",
                 params![
                     word_progress_id,
-                    user_id,
                     request.language,
                     request.vocabulary_id,
                     request.word,
@@ -117,8 +115,8 @@ impl LocalDatabase {
         // First, get the word_progress_id (either existing or newly created)
         let word_progress_id: String = conn.query_row(
             "SELECT id FROM word_progress
-             WHERE user_id = ?1 AND language = ?2 AND vocabulary_id = ?3",
-            params![user_id, request.language, request.vocabulary_id],
+             WHERE language = ?1 AND vocabulary_id = ?2",
+            params![request.language, request.vocabulary_id],
             |row| row.get(0),
         )?;
 
@@ -142,8 +140,8 @@ impl LocalDatabase {
         // Ensure practice_progress header exists
         let progress_exists: bool = conn
             .query_row(
-                "SELECT 1 FROM practice_progress WHERE user_id = ?1 AND language = ?2",
-                params![user_id, request.language],
+                "SELECT 1 FROM practice_progress WHERE language = ?1",
+                params![request.language],
                 |_row| Ok(true),
             )
             .unwrap_or(false);
@@ -153,10 +151,10 @@ impl LocalDatabase {
             let progress_id = Uuid::new_v4().to_string();
             conn.execute(
                 "INSERT INTO practice_progress
-                 (id, user_id, language, total_sessions, total_words_practiced,
+                 (id, language, total_sessions, total_words_practiced,
                   current_streak, longest_streak, last_practice_date, created_at, updated_at)
-                 VALUES (?1, ?2, ?3, 0, 1, 0, 0, ?4, ?5, ?6)",
-                params![progress_id, user_id, request.language, now, now, now],
+                 VALUES (?1, ?2, 0, 1, 0, 0, ?3, ?4, ?5)",
+                params![progress_id, request.language, now, now, now],
             )?;
         } else {
             // Update practice_progress header
@@ -167,15 +165,13 @@ impl LocalDatabase {
                      total_words_practiced = (
                          SELECT COUNT(DISTINCT vocabulary_id)
                          FROM word_progress
-                         WHERE user_id = ?3 AND language = ?4
+                         WHERE language = ?3
                      )
-                 WHERE user_id = ?5 AND language = ?6",
+                 WHERE language = ?4",
                 params![
                     now,
                     now,
-                    user_id,
                     request.language,
-                    user_id,
                     request.language
                 ],
             )?;
@@ -187,7 +183,6 @@ impl LocalDatabase {
     /// Get practice progress for a language (normalized version)
     pub fn get_practice_progress(
         &self,
-        user_id: &str,
         language: &str,
     ) -> SqlResult<Option<UserPracticeProgress>> {
         let conn = self.conn.lock().unwrap();
@@ -197,10 +192,10 @@ impl LocalDatabase {
             "SELECT id, language, total_sessions, total_words_practiced,
                     current_streak, longest_streak, last_practice_date, created_at, updated_at
              FROM practice_progress
-             WHERE user_id = ?1 AND language = ?2",
+             WHERE language = ?1",
         )?;
 
-        let mut rows = stmt.query(params![user_id, language])?;
+        let mut rows = stmt.query(params![language])?;
 
         if let Some(row) = rows.next()? {
             let progress_id: String = row.get(0)?;
@@ -216,19 +211,19 @@ impl LocalDatabase {
             drop(rows);
             drop(stmt);
 
-            // Fetch all word progress for this user/language
+            // Fetch all word progress for this language
             let mut word_stmt = conn.prepare(
                 "SELECT id, vocabulary_id, word, correct_count, incorrect_count,
                         total_reviews, mastery_level, next_review_date, interval_days,
                         easiness_factor, consecutive_correct_count, leitner_box,
                         last_interval_days, failed_in_session, retry_count, last_practiced
                  FROM word_progress
-                 WHERE user_id = ?1 AND language = ?2
+                 WHERE language = ?1
                  ORDER BY last_practiced DESC, word COLLATE NOCASE ASC",
             )?;
 
             let words_progress: Vec<WordProgress> = word_stmt
-                .query_map(params![user_id, language], |row| {
+                .query_map(params![language], |row| {
                     let word_progress_id: String = row.get(0)?;
                     let vocabulary_id: String = row.get(1)?;
                     let word: String = row.get(2)?;
@@ -282,7 +277,6 @@ impl LocalDatabase {
 
             Ok(Some(UserPracticeProgress {
                 id: progress_id,
-                user_id: user_id.to_string(),
                 language,
                 words_progress,
                 total_sessions,
@@ -302,7 +296,6 @@ impl LocalDatabase {
     pub fn create_practice_session(
         &self,
         request: &CreatePracticeSessionRequest,
-        user_id: &str,
     ) -> SqlResult<String> {
         let id = Uuid::new_v4().to_string();
         let now = Utc::now().timestamp();
@@ -323,12 +316,11 @@ impl LocalDatabase {
         // Insert practice session
         tx.execute(
             "INSERT INTO practice_sessions
-             (id, user_id, collection_id, mode, language, topic, level,
+             (id, collection_id, mode, language, topic, level,
               total_questions, correct_answers, started_at, completed_at, duration_seconds)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
             params![
                 id,
-                user_id,
                 request.collection_id,
                 mode_str,
                 request.language,
@@ -373,10 +365,9 @@ impl LocalDatabase {
         Ok(id)
     }
 
-    /// Get practice sessions for a user/language (normalized version)
+    /// Get practice sessions for a language (normalized version)
     pub fn get_practice_sessions(
         &self,
-        user_id: &str,
         language: &str,
         limit: Option<i64>,
     ) -> SqlResult<Vec<PracticeSession>> {
@@ -386,14 +377,14 @@ impl LocalDatabase {
             "SELECT id, collection_id, mode, language, topic, level,
                     total_questions, correct_answers, started_at, completed_at, duration_seconds
              FROM practice_sessions
-             WHERE user_id = ?1 AND language = ?2 AND deleted = 0
+             WHERE language = ?1 AND deleted = 0
              ORDER BY completed_at DESC, id ASC
              LIMIT {}",
             limit.unwrap_or(50)
         );
 
         let mut stmt = conn.prepare(&sql)?;
-        let session_rows = stmt.query_map(params![user_id, language], |row| {
+        let session_rows = stmt.query_map(params![language], |row| {
             Ok((
                 row.get::<_, String>(0)?,         // id
                 row.get::<_, String>(1)?,         // collection_id
@@ -467,7 +458,6 @@ impl LocalDatabase {
 
             sessions.push(PracticeSession {
                 id: session_id,
-                user_id: user_id.to_string(),
                 collection_id,
                 mode,
                 language,

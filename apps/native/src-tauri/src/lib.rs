@@ -212,6 +212,16 @@ async fn auth_get_access_token(
 }
 
 #[tauri::command]
+async fn auth_lookup_user(
+    auth: tauri::State<'_, Arc<Mutex<AuthService>>>,
+    app_handle: tauri::AppHandle,
+    username: String,
+) -> Result<Option<auth::PublicUserInfo>, String> {
+    let auth = auth.lock().map_err(|e| format!("Lock error: {}", e))?.clone();
+    auth.lookup_user(&app_handle, username).await
+}
+
+#[tauri::command]
 async fn sync_now(
     sync_service: tauri::State<'_, Arc<Mutex<SyncService>>>,
     app_handle: tauri::AppHandle,
@@ -496,6 +506,7 @@ pub fn run() {
             auth_get_status,
             auth_is_authenticated,
             auth_get_access_token,
+            auth_lookup_user,
             sync_now,
             sync_get_status,
         ])

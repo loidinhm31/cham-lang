@@ -9,7 +9,6 @@ export type FillWordDirection = "definition_to_word" | "word_to_definition";
 
 export interface LearningSettings {
   id?: string;
-  user_id: string;
 
   // Spaced Repetition Configuration
   sr_algorithm: SpacedRepetitionAlgorithm;
@@ -41,7 +40,7 @@ export interface LearningSettings {
 // Default settings
 export const DEFAULT_LEARNING_SETTINGS: Omit<
   LearningSettings,
-  "id" | "user_id" | "created_at" | "updated_at"
+  "id" | "created_at" | "updated_at"
 > = {
   sr_algorithm: "modifiedsm2",
   leitner_box_count: 5,

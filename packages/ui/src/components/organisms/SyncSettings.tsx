@@ -66,13 +66,13 @@ export const SyncSettings: React.FC = () => {
       await loadStatus();
       setError(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to configure sync");
+      setError(err instanceof Error ? err.message : t("sync.configureFailed"));
     }
   };
 
   const handleSync = async () => {
     if (!authStatus?.isAuthenticated) {
-      setError(t("auth.loginRequired") || "You must be logged in to sync");
+      setError(t("auth.loginRequired"));
       return;
     }
 
@@ -87,14 +87,14 @@ export const SyncSettings: React.FC = () => {
       // Reload sync status to update last sync time
       await loadStatus();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Sync failed");
+      setError(err instanceof Error ? err.message : t("sync.failed"));
     } finally {
       setIsSyncing(false);
     }
   };
 
   const formatTimestamp = (timestamp?: string | number) => {
-    if (!timestamp) return t("common.never") || "Never";
+    if (!timestamp) return t("common.never");
     try {
       const date =
         typeof timestamp === "number"
@@ -102,7 +102,7 @@ export const SyncSettings: React.FC = () => {
           : new Date(timestamp);
       return date.toLocaleString();
     } catch {
-      return "Invalid date";
+      return t("common.invalidDate");
     }
   };
 
@@ -115,11 +115,10 @@ export const SyncSettings: React.FC = () => {
             <Cloud className="w-6 h-6 text-blue-500" />
             <div className="flex-1">
               <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
-                {t("settings.cloudSync") || "Cloud Sync"}
+                {t("settings.cloudSync")}
               </h2>
               <p className="mb-4 text-[var(--color-text-secondary)]">
-                {t("settings.cloudSyncDescription") ||
-                  "Keep your data synchronized across devices"}
+                {t("settings.cloudSyncDescription")}
               </p>
 
               {/* Status indicator */}
@@ -133,14 +132,14 @@ export const SyncSettings: React.FC = () => {
                 )}
                 <span className="text-sm text-[var(--color-text-secondary)]">
                   {isSyncing
-                    ? t("sync.syncing") || "Syncing..."
+                    ? t("sync.syncing")
                     : authStatus?.isAuthenticated
-                      ? t("auth.connected") || "Connected"
-                      : t("auth.notLoggedIn") || "Not logged in"}
+                      ? t("auth.connected")
+                      : t("auth.notLoggedIn")}
                 </span>
                 {syncStatus?.lastSyncAt && (
                   <span className="text-xs text-[var(--color-text-muted)]">
-                    — {t("sync.lastSync") || "Last sync"}:{" "}
+                    — {t("sync.lastSync")}:{" "}
                     {formatTimestamp(syncStatus.lastSyncAt)}
                   </span>
                 )}
@@ -151,8 +150,7 @@ export const SyncSettings: React.FC = () => {
                 syncStatus.pendingChanges > 0 && (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-blue-50 text-blue-600 border border-blue-100">
                     <AlertCircle className="w-3 h-3" />
-                    {syncStatus.pendingChanges}{" "}
-                    {t("sync.pendingChanges") || "pending changes"}
+                    {syncStatus.pendingChanges} {t("sync.pendingChanges")}
                   </div>
                 )}
             </div>
@@ -177,8 +175,8 @@ export const SyncSettings: React.FC = () => {
                   className={`text-sm font-semibold ${syncResult.success ? "text-green-700" : "text-red-700"}`}
                 >
                   {syncResult.success
-                    ? t("sync.success") || "Sync completed"
-                    : `${t("sync.failed") || "Sync failed"}${syncResult.error ? `: ${syncResult.error}` : ""}`}
+                    ? t("sync.success")
+                    : `${t("sync.failed")}${syncResult.error ? `: ${syncResult.error}` : ""}`}
                 </span>
               </div>
 
@@ -189,7 +187,7 @@ export const SyncSettings: React.FC = () => {
                       {syncResult.pushed}
                     </div>
                     <div className="text-xs text-[var(--color-text-muted)]">
-                      {t("sync.pushed") || "Pushed"}
+                      {t("sync.pushed")}
                     </div>
                   </div>
                   <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
@@ -197,7 +195,7 @@ export const SyncSettings: React.FC = () => {
                       {syncResult.pulled}
                     </div>
                     <div className="text-xs text-[var(--color-text-muted)]">
-                      {t("sync.pulled") || "Pulled"}
+                      {t("sync.pulled")}
                     </div>
                   </div>
                   <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
@@ -205,7 +203,7 @@ export const SyncSettings: React.FC = () => {
                       {syncResult.conflicts}
                     </div>
                     <div className="text-xs text-[var(--color-text-muted)]">
-                      {t("sync.conflicts") || "Conflicts"}
+                      {t("sync.conflicts")}
                     </div>
                   </div>
                 </div>
@@ -232,9 +230,7 @@ export const SyncSettings: React.FC = () => {
                   icon={RefreshCw}
                   className={isSyncing ? "animate-pulse" : ""}
                 >
-                  {isSyncing
-                    ? t("sync.syncing") || "Syncing..."
-                    : t("sync.syncNow") || "Sync Now"}
+                  {isSyncing ? t("sync.syncing") : t("sync.syncNow")}
                 </Button>
               </>
             )}
@@ -249,17 +245,16 @@ export const SyncSettings: React.FC = () => {
             <Server className="w-6 h-6 text-blue-500" />
             <div className="flex-1">
               <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
-                {t("settings.serverConfig") || "Server Configuration"}
+                {t("settings.serverConfig")}
               </h2>
               <p className="mb-4 text-[var(--color-text-secondary)]">
-                {t("settings.serverConfigDescription") ||
-                  "Configure the sync server connection"}
+                {t("settings.serverConfigDescription")}
               </p>
 
               <div className="space-y-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
-                    {t("settings.serverUrl") || "Server URL"}
+                    {t("settings.serverUrl")}
                   </label>
                   <Input
                     value={serverUrl}
@@ -274,7 +269,7 @@ export const SyncSettings: React.FC = () => {
                   onClick={handleConfigureSync}
                   disabled={isLoadingStatus || !serverUrl}
                 >
-                  {t("sync.saveConfig") || "Save Configuration"}
+                  {t("sync.saveConfig")}
                 </Button>
               </div>
             </div>

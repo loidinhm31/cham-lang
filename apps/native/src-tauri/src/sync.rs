@@ -92,7 +92,7 @@ impl SyncService {
             .map_err(|e| format!("Time error: {}", e))?
             .as_secs() as i64;
 
-        let (server_url, app_id, api_key, access_token, refresh_token) = {
+        let (server_url, app_id, api_key, access_token, refresh_token, current_user_id) = {
             let auth = self.auth.lock().map_err(|e| format!("Failed to lock auth: {}", e))?.clone();
             let access_token = auth.get_access_token(app_handle).await?;
             let refresh_token = auth.get_refresh_token(app_handle).await?;
@@ -100,7 +100,8 @@ impl SyncService {
                 .map_err(|_| "SYNC_SERVER_URL not configured")?;
             let app_id = self.get_app_id(app_handle).await?;
             let api_key = auth.get_stored_api_key(app_handle)?;
-            (server_url, app_id, api_key, access_token, refresh_token)
+            let current_user_id = self.get_current_user_id(app_handle);
+            (server_url, app_id, api_key, access_token, refresh_token, current_user_id)
         };
 
         let config = SyncClientConfig::new(&server_url, &app_id, &api_key);
@@ -109,7 +110,7 @@ impl SyncService {
 
         client.set_tokens(access_token, refresh_token, None).await;
 
-        let local_changes = self.collect_local_changes()?;
+        let local_changes = self.collect_local_changes(current_user_id.as_deref())?;
         let checkpoint = self.get_checkpoint()?;
 
         println!("Syncing {} local changes, checkpoint: {:?}", local_changes.len(), checkpoint);
@@ -138,7 +139,7 @@ impl SyncService {
                 deleted: r.deleted,
             }).collect();
 
-            self.apply_remote_changes(&sync_records)?;
+            self.apply_remote_changes(&sync_records, current_user_id.as_deref())?;
             self.save_checkpoint(&pull.checkpoint)?;
         }
 
@@ -153,7 +154,7 @@ impl SyncService {
     }
 
     /// Collect local changes since last sync
-    fn collect_local_changes(&self) -> Result<Vec<SyncRecord>, String> {
+    fn collect_local_changes(&self, current_user_id: Option<&str>) -> Result<Vec<SyncRecord>, String> {
         let mut records = Vec::new();
 
         // Collect soft-deleted records from all synced tables
@@ -171,17 +172,16 @@ impl SyncService {
             }
         }
 
-        // Collect unsynced active collections
-        let user_id = self.db.get_local_user_id();
-        let collections = self.db.get_user_collections(user_id).map_err(|e| e.to_string())?;
+        // Collect unsynced active collections (skip shared collections - don't push someone else's collection)
+        let collections = self.db.get_user_collections().map_err(|e| e.to_string())?;
         for collection in &collections {
-            if collection.synced_at.is_none() {
-                records.push(self.collection_to_sync_record(collection)?);
+            if collection.synced_at.is_none() && collection.shared_by.is_none() {
+                records.push(self.collection_to_sync_record(collection, current_user_id)?);
             }
         }
 
         // Collect unsynced vocabularies
-        let all_vocabs = self.db.get_all_vocabularies(user_id, None, None).map_err(|e| e.to_string())?;
+        let all_vocabs = self.db.get_all_vocabularies(None, None).map_err(|e| e.to_string())?;
         for vocab in &all_vocabs {
             if vocab.synced_at.is_none() {
                 records.push(self.vocabulary_to_sync_record(vocab)?);
@@ -189,20 +189,20 @@ impl SyncService {
         }
 
         // Collect unsynced word_progress
-        let unsynced_progress = self.db.get_unsynced_word_progress(user_id).map_err(|e| e.to_string())?;
+        let unsynced_progress = self.db.get_unsynced_word_progress().map_err(|e| e.to_string())?;
         for progress in &unsynced_progress {
              records.push(self.word_progress_to_sync_record(progress)?);
         }
 
         // Collect unsynced learning_settings
-        if let Some(settings) = self.db.get_learning_settings(user_id).map_err(|e| e.to_string())? {
+        if let Some(settings) = self.db.get_learning_settings().map_err(|e| e.to_string())? {
             if settings.synced_at.is_none() {
                 records.push(self.learning_settings_to_sync_record(&settings)?);
             }
         }
 
         // Collect unsynced practice_sessions
-        let unsynced_sessions = self.db.get_unsynced_practice_sessions(user_id).map_err(|e| e.to_string())?;
+        let unsynced_sessions = self.db.get_unsynced_practice_sessions().map_err(|e| e.to_string())?;
         for session in &unsynced_sessions {
             records.push(self.practice_session_to_sync_record(session)?);
         }
@@ -213,13 +213,14 @@ impl SyncService {
         Ok(records)
     }
 
-    fn collection_to_sync_record(&self, collection: &crate::models::Collection) -> Result<SyncRecord, String> {
+    fn collection_to_sync_record(&self, collection: &crate::models::Collection, current_user_id: Option<&str>) -> Result<SyncRecord, String> {
         let mut data = serde_json::json!({
             "id": collection.id,
             "name": collection.name,
             "description": collection.description,
             "language": collection.language,
-            "ownerId": collection.owner_id,
+            "ownerId": current_user_id,
+            "sharedBy": collection.shared_by,
             "isPublic": collection.is_public,
             "wordCount": collection.word_count,
             "createdAt": collection.created_at.timestamp(),
@@ -273,7 +274,6 @@ impl SyncService {
             "topics": vocab.topics,
             "tags": vocab.tags,
             "relatedWords": related_words,
-            "userId": vocab.user_id,
             "createdAt": vocab.created_at.timestamp(),
             "updatedAt": vocab.updated_at.timestamp(),
             "syncVersion": vocab.sync_version,
@@ -297,7 +297,6 @@ impl SyncService {
         let now = Utc::now().timestamp();
         let mut data = serde_json::json!({
             "id": id,
-            "userId": self.db.get_local_user_id(),
             "language": "",
             "vocabularyId": progress.vocabulary_id,
             "word": progress.word,
@@ -336,7 +335,6 @@ impl SyncService {
     fn learning_settings_to_sync_record(&self, settings: &crate::models::LearningSettings) -> Result<SyncRecord, String> {
         let mut data = serde_json::json!({
             "id": settings.id,
-            "userId": settings.user_id,
             "srAlgorithm": format!("{:?}", settings.sr_algorithm).to_lowercase(),
             "leitnerBoxCount": settings.leitner_box_count,
             "consecutiveCorrectRequired": settings.consecutive_correct_required,
@@ -378,7 +376,6 @@ impl SyncService {
 
         let mut data = serde_json::json!({
             "id": session.id,
-            "userId": session.user_id,
             "collectionId": session.collection_id,
             "mode": format!("{:?}", session.mode).to_lowercase(),
             "language": session.language,
@@ -408,7 +405,7 @@ impl SyncService {
 
     /// Apply remote changes to local database
     /// FK ordering: collections first for inserts, vocabularies first for deletes
-    fn apply_remote_changes(&self, records: &[SyncRecord]) -> Result<(), String> {
+    fn apply_remote_changes(&self, records: &[SyncRecord], current_user_id: Option<&str>) -> Result<(), String> {
         let mut non_deleted: Vec<&SyncRecord> = records.iter().filter(|r| !r.deleted).collect();
         let mut deleted: Vec<&SyncRecord> = records.iter().filter(|r| r.deleted).collect();
 
@@ -442,10 +439,28 @@ impl SyncService {
             _ => 10,
         });
 
+        // Track affected collection IDs for word count recalculation
+        let mut affected_collection_ids = std::collections::HashSet::new();
+
         for record in non_deleted {
             match record.table_name.as_str() {
-                "collections" => self.apply_collection_change(record)?,
-                "vocabularies" => self.apply_vocabulary_change(record)?,
+                "collections" => self.apply_collection_change(record, current_user_id)?,
+                "vocabularies" => {
+                    // Get old collection_id before applying change (for moves)
+                    let old_collection_id = self.db.get_vocabulary(&record.row_id)
+                        .ok()
+                        .flatten()
+                        .map(|v| v.collection_id.clone());
+                    self.apply_vocabulary_change(record)?;
+                    // Track new collection_id
+                    if let Some(new_cid) = record.data["collectionId"].as_str() {
+                        affected_collection_ids.insert(new_cid.to_string());
+                    }
+                    // Track old collection_id if it differs (vocabulary was moved)
+                    if let Some(old_cid) = old_collection_id {
+                        affected_collection_ids.insert(old_cid);
+                    }
+                }
                 "wordProgress" => self.apply_word_progress_change(record)?,
                 "learningSettings" => self.apply_learning_settings_change(record)?,
                 "practiceSessions" => self.apply_practice_session_change(record)?,
@@ -461,16 +476,34 @@ impl SyncService {
         }
 
         for record in deleted {
-            // For remote deletes, just hard-delete locally
+            // For vocabulary deletes, track the collection_id before deleting
+            if record.table_name == "vocabularies" {
+                if let Some(vocab) = self.db.get_vocabulary(&record.row_id).ok().flatten() {
+                    affected_collection_ids.insert(vocab.collection_id.clone());
+                }
+            }
+
             let db_table = sync_to_db(&record.table_name);
             self.db.hard_delete_record(db_table, &record.row_id)
                 .map_err(|e| e.to_string())?;
+
+            // Remove deleted collections from affected set (no point recalculating)
+            if record.table_name == "collections" {
+                affected_collection_ids.remove(&record.row_id);
+            }
+        }
+
+        // Recalculate word_count for all affected collections
+        for collection_id in &affected_collection_ids {
+            if let Err(e) = self.db.update_collection_word_count(collection_id) {
+                eprintln!("Failed to update word count for collection {}: {}", collection_id, e);
+            }
         }
 
         Ok(())
     }
 
-    fn apply_collection_change(&self, record: &SyncRecord) -> Result<(), String> {
+    fn apply_collection_change(&self, record: &SyncRecord, current_user_id: Option<&str>) -> Result<(), String> {
         let data = &record.data;
         let exists = self.db.get_collection(&record.row_id).map_err(|e| e.to_string())?.is_some();
 
@@ -479,9 +512,32 @@ impl SyncService {
         let language = data["language"].as_str().unwrap_or("").to_string();
         let is_public = data["isPublic"].as_bool().unwrap_or(false);
 
+        // Derive shared_by from ownerId in sync data for BOTH new and existing collections:
+        // If ownerId is present and differs from current user -> shared_by = ownerId
+        // Otherwise -> shared_by = None (user's own collection)
+        let shared_by = data["ownerId"].as_str().and_then(|owner_id| {
+            if !owner_id.is_empty() && current_user_id != Some(owner_id) {
+                Some(owner_id.to_string())
+            } else {
+                None
+            }
+        });
+
         if exists {
             self.db.update_collection(&record.row_id, &name, &description, is_public)
                 .map_err(|e| e.to_string())?;
+            // Update shared_by for existing collections (e.g. when a shared collection is updated by its owner)
+            if let Some(ref sb) = shared_by {
+                self.db.execute_sql(
+                    "UPDATE collections SET shared_by = ? WHERE id = ?",
+                    &[sb.as_str(), &record.row_id],
+                ).map_err(|e| e.to_string())?;
+            } else {
+                self.db.execute_sql(
+                    "UPDATE collections SET shared_by = NULL WHERE id = ?",
+                    &[&record.row_id],
+                ).map_err(|e| e.to_string())?;
+            }
             self.db.execute_sql(
                 "UPDATE collections SET sync_version = ?, synced_at = ? WHERE id = ?",
                 &[&record.version.to_string(), &chrono::Utc::now().timestamp().to_string(), &record.row_id],
@@ -492,7 +548,7 @@ impl SyncService {
                 &name,
                 &description,
                 &language,
-                self.db.get_local_user_id(),
+                shared_by.as_deref(),
                 is_public,
             ).map_err(|e| e.to_string())?;
             self.db.execute_sql(
@@ -569,7 +625,6 @@ impl SyncService {
             related_words,
             language: data["language"].as_str().unwrap_or("").to_string(),
             collection_id,
-            user_id: self.db.get_local_user_id().to_string(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             sync_version: record.version,
@@ -636,8 +691,8 @@ impl SyncService {
         let data = &record.data;
         let now = Utc::now().timestamp();
         self.db.execute_sql(
-            "INSERT INTO practice_progress (id, user_id, language, total_sessions, total_words_practiced, current_streak, longest_streak, last_practice_date, created_at, updated_at, sync_version, synced_at)
-             VALUES (?, 'local', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            "INSERT INTO practice_progress (id, language, total_sessions, total_words_practiced, current_streak, longest_streak, last_practice_date, created_at, updated_at, sync_version, synced_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
                 total_sessions = excluded.total_sessions,
                 total_words_practiced = excluded.total_words_practiced,
@@ -668,8 +723,8 @@ impl SyncService {
         let data = &record.data;
         let now = Utc::now().timestamp();
         self.db.execute_sql(
-            "INSERT INTO user_learning_languages (id, user_id, language, created_at, sync_version, synced_at)
-             VALUES (?, 'local', ?, ?, ?, ?)
+            "INSERT INTO user_learning_languages (id, language, created_at, sync_version, synced_at)
+             VALUES (?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
                 language = excluded.language,
                 sync_version = excluded.sync_version,
@@ -731,21 +786,31 @@ impl SyncService {
         let data = &record.data;
         let now = Utc::now().timestamp();
         self.db.execute_sql(
-            "INSERT INTO collection_shared_users (id, collection_id, user_id, created_at, sync_version, synced_at)
-             VALUES (?, ?, ?, ?, ?, ?)
+            "INSERT INTO collection_shared_users (id, collection_id, user_id, permission, created_at, sync_version, synced_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)
              ON CONFLICT(id) DO UPDATE SET
+                permission = excluded.permission,
                 sync_version = excluded.sync_version,
                 synced_at = excluded.synced_at",
             &[
                 &record.row_id,
                 data["collectionId"].as_str().unwrap_or(""),
-                data["userId"].as_str().unwrap_or("local"),
+                data["userId"].as_str().unwrap_or(""),
+                data["permission"].as_str().unwrap_or("viewer"),
                 &data["createdAt"].as_i64().unwrap_or(now).to_string(),
                 &record.version.to_string(),
                 &now.to_string(),
             ],
         ).map_err(|e| e.to_string())?;
         Ok(())
+    }
+
+    /// Get current user ID from auth store
+    fn get_current_user_id(&self, app_handle: &tauri::AppHandle) -> Option<String> {
+        use tauri_plugin_store::StoreExt;
+        app_handle.store("auth.json").ok()
+            .and_then(|store| store.get("user_id").and_then(|v| v.as_str().map(|s| s.to_string())))
+            .filter(|id| !id.is_empty())
     }
 
     fn mark_records_synced(&self, records: &[SyncRecord], synced_at: i64) -> Result<(), String> {

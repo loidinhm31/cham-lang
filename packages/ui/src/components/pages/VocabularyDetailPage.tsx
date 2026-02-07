@@ -28,6 +28,7 @@ interface LocationState {
   vocabularyIds?: string[];
   currentIndex?: number;
   totalWords?: number; // Total word count from collection
+  canEdit?: boolean;
 }
 
 export const VocabularyDetailPage: React.FC = () => {
@@ -44,7 +45,8 @@ export const VocabularyDetailPage: React.FC = () => {
   const [isAnimating, setIsAnimating] = useState(false);
 
   const state = location.state as LocationState;
-  const { collectionId, vocabularyIds, currentIndex, totalWords } = state || {};
+  const { collectionId, vocabularyIds, currentIndex, totalWords, canEdit } =
+    state || {};
 
   useEffect(() => {
     if (id) {
@@ -111,11 +113,19 @@ export const VocabularyDetailPage: React.FC = () => {
           vocabularyIds,
           currentIndex: currentIndex + 1,
           totalWords,
+          canEdit,
         },
       });
       setTimeout(() => setIsAnimating(false), 300);
     }
-  }, [vocabularyIds, currentIndex, collectionId, totalWords, navigate]);
+  }, [
+    vocabularyIds,
+    currentIndex,
+    collectionId,
+    totalWords,
+    canEdit,
+    navigate,
+  ]);
 
   const goToPrevious = useCallback(() => {
     if (vocabularyIds && currentIndex !== undefined && currentIndex > 0) {
@@ -127,11 +137,19 @@ export const VocabularyDetailPage: React.FC = () => {
           vocabularyIds,
           currentIndex: currentIndex - 1,
           totalWords,
+          canEdit,
         },
       });
       setTimeout(() => setIsAnimating(false), 300);
     }
-  }, [vocabularyIds, currentIndex, collectionId, totalWords, navigate]);
+  }, [
+    vocabularyIds,
+    currentIndex,
+    collectionId,
+    totalWords,
+    canEdit,
+    navigate,
+  ]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -442,33 +460,36 @@ export const VocabularyDetailPage: React.FC = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 justify-center">
-          <Button
-            variant="outline"
-            size="md"
-            icon={Edit}
-            onClick={() =>
-              navigate(`/vocabulary/edit/${vocabulary.id}`, {
-                state: {
-                  collectionId,
-                  vocabularyIds,
-                  currentIndex,
-                  totalWords,
-                },
-              })
-            }
-          >
-            {t("buttons.edit")}
-          </Button>
-          <Button
-            variant="danger"
-            size="md"
-            icon={Trash2}
-            onClick={handleDelete}
-          >
-            {t("buttons.delete")}
-          </Button>
-        </div>
+        {canEdit !== false && (
+          <div className="flex gap-3 justify-center">
+            <Button
+              variant="outline"
+              size="md"
+              icon={Edit}
+              onClick={() =>
+                navigate(`/vocabulary/edit/${vocabulary.id}`, {
+                  state: {
+                    collectionId,
+                    vocabularyIds,
+                    currentIndex,
+                    totalWords,
+                    canEdit,
+                  },
+                })
+              }
+            >
+              {t("buttons.edit")}
+            </Button>
+            <Button
+              variant="danger"
+              size="md"
+              icon={Trash2}
+              onClick={handleDelete}
+            >
+              {t("buttons.delete")}
+            </Button>
+          </div>
+        )}
       </div>
     </>
   );

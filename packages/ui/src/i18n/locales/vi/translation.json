@@ -110,7 +110,8 @@
     "viewDetails": "Xem Chi Tiết",
     "close": "Đóng",
     "backup": "Sao Lưu",
-    "restore": "Khôi Phục"
+    "restore": "Khôi Phục",
+    "share": "Chia Sẻ"
   },
   "messages": {
     "saveSuccess": "Đã lưu thành công!",
@@ -126,6 +127,7 @@
     "cloudSync": "Đồng bộ đám mây",
     "cloudSyncDescription": "Giữ dữ liệu của bạn được đồng bộ hóa trên các thiết bị",
     "serverConfig": "Cấu hình máy chủ",
+    "serverConfigDescription": "Cấu hình kết nối máy chủ đồng bộ",
     "serverUrl": "URL máy chủ",
     "language": "Ngôn Ngữ Giao Diện",
     "languageDescription": "Chọn ngôn ngữ bạn muốn sử dụng cho ứng dụng",
@@ -139,6 +141,7 @@
     "nativeLanguage": "Ngôn Ngữ Mẹ Đẻ",
     "learningLanguages": "Ngôn Ngữ Đang Học",
     "theme": "Giao Diện",
+    "themeDescription": "Chọn giao diện ưa thích của bạn",
     "database": "Cơ Sở Dữ Liệu",
     "connectionString": "Chuỗi Kết Nối",
     "connect": "Kết Nối",
@@ -313,6 +316,9 @@
     "testScore": "Điểm Số Của Bạn"
   },
   "auth": {
+    "account": "Tài khoản",
+    "manageAccount": "Quản lý tài khoản",
+    "connected": "Đã kết nối",
     "login": "Đăng Nhập",
     "loginButton": "Đăng Nhập",
     "register": "Đăng Ký",
@@ -348,7 +354,14 @@
     "fillAllFields": "Vui lòng điền đầy đủ thông tin",
     "loginSuccess": "Đăng nhập thành công",
     "registerSuccess": "Tạo tài khoản thành công",
-    "registerButton": "Tạo Tài Khoản"
+    "registerButton": "Tạo Tài Khoản",
+    "signingIn": "Đang đăng nhập...",
+    "signIn": "Đăng Nhập",
+    "creatingAccount": "Đang tạo tài khoản...",
+    "createAccount": "Tạo Tài Khoản",
+    "loginPrompt": "Đăng nhập để đồng bộ tiến trình của bạn",
+    "loginToConnect": "Đăng nhập để kết nối với máy chủ",
+    "notLoggedIn": "Chưa đăng nhập"
   },
   "sync": {
     "pendingChanges": "thay đổi đang chờ",
@@ -361,7 +374,9 @@
     "syncNow": "Đồng bộ ngay",
     "lastSync": "Đồng bộ lần cuối",
     "neverSynced": "Chưa từng đồng bộ",
-    "loginPrompt": "Đăng nhập để đồng bộ từ vựng và bộ sưu tập của bạn trên tất cả các thiết bị."
+    "loginPrompt": "Đăng nhập để đồng bộ từ vựng và bộ sưu tập của bạn trên tất cả các thiết bị.",
+    "saveConfig": "Lưu cấu hình",
+    "configureFailed": "Cấu hình đồng bộ thất bại"
   },
   "gdrive": {
     "title": "Đồng Bộ Google Drive",
@@ -430,7 +445,31 @@
     "sortLatestCreated": "Tạo gần nhất",
     "sortOldestUpdated": "Cập nhật cũ nhất",
     "sortOldestCreated": "Tạo cũ nhất",
-    "sortName": "Tên (A-Z)"
+    "sortName": "Tên (A-Z)",
+    "shareDialog": {
+      "title": "Chia Sẻ Bộ Sưu Tập",
+      "shareWith": "Chia sẻ với người dùng",
+      "usernamePlaceholder": "Nhập tên người dùng...",
+      "permission": "Quyền",
+      "viewer": "Xem",
+      "viewerDescription": "Có thể xem và học từ",
+      "editor": "Chỉnh Sửa",
+      "editorDescription": "Có thể thêm, sửa và xóa từ",
+      "shareButton": "Chia Sẻ",
+      "sharing": "Đang chia sẻ...",
+      "sharedWith": "Đã chia sẻ với ({{count}})",
+      "notSharedYet": "Chưa chia sẻ với ai",
+      "removeAccess": "Xóa quyền truy cập cho người dùng này?",
+      "removeAccessDescription": "Họ sẽ không thể truy cập bộ sưu tập này nữa",
+      "permissionChanged": "Đã cập nhật quyền",
+      "userRemoved": "Đã xóa quyền truy cập",
+      "shareSuccess": "Đã chia sẻ bộ sưu tập thành công",
+      "cannotShareWithSelf": "Bạn không thể chia sẻ với chính mình",
+      "alreadyShared": "Đã chia sẻ với người dùng này",
+      "userNotFound": "Không tìm thấy người dùng",
+      "shareFailed": "Chia sẻ thất bại. Vui lòng thử lại."
+    },
+    "sharedCount": "Đã chia sẻ với {{count}}"
   },
   "collection": {
     "title": "Chi Tiết Bộ Sưu Tập",
@@ -520,6 +559,7 @@
     "cancel": "Hủy",
     "noOptionsFound": "Không tìm thấy tùy chọn nào",
     "back": "Quay lại",
-    "never": "Không bao giờ"
+    "never": "Không bao giờ",
+    "invalidDate": "Ngày không hợp lệ"
   }
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { BookOpen, ChevronRight, Globe } from "lucide-react";
+import { BookOpen, ChevronRight, Globe, Users, UserPlus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Badge, Card, type CardVariant } from "@cham-lang/ui/components/atoms";
 import type { Collection } from "@cham-lang/shared/types";
@@ -27,13 +27,39 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   const colorIndex = collection.name.length % collectionColors.length;
   const cardColor = collectionColors[colorIndex];
 
+  const isOwner = !collection.shared_by;
+  const isShared = collection.shared_with.length > 0;
+
   return (
     <Card variant={cardColor} hover onClick={onClick}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <h3 className="text-2xl font-bold text-gray-900 mb-2">
-            {collection.name}
-          </h3>
+          <div className="flex items-start gap-2 mb-2">
+            <h3 className="text-2xl font-bold text-gray-900 flex-1">
+              {collection.name}
+            </h3>
+            {/* Sharing status badges */}
+            <div className="flex flex-col gap-1 items-end">
+              {!isOwner && (
+                <Badge
+                  variant="glass"
+                  className="flex items-center gap-1 text-xs"
+                >
+                  <UserPlus className="w-3 h-3" />
+                  <span>{t("collections.sharedWithYou")}</span>
+                </Badge>
+              )}
+              {isOwner && isShared && (
+                <Badge
+                  variant="info"
+                  className="flex items-center gap-1 text-xs"
+                >
+                  <Users className="w-3 h-3" />
+                  <span>{collection.shared_with.length}</span>
+                </Badge>
+              )}
+            </div>
+          </div>
           <div className="flex items-center gap-2 text-sm font-semibold text-indigo-600">
             <Globe className="w-4 h-4" />
             <span className="capitalize">{collection.language}</span>

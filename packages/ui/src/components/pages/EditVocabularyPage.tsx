@@ -4,18 +4,21 @@ import { useNav } from "@cham-lang/ui/hooks";
 import { useTranslation } from "react-i18next";
 import { TopBar } from "@cham-lang/ui/components/molecules";
 import { VocabularyForm } from "@cham-lang/ui/components/organisms";
-import { VocabularyService } from "@cham-lang/ui/services";
+import { VocabularyService, CollectionService } from "@cham-lang/ui/services";
 import type {
+  Collection,
   CreateVocabularyRequest,
   Vocabulary,
 } from "@cham-lang/shared/types";
 import { useDialog } from "@cham-lang/ui/contexts";
+import { useCollectionPermission } from "@cham-lang/ui/hooks";
 
 interface LocationState {
   collectionId?: string;
   vocabularyIds?: string[];
   currentIndex?: number;
   totalWords?: number;
+  canEdit?: boolean;
 }
 
 export const EditVocabularyPage: React.FC = () => {
@@ -30,6 +33,11 @@ export const EditVocabularyPage: React.FC = () => {
   const [initialData, setInitialData] = useState<
     Partial<CreateVocabularyRequest> | undefined
   >();
+  const [parentCollection, setParentCollection] = useState<Collection | null>(
+    null,
+  );
+  const { canEdit, loading: permLoading } =
+    useCollectionPermission(parentCollection);
 
   useEffect(() => {
     if (id) {
@@ -37,11 +45,30 @@ export const EditVocabularyPage: React.FC = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (!permLoading && parentCollection && !canEdit) {
+      showAlert(t("messages.error"), { variant: "error" });
+      navigate(`/vocabulary/${id}`);
+    }
+  }, [permLoading, canEdit, parentCollection]);
+
   const loadVocabulary = async (vocabId: string) => {
     try {
       setLoadingData(true);
       const vocabulary: Vocabulary =
         await VocabularyService.getVocabulary(vocabId);
+
+      // Load parent collection for permission check
+      if (vocabulary.collection_id) {
+        try {
+          const collection = await CollectionService.getCollection(
+            vocabulary.collection_id,
+          );
+          setParentCollection(collection);
+        } catch {
+          // If collection not found, allow editing (orphan vocab)
+        }
+      }
 
       // Convert Vocabulary to CreateVocabularyRequest format
       setInitialData({

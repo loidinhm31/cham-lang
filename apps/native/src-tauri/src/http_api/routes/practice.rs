@@ -17,8 +17,7 @@ async fn create_session_handler(
     State(state): State<AppState>,
     Json(request): Json<CreatePracticeSessionRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.create_practice_session(&request, user_id) {
+    match state.db.create_practice_session(&request) {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("create_practice_session failed: {}", e);
@@ -38,10 +37,9 @@ async fn get_sessions_handler(
     State(state): State<AppState>,
     Query(query): Query<SessionsQuery>,
 ) -> Result<Json<ApiResponse<Vec<PracticeSession>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
     match state
         .db
-        .get_practice_sessions(user_id, &query.language, query.limit)
+        .get_practice_sessions(&query.language, query.limit)
     {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
@@ -56,8 +54,7 @@ async fn update_progress_handler(
     State(state): State<AppState>,
     Json(request): Json<UpdateProgressRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.update_practice_progress(&request, user_id) {
+    match state.db.update_practice_progress(&request) {
         Ok(_) => Ok(Json(ApiResponse::success(
             "Progress updated successfully".to_string(),
         ))),
@@ -73,8 +70,7 @@ async fn get_progress_handler(
     State(state): State<AppState>,
     Path(language): Path<String>,
 ) -> Result<Json<ApiResponse<Option<UserPracticeProgress>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_practice_progress(user_id, &language) {
+    match state.db.get_practice_progress(&language) {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_practice_progress failed: {}", e);

@@ -15,12 +15,10 @@ async fn create_handler(
     State(state): State<AppState>,
     Json(request): Json<CreateCollectionRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
     match state.db.create_collection(
         &request.name,
         &request.description,
         &request.language,
-        user_id,
         request.is_public,
     ) {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
@@ -50,8 +48,7 @@ async fn get_one_handler(
 async fn get_user_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<Collection>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_user_collections(user_id) {
+    match state.db.get_user_collections() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_user_collections failed: {}", e);
@@ -123,7 +120,7 @@ async fn share_handler(
     State(state): State<AppState>,
     Path((collection_id, user_id)): Path<(String, String)>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    match state.db.share_collection(&collection_id, &user_id) {
+    match state.db.share_collection(&collection_id, &user_id, "viewer") {
         Ok(_) => Ok(Json(ApiResponse::success(
             "Collection shared successfully".to_string(),
         ))),

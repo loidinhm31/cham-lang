@@ -110,7 +110,8 @@
     "viewDetails": "View Details",
     "close": "Close",
     "backup": "Backup",
-    "restore": "Restore"
+    "restore": "Restore",
+    "share": "Share"
   },
   "messages": {
     "saveSuccess": "Saved successfully!",
@@ -126,6 +127,7 @@
     "cloudSync": "Cloud Sync",
     "cloudSyncDescription": "Keep your data synchronized across devices",
     "serverConfig": "Server Configuration",
+    "serverConfigDescription": "Configure the sync server connection",
     "serverUrl": "Server URL",
     "language": "Interface Language",
     "languageDescription": "Choose your preferred language for the app",
@@ -139,6 +141,7 @@
     "nativeLanguage": "Native Language",
     "learningLanguages": "Learning Languages",
     "theme": "Theme",
+    "themeDescription": "Choose your preferred theme",
     "database": "Database",
     "connectionString": "Connection String",
     "connect": "Connect",
@@ -313,6 +316,9 @@
     "testScore": "Your Score"
   },
   "auth": {
+    "account": "Account",
+    "manageAccount": "Manage Account",
+    "connected": "Connected",
     "login": "Login",
     "loginButton": "Log In",
     "register": "Register",
@@ -348,7 +354,14 @@
     "fillAllFields": "Please fill in all fields",
     "loginSuccess": "Logged in successfully",
     "registerSuccess": "Account created successfully",
-    "registerButton": "Create Account"
+    "registerButton": "Create Account",
+    "signingIn": "Signing in...",
+    "signIn": "Sign In",
+    "creatingAccount": "Creating account...",
+    "createAccount": "Create Account",
+    "loginPrompt": "Log in to sync your progress",
+    "loginToConnect": "Login to connect to server",
+    "notLoggedIn": "Not logged in"
   },
   "sync": {
     "pendingChanges": "pending changes",
@@ -361,7 +374,9 @@
     "syncNow": "Sync Now",
     "lastSync": "Last sync",
     "neverSynced": "Never synced",
-    "loginPrompt": "Sign in to sync your vocabulary and collections across all your devices."
+    "loginPrompt": "Sign in to sync your vocabulary and collections across all your devices.",
+    "saveConfig": "Server Configuration",
+    "configureFailed": "Failed to configure sync"
   },
   "gdrive": {
     "title": "Google Drive Sync",
@@ -430,7 +445,31 @@
     "sortLatestCreated": "Latest Created",
     "sortOldestUpdated": "Oldest Updated",
     "sortOldestCreated": "Oldest Created",
-    "sortName": "Name (A-Z)"
+    "sortName": "Name (A-Z)",
+    "shareDialog": {
+      "title": "Share Collection",
+      "shareWith": "Share with a user",
+      "usernamePlaceholder": "Enter username...",
+      "permission": "Permission",
+      "viewer": "Viewer",
+      "viewerDescription": "Can view and study words",
+      "editor": "Editor",
+      "editorDescription": "Can add, edit, and delete words",
+      "shareButton": "Share",
+      "sharing": "Sharing...",
+      "sharedWith": "Shared with ({{count}})",
+      "notSharedYet": "Not shared with anyone yet",
+      "removeAccess": "Remove access for this user?",
+      "removeAccessDescription": "They will no longer be able to access this collection",
+      "permissionChanged": "Permission updated",
+      "userRemoved": "Access removed",
+      "shareSuccess": "Collection shared successfully",
+      "cannotShareWithSelf": "You cannot share with yourself",
+      "alreadyShared": "Already shared with this user",
+      "userNotFound": "User not found. Please check the username and try again.",
+      "shareFailed": "Failed to share. Please try again."
+    },
+    "sharedCount": "Shared with {{count}}"
   },
   "collection": {
     "title": "Collection Details",
@@ -520,6 +559,7 @@
     "cancel": "Cancel",
     "noOptionsFound": "No options found",
     "back": "Back",
-    "never": "Never"
+    "never": "Never",
+    "invalidDate": "Invalid date"
   }
 }

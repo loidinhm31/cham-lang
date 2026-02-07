@@ -11,7 +11,7 @@ use crate::models::{UpdateVocabularyRequest, Vocabulary};
 
 impl LocalDatabase {
     /// Create a new vocabulary with all related data
-    pub fn create_vocabulary(&self, vocab: &Vocabulary, user_id: &str) -> SqlResult<String> {
+    pub fn create_vocabulary(&self, vocab: &Vocabulary) -> SqlResult<String> {
         let id = Uuid::new_v4().to_string();
         let now = Utc::now().timestamp();
 
@@ -21,8 +21,8 @@ impl LocalDatabase {
         // Insert main vocabulary record
         tx.execute(
             "INSERT INTO vocabularies
-             (id, word, word_type, level, ipa, audio_url, concept, language, collection_id, user_id, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+             (id, word, word_type, level, ipa, audio_url, concept, language, collection_id, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
             params![
                 id,
                 vocab.word,
@@ -33,7 +33,6 @@ impl LocalDatabase {
                 vocab.concept,
                 vocab.language,
                 vocab.collection_id,
-                user_id,
                 now,
                 now,
             ],
@@ -156,7 +155,7 @@ impl LocalDatabase {
 
         // Get main vocabulary record
         let mut stmt = conn.prepare(
-            "SELECT id, word, word_type, level, ipa, audio_url, concept, language, collection_id, user_id, created_at, updated_at, sync_version, synced_at
+            "SELECT id, word, word_type, level, ipa, audio_url, concept, language, collection_id, created_at, updated_at, sync_version, synced_at
              FROM vocabularies WHERE id = ?1"
         )?;
 
@@ -172,11 +171,10 @@ impl LocalDatabase {
             let concept: Option<String> = row.get(6)?;
             let language: String = row.get(7)?;
             let collection_id: String = row.get(8)?;
-            let user_id: String = row.get(9)?;
-            let created_at = timestamp_to_datetime(row.get(10)?);
-            let updated_at = timestamp_to_datetime(row.get(11)?);
-            let sync_version: i64 = row.get::<_, Option<i64>>(12)?.unwrap_or(1);
-            let synced_at: Option<i64> = row.get(13)?;
+            let created_at = timestamp_to_datetime(row.get(9)?);
+            let updated_at = timestamp_to_datetime(row.get(10)?);
+            let sync_version: i64 = row.get::<_, Option<i64>>(11)?.unwrap_or(1);
+            let synced_at: Option<i64> = row.get(12)?;
 
             let word_type = parse_word_type(&word_type_str);
 
@@ -276,7 +274,6 @@ impl LocalDatabase {
                 related_words,
                 language,
                 collection_id,
-                user_id,
                 created_at,
                 updated_at,
                 sync_version,
@@ -287,10 +284,9 @@ impl LocalDatabase {
         }
     }
 
-    /// Get all vocabularies for a user with optional language filter
+    /// Get all vocabularies with optional language filter
     pub fn get_all_vocabularies(
         &self,
-        user_id: &str,
         language: Option<&str>,
         limit: Option<i64>,
     ) -> SqlResult<Vec<Vocabulary>> {
@@ -302,24 +298,24 @@ impl LocalDatabase {
                     format!(
                         "SELECT id
                      FROM vocabularies
-                     WHERE user_id = ?1 AND language = ?2 AND deleted = 0
+                     WHERE language = ?1 AND deleted = 0
                      ORDER BY created_at DESC, word COLLATE NOCASE ASC
                      LIMIT {}",
                         limit.unwrap_or(999999)
                     ),
-                    vec![Box::new(user_id.to_string()), Box::new(lang.to_string())],
+                    vec![Box::new(lang.to_string())],
                 )
             } else {
                 (
                     format!(
                         "SELECT id
                      FROM vocabularies
-                     WHERE user_id = ?1 AND deleted = 0
+                     WHERE deleted = 0
                      ORDER BY created_at DESC, word COLLATE NOCASE ASC
                      LIMIT {}",
                         limit.unwrap_or(999999)
                     ),
-                    vec![Box::new(user_id.to_string())],
+                    vec![],
                 )
             };
 
@@ -727,8 +723,8 @@ impl LocalDatabase {
         // Insert main vocabulary record with the provided ID
         tx.execute(
             "INSERT INTO vocabularies
-             (id, word, word_type, level, ipa, audio_url, concept, language, collection_id, user_id, created_at, updated_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)",
+             (id, word, word_type, level, ipa, audio_url, concept, language, collection_id, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11)",
             params![
                 id,
                 vocab.word,
@@ -739,7 +735,6 @@ impl LocalDatabase {
                 vocab.concept,
                 vocab.language,
                 vocab.collection_id,
-                vocab.user_id,
                 now,
                 now,
             ],
@@ -843,7 +838,6 @@ impl LocalDatabase {
         &self,
         vocab_ids: &[String],
         target_collection_id: &str,
-        user_id: &str,
     ) -> SqlResult<crate::models::BulkMoveResult> {
         use std::collections::HashSet;
 
@@ -851,12 +845,12 @@ impl LocalDatabase {
         let tx = conn.transaction()?;
         let now = Utc::now().timestamp();
 
-        // Verify target collection exists and belongs to user
+        // Verify target collection exists
         let target_exists: bool = tx
             .query_row(
                 "SELECT 1 FROM collections
-                 WHERE id = ?1 AND owner_id = ?2",
-                params![target_collection_id, user_id],
+                 WHERE id = ?1 AND deleted = 0",
+                params![target_collection_id],
                 |_row| Ok(true),
             )
             .optional()?
@@ -878,12 +872,12 @@ impl LocalDatabase {
         let mut moved_count = 0;
 
         for vocab_id in vocab_ids {
-            // Get vocabulary info (collection_id and language) if it exists and belongs to user
+            // Get vocabulary info (collection_id and language)
             let vocab_info: Option<(String, String)> = tx
                 .query_row(
                     "SELECT collection_id, language FROM vocabularies
-                     WHERE id = ?1 AND user_id = ?2",
-                    params![vocab_id, user_id],
+                     WHERE id = ?1 AND deleted = 0",
+                    params![vocab_id],
                     |row| Ok((row.get(0)?, row.get(1)?)),
                 )
                 .optional()?;

@@ -13,8 +13,7 @@ use crate::web_server::AppState;
 async fn get_languages_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<String>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_all_languages(user_id) {
+    match state.db.get_all_languages() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_all_languages failed: {}", e);
@@ -27,8 +26,7 @@ async fn get_languages_handler(
 async fn get_topics_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<String>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_all_topics(user_id) {
+    match state.db.get_all_topics() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_all_topics failed: {}", e);
@@ -41,8 +39,7 @@ async fn get_topics_handler(
 async fn get_tags_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Vec<String>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_all_tags(user_id) {
+    match state.db.get_all_tags() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_all_tags failed: {}", e);

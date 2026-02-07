@@ -94,7 +94,9 @@ export const getCollectionService = (): ICollectionService => {
     const type = getAdapterType();
     if (type === "tauri") collectionService = new TauriCollectionAdapter();
     else if (type === "http") collectionService = new HttpCollectionAdapter();
-    else collectionService = new IndexedDBCollectionAdapter();
+    else {
+      collectionService = new IndexedDBCollectionAdapter();
+    }
   }
   return collectionService;
 };
@@ -149,7 +151,9 @@ export const getCSVService = (): ICSVService => {
     const type = getAdapterType();
     if (type === "tauri") csvService = new TauriCSVAdapter();
     else if (type === "http") csvService = new HttpCSVAdapter();
-    else csvService = new IndexedDBCSVAdapter();
+    else {
+      csvService = new IndexedDBCSVAdapter();
+    }
   }
   return csvService;
 };

@@ -11,8 +11,8 @@ impl LocalDatabase {
     // LEARNING SETTINGS OPERATIONS
     //==========================================================================
 
-    /// Get learning settings for a user
-    pub fn get_learning_settings(&self, user_id: &str) -> SqlResult<Option<LearningSettings>> {
+    /// Get learning settings
+    pub fn get_learning_settings(&self) -> SqlResult<Option<LearningSettings>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id, sr_algorithm, leitner_box_count, consecutive_correct_required,
@@ -21,10 +21,10 @@ impl LocalDatabase {
                     reminder_enabled, reminder_time,
                     created_at, updated_at, sync_version, synced_at
              FROM learning_settings
-             WHERE user_id = ?1",
+             LIMIT 1",
         )?;
 
-        let mut rows = stmt.query(params![user_id])?;
+        let mut rows = stmt.query([])?;
 
         if let Some(row) = rows.next()? {
             let sr_algorithm_str: String = row.get(1)?;
@@ -34,7 +34,6 @@ impl LocalDatabase {
 
             Ok(Some(LearningSettings {
                 id: row.get(0)?,
-                user_id: user_id.to_string(),
                 sr_algorithm,
                 leitner_box_count: row.get(2)?,
                 consecutive_correct_required: row.get(3)?,
@@ -57,10 +56,9 @@ impl LocalDatabase {
         }
     }
 
-    /// Create new learning settings for a user
+    /// Create new learning settings
     pub fn create_learning_settings(
         &self,
-        user_id: &str,
         sr_algorithm: &SpacedRepetitionAlgorithm,
         leitner_box_count: i32,
         consecutive_correct_required: i32,
@@ -82,15 +80,14 @@ impl LocalDatabase {
 
         conn.execute(
             "INSERT INTO learning_settings
-             (id, user_id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+             (id, sr_algorithm, leitner_box_count, consecutive_correct_required,
               show_failed_words_in_session, new_words_per_day, daily_review_limit,
               auto_advance_timeout_seconds, show_hint_in_fillword,
               reminder_enabled, reminder_time,
               created_at, updated_at, sync_version, synced_at)
-             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, 1, NULL)",
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, 1, NULL)",
             params![
                 &id,
-                user_id,
                 sr_algorithm_str,
                 leitner_box_count,
                 consecutive_correct_required,
@@ -108,7 +105,6 @@ impl LocalDatabase {
 
         Ok(LearningSettings {
             id,
-            user_id: user_id.to_string(),
             sr_algorithm: sr_algorithm.clone(),
             leitner_box_count,
             consecutive_correct_required,
@@ -126,10 +122,9 @@ impl LocalDatabase {
         })
     }
 
-    /// Update learning settings for a user
+    /// Update learning settings
     pub fn update_learning_settings(
         &self,
-        user_id: &str,
         request: &UpdateLearningSettingsRequest,
     ) -> SqlResult<LearningSettings> {
         let conn = self.conn.lock().unwrap();
@@ -142,10 +137,10 @@ impl LocalDatabase {
                     auto_advance_timeout_seconds, show_hint_in_fillword,
                     reminder_enabled, reminder_time, created_at
              FROM learning_settings
-             WHERE user_id = ?1",
+             LIMIT 1",
         )?;
 
-        let mut rows = stmt.query(params![user_id])?;
+        let mut rows = stmt.query([])?;
 
         if let Some(row) = rows.next()? {
             let id: String = row.get(0)?;
@@ -212,7 +207,7 @@ impl LocalDatabase {
                      auto_advance_timeout_seconds = ?7, show_hint_in_fillword = ?8,
                      reminder_enabled = ?9, reminder_time = ?10,
                      updated_at = ?11, sync_version = sync_version + 1, synced_at = NULL
-                 WHERE user_id = ?12",
+                 WHERE id = ?12",
                 params![
                     sr_algorithm_str,
                     leitner_box_count,
@@ -225,13 +220,12 @@ impl LocalDatabase {
                     if reminder_enabled { 1 } else { 0 },
                     &reminder_time,
                     now.timestamp(),
-                    user_id,
+                    id,
                 ],
             )?;
 
             Ok(LearningSettings {
                 id,
-                user_id: user_id.to_string(),
                 sr_algorithm: sr_algorithm.clone(),
                 leitner_box_count,
                 consecutive_correct_required,
@@ -254,7 +248,6 @@ impl LocalDatabase {
                 .as_ref()
                 .unwrap_or(&SpacedRepetitionAlgorithm::ModifiedSM2);
             self.create_learning_settings(
-                user_id,
                 default_algorithm,
                 request.leitner_box_count.unwrap_or(5),
                 request.consecutive_correct_required.unwrap_or(3),
@@ -267,14 +260,13 @@ impl LocalDatabase {
         }
     }
 
-    /// Get learning settings for a user, creating default settings if none exist
-    pub fn get_or_create_learning_settings(&self, user_id: &str) -> SqlResult<LearningSettings> {
-        if let Some(settings) = self.get_learning_settings(user_id)? {
+    /// Get learning settings, creating default settings if none exist
+    pub fn get_or_create_learning_settings(&self) -> SqlResult<LearningSettings> {
+        if let Some(settings) = self.get_learning_settings()? {
             Ok(settings)
         } else {
             // Create default settings
             self.create_learning_settings(
-                user_id,
                 &SpacedRepetitionAlgorithm::ModifiedSM2,
                 5,         // 5 boxes
                 3,         // 3 consecutive correct required

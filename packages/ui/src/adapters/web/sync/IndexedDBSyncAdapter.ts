@@ -9,7 +9,7 @@ import {
   type HttpClientFn,
   QmSyncClient,
 } from "@cham-lang/shared/types";
-import { IndexedDBSyncStorage } from "./IndexedDBSyncStorage";
+import { IndexedDBSyncStorage } from "@cham-lang/ui/adapters/web";
 
 export type TokenProvider = () => Promise<{
   accessToken?: string;
@@ -80,7 +80,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
     }
 
     try {
-      const pendingChanges = await this.storage.getPendingChanges();
+      const pendingChanges = await this.storage.getPendingChanges(userId);
       const checkpoint = await this.storage.getCheckpoint();
 
       const response = await this.client.delta(pendingChanges, checkpoint);

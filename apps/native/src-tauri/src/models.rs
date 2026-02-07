@@ -41,7 +41,7 @@ pub struct Vocabulary {
     pub updated_at: DateTime<Utc>,
     pub language: String,      // "en", "vi", "ko", etc.
     pub collection_id: String, // Reference to Collection
-    pub user_id: String,       // Reference to User who created it
+    // user_id removed - vocabularies belong to collections, not users
     #[serde(default = "default_sync_version")]
     pub sync_version: i64,
     pub synced_at: Option<i64>,
@@ -121,8 +121,8 @@ pub struct Collection {
     pub name: String,
     pub description: String,
     pub language: String,
-    pub owner_id: String,         // User ID
-    pub shared_with: Vec<String>, // User IDs who can access
+    pub shared_by: Option<String>,       // None = user's own collection, Some(userId) = shared by that user
+    pub shared_with: Vec<SharedUser>,    // Users who can access with permissions
     pub is_public: bool,
     pub word_count: i32,
     pub created_at: DateTime<Utc>,
@@ -130,6 +130,12 @@ pub struct Collection {
     #[serde(default = "default_sync_version")]
     pub sync_version: i64,
     pub synced_at: Option<i64>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SharedUser {
+    pub user_id: String,
+    pub permission: String, // "viewer" | "editor"
 }
 
 fn default_sync_version() -> i64 {
@@ -220,7 +226,6 @@ pub struct PracticeResult {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PracticeSession {
     pub id: String,
-    pub user_id: String,
     pub collection_id: String,
     pub mode: PracticeMode,
     pub language: String,
@@ -277,7 +282,6 @@ pub struct WordProgress {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserPracticeProgress {
     pub id: String,
-    pub user_id: String,
     pub language: String,
     pub words_progress: Vec<WordProgress>,
     pub total_sessions: i32,
@@ -332,7 +336,6 @@ pub enum SpacedRepetitionAlgorithm {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LearningSettings {
     pub id: String,
-    pub user_id: String,
 
     // Spaced Repetition Configuration
     pub sr_algorithm: SpacedRepetitionAlgorithm,

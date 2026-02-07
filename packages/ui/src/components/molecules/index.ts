@@ -10,3 +10,4 @@ export { BulkActionToolbar } from "./BulkActionToolbar";
 export { HeroCard } from "./HeroCard";
 export { QuickActionsCard } from "./QuickActionsCard";
 export { SearchFiltersCard } from "./SearchFiltersCard";
+export { SharedUserItem } from "./SharedUserItem";

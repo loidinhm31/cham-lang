@@ -7,7 +7,8 @@
         { "name": "name", "type": "string", "nullable": false },
         { "name": "description", "type": "string", "nullable": true },
         { "name": "language", "type": "string", "nullable": false },
-        { "name": "ownerId", "type": "string", "nullable": false },
+        { "name": "ownerId", "type": "string", "nullable": true },
+        { "name": "sharedBy", "type": "string", "nullable": true },
         { "name": "isPublic", "type": "boolean", "nullable": true },
         { "name": "wordCount", "type": "integer", "nullable": true },
         { "name": "createdAt", "type": "integer", "nullable": false },
@@ -33,7 +34,6 @@
         { "name": "topics", "type": "array", "nullable": true },
         { "name": "tags", "type": "array", "nullable": true },
         { "name": "relatedWords", "type": "array", "nullable": true },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "createdAt", "type": "integer", "nullable": false },
         { "name": "updatedAt", "type": "integer", "nullable": false },
         { "name": "syncVersion", "type": "integer", "nullable": false },
@@ -44,7 +44,6 @@
     "wordProgress": {
       "columns": [
         { "name": "id", "type": "string", "nullable": false },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "language", "type": "string", "nullable": false },
         { "name": "vocabularyId", "type": "string", "nullable": false },
         { "name": "word", "type": "string", "nullable": false },
@@ -76,7 +75,6 @@
     "learningSettings": {
       "columns": [
         { "name": "id", "type": "string", "nullable": false },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "srAlgorithm", "type": "string", "nullable": false },
         { "name": "leitnerBoxCount", "type": "integer", "nullable": false },
         {
@@ -113,7 +111,6 @@
     "practiceSessions": {
       "columns": [
         { "name": "id", "type": "string", "nullable": false },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "collectionId", "type": "string", "nullable": false },
         { "name": "mode", "type": "string", "nullable": false },
         { "name": "language", "type": "string", "nullable": false },
@@ -133,7 +130,6 @@
     "practiceProgress": {
       "columns": [
         { "name": "id", "type": "string", "nullable": false },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "language", "type": "string", "nullable": false },
         { "name": "totalSessions", "type": "integer", "nullable": true },
         {
@@ -154,7 +150,6 @@
     "userLearningLanguages": {
       "columns": [
         { "name": "id", "type": "string", "nullable": false },
-        { "name": "userId", "type": "string", "nullable": false },
         { "name": "language", "type": "string", "nullable": false },
         { "name": "createdAt", "type": "integer", "nullable": false },
         { "name": "syncVersion", "type": "integer", "nullable": false },
@@ -187,6 +182,7 @@
         { "name": "id", "type": "string", "nullable": false },
         { "name": "collectionId", "type": "string", "nullable": false },
         { "name": "userId", "type": "string", "nullable": false },
+        { "name": "permission", "type": "string", "nullable": false },
         { "name": "createdAt", "type": "integer", "nullable": false },
         { "name": "syncVersion", "type": "integer", "nullable": false },
         { "name": "syncedAt", "type": "integer", "nullable": true }

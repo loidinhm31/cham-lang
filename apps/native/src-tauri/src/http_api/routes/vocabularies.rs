@@ -18,7 +18,6 @@ async fn create_handler(
     State(state): State<AppState>,
     Json(request): Json<CreateVocabularyRequest>,
 ) -> Result<Json<ApiResponse<String>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
     let vocab = Vocabulary {
         id: None,
         word: request.word,
@@ -34,14 +33,13 @@ async fn create_handler(
         related_words: request.related_words,
         language: request.language,
         collection_id: request.collection_id.clone(),
-        user_id: user_id.to_string(),
         created_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
         sync_version: 1,
         synced_at: None,
     };
 
-    match state.db.create_vocabulary(&vocab, user_id) {
+    match state.db.create_vocabulary(&vocab) {
         Ok(vocab_id) => {
             let _ = state
                 .db
@@ -107,11 +105,9 @@ async fn bulk_move_handler(
     State(state): State<AppState>,
     Json(request): Json<BulkMoveRequest>,
 ) -> Result<Json<ApiResponse<BulkMoveResult>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
     match state.db.bulk_move_vocabularies(
         &request.vocabulary_ids,
         &request.target_collection_id,
-        user_id,
     ) {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
@@ -132,10 +128,9 @@ async fn get_all_handler(
     State(state): State<AppState>,
     Query(query): Query<GetAllQuery>,
 ) -> Result<Json<ApiResponse<Vec<Vocabulary>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
     match state
         .db
-        .get_all_vocabularies(user_id, query.language.as_deref(), query.limit)
+        .get_all_vocabularies(query.language.as_deref(), query.limit)
     {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {

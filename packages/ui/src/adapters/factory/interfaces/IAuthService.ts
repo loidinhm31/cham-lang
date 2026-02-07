@@ -1,8 +1,4 @@
-import type {
-  AuthResponse,
-  AuthStatus,
-  SyncConfig,
-} from "../../../../../shared/src/types/auth";
+import type { AuthResponse, AuthStatus, SyncConfig } from "@cham-lang/shared";
 
 /**
  * Auth service interface for user authentication
@@ -26,6 +22,9 @@ export interface IAuthService {
     refreshToken?: string;
     userId?: string;
   }>;
+  lookupUserByUsername(
+    username: string,
+  ): Promise<{ userId: string; username: string } | null>;
   saveTokensExternal?(
     accessToken: string,
     refreshToken: string,

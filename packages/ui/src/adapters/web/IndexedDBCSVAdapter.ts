@@ -170,7 +170,6 @@ export class IndexedDBCSVAdapter implements ICSVService {
             name: collectionName,
             description: "",
             language: lang,
-            owner_id: "local",
             shared_with: [],
             is_public: false,
             word_count: 0,
@@ -248,7 +247,6 @@ export class IndexedDBCSVAdapter implements ICSVService {
           language:
             langIdx !== -1 && row[langIdx]?.trim() ? row[langIdx].trim() : "en",
           collection_id: collectionId,
-          user_id: "local",
           created_at: now,
           updated_at: now,
         });
@@ -324,7 +322,6 @@ export class IndexedDBCSVAdapter implements ICSVService {
           related_words: [],
           language: language || "en",
           collection_id: collectionId,
-          user_id: "local",
           created_at: now,
           updated_at: now,
         });

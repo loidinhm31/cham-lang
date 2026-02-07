@@ -10,13 +10,11 @@ pub fn create_collection(
     local_db: State<'_, LocalDatabase>,
     request: CreateCollectionRequest,
 ) -> Result<String, String> {
-    let user_id = local_db.get_local_user_id();
     let collection_id = local_db
         .create_collection(
             &request.name,
             &request.description,
             &request.language,
-            user_id,
             request.is_public,
         )
         .map_err(|e| format!("Failed to create collection: {}", e))?;
@@ -40,9 +38,8 @@ pub fn get_collection(
 pub fn get_user_collections(
     local_db: State<'_, LocalDatabase>,
 ) -> Result<Vec<Collection>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_user_collections(user_id)
+        .get_user_collections()
         .map_err(|e| format!("Database error: {}", e))
 }
 
@@ -96,12 +93,14 @@ pub fn share_collection(
     local_db: State<'_, LocalDatabase>,
     collection_id: String,
     user_id: String,
+    permission: Option<String>,
 ) -> Result<String, String> {
+    let permission = permission.as_deref().unwrap_or("viewer");
     local_db
-        .share_collection(&collection_id, &user_id)
+        .share_collection(&collection_id, &user_id, permission)
         .map_err(|e| format!("Database error: {}", e))?;
 
-    println!("✓ Collection shared: {} with user {}", collection_id, user_id);
+    println!("✓ Collection shared: {} with user {} ({})", collection_id, user_id, permission);
     Ok("Collection shared successfully".to_string())
 }
 
@@ -118,3 +117,4 @@ pub fn unshare_collection(
     println!("✓ Collection unshared: {} from user {}", collection_id, user_id);
     Ok("Collection unshared successfully".to_string())
 }
+

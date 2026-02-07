@@ -14,7 +14,6 @@ pub fn create_vocabulary(
     local_db: State<'_, LocalDatabase>,
     request: CreateVocabularyRequest,
 ) -> Result<String, String> {
-    let user_id = local_db.get_local_user_id();
     let vocab = Vocabulary {
         id: None,
         word: request.word,
@@ -30,7 +29,6 @@ pub fn create_vocabulary(
         related_words: request.related_words,
         language: request.language,
         collection_id: request.collection_id.clone(),
-        user_id: user_id.to_string(),
         created_at: chrono::Utc::now(),
         updated_at: chrono::Utc::now(),
         sync_version: 1,
@@ -38,7 +36,7 @@ pub fn create_vocabulary(
     };
 
     let vocab_id = local_db
-        .create_vocabulary(&vocab, user_id)
+        .create_vocabulary(&vocab)
         .map_err(|e| format!("Failed to create vocabulary: {}", e))?;
 
     // Update collection word count
@@ -65,9 +63,8 @@ pub fn get_all_vocabularies(
     language: Option<String>,
     limit: Option<i64>,
 ) -> Result<Vec<Vocabulary>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_all_vocabularies(user_id, language.as_deref(), limit)
+        .get_all_vocabularies(language.as_deref(), limit)
         .map_err(|e| format!("Database error: {}", e))
 }
 
@@ -133,13 +130,10 @@ pub fn bulk_move_vocabularies(
     local_db: State<'_, LocalDatabase>,
     request: BulkMoveRequest,
 ) -> Result<BulkMoveResult, String> {
-    let user_id = local_db.get_local_user_id();
-
     let result = local_db
         .bulk_move_vocabularies(
             &request.vocabulary_ids,
             &request.target_collection_id,
-            user_id,
         )
         .map_err(|e| format!("Failed to move vocabularies: {}", e))?;
 
@@ -152,17 +146,15 @@ pub fn bulk_move_vocabularies(
 
 #[tauri::command]
 pub fn get_all_topics(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_all_topics(user_id)
+        .get_all_topics()
         .map_err(|e| format!("Failed to get topics: {}", e))
 }
 
 #[tauri::command]
 pub fn get_all_tags(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_all_tags(user_id)
+        .get_all_tags()
         .map_err(|e| format!("Failed to get tags: {}", e))
 }
 
@@ -173,9 +165,8 @@ pub fn create_practice_session(
     local_db: State<'_, LocalDatabase>,
     request: CreatePracticeSessionRequest,
 ) -> Result<String, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .create_practice_session(&request, user_id)
+        .create_practice_session(&request)
         .map_err(|e| format!("Failed to create practice session: {}", e))
 }
 
@@ -185,9 +176,8 @@ pub fn get_practice_sessions(
     language: String,
     limit: Option<i64>,
 ) -> Result<Vec<PracticeSession>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_practice_sessions(user_id, &language, limit)
+        .get_practice_sessions(&language, limit)
         .map_err(|e| format!("Failed to get practice sessions: {}", e))
 }
 
@@ -196,9 +186,8 @@ pub fn update_practice_progress(
     local_db: State<'_, LocalDatabase>,
     request: UpdateProgressRequest,
 ) -> Result<String, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .update_practice_progress(&request, user_id)
+        .update_practice_progress(&request)
         .map_err(|e| format!("Failed to update practice progress: {}", e))?;
     Ok("Progress updated successfully".to_string())
 }
@@ -208,9 +197,8 @@ pub fn get_practice_progress(
     local_db: State<'_, LocalDatabase>,
     language: String,
 ) -> Result<Option<UserPracticeProgress>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_practice_progress(user_id, &language)
+        .get_practice_progress(&language)
         .map_err(|e| format!("Failed to get practice progress: {}", e))
 }
 
@@ -222,9 +210,8 @@ pub fn get_level_configuration(language: String) -> Result<Vec<String>, String> 
 
 #[tauri::command]
 pub fn get_all_languages(local_db: State<'_, LocalDatabase>) -> Result<Vec<String>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_all_languages(user_id)
+        .get_all_languages()
         .map_err(|e| format!("Failed to get languages: {}", e))
 }
 
@@ -233,9 +220,8 @@ pub fn get_all_languages(local_db: State<'_, LocalDatabase>) -> Result<Vec<Strin
 pub fn get_learning_settings(
     local_db: State<'_, LocalDatabase>,
 ) -> Result<Option<LearningSettings>, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_learning_settings(user_id)
+        .get_learning_settings()
         .map_err(|e| format!("Failed to get learning settings: {}", e))
 }
 
@@ -243,9 +229,8 @@ pub fn get_learning_settings(
 pub fn get_or_create_learning_settings(
     local_db: State<'_, LocalDatabase>,
 ) -> Result<LearningSettings, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .get_or_create_learning_settings(user_id)
+        .get_or_create_learning_settings()
         .map_err(|e| format!("Failed to get or create learning settings: {}", e))
 }
 
@@ -254,8 +239,7 @@ pub fn update_learning_settings(
     local_db: State<'_, LocalDatabase>,
     request: UpdateLearningSettingsRequest,
 ) -> Result<LearningSettings, String> {
-    let user_id = local_db.get_local_user_id();
     local_db
-        .update_learning_settings(user_id, &request)
+        .update_learning_settings(&request)
         .map_err(|e| format!("Failed to update learning settings: {}", e))
 }

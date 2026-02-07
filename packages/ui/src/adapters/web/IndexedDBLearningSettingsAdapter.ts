@@ -8,10 +8,7 @@ import { db, generateId, getCurrentTimestamp } from "./database";
 
 export class IndexedDBLearningSettingsAdapter implements ILearningSettingsService {
   async getLearningSettings(): Promise<LearningSettings | null> {
-    const settings = await db.learningSettings
-      .where("user_id")
-      .equals("local")
-      .first();
+    const settings = await db.learningSettings.limit(1).first();
     return (settings as LearningSettings) || null;
   }
 
@@ -22,7 +19,6 @@ export class IndexedDBLearningSettingsAdapter implements ILearningSettingsServic
     const now = getCurrentTimestamp();
     const settings = {
       id: generateId(),
-      user_id: "local",
       ...DEFAULT_LEARNING_SETTINGS,
       created_at: now,
       updated_at: now,

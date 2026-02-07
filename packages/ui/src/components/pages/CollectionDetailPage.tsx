@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useLocation } from "react-router-dom";
-import { useNav } from "@cham-lang/ui/hooks";
+import { useNav, useCollectionPermission } from "@cham-lang/ui/hooks";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
@@ -10,11 +10,13 @@ import {
   Trash2,
   CheckSquare,
   GraduationCap,
+  Share2,
 } from "lucide-react";
 import { TopBar, BulkActionToolbar } from "@cham-lang/ui/components/molecules";
 import {
   VocabularyList,
   CollectionSelectorDialog,
+  ShareCollectionDialog,
 } from "@cham-lang/ui/components/organisms";
 import { Badge, Button, Card } from "@cham-lang/ui/components/atoms";
 import { CollectionService } from "@cham-lang/ui/services";
@@ -41,6 +43,8 @@ export const CollectionDetailPage: React.FC = () => {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const { canEdit } = useCollectionPermission(collection);
 
   // Determine back route based on where user came from
   const state = location.state as { fromPage?: string } | null;
@@ -141,6 +145,7 @@ export const CollectionDetailPage: React.FC = () => {
         vocabularyIds: vocabularies.map((v) => v.id),
         currentIndex: index,
         totalWords: collection?.word_count,
+        canEdit,
       },
     });
   };
@@ -301,16 +306,18 @@ export const CollectionDetailPage: React.FC = () => {
         {/* Action Buttons */}
         {!selectionMode ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Button
-              variant="primary"
-              size="sm"
-              icon={Plus}
-              onClick={() => navigate("/vocabulary/add")}
-              className="col-span-2 md:col-span-1"
-            >
-              {t("vocabulary.add")}
-            </Button>
-            {vocabularies.length > 0 && (
+            {canEdit && (
+              <Button
+                variant="primary"
+                size="sm"
+                icon={Plus}
+                onClick={() => navigate("/vocabulary/add")}
+                className="col-span-2 md:col-span-1"
+              >
+                {t("vocabulary.add")}
+              </Button>
+            )}
+            {canEdit && vocabularies.length > 0 && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -320,22 +327,36 @@ export const CollectionDetailPage: React.FC = () => {
                 {t("collection.select")}
               </Button>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              icon={Edit}
-              onClick={() => navigate(`/collections/${collection.id}/edit`)}
-            >
-              {t("buttons.edit")}
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={handleDelete}
-            >
-              {t("buttons.delete")}
-            </Button>
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Edit}
+                onClick={() => navigate(`/collections/${collection.id}/edit`)}
+              >
+                {t("buttons.edit")}
+              </Button>
+            )}
+            {!collection.shared_by && (
+              <Button
+                variant="secondary"
+                size="sm"
+                icon={Share2}
+                onClick={() => setShowShareDialog(true)}
+              >
+                {t("buttons.share")}
+              </Button>
+            )}
+            {canEdit && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={handleDelete}
+              >
+                {t("buttons.delete")}
+              </Button>
+            )}
           </div>
         ) : null}
 
@@ -369,6 +390,19 @@ export const CollectionDetailPage: React.FC = () => {
         onClose={() => setShowMoveDialog(false)}
         onConfirm={handleBulkMove}
         currentCollectionId={collection.id || ""}
+      />
+
+      {/* Share Collection Dialog */}
+      <ShareCollectionDialog
+        isOpen={showShareDialog}
+        onClose={() => setShowShareDialog(false)}
+        collection={collection}
+        onShareSuccess={() => {
+          setShowShareDialog(false);
+          if (id) {
+            loadCollectionData(id);
+          }
+        }}
       />
     </div>
   );

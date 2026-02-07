@@ -74,4 +74,13 @@ export class TauriAuthAdapter implements IAuthService {
       return {};
     }
   }
+
+  async lookupUserByUsername(
+    username: string,
+  ): Promise<{ userId: string; username: string } | null> {
+    return invoke<{ userId: string; username: string } | null>(
+      "auth_lookup_user",
+      { username },
+    );
+  }
 }

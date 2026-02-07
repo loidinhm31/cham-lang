@@ -52,7 +52,6 @@ impl LocalDatabase {
         conn.execute("DROP TABLE IF EXISTS learning_settings", [])?;
         conn.execute("DROP TABLE IF EXISTS vocabularies", [])?;
         conn.execute("DROP TABLE IF EXISTS collections", [])?;
-        conn.execute("DROP TABLE IF EXISTS users", [])?;
         conn.execute("DROP TABLE IF EXISTS database_metadata", [])?;
         conn.execute("DROP TABLE IF EXISTS sync_checkpoint", [])?;
 
@@ -69,24 +68,6 @@ impl LocalDatabase {
     fn init_schema(&self) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
 
-        // Users table (simplified - no auth needed for local-only app)
-        conn.execute(
-            "CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                username TEXT NOT NULL UNIQUE,
-                created_at INTEGER NOT NULL,
-                updated_at INTEGER NOT NULL
-            )",
-            [],
-        )?;
-
-        // Create default "local" user if not exists
-        conn.execute(
-            "INSERT OR IGNORE INTO users (id, username, created_at, updated_at)
-             VALUES ('local', 'local', ?1, ?2)",
-            params![Utc::now().timestamp(), Utc::now().timestamp()],
-        )?;
-
         // Collections table
         conn.execute(
             "CREATE TABLE IF NOT EXISTS collections (
@@ -94,7 +75,7 @@ impl LocalDatabase {
                 name TEXT NOT NULL,
                 description TEXT,
                 language TEXT NOT NULL,
-                owner_id TEXT NOT NULL,
+                shared_by TEXT,
                 is_public BOOLEAN DEFAULT 0,
                 word_count INTEGER DEFAULT 0,
                 created_at INTEGER NOT NULL,
@@ -102,8 +83,7 @@ impl LocalDatabase {
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
-                deleted_at INTEGER,
-                FOREIGN KEY (owner_id) REFERENCES users(id)
+                deleted_at INTEGER
             )",
             [],
         )?;
@@ -114,13 +94,13 @@ impl LocalDatabase {
                 id TEXT PRIMARY KEY,
                 collection_id TEXT NOT NULL,
                 user_id TEXT NOT NULL,
+                permission TEXT NOT NULL DEFAULT 'viewer',
                 created_at INTEGER NOT NULL,
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
                 deleted_at INTEGER,
                 FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 UNIQUE(collection_id, user_id)
             )",
             [],
@@ -138,15 +118,13 @@ impl LocalDatabase {
                 language TEXT NOT NULL,
                 collection_id TEXT NOT NULL,
                 audio_url TEXT,
-                user_id TEXT NOT NULL,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL,
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
                 deleted_at INTEGER,
-                FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE,
-                FOREIGN KEY (user_id) REFERENCES users(id)
+                FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
             )",
             [],
         )?;
@@ -253,15 +231,12 @@ impl LocalDatabase {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS user_learning_languages (
                 id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                language TEXT NOT NULL,
+                language TEXT NOT NULL UNIQUE,
                 created_at INTEGER NOT NULL,
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
-                deleted_at INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                UNIQUE(user_id, language)
+                deleted_at INTEGER
             )",
             [],
         )?;
@@ -270,7 +245,6 @@ impl LocalDatabase {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_sessions (
                 id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
                 collection_id TEXT NOT NULL,
                 mode TEXT NOT NULL,
                 language TEXT NOT NULL,
@@ -285,7 +259,6 @@ impl LocalDatabase {
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
                 deleted_at INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id),
                 FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
             )",
             [],
@@ -313,8 +286,7 @@ impl LocalDatabase {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS practice_progress (
                 id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                language TEXT NOT NULL,
+                language TEXT NOT NULL UNIQUE,
                 total_sessions INTEGER DEFAULT 0,
                 total_words_practiced INTEGER DEFAULT 0,
                 current_streak INTEGER DEFAULT 0,
@@ -325,9 +297,7 @@ impl LocalDatabase {
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
-                deleted_at INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                UNIQUE(user_id, language)
+                deleted_at INTEGER
             )",
             [],
         )?;
@@ -336,7 +306,6 @@ impl LocalDatabase {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS word_progress (
                 id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
                 language TEXT NOT NULL,
                 vocabulary_id TEXT NOT NULL,
                 word TEXT NOT NULL,
@@ -359,9 +328,8 @@ impl LocalDatabase {
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
                 deleted_at INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
                 FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
-                UNIQUE(user_id, language, vocabulary_id)
+                UNIQUE(language, vocabulary_id)
             )",
             [],
         )?;
@@ -383,7 +351,6 @@ impl LocalDatabase {
         conn.execute(
             "CREATE TABLE IF NOT EXISTS learning_settings (
                 id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
                 sr_algorithm TEXT NOT NULL,
                 leitner_box_count INTEGER NOT NULL,
                 consecutive_correct_required INTEGER NOT NULL,
@@ -399,9 +366,7 @@ impl LocalDatabase {
                 sync_version INTEGER NOT NULL DEFAULT 1,
                 synced_at INTEGER,
                 deleted INTEGER DEFAULT 0,
-                deleted_at INTEGER,
-                FOREIGN KEY (user_id) REFERENCES users(id),
-                UNIQUE(user_id)
+                deleted_at INTEGER
             )",
             [],
         )?;
@@ -442,13 +407,29 @@ impl LocalDatabase {
             [],
         );
 
+        // Migration: Add shared_by column to collections if it doesn't exist
+        let collections_has_shared_by: bool = conn
+            .prepare("PRAGMA table_info(collections)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "shared_by" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if !collections_has_shared_by {
+            println!("Migration: Adding shared_by column to collections...");
+            let _ = conn.execute("ALTER TABLE collections ADD COLUMN shared_by TEXT", []);
+        }
+
         // Create indexes
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)",
-            [],
-        )?;
-        conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_vocabularies_user ON vocabularies(user_id)",
             [],
         )?;
         conn.execute(
@@ -456,11 +437,11 @@ impl LocalDatabase {
             [],
         )?;
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_collections_owner ON collections(owner_id)",
+            "CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by)",
             [],
         )?;
         conn.execute(
-            "CREATE INDEX IF NOT EXISTS idx_practice_sessions_user ON practice_sessions(user_id)",
+            "CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id)",
             [],
         )?;
 
@@ -492,7 +473,10 @@ impl LocalDatabase {
         conn.execute("CREATE INDEX IF NOT EXISTS idx_tags_name ON tags(name)", [])?;
 
         // Indexes for normalized word progress tables
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_user_lang ON word_progress(user_id, language)", [])?;
+        conn.execute(
+            "CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language)",
+            [],
+        )?;
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id)",
             [],
@@ -512,19 +496,461 @@ impl LocalDatabase {
         conn.execute("CREATE INDEX IF NOT EXISTS idx_collection_shared_users_collection ON collection_shared_users(collection_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_collection_shared_users_user ON collection_shared_users(user_id)", [])?;
 
-        // Indexes for normalized user learning languages
-        conn.execute("CREATE INDEX IF NOT EXISTS idx_user_learning_languages_user ON user_learning_languages(user_id)", [])?;
+        // TODO: remove future
+        // =====================================================================
+        // MIGRATION: Remove users table and user_id columns
+        // This migration runs once for databases created before the multi-user
+        // collection sharing feature. Safe to run multiple times (idempotent).
+        // =====================================================================
+
+        // Check if users table exists and drop it
+        let users_table_exists: bool = conn
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'",
+                [],
+                |row| row.get::<_, i32>(0),
+            )
+            .unwrap_or(0)
+            > 0;
+
+        if users_table_exists {
+            println!("Migration: Dropping users table (no longer needed)...");
+            let _ = conn.execute("DROP TABLE IF EXISTS users", []);
+        }
+
+        // Remove user_id column from vocabularies if it exists
+        let vocab_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(vocabularies)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if vocab_has_user_id {
+            println!("Migration: Removing user_id column from vocabularies...");
+            // SQLite doesn't support DROP COLUMN directly, need to recreate table
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            // Create new table without user_id
+            let _ = conn.execute(
+                "CREATE TABLE vocabularies_new (
+                    id TEXT PRIMARY KEY,
+                    word TEXT NOT NULL,
+                    word_type TEXT NOT NULL,
+                    level TEXT NOT NULL,
+                    ipa TEXT,
+                    concept TEXT,
+                    language TEXT NOT NULL,
+                    collection_id TEXT NOT NULL,
+                    audio_url TEXT,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER,
+                    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+                )",
+                [],
+            );
+
+            // Copy data (excluding user_id)
+            let _ = conn.execute(
+                "INSERT INTO vocabularies_new SELECT
+                    id, word, word_type, level, ipa, concept, language, collection_id,
+                    audio_url, created_at, updated_at, sync_version, synced_at, deleted, deleted_at
+                FROM vocabularies",
+                [],
+            );
+
+            // Drop old table
+            let _ = conn.execute("DROP TABLE vocabularies", []);
+
+            // Rename new table
+            let _ = conn.execute("ALTER TABLE vocabularies_new RENAME TO vocabularies", []);
+
+            // Recreate indexes
+            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)", []);
+            let _ = conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language)",
+                [],
+            );
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // Remove user_id column from word_progress if it exists
+        let word_progress_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(word_progress)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if word_progress_has_user_id {
+            println!("Migration: Removing user_id column from word_progress...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE word_progress_new (
+                    id TEXT PRIMARY KEY,
+                    language TEXT NOT NULL,
+                    vocabulary_id TEXT NOT NULL,
+                    word TEXT NOT NULL,
+                    correct_count INTEGER DEFAULT 0,
+                    incorrect_count INTEGER DEFAULT 0,
+                    last_practiced INTEGER NOT NULL,
+                    mastery_level INTEGER DEFAULT 0,
+                    next_review_date INTEGER NOT NULL,
+                    interval_days INTEGER DEFAULT 1,
+                    easiness_factor REAL DEFAULT 2.5,
+                    consecutive_correct_count INTEGER DEFAULT 0,
+                    leitner_box INTEGER DEFAULT 1,
+                    last_interval_days INTEGER DEFAULT 0,
+                    total_reviews INTEGER DEFAULT 0,
+                    failed_in_session INTEGER DEFAULT 0,
+                    retry_count INTEGER DEFAULT 0,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER,
+                    UNIQUE(language, vocabulary_id)
+                )",
+                [],
+            );
+
+            let _ = conn.execute(
+                "INSERT INTO word_progress_new SELECT
+                    id, language, vocabulary_id, word, correct_count, incorrect_count,
+                    last_practiced, mastery_level, next_review_date, interval_days,
+                    easiness_factor, consecutive_correct_count, leitner_box,
+                    last_interval_days, total_reviews, failed_in_session, retry_count,
+                    sync_version, synced_at, deleted, deleted_at
+                FROM word_progress",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE word_progress", []);
+            let _ = conn.execute("ALTER TABLE word_progress_new RENAME TO word_progress", []);
+
+            let _ = conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language)",
+                [],
+            );
+            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id)", []);
+            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date)", []);
+            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box)", []);
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // Remove user_id column from learning_settings if it exists
+        let settings_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(learning_settings)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if settings_has_user_id {
+            println!("Migration: Removing user_id column from learning_settings...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE learning_settings_new (
+                    id TEXT PRIMARY KEY,
+                    sr_algorithm TEXT NOT NULL,
+                    leitner_box_count INTEGER NOT NULL,
+                    consecutive_correct_required INTEGER NOT NULL,
+                    show_failed_words_in_session INTEGER NOT NULL,
+                    new_words_per_day INTEGER,
+                    daily_review_limit INTEGER,
+                    auto_advance_timeout_seconds INTEGER DEFAULT 2,
+                    show_hint_in_fillword INTEGER DEFAULT 1,
+                    reminder_enabled INTEGER DEFAULT 0,
+                    reminder_time TEXT DEFAULT '19:00',
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER
+                )",
+                [],
+            );
+
+            let _ = conn.execute(
+                "INSERT INTO learning_settings_new SELECT
+                    id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+                    show_failed_words_in_session, new_words_per_day, daily_review_limit,
+                    auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled,
+                    reminder_time, created_at, updated_at, sync_version, synced_at, deleted, deleted_at
+                FROM learning_settings",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE learning_settings", []);
+            let _ = conn.execute(
+                "ALTER TABLE learning_settings_new RENAME TO learning_settings",
+                [],
+            );
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // Remove user_id column from practice_sessions if it exists
+        let sessions_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(practice_sessions)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if sessions_has_user_id {
+            println!("Migration: Removing user_id column from practice_sessions...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE practice_sessions_new (
+                    id TEXT PRIMARY KEY,
+                    collection_id TEXT NOT NULL,
+                    mode TEXT NOT NULL,
+                    language TEXT NOT NULL,
+                    topic TEXT,
+                    level TEXT,
+                    total_questions INTEGER NOT NULL,
+                    correct_answers INTEGER NOT NULL,
+                    started_at INTEGER NOT NULL,
+                    completed_at INTEGER NOT NULL,
+                    duration_seconds INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER,
+                    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+                )",
+                [],
+            );
+
+            let _ = conn.execute(
+                "INSERT INTO practice_sessions_new SELECT
+                    id, collection_id, mode, language, topic, level, total_questions,
+                    correct_answers, started_at, completed_at, duration_seconds,
+                    sync_version, synced_at, deleted, deleted_at
+                FROM practice_sessions",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE practice_sessions", []);
+            let _ = conn.execute(
+                "ALTER TABLE practice_sessions_new RENAME TO practice_sessions",
+                [],
+            );
+
+            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id)", []);
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // Remove user_id column from practice_progress if it exists
+        let progress_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(practice_progress)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if progress_has_user_id {
+            println!("Migration: Removing user_id column from practice_progress...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE practice_progress_new (
+                    id TEXT PRIMARY KEY,
+                    language TEXT NOT NULL,
+                    total_sessions INTEGER DEFAULT 0,
+                    total_words_practiced INTEGER DEFAULT 0,
+                    current_streak INTEGER DEFAULT 0,
+                    longest_streak INTEGER DEFAULT 0,
+                    last_practice_date INTEGER NOT NULL,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER,
+                    UNIQUE(language)
+                )",
+                [],
+            );
+
+            let _ = conn.execute(
+                "INSERT INTO practice_progress_new SELECT
+                    id, language, total_sessions, total_words_practiced, current_streak,
+                    longest_streak, last_practice_date, created_at, updated_at,
+                    sync_version, synced_at, deleted, deleted_at
+                FROM practice_progress",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE practice_progress", []);
+            let _ = conn.execute(
+                "ALTER TABLE practice_progress_new RENAME TO practice_progress",
+                [],
+            );
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // Remove user_id column from user_learning_languages if it exists
+        let langs_has_user_id: bool = conn
+            .prepare("PRAGMA table_info(user_learning_languages)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "user_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if langs_has_user_id {
+            println!("Migration: Removing user_id column from user_learning_languages...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE user_learning_languages_new (
+                    id TEXT PRIMARY KEY,
+                    language TEXT NOT NULL,
+                    created_at INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER,
+                    UNIQUE(language)
+                )",
+                [],
+            );
+
+            let _ = conn.execute(
+                "INSERT INTO user_learning_languages_new SELECT
+                    id, language, created_at, sync_version, synced_at, deleted, deleted_at
+                FROM user_learning_languages",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE user_learning_languages", []);
+            let _ = conn.execute(
+                "ALTER TABLE user_learning_languages_new RENAME TO user_learning_languages",
+                [],
+            );
+
+            let _ = conn.execute("COMMIT", []);
+        }
+
+        // =====================================================================
+        // MIGRATION: Replace owner_id with shared_by in collections
+        // shared_by = NULL means user's own collection
+        // shared_by = <userId> means shared by that user
+        // =====================================================================
+        let collections_has_owner_id: bool = conn
+            .prepare("PRAGMA table_info(collections)")
+            .and_then(|mut stmt| {
+                let mut rows = stmt.query([])?;
+                while let Some(row) = rows.next()? {
+                    let col_name: String = row.get(1)?;
+                    if col_name == "owner_id" {
+                        return Ok(true);
+                    }
+                }
+                Ok(false)
+            })
+            .unwrap_or(false);
+
+        if collections_has_owner_id {
+            println!("Migration: Replacing owner_id with shared_by in collections...");
+            let _ = conn.execute("BEGIN TRANSACTION", []);
+
+            let _ = conn.execute(
+                "CREATE TABLE collections_new (
+                    id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    description TEXT,
+                    language TEXT NOT NULL,
+                    shared_by TEXT,
+                    is_public BOOLEAN DEFAULT 0,
+                    word_count INTEGER DEFAULT 0,
+                    created_at INTEGER NOT NULL,
+                    updated_at INTEGER NOT NULL,
+                    sync_version INTEGER NOT NULL DEFAULT 1,
+                    synced_at INTEGER,
+                    deleted INTEGER DEFAULT 0,
+                    deleted_at INTEGER
+                )",
+                [],
+            );
+
+            // All existing collections are the user's own, so shared_by = NULL
+            let _ = conn.execute(
+                "INSERT INTO collections_new SELECT
+                    id, name, description, language, NULL, is_public, word_count,
+                    created_at, updated_at, sync_version, synced_at, deleted, deleted_at
+                FROM collections",
+                [],
+            );
+
+            let _ = conn.execute("DROP TABLE collections", []);
+            let _ = conn.execute("ALTER TABLE collections_new RENAME TO collections", []);
+
+            // Recreate indexes
+            let _ = conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by)",
+                [],
+            );
+            let _ = conn.execute("DROP INDEX IF EXISTS idx_collections_owner", []);
+
+            let _ = conn.execute("COMMIT", []);
+        }
 
         Ok(())
-    }
-
-    //==========================================================================
-    // USER OPERATIONS
-    //==========================================================================
-
-    /// Get the default local user ID (for single-user app)
-    pub fn get_local_user_id(&self) -> &str {
-        "local"
     }
 
     /// Get current database version
@@ -554,28 +980,28 @@ impl LocalDatabase {
     }
 
     /// Get all languages that have collections
-    pub fn get_all_languages(&self, user_id: &str) -> SqlResult<Vec<String>> {
+    pub fn get_all_languages(&self) -> SqlResult<Vec<String>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt =
-            conn.prepare("SELECT DISTINCT language FROM collections WHERE owner_id = ?1 AND deleted = 0")?;
+            conn.prepare("SELECT DISTINCT language FROM collections WHERE deleted = 0")?;
 
-        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        let rows = stmt.query_map([], |row| row.get(0))?;
         rows.collect()
     }
 
-    /// Get all distinct topics from user's vocabularies
-    pub fn get_all_topics(&self, user_id: &str) -> SqlResult<Vec<String>> {
+    /// Get all distinct topics from vocabularies
+    pub fn get_all_topics(&self) -> SqlResult<Vec<String>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT DISTINCT t.name
              FROM topics t
              JOIN vocabulary_topics vt ON t.id = vt.topic_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
-             WHERE v.user_id = ?1 AND v.deleted = 0 AND t.deleted = 0
+             WHERE v.deleted = 0 AND t.deleted = 0
              ORDER BY t.name",
         )?;
 
-        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        let rows = stmt.query_map([], |row| row.get(0))?;
         rows.collect()
     }
 
@@ -632,26 +1058,23 @@ impl LocalDatabase {
     /// Execute arbitrary SQL with string params
     pub fn execute_sql(&self, sql: &str, params_list: &[&str]) -> SqlResult<()> {
         let conn = self.conn.lock().unwrap();
-        let params_refs: Vec<&dyn rusqlite::ToSql> =
-            params_list.iter().map(|s| s as &dyn rusqlite::ToSql).collect();
+        let params_refs: Vec<&dyn rusqlite::ToSql> = params_list
+            .iter()
+            .map(|s| s as &dyn rusqlite::ToSql)
+            .collect();
         conn.execute(sql, params_refs.as_slice())?;
         Ok(())
     }
 
     /// Query soft-deleted records from a table (for sync)
-    pub fn query_deleted_records(
-        &self,
-        table_name: &str,
-    ) -> SqlResult<Vec<(String, i64)>> {
+    pub fn query_deleted_records(&self, table_name: &str) -> SqlResult<Vec<(String, i64)>> {
         let conn = self.conn.lock().unwrap();
         let sql = format!(
             "SELECT id, sync_version FROM {} WHERE deleted = 1 AND synced_at IS NULL",
             table_name
         );
         let mut stmt = conn.prepare(&sql)?;
-        let rows = stmt.query_map([], |row| {
-            Ok((row.get(0)?, row.get(1)?))
-        })?;
+        let rows = stmt.query_map([], |row| Ok((row.get(0)?, row.get(1)?)))?;
         rows.collect()
     }
 
@@ -675,7 +1098,9 @@ impl LocalDatabase {
         let incorrect_count = data["incorrectCount"].as_i64().unwrap_or(0);
         let total_reviews = data["totalReviews"].as_i64().unwrap_or(0);
         let mastery_level = data["masteryLevel"].as_i64().unwrap_or(0);
-        let next_review_date = data["nextReviewDate"].as_i64().unwrap_or_else(|| Utc::now().timestamp());
+        let next_review_date = data["nextReviewDate"]
+            .as_i64()
+            .unwrap_or_else(|| Utc::now().timestamp());
         let interval_days = data["intervalDays"].as_i64().unwrap_or(0);
         let easiness_factor = data["easinessFactor"].as_f64().unwrap_or(2.5);
         let consecutive_correct_count = data["consecutiveCorrectCount"].as_i64().unwrap_or(0);
@@ -683,34 +1108,36 @@ impl LocalDatabase {
         let last_interval_days = data["lastIntervalDays"].as_i64().unwrap_or(0);
         let failed_in_session = data["failedInSession"].as_bool().unwrap_or(false);
         let retry_count = data["retryCount"].as_i64().unwrap_or(0);
-        let last_practiced = data["lastPracticed"].as_i64().unwrap_or_else(|| Utc::now().timestamp());
+        let last_practiced = data["lastPracticed"]
+            .as_i64()
+            .unwrap_or_else(|| Utc::now().timestamp());
 
-        // We need language and user_id. For now, assume single user "local" and get lang from vocab or data?
-        // Ideally data should have language and user_id.
-        // But word_progress schema has them. Let's see if we can get them from vocab if missing,
-        // or expect them in data. The struct WordProgress doesn't have them, but the DB does.
-        // Let's assume they are NOT in the record data (based on my serialization code which didn't include them).
-        // Wait, I should update serialization to include them!
-        // But for now, let's look up the vocabulary to get language and user_id.
-
-        let mut stmt = conn.prepare("SELECT user_id, language FROM vocabularies WHERE id = ?1")?;
-        let (user_id, language): (String, String) = stmt.query_row(params![vocabulary_id], |row| {
-             Ok((row.get(0)?, row.get(1)?))
-        }).unwrap_or(("local".to_string(), "en".to_string())); // Fallback if vocab missing (shouldn't happen due to FK order)
+        // Get language from vocab or data
+        let language = data["language"]
+            .as_str()
+            .map(|s| s.to_string())
+            .unwrap_or_else(|| {
+                let mut stmt = conn
+                    .prepare("SELECT language FROM vocabularies WHERE id = ?1")
+                    .ok();
+                stmt.as_mut()
+                    .and_then(|s| s.query_row(params![vocabulary_id], |row| row.get(0)).ok())
+                    .unwrap_or_else(|| "en".to_string())
+            });
 
         conn.execute(
             "INSERT INTO word_progress (
-                id, user_id, language, vocabulary_id, word,
+                id, language, vocabulary_id, word,
                 correct_count, incorrect_count, total_reviews, mastery_level,
                 next_review_date, interval_days, easiness_factor, consecutive_correct_count,
                 leitner_box, last_interval_days, failed_in_session, retry_count,
                 last_practiced, created_at, updated_at, sync_version, synced_at
             ) VALUES (
-                ?1, ?2, ?3, ?4, ?5,
-                ?6, ?7, ?8, ?9,
-                ?10, ?11, ?12, ?13,
-                ?14, ?15, ?16, ?17,
-                ?18, ?19, ?19, ?20, ?21
+                ?1, ?2, ?3, ?4,
+                ?5, ?6, ?7, ?8,
+                ?9, ?10, ?11, ?12,
+                ?13, ?14, ?15, ?16,
+                ?17, ?18, ?18, ?19, ?20
             )
             ON CONFLICT(id) DO UPDATE SET
                 correct_count = excluded.correct_count,
@@ -731,16 +1158,34 @@ impl LocalDatabase {
                 synced_at = excluded.synced_at
             ",
             params![
-                record.row_id, user_id, language, vocabulary_id, word,
-                correct_count, incorrect_count, total_reviews, mastery_level,
-                next_review_date, interval_days, easiness_factor, consecutive_correct_count,
-                leitner_box, last_interval_days, failed_in_session, retry_count,
-                last_practiced, Utc::now().timestamp(), record.version, Utc::now().timestamp()
+                record.row_id,
+                language,
+                vocabulary_id,
+                word,
+                correct_count,
+                incorrect_count,
+                total_reviews,
+                mastery_level,
+                next_review_date,
+                interval_days,
+                easiness_factor,
+                consecutive_correct_count,
+                leitner_box,
+                last_interval_days,
+                failed_in_session,
+                retry_count,
+                last_practiced,
+                Utc::now().timestamp(),
+                record.version,
+                Utc::now().timestamp()
             ],
         )?;
 
         // Handle completed_modes_in_cycle
-        conn.execute("DELETE FROM word_progress_completed_modes WHERE word_progress_id = ?1", params![record.row_id])?;
+        conn.execute(
+            "DELETE FROM word_progress_completed_modes WHERE word_progress_id = ?1",
+            params![record.row_id],
+        )?;
 
         if let Some(modes) = data["completedModesInCycle"].as_array() {
             for mode in modes {
@@ -763,22 +1208,17 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         let data = &record.data;
 
-        // Extract user_id from DB if possible, or use local default
-        // Settings are unique per user.
-        // We can assume user_id is "local" for now or we need it in data.
-        let user_id = "local";
-
         conn.execute(
             "INSERT INTO learning_settings (
-                id, user_id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+                id, sr_algorithm, leitner_box_count, consecutive_correct_required,
                 show_failed_words_in_session, new_words_per_day, daily_review_limit,
                 auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled, reminder_time,
                 created_at, updated_at, sync_version, synced_at
             ) VALUES (
-                ?1, ?2, ?3, ?4, ?5,
-                ?6, ?7, ?8,
-                ?9, ?10, ?11, ?12,
-                ?13, ?14, ?15, ?16
+                ?1, ?2, ?3, ?4,
+                ?5, ?6, ?7,
+                ?8, ?9, ?10, ?11,
+                ?12, ?13, ?14, ?15
             )
             ON CONFLICT(id) DO UPDATE SET
                 sr_algorithm = excluded.sr_algorithm,
@@ -797,7 +1237,6 @@ impl LocalDatabase {
             ",
             params![
                 record.row_id,
-                user_id,
                 data["srAlgorithm"].as_str().unwrap_or("sm2"),
                 data["leitnerBoxCount"].as_i64().unwrap_or(5),
                 data["consecutiveCorrectRequired"].as_i64().unwrap_or(3),
@@ -823,17 +1262,15 @@ impl LocalDatabase {
         let conn = self.conn.lock().unwrap();
         let data = &record.data;
 
-        let user_id = "local"; // Default
-
         conn.execute(
             "INSERT INTO practice_sessions (
-                id, user_id, collection_id, mode, language, topic, level,
+                id, collection_id, mode, language, topic, level,
                 total_questions, correct_answers, started_at, completed_at, duration_seconds,
                 sync_version, synced_at
             ) VALUES (
-                ?1, ?2, ?3, ?4, ?5, ?6, ?7,
-                ?8, ?9, ?10, ?11, ?12,
-                ?13, ?14
+                ?1, ?2, ?3, ?4, ?5, ?6,
+                ?7, ?8, ?9, ?10, ?11,
+                ?12, ?13
             )
             ON CONFLICT(id) DO UPDATE SET
                 mode = excluded.mode,
@@ -846,7 +1283,6 @@ impl LocalDatabase {
             ",
             params![
                 record.row_id,
-                user_id,
                 data["collectionId"].as_str().unwrap_or_default(),
                 data["mode"].as_str().unwrap_or("flashcard"),
                 data["language"].as_str().unwrap_or("en"),
@@ -854,8 +1290,12 @@ impl LocalDatabase {
                 data["level"].as_str(),
                 data["totalQuestions"].as_i64().unwrap_or(0),
                 data["correctAnswers"].as_i64().unwrap_or(0),
-                data["startedAt"].as_i64().unwrap_or_else(|| Utc::now().timestamp()),
-                data["completedAt"].as_i64().unwrap_or_else(|| Utc::now().timestamp()),
+                data["startedAt"]
+                    .as_i64()
+                    .unwrap_or_else(|| Utc::now().timestamp()),
+                data["completedAt"]
+                    .as_i64()
+                    .unwrap_or_else(|| Utc::now().timestamp()),
                 data["durationSeconds"].as_i64().unwrap_or(0),
                 record.version,
                 Utc::now().timestamp()
@@ -863,7 +1303,10 @@ impl LocalDatabase {
         )?;
 
         // Handle results
-        conn.execute("DELETE FROM practice_results WHERE session_id = ?1", params![record.row_id])?;
+        conn.execute(
+            "DELETE FROM practice_results WHERE session_id = ?1",
+            params![record.row_id],
+        )?;
 
         if let Some(results) = data["results"].as_array() {
             for (idx, result) in results.iter().enumerate() {
@@ -885,7 +1328,7 @@ impl LocalDatabase {
                         result["timeSpentSeconds"].as_i64().unwrap_or(0),
                         idx as i64,
                         Utc::now().timestamp()
-                    ]
+                    ],
                 )?;
             }
         }
@@ -894,7 +1337,7 @@ impl LocalDatabase {
     }
 
     /// Get unsynced word progress
-    pub fn get_unsynced_word_progress(&self, user_id: &str) -> SqlResult<Vec<crate::models::WordProgress>> {
+    pub fn get_unsynced_word_progress(&self) -> SqlResult<Vec<crate::models::WordProgress>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id, vocabulary_id, word, correct_count, incorrect_count, last_practiced,
@@ -902,10 +1345,10 @@ impl LocalDatabase {
                     consecutive_correct_count, leitner_box, last_interval_days,
                     total_reviews, failed_in_session, retry_count, sync_version, synced_at
              FROM word_progress
-             WHERE user_id = ?1 AND synced_at IS NULL AND deleted = 0"
+             WHERE synced_at IS NULL AND deleted = 0",
         )?;
 
-        let progress_iter = stmt.query_map(params![user_id], |row| {
+        let progress_iter = stmt.query_map([], |row| {
             let id: String = row.get(0)?;
             let vocabulary_id: String = row.get(1)?;
             let word: String = row.get(2)?;
@@ -926,7 +1369,8 @@ impl LocalDatabase {
             let synced_at: Option<i64> = row.get(17)?;
 
             let last_practiced = DateTime::from_timestamp(last_practiced_ts, 0).unwrap_or_default();
-            let next_review_date = DateTime::from_timestamp(next_review_date_ts, 0).unwrap_or_default();
+            let next_review_date =
+                DateTime::from_timestamp(next_review_date_ts, 0).unwrap_or_default();
 
             Ok(crate::models::WordProgress {
                 id: Some(id),
@@ -967,17 +1411,17 @@ impl LocalDatabase {
     }
 
     /// Get unsynced practice sessions
-    pub fn get_unsynced_practice_sessions(&self, user_id: &str) -> SqlResult<Vec<crate::models::PracticeSession>> {
+    pub fn get_unsynced_practice_sessions(&self) -> SqlResult<Vec<crate::models::PracticeSession>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT id, collection_id, mode, language, topic, level,
                     total_questions, correct_answers, started_at, completed_at, duration_seconds,
                     sync_version, synced_at
              FROM practice_sessions
-             WHERE user_id = ?1 AND synced_at IS NULL AND deleted = 0"
+             WHERE synced_at IS NULL AND deleted = 0",
         )?;
 
-        let sessions_iter = stmt.query_map(params![user_id], |row| {
+        let sessions_iter = stmt.query_map([], |row| {
             let id: String = row.get(0)?;
             let collection_id: String = row.get(1)?;
             let mode_str: String = row.get(2)?;
@@ -1004,7 +1448,6 @@ impl LocalDatabase {
 
             Ok(crate::models::PracticeSession {
                 id,
-                user_id: user_id.to_string(),
                 collection_id,
                 mode,
                 language,
@@ -1029,7 +1472,7 @@ impl LocalDatabase {
                 "SELECT vocabulary_id, word, correct, practice_mode, time_spent_seconds
                  FROM practice_results
                  WHERE session_id = ?1
-                 ORDER BY order_index"
+                 ORDER BY order_index",
             )?;
             let results_iter = res_stmt.query_map(params![s.id], |row| {
                 let vocabulary_id: Option<String> = row.get(0)?;
@@ -1060,19 +1503,19 @@ impl LocalDatabase {
         Ok(result)
     }
 
-    /// Get all distinct tags from user's vocabularies
-    pub fn get_all_tags(&self, user_id: &str) -> SqlResult<Vec<String>> {
+    /// Get all distinct tags from vocabularies
+    pub fn get_all_tags(&self) -> SqlResult<Vec<String>> {
         let conn = self.conn.lock().unwrap();
         let mut stmt = conn.prepare(
             "SELECT DISTINCT t.name
              FROM tags t
              JOIN vocabulary_tags vt ON t.id = vt.tag_id
              JOIN vocabularies v ON vt.vocabulary_id = v.id
-             WHERE v.user_id = ?1 AND v.deleted = 0 AND t.deleted = 0
+             WHERE v.deleted = 0 AND t.deleted = 0
              ORDER BY t.name",
         )?;
 
-        let rows = stmt.query_map(params![user_id], |row| row.get(0))?;
+        let rows = stmt.query_map([], |row| row.get(0))?;
         rows.collect()
     }
 }

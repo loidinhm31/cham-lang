@@ -21,7 +21,7 @@ export interface ICollectionService {
   // Sharing
   shareCollection(
     collectionId: string,
-    shareWithUsername: string,
+    shareWithUserId: string,
   ): Promise<string>;
   unshareCollection(
     collectionId: string,

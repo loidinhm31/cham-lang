@@ -57,7 +57,6 @@ export interface Vocabulary {
   updated_at: string;
   language: string;
   collection_id: string;
-  user_id: string;
 }
 
 export interface CreateVocabularyRequest {

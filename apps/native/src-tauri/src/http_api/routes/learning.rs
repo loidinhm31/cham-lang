@@ -13,8 +13,7 @@ use crate::web_server::AppState;
 async fn get_settings_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<Option<LearningSettings>>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_learning_settings(user_id) {
+    match state.db.get_learning_settings() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_learning_settings failed: {}", e);
@@ -27,8 +26,7 @@ async fn get_settings_handler(
 async fn get_or_create_settings_handler(
     State(state): State<AppState>,
 ) -> Result<Json<ApiResponse<LearningSettings>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.get_or_create_learning_settings(user_id) {
+    match state.db.get_or_create_learning_settings() {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("get_or_create_learning_settings failed: {}", e);
@@ -42,8 +40,7 @@ async fn update_settings_handler(
     State(state): State<AppState>,
     Json(request): Json<UpdateLearningSettingsRequest>,
 ) -> Result<Json<ApiResponse<LearningSettings>>, StatusCode> {
-    let user_id = state.db.get_local_user_id();
-    match state.db.update_learning_settings(user_id, &request) {
+    match state.db.update_learning_settings(&request) {
         Ok(result) => Ok(Json(ApiResponse::success(result))),
         Err(e) => {
             eprintln!("update_learning_settings failed: {}", e);

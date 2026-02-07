@@ -16,19 +16,42 @@ import type {
   SyncRecord,
 } from "@cham-lang/shared/types";
 
+/** Convert a date value (ISO string, unix timestamp, or Date) to unix timestamp in seconds.
+ *  Used for push data fields where the server schema expects integer type. */
+function toUnixTimestamp(value: string | number | Date | undefined): number {
+  if (!value) return Math.floor(Date.now() / 1000);
+  if (typeof value === "string")
+    return Math.floor(new Date(value).getTime() / 1000);
+  if (typeof value === "number")
+    return value < 1e10 ? value : Math.floor(value / 1000);
+  return Math.floor(new Date(value).getTime() / 1000);
+}
+
+/** Convert a date value (ISO string, unix timestamp, or Date) to an ISO string.
+ *  Used on pull side to normalize server data back to local ISO string format. */
+function toISODateString(value: string | number | Date | undefined): string {
+  if (!value) return new Date().toISOString();
+  if (typeof value === "string") return value;
+  if (typeof value === "number") {
+    const ms = value < 1e10 ? value * 1000 : value;
+    return new Date(ms).toISOString();
+  }
+  return new Date(value).toISOString();
+}
+
 export class IndexedDBSyncStorage {
   // =========================================================================
   // Pending Changes
   // =========================================================================
 
-  async getPendingChanges(): Promise<SyncRecord[]> {
+  async getPendingChanges(userId?: string): Promise<SyncRecord[]> {
     const records: SyncRecord[] = [];
 
-    // Get unsynced collections
+    // Get unsynced collections (skip shared collections - don't push someone else's collection)
     const collections = await db.collections.toArray();
     for (const collection of collections) {
       if (collection.synced_at === undefined || collection.synced_at === null) {
-        const now = Math.floor(Date.now() / 1000);
+        if (collection.shared_by) continue;
         records.push({
           tableName: "collections",
           rowId: collection.id,
@@ -37,17 +60,12 @@ export class IndexedDBSyncStorage {
             name: collection.name,
             description: collection.description,
             language: collection.language,
-            ownerId: collection.owner_id || "local",
+            ownerId: userId ?? null,
+            sharedBy: collection.shared_by ?? null,
             isPublic: collection.is_public,
             wordCount: collection.word_count,
-            createdAt:
-              typeof collection.created_at === "string"
-                ? Math.floor(new Date(collection.created_at).getTime() / 1000)
-                : collection.created_at,
-            updatedAt:
-              typeof collection.updated_at === "string"
-                ? Math.floor(new Date(collection.updated_at).getTime() / 1000)
-                : now,
+            createdAt: toUnixTimestamp(collection.created_at),
+            updatedAt: toUnixTimestamp(collection.updated_at),
             syncVersion: collection.sync_version || 1,
           },
           version: collection.sync_version || 1,
@@ -60,7 +78,6 @@ export class IndexedDBSyncStorage {
     const vocabularies = await db.vocabularies.toArray();
     for (const vocab of vocabularies) {
       if (vocab.synced_at === undefined || vocab.synced_at === null) {
-        const vNow = Math.floor(Date.now() / 1000);
         records.push({
           tableName: "vocabularies",
           rowId: vocab.id,
@@ -79,15 +96,8 @@ export class IndexedDBSyncStorage {
             topics: vocab.topics,
             tags: vocab.tags,
             relatedWords: vocab.related_words,
-            userId: vocab.user_id || "local",
-            createdAt:
-              typeof vocab.created_at === "string"
-                ? Math.floor(new Date(vocab.created_at).getTime() / 1000)
-                : vocab.created_at,
-            updatedAt:
-              typeof vocab.updated_at === "string"
-                ? Math.floor(new Date(vocab.updated_at).getTime() / 1000)
-                : vNow,
+            createdAt: toUnixTimestamp(vocab.created_at),
+            updatedAt: toUnixTimestamp(vocab.updated_at),
             syncVersion: vocab.sync_version || 1,
           },
           version: vocab.sync_version || 1,
@@ -106,10 +116,7 @@ export class IndexedDBSyncStorage {
           data: {
             id: topic.id,
             name: topic.name,
-            createdAt:
-              typeof topic.created_at === "string"
-                ? Math.floor(new Date(topic.created_at).getTime() / 1000)
-                : topic.created_at,
+            createdAt: toUnixTimestamp(topic.created_at),
             syncVersion: topic.sync_version || 1,
           },
           version: topic.sync_version || 1,
@@ -128,10 +135,7 @@ export class IndexedDBSyncStorage {
           data: {
             id: tag.id,
             name: tag.name,
-            createdAt:
-              typeof tag.created_at === "string"
-                ? Math.floor(new Date(tag.created_at).getTime() / 1000)
-                : tag.created_at,
+            createdAt: toUnixTimestamp(tag.created_at),
             syncVersion: tag.sync_version || 1,
           },
           version: tag.sync_version || 1,
@@ -149,12 +153,8 @@ export class IndexedDBSyncStorage {
           rowId: lang.id,
           data: {
             id: lang.id,
-            userId: (lang as any).user_id || "local",
             language: lang.language,
-            createdAt:
-              typeof lang.created_at === "string"
-                ? Math.floor(new Date(lang.created_at).getTime() / 1000)
-                : lang.created_at,
+            createdAt: toUnixTimestamp(lang.created_at),
             syncVersion: lang.sync_version || 1,
           },
           version: lang.sync_version || 1,
@@ -174,10 +174,8 @@ export class IndexedDBSyncStorage {
             id: su.id,
             collectionId: su.collection_id,
             userId: su.user_id,
-            createdAt:
-              typeof su.created_at === "string"
-                ? Math.floor(new Date(su.created_at).getTime() / 1000)
-                : su.created_at,
+            permission: su.permission,
+            createdAt: toUnixTimestamp(su.created_at),
             syncVersion: su.sync_version || 1,
           },
           version: su.sync_version || 1,
@@ -195,24 +193,14 @@ export class IndexedDBSyncStorage {
           rowId: pp.id,
           data: {
             id: pp.id,
-            userId: "local",
             language: pp.language,
             totalSessions: pp.total_sessions,
             totalWordsPracticed: pp.total_words_practiced,
             currentStreak: pp.current_streak,
             longestStreak: pp.longest_streak,
-            lastPracticeDate:
-              typeof pp.last_practice_date === "string"
-                ? Math.floor(new Date(pp.last_practice_date).getTime() / 1000)
-                : pp.last_practice_date,
-            createdAt:
-              typeof pp.created_at === "string"
-                ? Math.floor(new Date(pp.created_at).getTime() / 1000)
-                : pp.created_at,
-            updatedAt:
-              typeof pp.updated_at === "string"
-                ? Math.floor(new Date(pp.updated_at).getTime() / 1000)
-                : pp.updated_at,
+            lastPracticeDate: toUnixTimestamp(pp.last_practice_date),
+            createdAt: toUnixTimestamp(pp.created_at),
+            updatedAt: toUnixTimestamp(pp.updated_at),
             syncVersion: pp.sync_version || 1,
           },
           version: pp.sync_version || 1,
@@ -389,12 +377,23 @@ export class IndexedDBSyncStorage {
 
     const now = Math.floor(Date.now() / 1000);
 
+    // Track affected collection IDs for word count recalculation
+    const affectedCollectionIds = new Set<string>();
+
     // Apply non-deleted (inserts/updates)
     for (const record of nonDeleted) {
       if (record.tableName === "collections") {
         await this.applyCollectionChange(record, now);
       } else if (record.tableName === "vocabularies") {
-        await this.applyVocabularyChange(record, now);
+        const oldCollectionId = await this.applyVocabularyChange(record, now);
+        // Track new collection_id
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newCollectionId = String((record.data as any).collectionId || "");
+        if (newCollectionId) affectedCollectionIds.add(newCollectionId);
+        // Track old collection_id (for moves)
+        if (oldCollectionId && oldCollectionId !== newCollectionId) {
+          affectedCollectionIds.add(oldCollectionId);
+        }
       } else if (record.tableName === "topics") {
         await this.applyTopicChange(record, now);
       } else if (record.tableName === "tags") {
@@ -411,6 +410,11 @@ export class IndexedDBSyncStorage {
     // Apply deleted
     for (const record of deleted) {
       if (record.tableName === "vocabularies") {
+        // Get collection_id before deleting
+        const existing = await db.vocabularies.get(record.rowId);
+        if (existing?.collection_id) {
+          affectedCollectionIds.add(existing.collection_id);
+        }
         await db.vocabularies.delete(record.rowId);
       } else if (record.tableName === "collections") {
         // Delete vocabularies in collection first
@@ -419,6 +423,8 @@ export class IndexedDBSyncStorage {
           .equals(record.rowId)
           .delete();
         await db.collections.delete(record.rowId);
+        // No point recalculating for a deleted collection
+        affectedCollectionIds.delete(record.rowId);
       } else if (record.tableName === "topics") {
         await db.topics.delete(record.rowId);
       } else if (record.tableName === "tags") {
@@ -433,6 +439,18 @@ export class IndexedDBSyncStorage {
       // Clean up any pending changes for this record
       await db._pendingChanges.where("recordId").equals(record.rowId).delete();
     }
+
+    // Recalculate word_count for affected collections
+    for (const collectionId of affectedCollectionIds) {
+      const collection = await db.collections.get(collectionId);
+      if (collection) {
+        const count = await db.vocabularies
+          .where("collection_id")
+          .equals(collectionId)
+          .count();
+        await db.collections.update(collectionId, { word_count: count });
+      }
+    }
   }
 
   private async applyCollectionChange(
@@ -443,16 +461,34 @@ export class IndexedDBSyncStorage {
     const data = record.data as any;
     const existing = await db.collections.get(record.rowId);
 
+    // Derive shared_by from ownerId in sync data:
+    // If ownerId is present and differs from current user -> shared_by = ownerId
+    // Otherwise -> shared_by = undefined (user's own collection)
+    let shared_by: string | undefined;
+    const ownerId = data.ownerId ? String(data.ownerId) : undefined;
+    if (ownerId) {
+      try {
+        const { getAuthService } = await import("@cham-lang/ui/adapters");
+        const authService = getAuthService();
+        const tokens = await authService.getTokens();
+        if (tokens.userId && tokens.userId !== ownerId) {
+          shared_by = ownerId;
+        }
+      } catch {
+        // If auth service is unavailable, treat as own collection
+      }
+    }
+
     const collectionData: IDBCollection = {
       id: record.rowId,
       name: String(data.name || ""),
       description: String(data.description || ""),
       language: String(data.language || ""),
-      owner_id: "local",
+      shared_by,
       shared_with: [],
       is_public: Boolean(data.isPublic),
       word_count: Number(data.wordCount || 0),
-      created_at: String(data.createdAt || new Date().toISOString()),
+      created_at: toISODateString(data.createdAt),
       updated_at: new Date().toISOString(),
       sync_version: record.version,
       synced_at: now,
@@ -469,10 +505,11 @@ export class IndexedDBSyncStorage {
   private async applyVocabularyChange(
     record: PullRecord,
     now: number,
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
     const existing = await db.vocabularies.get(record.rowId);
+    const oldCollectionId = existing?.collection_id;
 
     const vocabData: IDBVocabulary = {
       id: record.rowId,
@@ -491,8 +528,7 @@ export class IndexedDBSyncStorage {
       related_words: Array.isArray(data.relatedWords) ? data.relatedWords : [],
       language: String(data.language || ""),
       collection_id: String(data.collectionId || ""),
-      user_id: "local",
-      created_at: String(data.createdAt || new Date().toISOString()),
+      created_at: toISODateString(data.createdAt),
       updated_at: new Date().toISOString(),
       sync_version: record.version,
       synced_at: now,
@@ -504,6 +540,8 @@ export class IndexedDBSyncStorage {
     } else {
       await db.vocabularies.add(vocabData);
     }
+
+    return oldCollectionId;
   }
 
   private async applyTopicChange(
@@ -516,7 +554,7 @@ export class IndexedDBSyncStorage {
     const topicData = {
       id: record.rowId,
       name: String(data.name || ""),
-      created_at: String(data.createdAt || new Date().toISOString()),
+      created_at: toISODateString(data.createdAt),
       sync_version: record.version,
       synced_at: now,
     };
@@ -534,7 +572,7 @@ export class IndexedDBSyncStorage {
     const tagData = {
       id: record.rowId,
       name: String(data.name || ""),
-      created_at: String(data.createdAt || new Date().toISOString()),
+      created_at: toISODateString(data.createdAt),
       sync_version: record.version,
       synced_at: now,
     };
@@ -554,9 +592,8 @@ export class IndexedDBSyncStorage {
     const existing = await db.userLearningLanguages.get(record.rowId);
     const langData = {
       id: record.rowId,
-      user_id: "local",
       language: String(data.language || ""),
-      created_at: String(data.createdAt || new Date().toISOString()),
+      created_at: toISODateString(data.createdAt),
       sync_version: record.version,
       synced_at: now,
     };
@@ -577,8 +614,9 @@ export class IndexedDBSyncStorage {
     const suData = {
       id: record.rowId,
       collection_id: String(data.collectionId || ""),
-      user_id: String(data.userId || "local"),
-      created_at: String(data.createdAt || new Date().toISOString()),
+      user_id: String(data.userId || ""),
+      permission: String(data.permission || "viewer"),
+      created_at: toISODateString(data.createdAt),
       sync_version: record.version,
       synced_at: now,
     };
@@ -603,11 +641,9 @@ export class IndexedDBSyncStorage {
       total_words_practiced: Number(data.totalWordsPracticed || 0),
       current_streak: Number(data.currentStreak || 0),
       longest_streak: Number(data.longestStreak || 0),
-      last_practice_date: String(
-        data.lastPracticeDate || new Date().toISOString(),
-      ),
-      created_at: String(data.createdAt || new Date().toISOString()),
-      updated_at: String(data.updatedAt || new Date().toISOString()),
+      last_practice_date: toISODateString(data.lastPracticeDate),
+      created_at: toISODateString(data.createdAt),
+      updated_at: toISODateString(data.updatedAt),
       sync_version: record.version,
       synced_at: now,
     };

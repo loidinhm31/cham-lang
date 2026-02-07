@@ -197,7 +197,7 @@ fn find_or_create_collection(
 ) -> Result<String, String> {
     // Try to find existing collection by name and language
     let collections = local_db
-        .get_user_collections("local")
+        .get_user_collections()
         .map_err(|e| format!("Failed to get collections: {}", e))?;
 
     for collection in collections {
@@ -208,12 +208,12 @@ fn find_or_create_collection(
 
     // If not found and creation is allowed, create new collection
     if create_if_missing {
+        // Generate UUID for owner_id (CSV import doesn't have access to auth)
         let collection_id = local_db
             .create_collection(
                 name,
                 description.unwrap_or(""),
                 language,
-                "local",
                 false, // is_public
             )
             .map_err(|e| format!("Failed to create collection: {}", e))?;
@@ -360,7 +360,6 @@ pub fn import_simple_vocabularies(
             related_words: vec![],
             language: request.default_language.clone(),
             collection_id: collection_id.clone(),
-            user_id: "local".to_string(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             sync_version: 1,
@@ -368,7 +367,7 @@ pub fn import_simple_vocabularies(
         };
 
         // Create vocabulary
-        match local_db.create_vocabulary(&vocab, "local") {
+        match local_db.create_vocabulary(&vocab) {
             Ok(_) => {
                 rows_imported += 1;
                 affected_collections.insert(collection_id.clone());
@@ -527,7 +526,6 @@ pub fn import_vocabularies_csv(
             related_words: unflatten_related_words(row.related_words.as_ref()),
             language: row.language.clone(),
             collection_id: collection_id.clone(),
-            user_id: "local".to_string(),
             created_at: chrono::Utc::now(),
             updated_at: chrono::Utc::now(),
             sync_version: 1,
@@ -535,7 +533,7 @@ pub fn import_vocabularies_csv(
         };
 
         // Create vocabulary
-        match local_db.create_vocabulary(&vocab, "local") {
+        match local_db.create_vocabulary(&vocab) {
             Ok(_) => {
                 rows_imported += 1;
                 // Track this collection for word count update

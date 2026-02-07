@@ -9,3 +9,4 @@ export {
 export { useAuth, type UseAuthOptions } from "./useAuth";
 export { useVocabularies } from "./useVocabularies";
 export { useCollections } from "./useCollections";
+export { useCollectionPermission } from "./useCollectionPermission";

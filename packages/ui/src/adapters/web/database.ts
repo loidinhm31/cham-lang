@@ -33,7 +33,6 @@ export interface IDBVocabulary {
   }>;
   language: string;
   collection_id: string;
-  user_id: string;
   created_at: string;
   updated_at: string;
   sync_version?: number;
@@ -45,8 +44,8 @@ export interface IDBCollection {
   name: string;
   description: string;
   language: string;
-  owner_id: string;
-  shared_with: string[];
+  shared_by?: string;
+  shared_with: Array<{ user_id: string; permission: string }>;
   is_public: boolean;
   word_count: number;
   created_at: string;
@@ -117,7 +116,6 @@ export interface IDBPracticeProgress {
 
 export interface IDBLearningSettings {
   id: string;
-  user_id: string;
   sr_algorithm: string;
   leitner_box_count: number;
   consecutive_correct_required: number;
@@ -152,7 +150,6 @@ export interface IDBTag {
 
 export interface IDBUserLearningLanguage {
   id: string;
-  user_id: string;
   language: string;
   created_at: string;
   sync_version?: number;
@@ -163,6 +160,7 @@ export interface IDBCollectionSharedUser {
   id: string;
   collection_id: string;
   user_id: string;
+  permission: string;
   created_at: string;
   sync_version?: number;
   synced_at?: number;
@@ -231,6 +229,42 @@ export class ChamLangDatabase extends Dexie {
       _syncMeta: "key",
       _pendingChanges: "id, tableName, recordId",
     });
+
+    // TODO combine later
+    this.version(2).stores({
+      vocabularies:
+        "id, word, language, collection_id, level, created_at, updated_at, synced_at",
+      collections:
+        "id, name, language, owner_id, is_public, created_at, synced_at",
+      practiceSessions:
+        "id, collection_id, language, mode, started_at, synced_at",
+      wordProgress:
+        "id, language, vocabulary_id, next_review_date, leitner_box, [language+vocabulary_id], synced_at",
+      practiceProgress: "id, language, synced_at",
+      learningSettings: "id, synced_at",
+      topics: "id, name, synced_at",
+      tags: "id, name, synced_at",
+      userLearningLanguages: "id, language, synced_at",
+      collectionSharedUsers: "id, collection_id, user_id, synced_at",
+      _syncMeta: "key",
+      _pendingChanges: "id, tableName, recordId",
+    });
+
+    this.version(3)
+      .stores({
+        collections:
+          "id, name, language, shared_by, is_public, created_at, synced_at",
+      })
+      .upgrade((tx) => {
+        // Migrate: remove owner_id, set shared_by = undefined (user's own collections)
+        return tx
+          .table("collections")
+          .toCollection()
+          .modify((collection: Record<string, unknown>) => {
+            delete collection.owner_id;
+            collection.shared_by = undefined;
+          });
+      });
 
     this.vocabularies = this.table("vocabularies");
     this.collections = this.table("collections");

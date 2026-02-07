@@ -11,6 +11,7 @@ import type {
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
 import { useDialog } from "@cham-lang/ui/contexts";
+import { useCollectionPermission } from "@cham-lang/ui/hooks";
 
 export const EditCollectionPage: React.FC = () => {
   const { t } = useTranslation();
@@ -22,16 +23,27 @@ export const EditCollectionPage: React.FC = () => {
   const [initialData, setInitialData] = useState<
     Partial<CreateCollectionRequest & { id: string }> | undefined
   >();
+  const [fullCollection, setFullCollection] = useState<Collection | null>(null);
+  const { canEdit, loading: permLoading } =
+    useCollectionPermission(fullCollection);
 
   useEffect(() => {
     loadCollection();
   }, [id]);
+
+  useEffect(() => {
+    if (!permLoading && fullCollection && !canEdit) {
+      showAlert(t("messages.error"), { variant: "error" });
+      navigate(`/collections/${id}`);
+    }
+  }, [permLoading, canEdit, fullCollection]);
 
   const loadCollection = async () => {
     if (!id) return;
 
     try {
       const collection: Collection = await CollectionService.getCollection(id);
+      setFullCollection(collection);
       setInitialData({
         id: id,
         name: collection.name,

@@ -1,10 +1,15 @@
+export interface SharedUser {
+  user_id: string;
+  permission: "viewer" | "editor";
+}
+
 export interface Collection {
   id?: string;
   name: string;
   description: string;
   language: string;
-  owner_id: string;
-  shared_with: string[]; // User IDs
+  shared_by?: string;
+  shared_with: SharedUser[];
   is_public: boolean;
   word_count: number;
   created_at: string;
@@ -30,5 +35,5 @@ export interface UpdateCollectionRequest {
   name?: string;
   description?: string;
   is_public?: boolean;
-  shared_with?: string[];
+  shared_with?: SharedUser[];
 }
