@@ -1,0 +1,231 @@
+import React, { useEffect, useState } from "react";
+import { useNav } from "@cham-lang/ui/hooks";
+import { useTranslation } from "react-i18next";
+import { Download, CheckSquare, Square, FileDown } from "lucide-react";
+import { CollectionService } from "@cham-lang/ui/services";
+import { CsvService } from "@cham-lang/ui/services";
+import { TopBar } from "@cham-lang/ui/components/molecules";
+import { Button, Card } from "@cham-lang/ui/components/atoms";
+import type { Collection } from "@cham-lang/shared/types";
+import { getCollectionId } from "@cham-lang/shared/types";
+import { useDialog } from "@cham-lang/ui/contexts";
+
+export const CSVExportPage: React.FC = () => {
+  const { t } = useTranslation();
+  const { navigate } = useNav();
+  const { showAlert } = useDialog();
+  const [collections, setCollections] = useState<Collection[]>([]);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    loadCollections();
+  }, []);
+
+  const loadCollections = async () => {
+    try {
+      const data = await CollectionService.getUserCollections();
+      setCollections(data);
+    } catch (error) {
+      console.error("Failed to load collections:", error);
+      showAlert(t("csv.loadCollectionsFailed"), { variant: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const toggleSelection = (id: string) => {
+    const newSelected = new Set(selectedIds);
+    if (newSelected.has(id)) {
+      newSelected.delete(id);
+    } else {
+      newSelected.add(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === collections.length) {
+      setSelectedIds(new Set());
+    } else {
+      const ids = collections
+        .map((c) => getCollectionId(c))
+        .filter((id): id is string => id !== undefined);
+      setSelectedIds(new Set(ids));
+    }
+  };
+
+  const handleExport = async () => {
+    if (selectedIds.size === 0) {
+      showAlert(t("csv.noCollectionsSelected"), { variant: "warning" });
+      return;
+    }
+
+    try {
+      setIsExporting(true);
+
+      let filePath: string | null = null;
+
+      // Always use app export directory to avoid content URI issues on Android
+      // The file dialog's content URIs cannot be written to directly
+      const exportDir = await CsvService.getExportDirectory();
+      const timestamp = new Date().toISOString().split("T")[0];
+      filePath = `${exportDir}/chamlang_export_${timestamp}.csv`;
+      console.log("Exporting to app directory:", filePath);
+
+      // Export to CSV
+      const result = await CsvService.exportCollections(
+        Array.from(selectedIds),
+        filePath,
+      );
+
+      showAlert(
+        t("csv.exportSuccess", { message: result.message }) +
+          `\n\nFile: ${result.file_name}`,
+        {
+          variant: "success",
+        },
+      );
+      navigate("/collections");
+    } catch (error) {
+      console.error("Export failed:", error);
+      showAlert(t("csv.exportFailed", { error: String(error) }), {
+        variant: "error",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const totalVocabularies = collections
+    .filter((c) => {
+      const id = getCollectionId(c);
+      return id !== undefined && selectedIds.has(id);
+    })
+    .reduce((sum, c) => sum + c.word_count, 0);
+
+  return (
+    <>
+      <TopBar title={t("csv.exportTitle")} showBack backTo="/settings" />
+      <div className="min-h-screen p-6 space-y-6">
+        <Card className="p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <FileDown className="w-8 h-8 text-chameleon-600 dark:text-chameleon-400" />
+            <div>
+              <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                {t("csv.exportCollections")}
+              </h2>
+              <p className="text-[var(--color-text-secondary)]">
+                {t("csv.exportDescription")}
+              </p>
+            </div>
+          </div>
+
+          {isLoading ? (
+            <div className="text-center py-12">
+              <div className="text-gray-600">{t("common.loading")}</div>
+            </div>
+          ) : collections.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-gray-600">{t("csv.noCollectionsToExport")}</p>
+              <Button
+                variant="secondary"
+                onClick={() => navigate("/collections/new")}
+                className="mt-4"
+              >
+                {t("collections.create")}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <div className="flex justify-between items-center mb-4 pb-4 border-b">
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex items-center gap-2 text-chameleon-600 dark:text-chameleon-400 hover:text-chameleon-700 dark:hover:text-chameleon-300 font-medium"
+                >
+                  {selectedIds.size === collections.length ? (
+                    <CheckSquare className="w-5 h-5" />
+                  ) : (
+                    <Square className="w-5 h-5" />
+                  )}
+                  {selectedIds.size === collections.length
+                    ? t("csv.deselectAll")
+                    : t("csv.selectAll")}
+                </button>
+
+                <div className="text-sm text-[var(--color-text-secondary)]">
+                  {t("csv.selectedCount", {
+                    selected: selectedIds.size,
+                    total: collections.length,
+                    vocabularies: totalVocabularies,
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6">
+                {collections
+                  .filter((c) => getCollectionId(c) !== undefined)
+                  .map((collection) => {
+                    const id = getCollectionId(collection)!; // Safe to use ! here due to filter
+                    const isSelected = selectedIds.has(id);
+
+                    return (
+                      <button
+                        key={id}
+                        onClick={() => toggleSelection(id)}
+                        className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
+                          isSelected
+                            ? "border-chameleon-600 bg-chameleon-50 dark:bg-chameleon-900/30 dark:border-chameleon-500"
+                            : "border-[var(--color-border-light)] bg-[var(--color-bg-white)] hover:border-gray-300 dark:hover:border-slate-600"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          {isSelected ? (
+                            <CheckSquare className="w-5 h-5 text-chameleon-600 dark:text-chameleon-400 flex-shrink-0" />
+                          ) : (
+                            <Square className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" />
+                          )}
+                          <div className="flex-1">
+                            <div className="font-semibold text-[var(--color-text-primary)]">
+                              {collection.name}
+                            </div>
+                            <div className="text-sm text-[var(--color-text-secondary)]">
+                              {collection.language.toUpperCase()} •{" "}
+                              {collection.word_count} {t("collections.words")}
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="primary"
+                  onClick={handleExport}
+                  disabled={selectedIds.size === 0 || isExporting}
+                  className="flex-1 flex items-center justify-center gap-2"
+                >
+                  <Download className="w-5 h-5" />
+                  {isExporting
+                    ? t("csv.exporting")
+                    : t("csv.exportButton", { count: selectedIds.size })}
+                </Button>
+
+                <Button
+                  variant="secondary"
+                  onClick={() => navigate("/collections")}
+                  disabled={isExporting}
+                >
+                  {t("common.cancel")}
+                </Button>
+              </div>
+            </>
+          )}
+        </Card>
+      </div>
+    </>
+  );
+};

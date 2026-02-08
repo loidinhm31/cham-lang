@@ -18,6 +18,7 @@ This guide explains how to set up Android app signing for both local development
 ## Important Notes
 
 **The `build.gradle.kts` has been modified** to make keystore signing optional:
+
 - Debug builds work WITHOUT a keystore (uses Android's default debug signing)
 - Release builds require a keystore for production signing
 - If you regenerate Android files with `pnpm tauri android init`, you may need to reapply the optional signing configuration
@@ -37,6 +38,7 @@ keytool -genkey -v -keystore ./cham-lang-keystore.jks \
 ```
 
 You'll be prompted to enter:
+
 - **Keystore password**: Choose a strong password (remember this!)
 - **Key password**: Can be the same as keystore password
 - **Your details**: Name, organization, city, state, country
@@ -54,6 +56,7 @@ password=YourKeystorePassword
 ```
 
 Replace:
+
 - `/path/to/your/cham-lang-keystore.jks` with the actual path to your keystore
 - `cham-lang-key` with your key alias (if different)
 - `YourKeystorePassword` with your actual keystore password
@@ -96,6 +99,7 @@ Add these secrets:
 ### 3. Trigger Build
 
 The GitHub Actions workflow will automatically:
+
 - Build **debug APKs** for PRs and non-tag pushes
 - Build **signed release APKs** only for version tags (e.g., `v1.0.0`)
 
@@ -121,6 +125,7 @@ pnpm tauri android build --apk true
 ```
 
 Use these for:
+
 - Testing on your device
 - Internal testing
 - Development
@@ -134,6 +139,7 @@ pnpm tauri android build --apk true --release
 ```
 
 Use these for:
+
 - Google Play Store uploads
 - Production distribution
 - Public releases
@@ -169,6 +175,7 @@ keytool -printcert -jarfile app-release.apk
 ```
 
 Expected output should show:
+
 - jar verified. ✓
 - Your certificate details (CN, O, etc.)
 
@@ -205,6 +212,7 @@ Expected output should show:
 ## Questions or Issues?
 
 If you encounter issues not covered here:
+
 1. Check the [Tauri Discord](https://discord.gg/tauri) #android channel
 2. Review [GitHub Actions logs](../../actions) for specific errors
 3. See Android build logs: `src-tauri/gen/android/app/build/outputs/logs/`
