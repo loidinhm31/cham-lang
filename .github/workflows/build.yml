@@ -42,8 +42,8 @@ jobs:
             $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
           }
           # Verify icon.ico exists, if not generate it
-          if (-not (Test-Path "src-tauri/icons/icon.ico")) {
-            magick src-tauri/icons/icon.png -define icon:auto-resize=256,128,64,48,32,16 src-tauri/icons/icon.ico
+          if (-not (Test-Path "apps/native/src-tauri/icons/icon.ico")) {
+            magick apps/native/src-tauri/icons/icon.png -define icon:auto-resize=256,128,64,48,32,16 apps/native/src-tauri/icons/icon.ico
           }
 
       - name: Setup pnpm
@@ -65,7 +65,7 @@ jobs:
       - name: Setup Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          workspaces: src-tauri
+          workspaces: apps/native/src-tauri
 
       - name: Install Linux dependencies
         if: startsWith(matrix.platform.os, 'ubuntu')
@@ -86,12 +86,13 @@ jobs:
         run: pnpm install
 
       - name: Build the app
-        uses: tauri-apps/native-action@v0
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
         with:
+          projectPath: apps/native
           tagName: ${{ github.ref_name }}
           releaseName: "Cham Lang v__VERSION__"
           releaseBody: "See the assets to download and install this version."
