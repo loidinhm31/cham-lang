@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+﻿use chrono::{DateTime, Utc};
 use rusqlite::{params, Connection, Result as SqlResult};
 use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
@@ -9,6 +9,37 @@ pub mod helpers;
 mod practice;
 mod settings;
 pub mod vocabularies;
+
+/// Safely recreate a table with foreign keys disabled to prevent cascade deletes.
+/// When `PRAGMA foreign_keys = ON`, `DROP TABLE` performs an implicit DELETE that
+/// triggers ON DELETE CASCADE, destroying data in all referencing tables.
+fn safe_migrate_table(conn: &Connection, migration_sql: &str) -> SqlResult<()> {
+    let full_sql = format!(
+        "PRAGMA foreign_keys = OFF;\n\
+         BEGIN TRANSACTION;\n\
+         {}\n\
+         COMMIT;\n\
+         PRAGMA foreign_keys = ON;",
+        migration_sql
+    );
+    conn.execute_batch(&full_sql)
+}
+
+/// Check if a table has a specific column
+fn table_has_column(conn: &Connection, table: &str, column: &str) -> bool {
+    conn.prepare(&format!("PRAGMA table_info({})", table))
+        .and_then(|mut stmt| {
+            let mut rows = stmt.query([])?;
+            while let Some(row) = rows.next()? {
+                let col_name: String = row.get(1)?;
+                if col_name == column {
+                    return Ok(true);
+                }
+            }
+            Ok(false)
+        })
+        .unwrap_or(false)
+}
 
 /// Local SQLite database manager for offline-first functionality
 #[derive(Clone)]
@@ -408,23 +439,50 @@ impl LocalDatabase {
         );
 
         // Migration: Add shared_by column to collections if it doesn't exist
-        let collections_has_shared_by: bool = conn
-            .prepare("PRAGMA table_info(collections)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "shared_by" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if !collections_has_shared_by {
+        if !table_has_column(&conn, "collections", "shared_by") {
             println!("Migration: Adding shared_by column to collections...");
-            let _ = conn.execute("ALTER TABLE collections ADD COLUMN shared_by TEXT", []);
+            conn.execute("ALTER TABLE collections ADD COLUMN shared_by TEXT", [])?;
+        }
+
+        // =====================================================================
+        // MIGRATION: Add missing columns to existing tables from old schemas.
+        // CREATE TABLE IF NOT EXISTS doesn't add new columns to existing tables,
+        // so we must ALTER TABLE for any columns added after initial creation.
+        // =====================================================================
+
+        // collection_shared_users: add permission column
+        if !table_has_column(&conn, "collection_shared_users", "permission") {
+            println!("Migration: Adding permission column to collection_shared_users...");
+            conn.execute(
+                "ALTER TABLE collection_shared_users ADD COLUMN permission TEXT NOT NULL DEFAULT 'viewer'",
+                [],
+            )?;
+        }
+
+        // Add sync columns to tables that predate the sync feature
+        let tables_needing_sync = ["collection_shared_users", "topics", "tags"];
+        for table in &tables_needing_sync {
+            if !table_has_column(&conn, table, "sync_version") {
+                println!("Migration: Adding sync columns to {}...", table);
+                conn.execute(
+                    &format!("ALTER TABLE {} ADD COLUMN sync_version INTEGER NOT NULL DEFAULT 1", table),
+                    [],
+                )?;
+                conn.execute(
+                    &format!("ALTER TABLE {} ADD COLUMN synced_at INTEGER", table),
+                    [],
+                )?;
+            }
+            if !table_has_column(&conn, table, "deleted") {
+                conn.execute(
+                    &format!("ALTER TABLE {} ADD COLUMN deleted INTEGER DEFAULT 0", table),
+                    [],
+                )?;
+                conn.execute(
+                    &format!("ALTER TABLE {} ADD COLUMN deleted_at INTEGER", table),
+                    [],
+                )?;
+            }
         }
 
         // Create indexes
@@ -499,11 +557,262 @@ impl LocalDatabase {
         // TODO: remove future
         // =====================================================================
         // MIGRATION: Remove users table and user_id columns
-        // This migration runs once for databases created before the multi-user
-        // collection sharing feature. Safe to run multiple times (idempotent).
+        // Uses safe_migrate_table to prevent CASCADE deletes from DROP TABLE.
+        // When PRAGMA foreign_keys = ON, DROP TABLE does an implicit DELETE
+        // that triggers ON DELETE CASCADE, destroying child table data.
+        //
+        // IMPORTANT: Child tables with FK references to `users` must be migrated
+        // BEFORE dropping the users table, otherwise DROP TABLE users fails with
+        // SQLITE_CONSTRAINT_FOREIGNKEY when foreign keys are enabled.
         // =====================================================================
 
-        // Check if users table exists and drop it
+        // Remove user_id column from vocabularies if it exists
+        if table_has_column(&conn, "vocabularies", "user_id") {
+            println!("Migration: Removing user_id column from vocabularies...");
+            // Old schema may not have sync columns yet
+            let sync_cols = if table_has_column(&conn, "vocabularies", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE vocabularies_new (
+                        id TEXT PRIMARY KEY,
+                        word TEXT NOT NULL,
+                        word_type TEXT NOT NULL,
+                        level TEXT NOT NULL,
+                        ipa TEXT,
+                        concept TEXT,
+                        language TEXT NOT NULL,
+                        collection_id TEXT NOT NULL,
+                        audio_url TEXT,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER,
+                        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+                    );
+                    INSERT INTO vocabularies_new SELECT
+                        id, word, word_type, level, ipa, concept, language, collection_id,
+                        audio_url, created_at, updated_at, {sync_cols}
+                    FROM vocabularies;
+                    DROP TABLE vocabularies;
+                    ALTER TABLE vocabularies_new RENAME TO vocabularies;
+                    CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id);
+                    CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language);"
+                ),
+            )?;
+        }
+
+        // Remove user_id column from word_progress if it exists
+        if table_has_column(&conn, "word_progress", "user_id") {
+            println!("Migration: Removing user_id column from word_progress...");
+            let sync_cols = if table_has_column(&conn, "word_progress", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE word_progress_new (
+                        id TEXT PRIMARY KEY,
+                        language TEXT NOT NULL,
+                        vocabulary_id TEXT NOT NULL,
+                        word TEXT NOT NULL,
+                        correct_count INTEGER DEFAULT 0,
+                        incorrect_count INTEGER DEFAULT 0,
+                        last_practiced INTEGER NOT NULL,
+                        mastery_level INTEGER DEFAULT 0,
+                        next_review_date INTEGER NOT NULL,
+                        interval_days INTEGER DEFAULT 1,
+                        easiness_factor REAL DEFAULT 2.5,
+                        consecutive_correct_count INTEGER DEFAULT 0,
+                        leitner_box INTEGER DEFAULT 1,
+                        last_interval_days INTEGER DEFAULT 0,
+                        total_reviews INTEGER DEFAULT 0,
+                        failed_in_session INTEGER DEFAULT 0,
+                        retry_count INTEGER DEFAULT 0,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER,
+                        FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
+                        UNIQUE(language, vocabulary_id)
+                    );
+                    INSERT INTO word_progress_new SELECT
+                        id, language, vocabulary_id, word, correct_count, incorrect_count,
+                        last_practiced, mastery_level, next_review_date, interval_days,
+                        easiness_factor, consecutive_correct_count, leitner_box,
+                        last_interval_days, total_reviews, failed_in_session, retry_count,
+                        {sync_cols}
+                    FROM word_progress;
+                    DROP TABLE word_progress;
+                    ALTER TABLE word_progress_new RENAME TO word_progress;
+                    CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language);
+                    CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id);
+                    CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date);
+                    CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box);"
+                ),
+            )?;
+        }
+
+        // Remove user_id column from learning_settings if it exists
+        if table_has_column(&conn, "learning_settings", "user_id") {
+            println!("Migration: Removing user_id column from learning_settings...");
+            let sync_cols = if table_has_column(&conn, "learning_settings", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE learning_settings_new (
+                        id TEXT PRIMARY KEY,
+                        sr_algorithm TEXT NOT NULL,
+                        leitner_box_count INTEGER NOT NULL,
+                        consecutive_correct_required INTEGER NOT NULL,
+                        show_failed_words_in_session INTEGER NOT NULL,
+                        new_words_per_day INTEGER,
+                        daily_review_limit INTEGER,
+                        auto_advance_timeout_seconds INTEGER DEFAULT 2,
+                        show_hint_in_fillword INTEGER DEFAULT 1,
+                        reminder_enabled INTEGER DEFAULT 0,
+                        reminder_time TEXT DEFAULT '19:00',
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER
+                    );
+                    INSERT INTO learning_settings_new SELECT
+                        id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+                        show_failed_words_in_session, new_words_per_day, daily_review_limit,
+                        auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled,
+                        reminder_time, created_at, updated_at, {sync_cols}
+                    FROM learning_settings;
+                    DROP TABLE learning_settings;
+                    ALTER TABLE learning_settings_new RENAME TO learning_settings;"
+                ),
+            )?;
+        }
+
+        // Remove user_id column from practice_sessions if it exists
+        if table_has_column(&conn, "practice_sessions", "user_id") {
+            println!("Migration: Removing user_id column from practice_sessions...");
+            let sync_cols = if table_has_column(&conn, "practice_sessions", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE practice_sessions_new (
+                        id TEXT PRIMARY KEY,
+                        collection_id TEXT NOT NULL,
+                        mode TEXT NOT NULL,
+                        language TEXT NOT NULL,
+                        topic TEXT,
+                        level TEXT,
+                        total_questions INTEGER NOT NULL,
+                        correct_answers INTEGER NOT NULL,
+                        started_at INTEGER NOT NULL,
+                        completed_at INTEGER NOT NULL,
+                        duration_seconds INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER,
+                        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+                    );
+                    INSERT INTO practice_sessions_new SELECT
+                        id, collection_id, mode, language, topic, level, total_questions,
+                        correct_answers, started_at, completed_at, duration_seconds,
+                        {sync_cols}
+                    FROM practice_sessions;
+                    DROP TABLE practice_sessions;
+                    ALTER TABLE practice_sessions_new RENAME TO practice_sessions;
+                    CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id);"
+                ),
+            )?;
+        }
+
+        // Remove user_id column from practice_progress if it exists
+        if table_has_column(&conn, "practice_progress", "user_id") {
+            println!("Migration: Removing user_id column from practice_progress...");
+            let sync_cols = if table_has_column(&conn, "practice_progress", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE practice_progress_new (
+                        id TEXT PRIMARY KEY,
+                        language TEXT NOT NULL,
+                        total_sessions INTEGER DEFAULT 0,
+                        total_words_practiced INTEGER DEFAULT 0,
+                        current_streak INTEGER DEFAULT 0,
+                        longest_streak INTEGER DEFAULT 0,
+                        last_practice_date INTEGER NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER,
+                        UNIQUE(language)
+                    );
+                    INSERT INTO practice_progress_new SELECT
+                        id, language, total_sessions, total_words_practiced, current_streak,
+                        longest_streak, last_practice_date, created_at, updated_at,
+                        {sync_cols}
+                    FROM practice_progress;
+                    DROP TABLE practice_progress;
+                    ALTER TABLE practice_progress_new RENAME TO practice_progress;"
+                ),
+            )?;
+        }
+
+        // Remove user_id column from user_learning_languages if it exists
+        if table_has_column(&conn, "user_learning_languages", "user_id") {
+            println!("Migration: Removing user_id column from user_learning_languages...");
+            let sync_cols = if table_has_column(&conn, "user_learning_languages", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE user_learning_languages_new (
+                        id TEXT PRIMARY KEY,
+                        language TEXT NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER,
+                        UNIQUE(language)
+                    );
+                    INSERT INTO user_learning_languages_new SELECT
+                        id, language, created_at, {sync_cols}
+                    FROM user_learning_languages;
+                    DROP TABLE user_learning_languages;
+                    ALTER TABLE user_learning_languages_new RENAME TO user_learning_languages;"
+                ),
+            )?;
+        }
+
+        // Now safe to drop users table — all child FK references have been removed above
         let users_table_exists: bool = conn
             .query_row(
                 "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'",
@@ -515,375 +824,7 @@ impl LocalDatabase {
 
         if users_table_exists {
             println!("Migration: Dropping users table (no longer needed)...");
-            let _ = conn.execute("DROP TABLE IF EXISTS users", []);
-        }
-
-        // Remove user_id column from vocabularies if it exists
-        let vocab_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(vocabularies)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if vocab_has_user_id {
-            println!("Migration: Removing user_id column from vocabularies...");
-            // SQLite doesn't support DROP COLUMN directly, need to recreate table
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            // Create new table without user_id
-            let _ = conn.execute(
-                "CREATE TABLE vocabularies_new (
-                    id TEXT PRIMARY KEY,
-                    word TEXT NOT NULL,
-                    word_type TEXT NOT NULL,
-                    level TEXT NOT NULL,
-                    ipa TEXT,
-                    concept TEXT,
-                    language TEXT NOT NULL,
-                    collection_id TEXT NOT NULL,
-                    audio_url TEXT,
-                    created_at INTEGER NOT NULL,
-                    updated_at INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER,
-                    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
-                )",
-                [],
-            );
-
-            // Copy data (excluding user_id)
-            let _ = conn.execute(
-                "INSERT INTO vocabularies_new SELECT
-                    id, word, word_type, level, ipa, concept, language, collection_id,
-                    audio_url, created_at, updated_at, sync_version, synced_at, deleted, deleted_at
-                FROM vocabularies",
-                [],
-            );
-
-            // Drop old table
-            let _ = conn.execute("DROP TABLE vocabularies", []);
-
-            // Rename new table
-            let _ = conn.execute("ALTER TABLE vocabularies_new RENAME TO vocabularies", []);
-
-            // Recreate indexes
-            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id)", []);
-            let _ = conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language)",
-                [],
-            );
-
-            let _ = conn.execute("COMMIT", []);
-        }
-
-        // Remove user_id column from word_progress if it exists
-        let word_progress_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(word_progress)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if word_progress_has_user_id {
-            println!("Migration: Removing user_id column from word_progress...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE word_progress_new (
-                    id TEXT PRIMARY KEY,
-                    language TEXT NOT NULL,
-                    vocabulary_id TEXT NOT NULL,
-                    word TEXT NOT NULL,
-                    correct_count INTEGER DEFAULT 0,
-                    incorrect_count INTEGER DEFAULT 0,
-                    last_practiced INTEGER NOT NULL,
-                    mastery_level INTEGER DEFAULT 0,
-                    next_review_date INTEGER NOT NULL,
-                    interval_days INTEGER DEFAULT 1,
-                    easiness_factor REAL DEFAULT 2.5,
-                    consecutive_correct_count INTEGER DEFAULT 0,
-                    leitner_box INTEGER DEFAULT 1,
-                    last_interval_days INTEGER DEFAULT 0,
-                    total_reviews INTEGER DEFAULT 0,
-                    failed_in_session INTEGER DEFAULT 0,
-                    retry_count INTEGER DEFAULT 0,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER,
-                    UNIQUE(language, vocabulary_id)
-                )",
-                [],
-            );
-
-            let _ = conn.execute(
-                "INSERT INTO word_progress_new SELECT
-                    id, language, vocabulary_id, word, correct_count, incorrect_count,
-                    last_practiced, mastery_level, next_review_date, interval_days,
-                    easiness_factor, consecutive_correct_count, leitner_box,
-                    last_interval_days, total_reviews, failed_in_session, retry_count,
-                    sync_version, synced_at, deleted, deleted_at
-                FROM word_progress",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE word_progress", []);
-            let _ = conn.execute("ALTER TABLE word_progress_new RENAME TO word_progress", []);
-
-            let _ = conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language)",
-                [],
-            );
-            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id)", []);
-            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date)", []);
-            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box)", []);
-
-            let _ = conn.execute("COMMIT", []);
-        }
-
-        // Remove user_id column from learning_settings if it exists
-        let settings_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(learning_settings)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if settings_has_user_id {
-            println!("Migration: Removing user_id column from learning_settings...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE learning_settings_new (
-                    id TEXT PRIMARY KEY,
-                    sr_algorithm TEXT NOT NULL,
-                    leitner_box_count INTEGER NOT NULL,
-                    consecutive_correct_required INTEGER NOT NULL,
-                    show_failed_words_in_session INTEGER NOT NULL,
-                    new_words_per_day INTEGER,
-                    daily_review_limit INTEGER,
-                    auto_advance_timeout_seconds INTEGER DEFAULT 2,
-                    show_hint_in_fillword INTEGER DEFAULT 1,
-                    reminder_enabled INTEGER DEFAULT 0,
-                    reminder_time TEXT DEFAULT '19:00',
-                    created_at INTEGER NOT NULL,
-                    updated_at INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER
-                )",
-                [],
-            );
-
-            let _ = conn.execute(
-                "INSERT INTO learning_settings_new SELECT
-                    id, sr_algorithm, leitner_box_count, consecutive_correct_required,
-                    show_failed_words_in_session, new_words_per_day, daily_review_limit,
-                    auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled,
-                    reminder_time, created_at, updated_at, sync_version, synced_at, deleted, deleted_at
-                FROM learning_settings",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE learning_settings", []);
-            let _ = conn.execute(
-                "ALTER TABLE learning_settings_new RENAME TO learning_settings",
-                [],
-            );
-
-            let _ = conn.execute("COMMIT", []);
-        }
-
-        // Remove user_id column from practice_sessions if it exists
-        let sessions_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(practice_sessions)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if sessions_has_user_id {
-            println!("Migration: Removing user_id column from practice_sessions...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE practice_sessions_new (
-                    id TEXT PRIMARY KEY,
-                    collection_id TEXT NOT NULL,
-                    mode TEXT NOT NULL,
-                    language TEXT NOT NULL,
-                    topic TEXT,
-                    level TEXT,
-                    total_questions INTEGER NOT NULL,
-                    correct_answers INTEGER NOT NULL,
-                    started_at INTEGER NOT NULL,
-                    completed_at INTEGER NOT NULL,
-                    duration_seconds INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER,
-                    FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
-                )",
-                [],
-            );
-
-            let _ = conn.execute(
-                "INSERT INTO practice_sessions_new SELECT
-                    id, collection_id, mode, language, topic, level, total_questions,
-                    correct_answers, started_at, completed_at, duration_seconds,
-                    sync_version, synced_at, deleted, deleted_at
-                FROM practice_sessions",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE practice_sessions", []);
-            let _ = conn.execute(
-                "ALTER TABLE practice_sessions_new RENAME TO practice_sessions",
-                [],
-            );
-
-            let _ = conn.execute("CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id)", []);
-
-            let _ = conn.execute("COMMIT", []);
-        }
-
-        // Remove user_id column from practice_progress if it exists
-        let progress_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(practice_progress)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if progress_has_user_id {
-            println!("Migration: Removing user_id column from practice_progress...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE practice_progress_new (
-                    id TEXT PRIMARY KEY,
-                    language TEXT NOT NULL,
-                    total_sessions INTEGER DEFAULT 0,
-                    total_words_practiced INTEGER DEFAULT 0,
-                    current_streak INTEGER DEFAULT 0,
-                    longest_streak INTEGER DEFAULT 0,
-                    last_practice_date INTEGER NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    updated_at INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER,
-                    UNIQUE(language)
-                )",
-                [],
-            );
-
-            let _ = conn.execute(
-                "INSERT INTO practice_progress_new SELECT
-                    id, language, total_sessions, total_words_practiced, current_streak,
-                    longest_streak, last_practice_date, created_at, updated_at,
-                    sync_version, synced_at, deleted, deleted_at
-                FROM practice_progress",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE practice_progress", []);
-            let _ = conn.execute(
-                "ALTER TABLE practice_progress_new RENAME TO practice_progress",
-                [],
-            );
-
-            let _ = conn.execute("COMMIT", []);
-        }
-
-        // Remove user_id column from user_learning_languages if it exists
-        let langs_has_user_id: bool = conn
-            .prepare("PRAGMA table_info(user_learning_languages)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "user_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if langs_has_user_id {
-            println!("Migration: Removing user_id column from user_learning_languages...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE user_learning_languages_new (
-                    id TEXT PRIMARY KEY,
-                    language TEXT NOT NULL,
-                    created_at INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER,
-                    UNIQUE(language)
-                )",
-                [],
-            );
-
-            let _ = conn.execute(
-                "INSERT INTO user_learning_languages_new SELECT
-                    id, language, created_at, sync_version, synced_at, deleted, deleted_at
-                FROM user_learning_languages",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE user_learning_languages", []);
-            let _ = conn.execute(
-                "ALTER TABLE user_learning_languages_new RENAME TO user_learning_languages",
-                [],
-            );
-
-            let _ = conn.execute("COMMIT", []);
+            safe_migrate_table(&conn, "DROP TABLE IF EXISTS users;")?;
         }
 
         // =====================================================================
@@ -891,63 +832,41 @@ impl LocalDatabase {
         // shared_by = NULL means user's own collection
         // shared_by = <userId> means shared by that user
         // =====================================================================
-        let collections_has_owner_id: bool = conn
-            .prepare("PRAGMA table_info(collections)")
-            .and_then(|mut stmt| {
-                let mut rows = stmt.query([])?;
-                while let Some(row) = rows.next()? {
-                    let col_name: String = row.get(1)?;
-                    if col_name == "owner_id" {
-                        return Ok(true);
-                    }
-                }
-                Ok(false)
-            })
-            .unwrap_or(false);
-
-        if collections_has_owner_id {
+        if table_has_column(&conn, "collections", "owner_id") {
             println!("Migration: Replacing owner_id with shared_by in collections...");
-            let _ = conn.execute("BEGIN TRANSACTION", []);
-
-            let _ = conn.execute(
-                "CREATE TABLE collections_new (
-                    id TEXT PRIMARY KEY,
-                    name TEXT NOT NULL,
-                    description TEXT,
-                    language TEXT NOT NULL,
-                    shared_by TEXT,
-                    is_public BOOLEAN DEFAULT 0,
-                    word_count INTEGER DEFAULT 0,
-                    created_at INTEGER NOT NULL,
-                    updated_at INTEGER NOT NULL,
-                    sync_version INTEGER NOT NULL DEFAULT 1,
-                    synced_at INTEGER,
-                    deleted INTEGER DEFAULT 0,
-                    deleted_at INTEGER
-                )",
-                [],
-            );
-
-            // All existing collections are the user's own, so shared_by = NULL
-            let _ = conn.execute(
-                "INSERT INTO collections_new SELECT
-                    id, name, description, language, NULL, is_public, word_count,
-                    created_at, updated_at, sync_version, synced_at, deleted, deleted_at
-                FROM collections",
-                [],
-            );
-
-            let _ = conn.execute("DROP TABLE collections", []);
-            let _ = conn.execute("ALTER TABLE collections_new RENAME TO collections", []);
-
-            // Recreate indexes
-            let _ = conn.execute(
-                "CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by)",
-                [],
-            );
-            let _ = conn.execute("DROP INDEX IF EXISTS idx_collections_owner", []);
-
-            let _ = conn.execute("COMMIT", []);
+            let sync_cols = if table_has_column(&conn, "collections", "sync_version") {
+                "sync_version, synced_at, deleted, deleted_at"
+            } else {
+                "1, NULL, 0, NULL"
+            };
+            safe_migrate_table(
+                &conn,
+                &format!(
+                    "CREATE TABLE collections_new (
+                        id TEXT PRIMARY KEY,
+                        name TEXT NOT NULL,
+                        description TEXT,
+                        language TEXT NOT NULL,
+                        shared_by TEXT,
+                        is_public BOOLEAN DEFAULT 0,
+                        word_count INTEGER DEFAULT 0,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL,
+                        sync_version INTEGER NOT NULL DEFAULT 1,
+                        synced_at INTEGER,
+                        deleted INTEGER DEFAULT 0,
+                        deleted_at INTEGER
+                    );
+                    INSERT INTO collections_new SELECT
+                        id, name, description, language, NULL, is_public, word_count,
+                        created_at, updated_at, {sync_cols}
+                    FROM collections;
+                    DROP TABLE collections;
+                    ALTER TABLE collections_new RENAME TO collections;
+                    CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by);
+                    DROP INDEX IF EXISTS idx_collections_owner;"
+                ),
+            )?;
         }
 
         Ok(())
