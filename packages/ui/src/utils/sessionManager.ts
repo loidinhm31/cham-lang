@@ -628,9 +628,18 @@ export class SessionManager {
 
   /**
    * Get updated word progress for all words in session
+   * ONLY returns progress for words that were actually practiced (have session results)
    */
   getUpdatedWordProgress(): WordProgress[] {
-    return Array.from(this.state.wordProgressMap.values());
+    // Get vocabulary IDs that were actually practiced in this session
+    const practicedVocabIds = new Set(
+      this.state.sessionResults.map((result) => result.vocabulary_id),
+    );
+
+    // Only return progress for words that were actually practiced
+    return Array.from(this.state.wordProgressMap.values()).filter((progress) =>
+      practicedVocabIds.has(progress.vocabulary_id),
+    );
   }
 
   /**

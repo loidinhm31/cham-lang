@@ -626,7 +626,7 @@ impl LocalDatabase {
                         word TEXT NOT NULL,
                         correct_count INTEGER DEFAULT 0,
                         incorrect_count INTEGER DEFAULT 0,
-                        last_practiced INTEGER NOT NULL,
+                        total_reviews INTEGER DEFAULT 0,
                         mastery_level INTEGER DEFAULT 0,
                         next_review_date INTEGER NOT NULL,
                         interval_days INTEGER DEFAULT 1,
@@ -634,9 +634,11 @@ impl LocalDatabase {
                         consecutive_correct_count INTEGER DEFAULT 0,
                         leitner_box INTEGER DEFAULT 1,
                         last_interval_days INTEGER DEFAULT 0,
-                        total_reviews INTEGER DEFAULT 0,
                         failed_in_session INTEGER DEFAULT 0,
                         retry_count INTEGER DEFAULT 0,
+                        last_practiced INTEGER NOT NULL,
+                        created_at INTEGER NOT NULL,
+                        updated_at INTEGER NOT NULL,
                         sync_version INTEGER NOT NULL DEFAULT 1,
                         synced_at INTEGER,
                         deleted INTEGER DEFAULT 0,
@@ -646,9 +648,10 @@ impl LocalDatabase {
                     );
                     INSERT INTO word_progress_new SELECT
                         id, language, vocabulary_id, word, correct_count, incorrect_count,
-                        last_practiced, mastery_level, next_review_date, interval_days,
+                        total_reviews, mastery_level, next_review_date, interval_days,
                         easiness_factor, consecutive_correct_count, leitner_box,
-                        last_interval_days, total_reviews, failed_in_session, retry_count,
+                        last_interval_days, failed_in_session, retry_count,
+                        last_practiced, last_practiced, last_practiced,
                         {sync_cols}
                     FROM word_progress;
                     DROP TABLE word_progress;
