@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use tauri::Emitter;
 
 use qm_sync_client::{Checkpoint, ReqwestHttpClient, QmSyncClient, SyncClientConfig, SyncRecord};
 
@@ -51,6 +52,17 @@ pub struct SyncStatus {
     pub last_sync_at: Option<i64>,
     pub pending_changes: usize,
     pub server_url: Option<String>,
+}
+
+/// Sync progress for real-time updates
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SyncProgress {
+    pub phase: String, // "pushing" | "pulling"
+    pub records_pushed: usize,
+    pub records_pulled: usize,
+    pub has_more: bool,
+    pub current_page: usize,
 }
 
 impl SyncService {
@@ -105,7 +117,8 @@ impl SyncService {
         };
 
         let config = SyncClientConfig::new(&server_url, &app_id, &api_key);
-        let http = ReqwestHttpClient::new();
+        // Use 5 minute timeout for large sync operations (default is 30 seconds)
+        let http = ReqwestHttpClient::with_timeout(std::time::Duration::from_secs(300));
         let client = QmSyncClient::new(config, http);
 
         client.set_tokens(access_token, refresh_token, None).await;
@@ -126,12 +139,20 @@ impl SyncService {
             pushed = push.synced;
             conflicts = push.conflicts.len();
             self.mark_records_synced(&local_changes, start_time)?;
+
+            // Emit progress after push phase
+            let _ = app_handle.emit("sync:progress", SyncProgress {
+                phase: "pushing".to_string(),
+                records_pushed: pushed,
+                records_pulled: 0,
+                has_more: response.pull.as_ref().map_or(false, |p| p.has_more),
+                current_page: 0,
+            });
         }
 
         if let Some(pull) = &response.pull {
-            pulled = pull.records.len();
-
-            let sync_records: Vec<SyncRecord> = pull.records.iter().map(|r| SyncRecord {
+            // Collect ALL records from ALL pages first to ensure proper FK ordering
+            let mut all_sync_records: Vec<SyncRecord> = pull.records.iter().map(|r| SyncRecord {
                 table_name: r.table_name.clone(),
                 row_id: r.row_id.clone(),
                 data: r.data.clone(),
@@ -139,8 +160,58 @@ impl SyncService {
                 deleted: r.deleted,
             }).collect();
 
-            self.apply_remote_changes(&sync_records, current_user_id.as_deref())?;
-            self.save_checkpoint(&pull.checkpoint)?;
+            pulled = all_sync_records.len();
+
+            // Auto-continue pulling while has_more is true
+            let mut current_checkpoint = pull.checkpoint.clone();
+            let mut has_more = pull.has_more;
+            let mut page = 1;
+
+            // Emit progress after initial pull
+            let _ = app_handle.emit("sync:progress", SyncProgress {
+                phase: "pulling".to_string(),
+                records_pushed: pushed,
+                records_pulled: pulled,
+                has_more,
+                current_page: page,
+            });
+
+            while has_more {
+                page += 1;
+                println!("Pulling more records, checkpoint: {:?}", current_checkpoint);
+
+                let pull_response = client.pull(Some(current_checkpoint.clone()), None).await
+                    .map_err(|e| format!("Pull failed: {}", e))?;
+
+                // Collect records from this page
+                let page_records: Vec<SyncRecord> = pull_response.records.iter().map(|r| SyncRecord {
+                    table_name: r.table_name.clone(),
+                    row_id: r.row_id.clone(),
+                    data: r.data.clone(),
+                    version: r.version,
+                    deleted: r.deleted,
+                }).collect();
+
+                pulled += page_records.len();
+                all_sync_records.extend(page_records);
+
+                current_checkpoint = pull_response.checkpoint.clone();
+                has_more = pull_response.has_more;
+
+                // Emit progress after each page
+                let _ = app_handle.emit("sync:progress", SyncProgress {
+                    phase: "pulling".to_string(),
+                    records_pushed: pushed,
+                    records_pulled: pulled,
+                    has_more,
+                    current_page: page,
+                });
+            }
+
+            // Apply ALL changes at once with proper FK ordering across all pages
+            println!("Applying {} total records from {} pages", all_sync_records.len(), page);
+            self.apply_remote_changes(&all_sync_records, current_user_id.as_deref())?;
+            self.save_checkpoint(&current_checkpoint)?;
         }
 
         Ok(SyncResult {
@@ -207,8 +278,107 @@ impl SyncService {
             records.push(self.practice_session_to_sync_record(session)?);
         }
 
-        // TODO: Collect unsynced practice_progress, user_learning_languages, topics, tags, collection_shared_users
-        // These need dedicated getter methods to be added later
+        // Collect unsynced practice_progress
+        let unsynced_progress = self
+            .db
+            .get_unsynced_practice_progress()
+            .map_err(|e| e.to_string())?;
+        for (id, language, total_sessions, total_words_practiced, current_streak, longest_streak, last_practice_date, created_at, updated_at, sync_version) in &unsynced_progress {
+            records.push(SyncRecord {
+                table_name: "practiceProgress".to_string(),
+                row_id: id.clone(),
+                data: serde_json::json!({
+                    "id": id,
+                    "language": language,
+                    "totalSessions": total_sessions,
+                    "totalWordsPracticed": total_words_practiced,
+                    "currentStreak": current_streak,
+                    "longestStreak": longest_streak,
+                    "lastPracticeDate": last_practice_date,
+                    "createdAt": created_at,
+                    "updatedAt": updated_at,
+                    "syncVersion": sync_version,
+                }),
+                version: *sync_version,
+                deleted: false,
+            });
+        }
+
+        // Collect unsynced user_learning_languages
+        let unsynced_langs = self
+            .db
+            .get_unsynced_user_learning_languages()
+            .map_err(|e| e.to_string())?;
+        for (id, language, created_at, sync_version) in &unsynced_langs {
+            records.push(SyncRecord {
+                table_name: "userLearningLanguages".to_string(),
+                row_id: id.clone(),
+                data: serde_json::json!({
+                    "id": id,
+                    "language": language,
+                    "createdAt": created_at,
+                    "syncVersion": sync_version,
+                }),
+                version: *sync_version,
+                deleted: false,
+            });
+        }
+
+        // Collect unsynced topics
+        let unsynced_topics = self.db.get_unsynced_topics().map_err(|e| e.to_string())?;
+        for (id, name, created_at, sync_version) in &unsynced_topics {
+            records.push(SyncRecord {
+                table_name: "topics".to_string(),
+                row_id: id.clone(),
+                data: serde_json::json!({
+                    "id": id,
+                    "name": name,
+                    "createdAt": created_at,
+                    "syncVersion": sync_version,
+                }),
+                version: *sync_version,
+                deleted: false,
+            });
+        }
+
+        // Collect unsynced tags
+        let unsynced_tags = self.db.get_unsynced_tags().map_err(|e| e.to_string())?;
+        for (id, name, created_at, sync_version) in &unsynced_tags {
+            records.push(SyncRecord {
+                table_name: "tags".to_string(),
+                row_id: id.clone(),
+                data: serde_json::json!({
+                    "id": id,
+                    "name": name,
+                    "createdAt": created_at,
+                    "syncVersion": sync_version,
+                }),
+                version: *sync_version,
+                deleted: false,
+            });
+        }
+
+        // Collect unsynced collection_shared_users
+        let unsynced_shares = self
+            .db
+            .get_unsynced_collection_shared_users()
+            .map_err(|e| e.to_string())?;
+        for (id, collection_id, user_id, permission, created_at, sync_version) in &unsynced_shares {
+            records.push(SyncRecord {
+                table_name: "collectionSharedUsers".to_string(),
+                row_id: id.clone(),
+                data: serde_json::json!({
+                    "id": id,
+                    "collectionId": collection_id,
+                    "userId": user_id,
+                    "permission": permission,
+                    "createdAt": created_at,
+                    "syncVersion": sync_version,
+                }),
+                version: *sync_version,
+                deleted: false,
+            });
+        }
 
         Ok(records)
     }
@@ -406,6 +576,23 @@ impl SyncService {
     /// Apply remote changes to local database
     /// FK ordering: collections first for inserts, vocabularies first for deletes
     fn apply_remote_changes(&self, records: &[SyncRecord], current_user_id: Option<&str>) -> Result<(), String> {
+        // Temporarily disable FK constraints to handle cross-reference issues
+        // Records may reference entities that arrive in different order or are missing
+        self.db.set_foreign_keys(false)
+            .map_err(|e| format!("Failed to disable FK constraints: {}", e))?;
+
+        let result = self.apply_remote_changes_inner(records, current_user_id);
+
+        // Re-enable FK constraints (always, even if there was an error)
+        if let Err(e) = self.db.set_foreign_keys(true) {
+            eprintln!("Warning: Failed to re-enable FK constraints: {}", e);
+        }
+
+        result
+    }
+
+    /// Inner implementation of apply_remote_changes (called with FK constraints disabled)
+    fn apply_remote_changes_inner(&self, records: &[SyncRecord], current_user_id: Option<&str>) -> Result<(), String> {
         let mut non_deleted: Vec<&SyncRecord> = records.iter().filter(|r| !r.deleted).collect();
         let mut deleted: Vec<&SyncRecord> = records.iter().filter(|r| r.deleted).collect();
 
@@ -443,35 +630,47 @@ impl SyncService {
         let mut affected_collection_ids = std::collections::HashSet::new();
 
         for record in non_deleted {
-            match record.table_name.as_str() {
-                "collections" => self.apply_collection_change(record, current_user_id)?,
+            let apply_result = match record.table_name.as_str() {
+                "collections" => self.apply_collection_change(record, current_user_id),
                 "vocabularies" => {
                     // Get old collection_id before applying change (for moves)
                     let old_collection_id = self.db.get_vocabulary(&record.row_id)
                         .ok()
                         .flatten()
                         .map(|v| v.collection_id.clone());
-                    self.apply_vocabulary_change(record)?;
-                    // Track new collection_id
-                    if let Some(new_cid) = record.data["collectionId"].as_str() {
-                        affected_collection_ids.insert(new_cid.to_string());
+                    let result = self.apply_vocabulary_change(record);
+                    if result.is_ok() {
+                        // Track new collection_id
+                        if let Some(new_cid) = record.data["collectionId"].as_str() {
+                            affected_collection_ids.insert(new_cid.to_string());
+                        }
+                        // Track old collection_id if it differs (vocabulary was moved)
+                        if let Some(old_cid) = old_collection_id {
+                            affected_collection_ids.insert(old_cid);
+                        }
                     }
-                    // Track old collection_id if it differs (vocabulary was moved)
-                    if let Some(old_cid) = old_collection_id {
-                        affected_collection_ids.insert(old_cid);
-                    }
+                    result
                 }
-                "wordProgress" => self.apply_word_progress_change(record)?,
-                "learningSettings" => self.apply_learning_settings_change(record)?,
-                "practiceSessions" => self.apply_practice_session_change(record)?,
-                "practiceProgress" => self.apply_practice_progress_change(record)?,
-                "userLearningLanguages" => self.apply_user_learning_language_change(record)?,
-                "topics" => self.apply_topic_change(record)?,
-                "tags" => self.apply_tag_change(record)?,
-                "collectionSharedUsers" => self.apply_collection_shared_user_change(record)?,
+                "wordProgress" => self.apply_word_progress_change(record),
+                "learningSettings" => self.apply_learning_settings_change(record),
+                "practiceSessions" => self.apply_practice_session_change(record),
+                "practiceProgress" => self.apply_practice_progress_change(record),
+                "userLearningLanguages" => self.apply_user_learning_language_change(record),
+                "topics" => self.apply_topic_change(record),
+                "tags" => self.apply_tag_change(record),
+                "collectionSharedUsers" => self.apply_collection_shared_user_change(record),
                 _ => {
                     eprintln!("Unknown table: {}", record.table_name);
+                    Ok(())
                 }
+            };
+
+            if let Err(e) = apply_result {
+                eprintln!(
+                    "Failed to apply record: table={}, row_id={}, error={}, data={}",
+                    record.table_name, record.row_id, e, record.data
+                );
+                return Err(e);
             }
         }
 

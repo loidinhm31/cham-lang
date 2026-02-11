@@ -376,7 +376,12 @@
     "neverSynced": "Chưa từng đồng bộ",
     "loginPrompt": "Đăng nhập để đồng bộ từ vựng và bộ sưu tập của bạn trên tất cả các thiết bị.",
     "saveConfig": "Lưu cấu hình",
-    "configureFailed": "Cấu hình đồng bộ thất bại"
+    "configureFailed": "Cấu hình đồng bộ thất bại",
+    "pushing": "Đang đẩy thay đổi...",
+    "pulling": "Đang kéo cập nhật...",
+    "recordsPushed": "Đã đẩy {{count}} bản ghi",
+    "recordsPulled": "Trang {{page}}: đã kéo {{count}} bản ghi",
+    "morePages": "còn thêm trang"
   },
   "gdrive": {
     "title": "Đồng Bộ Google Drive",

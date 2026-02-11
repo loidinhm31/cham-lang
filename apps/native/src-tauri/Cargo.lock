@@ -645,7 +645,7 @@ dependencies = [
 
 [[package]]
 name = "cham-lang"
-version = "0.4.0"
+version = "0.4.1"
 dependencies = [
  "android_logger",
  "argon2",

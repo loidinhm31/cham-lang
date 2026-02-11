@@ -1,4 +1,5 @@
 import type {
+  SyncProgress,
   SyncResult,
   SyncStatus,
 } from "../../../../../shared/src/types/sync";
@@ -20,4 +21,12 @@ export interface ISyncService {
    * Get current sync status
    */
   getStatus(): Promise<SyncStatus>;
+
+  /**
+   * Trigger a sync operation with progress updates
+   * Optional method for platforms that support progress reporting
+   */
+  syncWithProgress?(
+    onProgress: (progress: SyncProgress) => void,
+  ): Promise<SyncResult>;
 }

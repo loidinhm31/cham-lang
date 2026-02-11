@@ -554,323 +554,323 @@ impl LocalDatabase {
         conn.execute("CREATE INDEX IF NOT EXISTS idx_collection_shared_users_collection ON collection_shared_users(collection_id)", [])?;
         conn.execute("CREATE INDEX IF NOT EXISTS idx_collection_shared_users_user ON collection_shared_users(user_id)", [])?;
 
-        // TODO: remove future
-        // =====================================================================
-        // MIGRATION: Remove users table and user_id columns
-        // Uses safe_migrate_table to prevent CASCADE deletes from DROP TABLE.
-        // When PRAGMA foreign_keys = ON, DROP TABLE does an implicit DELETE
-        // that triggers ON DELETE CASCADE, destroying child table data.
+        // // TODO: remove future
+        // // =====================================================================
+        // // MIGRATION: Remove users table and user_id columns
+        // // Uses safe_migrate_table to prevent CASCADE deletes from DROP TABLE.
+        // // When PRAGMA foreign_keys = ON, DROP TABLE does an implicit DELETE
+        // // that triggers ON DELETE CASCADE, destroying child table data.
+        // //
+        // // IMPORTANT: Child tables with FK references to `users` must be migrated
+        // // BEFORE dropping the users table, otherwise DROP TABLE users fails with
+        // // SQLITE_CONSTRAINT_FOREIGNKEY when foreign keys are enabled.
+        // // =====================================================================
         //
-        // IMPORTANT: Child tables with FK references to `users` must be migrated
-        // BEFORE dropping the users table, otherwise DROP TABLE users fails with
-        // SQLITE_CONSTRAINT_FOREIGNKEY when foreign keys are enabled.
-        // =====================================================================
-
-        // Remove user_id column from vocabularies if it exists
-        if table_has_column(&conn, "vocabularies", "user_id") {
-            println!("Migration: Removing user_id column from vocabularies...");
-            // Old schema may not have sync columns yet
-            let sync_cols = if table_has_column(&conn, "vocabularies", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE vocabularies_new (
-                        id TEXT PRIMARY KEY,
-                        word TEXT NOT NULL,
-                        word_type TEXT NOT NULL,
-                        level TEXT NOT NULL,
-                        ipa TEXT,
-                        concept TEXT,
-                        language TEXT NOT NULL,
-                        collection_id TEXT NOT NULL,
-                        audio_url TEXT,
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER,
-                        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
-                    );
-                    INSERT INTO vocabularies_new SELECT
-                        id, word, word_type, level, ipa, concept, language, collection_id,
-                        audio_url, created_at, updated_at, {sync_cols}
-                    FROM vocabularies;
-                    DROP TABLE vocabularies;
-                    ALTER TABLE vocabularies_new RENAME TO vocabularies;
-                    CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id);
-                    CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language);"
-                ),
-            )?;
-        }
-
-        // Remove user_id column from word_progress if it exists
-        if table_has_column(&conn, "word_progress", "user_id") {
-            println!("Migration: Removing user_id column from word_progress...");
-            let sync_cols = if table_has_column(&conn, "word_progress", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE word_progress_new (
-                        id TEXT PRIMARY KEY,
-                        language TEXT NOT NULL,
-                        vocabulary_id TEXT NOT NULL,
-                        word TEXT NOT NULL,
-                        correct_count INTEGER DEFAULT 0,
-                        incorrect_count INTEGER DEFAULT 0,
-                        total_reviews INTEGER DEFAULT 0,
-                        mastery_level INTEGER DEFAULT 0,
-                        next_review_date INTEGER NOT NULL,
-                        interval_days INTEGER DEFAULT 1,
-                        easiness_factor REAL DEFAULT 2.5,
-                        consecutive_correct_count INTEGER DEFAULT 0,
-                        leitner_box INTEGER DEFAULT 1,
-                        last_interval_days INTEGER DEFAULT 0,
-                        failed_in_session INTEGER DEFAULT 0,
-                        retry_count INTEGER DEFAULT 0,
-                        last_practiced INTEGER NOT NULL,
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER,
-                        FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
-                        UNIQUE(language, vocabulary_id)
-                    );
-                    INSERT INTO word_progress_new SELECT
-                        id, language, vocabulary_id, word, correct_count, incorrect_count,
-                        total_reviews, mastery_level, next_review_date, interval_days,
-                        easiness_factor, consecutive_correct_count, leitner_box,
-                        last_interval_days, failed_in_session, retry_count,
-                        last_practiced, last_practiced, last_practiced,
-                        {sync_cols}
-                    FROM word_progress;
-                    DROP TABLE word_progress;
-                    ALTER TABLE word_progress_new RENAME TO word_progress;
-                    CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language);
-                    CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id);
-                    CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date);
-                    CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box);"
-                ),
-            )?;
-        }
-
-        // Remove user_id column from learning_settings if it exists
-        if table_has_column(&conn, "learning_settings", "user_id") {
-            println!("Migration: Removing user_id column from learning_settings...");
-            let sync_cols = if table_has_column(&conn, "learning_settings", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE learning_settings_new (
-                        id TEXT PRIMARY KEY,
-                        sr_algorithm TEXT NOT NULL,
-                        leitner_box_count INTEGER NOT NULL,
-                        consecutive_correct_required INTEGER NOT NULL,
-                        show_failed_words_in_session INTEGER NOT NULL,
-                        new_words_per_day INTEGER,
-                        daily_review_limit INTEGER,
-                        auto_advance_timeout_seconds INTEGER DEFAULT 2,
-                        show_hint_in_fillword INTEGER DEFAULT 1,
-                        reminder_enabled INTEGER DEFAULT 0,
-                        reminder_time TEXT DEFAULT '19:00',
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER
-                    );
-                    INSERT INTO learning_settings_new SELECT
-                        id, sr_algorithm, leitner_box_count, consecutive_correct_required,
-                        show_failed_words_in_session, new_words_per_day, daily_review_limit,
-                        auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled,
-                        reminder_time, created_at, updated_at, {sync_cols}
-                    FROM learning_settings;
-                    DROP TABLE learning_settings;
-                    ALTER TABLE learning_settings_new RENAME TO learning_settings;"
-                ),
-            )?;
-        }
-
-        // Remove user_id column from practice_sessions if it exists
-        if table_has_column(&conn, "practice_sessions", "user_id") {
-            println!("Migration: Removing user_id column from practice_sessions...");
-            let sync_cols = if table_has_column(&conn, "practice_sessions", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE practice_sessions_new (
-                        id TEXT PRIMARY KEY,
-                        collection_id TEXT NOT NULL,
-                        mode TEXT NOT NULL,
-                        language TEXT NOT NULL,
-                        topic TEXT,
-                        level TEXT,
-                        total_questions INTEGER NOT NULL,
-                        correct_answers INTEGER NOT NULL,
-                        started_at INTEGER NOT NULL,
-                        completed_at INTEGER NOT NULL,
-                        duration_seconds INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER,
-                        FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
-                    );
-                    INSERT INTO practice_sessions_new SELECT
-                        id, collection_id, mode, language, topic, level, total_questions,
-                        correct_answers, started_at, completed_at, duration_seconds,
-                        {sync_cols}
-                    FROM practice_sessions;
-                    DROP TABLE practice_sessions;
-                    ALTER TABLE practice_sessions_new RENAME TO practice_sessions;
-                    CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id);"
-                ),
-            )?;
-        }
-
-        // Remove user_id column from practice_progress if it exists
-        if table_has_column(&conn, "practice_progress", "user_id") {
-            println!("Migration: Removing user_id column from practice_progress...");
-            let sync_cols = if table_has_column(&conn, "practice_progress", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE practice_progress_new (
-                        id TEXT PRIMARY KEY,
-                        language TEXT NOT NULL,
-                        total_sessions INTEGER DEFAULT 0,
-                        total_words_practiced INTEGER DEFAULT 0,
-                        current_streak INTEGER DEFAULT 0,
-                        longest_streak INTEGER DEFAULT 0,
-                        last_practice_date INTEGER NOT NULL,
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER,
-                        UNIQUE(language)
-                    );
-                    INSERT INTO practice_progress_new SELECT
-                        id, language, total_sessions, total_words_practiced, current_streak,
-                        longest_streak, last_practice_date, created_at, updated_at,
-                        {sync_cols}
-                    FROM practice_progress;
-                    DROP TABLE practice_progress;
-                    ALTER TABLE practice_progress_new RENAME TO practice_progress;"
-                ),
-            )?;
-        }
-
-        // Remove user_id column from user_learning_languages if it exists
-        if table_has_column(&conn, "user_learning_languages", "user_id") {
-            println!("Migration: Removing user_id column from user_learning_languages...");
-            let sync_cols = if table_has_column(&conn, "user_learning_languages", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE user_learning_languages_new (
-                        id TEXT PRIMARY KEY,
-                        language TEXT NOT NULL,
-                        created_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER,
-                        UNIQUE(language)
-                    );
-                    INSERT INTO user_learning_languages_new SELECT
-                        id, language, created_at, {sync_cols}
-                    FROM user_learning_languages;
-                    DROP TABLE user_learning_languages;
-                    ALTER TABLE user_learning_languages_new RENAME TO user_learning_languages;"
-                ),
-            )?;
-        }
-
-        // Now safe to drop users table — all child FK references have been removed above
-        let users_table_exists: bool = conn
-            .query_row(
-                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'",
-                [],
-                |row| row.get::<_, i32>(0),
-            )
-            .unwrap_or(0)
-            > 0;
-
-        if users_table_exists {
-            println!("Migration: Dropping users table (no longer needed)...");
-            safe_migrate_table(&conn, "DROP TABLE IF EXISTS users;")?;
-        }
-
-        // =====================================================================
-        // MIGRATION: Replace owner_id with shared_by in collections
-        // shared_by = NULL means user's own collection
-        // shared_by = <userId> means shared by that user
-        // =====================================================================
-        if table_has_column(&conn, "collections", "owner_id") {
-            println!("Migration: Replacing owner_id with shared_by in collections...");
-            let sync_cols = if table_has_column(&conn, "collections", "sync_version") {
-                "sync_version, synced_at, deleted, deleted_at"
-            } else {
-                "1, NULL, 0, NULL"
-            };
-            safe_migrate_table(
-                &conn,
-                &format!(
-                    "CREATE TABLE collections_new (
-                        id TEXT PRIMARY KEY,
-                        name TEXT NOT NULL,
-                        description TEXT,
-                        language TEXT NOT NULL,
-                        shared_by TEXT,
-                        is_public BOOLEAN DEFAULT 0,
-                        word_count INTEGER DEFAULT 0,
-                        created_at INTEGER NOT NULL,
-                        updated_at INTEGER NOT NULL,
-                        sync_version INTEGER NOT NULL DEFAULT 1,
-                        synced_at INTEGER,
-                        deleted INTEGER DEFAULT 0,
-                        deleted_at INTEGER
-                    );
-                    INSERT INTO collections_new SELECT
-                        id, name, description, language, NULL, is_public, word_count,
-                        created_at, updated_at, {sync_cols}
-                    FROM collections;
-                    DROP TABLE collections;
-                    ALTER TABLE collections_new RENAME TO collections;
-                    CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by);
-                    DROP INDEX IF EXISTS idx_collections_owner;"
-                ),
-            )?;
-        }
+        // // Remove user_id column from vocabularies if it exists
+        // if table_has_column(&conn, "vocabularies", "user_id") {
+        //     println!("Migration: Removing user_id column from vocabularies...");
+        //     // Old schema may not have sync columns yet
+        //     let sync_cols = if table_has_column(&conn, "vocabularies", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE vocabularies_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 word TEXT NOT NULL,
+        //                 word_type TEXT NOT NULL,
+        //                 level TEXT NOT NULL,
+        //                 ipa TEXT,
+        //                 concept TEXT,
+        //                 language TEXT NOT NULL,
+        //                 collection_id TEXT NOT NULL,
+        //                 audio_url TEXT,
+        //                 created_at INTEGER NOT NULL,
+        //                 updated_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER,
+        //                 FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+        //             );
+        //             INSERT INTO vocabularies_new SELECT
+        //                 id, word, word_type, level, ipa, concept, language, collection_id,
+        //                 audio_url, created_at, updated_at, {sync_cols}
+        //             FROM vocabularies;
+        //             DROP TABLE vocabularies;
+        //             ALTER TABLE vocabularies_new RENAME TO vocabularies;
+        //             CREATE INDEX IF NOT EXISTS idx_vocabularies_collection ON vocabularies(collection_id);
+        //             CREATE INDEX IF NOT EXISTS idx_vocabularies_language ON vocabularies(language);"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Remove user_id column from word_progress if it exists
+        // if table_has_column(&conn, "word_progress", "user_id") {
+        //     println!("Migration: Removing user_id column from word_progress...");
+        //     let sync_cols = if table_has_column(&conn, "word_progress", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE word_progress_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 language TEXT NOT NULL,
+        //                 vocabulary_id TEXT NOT NULL,
+        //                 word TEXT NOT NULL,
+        //                 correct_count INTEGER DEFAULT 0,
+        //                 incorrect_count INTEGER DEFAULT 0,
+        //                 total_reviews INTEGER DEFAULT 0,
+        //                 mastery_level INTEGER DEFAULT 0,
+        //                 next_review_date INTEGER NOT NULL,
+        //                 interval_days INTEGER DEFAULT 1,
+        //                 easiness_factor REAL DEFAULT 2.5,
+        //                 consecutive_correct_count INTEGER DEFAULT 0,
+        //                 leitner_box INTEGER DEFAULT 1,
+        //                 last_interval_days INTEGER DEFAULT 0,
+        //                 failed_in_session INTEGER DEFAULT 0,
+        //                 retry_count INTEGER DEFAULT 0,
+        //                 last_practiced INTEGER NOT NULL,
+        //                 created_at INTEGER NOT NULL,
+        //                 updated_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER,
+        //                 FOREIGN KEY (vocabulary_id) REFERENCES vocabularies(id) ON DELETE CASCADE,
+        //                 UNIQUE(language, vocabulary_id)
+        //             );
+        //             INSERT INTO word_progress_new SELECT
+        //                 id, language, vocabulary_id, word, correct_count, incorrect_count,
+        //                 total_reviews, mastery_level, next_review_date, interval_days,
+        //                 easiness_factor, consecutive_correct_count, leitner_box,
+        //                 last_interval_days, failed_in_session, retry_count,
+        //                 last_practiced, last_practiced, last_practiced,
+        //                 {sync_cols}
+        //             FROM word_progress;
+        //             DROP TABLE word_progress;
+        //             ALTER TABLE word_progress_new RENAME TO word_progress;
+        //             CREATE INDEX IF NOT EXISTS idx_word_progress_lang ON word_progress(language);
+        //             CREATE INDEX IF NOT EXISTS idx_word_progress_vocab ON word_progress(vocabulary_id);
+        //             CREATE INDEX IF NOT EXISTS idx_word_progress_next_review ON word_progress(next_review_date);
+        //             CREATE INDEX IF NOT EXISTS idx_word_progress_leitner ON word_progress(leitner_box);"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Remove user_id column from learning_settings if it exists
+        // if table_has_column(&conn, "learning_settings", "user_id") {
+        //     println!("Migration: Removing user_id column from learning_settings...");
+        //     let sync_cols = if table_has_column(&conn, "learning_settings", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE learning_settings_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 sr_algorithm TEXT NOT NULL,
+        //                 leitner_box_count INTEGER NOT NULL,
+        //                 consecutive_correct_required INTEGER NOT NULL,
+        //                 show_failed_words_in_session INTEGER NOT NULL,
+        //                 new_words_per_day INTEGER,
+        //                 daily_review_limit INTEGER,
+        //                 auto_advance_timeout_seconds INTEGER DEFAULT 2,
+        //                 show_hint_in_fillword INTEGER DEFAULT 1,
+        //                 reminder_enabled INTEGER DEFAULT 0,
+        //                 reminder_time TEXT DEFAULT '19:00',
+        //                 created_at INTEGER NOT NULL,
+        //                 updated_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER
+        //             );
+        //             INSERT INTO learning_settings_new SELECT
+        //                 id, sr_algorithm, leitner_box_count, consecutive_correct_required,
+        //                 show_failed_words_in_session, new_words_per_day, daily_review_limit,
+        //                 auto_advance_timeout_seconds, show_hint_in_fillword, reminder_enabled,
+        //                 reminder_time, created_at, updated_at, {sync_cols}
+        //             FROM learning_settings;
+        //             DROP TABLE learning_settings;
+        //             ALTER TABLE learning_settings_new RENAME TO learning_settings;"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Remove user_id column from practice_sessions if it exists
+        // if table_has_column(&conn, "practice_sessions", "user_id") {
+        //     println!("Migration: Removing user_id column from practice_sessions...");
+        //     let sync_cols = if table_has_column(&conn, "practice_sessions", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE practice_sessions_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 collection_id TEXT NOT NULL,
+        //                 mode TEXT NOT NULL,
+        //                 language TEXT NOT NULL,
+        //                 topic TEXT,
+        //                 level TEXT,
+        //                 total_questions INTEGER NOT NULL,
+        //                 correct_answers INTEGER NOT NULL,
+        //                 started_at INTEGER NOT NULL,
+        //                 completed_at INTEGER NOT NULL,
+        //                 duration_seconds INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER,
+        //                 FOREIGN KEY (collection_id) REFERENCES collections(id) ON DELETE CASCADE
+        //             );
+        //             INSERT INTO practice_sessions_new SELECT
+        //                 id, collection_id, mode, language, topic, level, total_questions,
+        //                 correct_answers, started_at, completed_at, duration_seconds,
+        //                 {sync_cols}
+        //             FROM practice_sessions;
+        //             DROP TABLE practice_sessions;
+        //             ALTER TABLE practice_sessions_new RENAME TO practice_sessions;
+        //             CREATE INDEX IF NOT EXISTS idx_practice_sessions_collection ON practice_sessions(collection_id);"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Remove user_id column from practice_progress if it exists
+        // if table_has_column(&conn, "practice_progress", "user_id") {
+        //     println!("Migration: Removing user_id column from practice_progress...");
+        //     let sync_cols = if table_has_column(&conn, "practice_progress", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE practice_progress_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 language TEXT NOT NULL,
+        //                 total_sessions INTEGER DEFAULT 0,
+        //                 total_words_practiced INTEGER DEFAULT 0,
+        //                 current_streak INTEGER DEFAULT 0,
+        //                 longest_streak INTEGER DEFAULT 0,
+        //                 last_practice_date INTEGER NOT NULL,
+        //                 created_at INTEGER NOT NULL,
+        //                 updated_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER,
+        //                 UNIQUE(language)
+        //             );
+        //             INSERT INTO practice_progress_new SELECT
+        //                 id, language, total_sessions, total_words_practiced, current_streak,
+        //                 longest_streak, last_practice_date, created_at, updated_at,
+        //                 {sync_cols}
+        //             FROM practice_progress;
+        //             DROP TABLE practice_progress;
+        //             ALTER TABLE practice_progress_new RENAME TO practice_progress;"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Remove user_id column from user_learning_languages if it exists
+        // if table_has_column(&conn, "user_learning_languages", "user_id") {
+        //     println!("Migration: Removing user_id column from user_learning_languages...");
+        //     let sync_cols = if table_has_column(&conn, "user_learning_languages", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE user_learning_languages_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 language TEXT NOT NULL,
+        //                 created_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER,
+        //                 UNIQUE(language)
+        //             );
+        //             INSERT INTO user_learning_languages_new SELECT
+        //                 id, language, created_at, {sync_cols}
+        //             FROM user_learning_languages;
+        //             DROP TABLE user_learning_languages;
+        //             ALTER TABLE user_learning_languages_new RENAME TO user_learning_languages;"
+        //         ),
+        //     )?;
+        // }
+        //
+        // // Now safe to drop users table — all child FK references have been removed above
+        // let users_table_exists: bool = conn
+        //     .query_row(
+        //         "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='users'",
+        //         [],
+        //         |row| row.get::<_, i32>(0),
+        //     )
+        //     .unwrap_or(0)
+        //     > 0;
+        //
+        // if users_table_exists {
+        //     println!("Migration: Dropping users table (no longer needed)...");
+        //     safe_migrate_table(&conn, "DROP TABLE IF EXISTS users;")?;
+        // }
+        //
+        // // =====================================================================
+        // // MIGRATION: Replace owner_id with shared_by in collections
+        // // shared_by = NULL means user's own collection
+        // // shared_by = <userId> means shared by that user
+        // // =====================================================================
+        // if table_has_column(&conn, "collections", "owner_id") {
+        //     println!("Migration: Replacing owner_id with shared_by in collections...");
+        //     let sync_cols = if table_has_column(&conn, "collections", "sync_version") {
+        //         "sync_version, synced_at, deleted, deleted_at"
+        //     } else {
+        //         "1, NULL, 0, NULL"
+        //     };
+        //     safe_migrate_table(
+        //         &conn,
+        //         &format!(
+        //             "CREATE TABLE collections_new (
+        //                 id TEXT PRIMARY KEY,
+        //                 name TEXT NOT NULL,
+        //                 description TEXT,
+        //                 language TEXT NOT NULL,
+        //                 shared_by TEXT,
+        //                 is_public BOOLEAN DEFAULT 0,
+        //                 word_count INTEGER DEFAULT 0,
+        //                 created_at INTEGER NOT NULL,
+        //                 updated_at INTEGER NOT NULL,
+        //                 sync_version INTEGER NOT NULL DEFAULT 1,
+        //                 synced_at INTEGER,
+        //                 deleted INTEGER DEFAULT 0,
+        //                 deleted_at INTEGER
+        //             );
+        //             INSERT INTO collections_new SELECT
+        //                 id, name, description, language, NULL, is_public, word_count,
+        //                 created_at, updated_at, {sync_cols}
+        //             FROM collections;
+        //             DROP TABLE collections;
+        //             ALTER TABLE collections_new RENAME TO collections;
+        //             CREATE INDEX IF NOT EXISTS idx_collections_shared_by ON collections(shared_by);
+        //             DROP INDEX IF EXISTS idx_collections_owner;"
+        //         ),
+        //     )?;
+        // }
 
         Ok(())
     }
@@ -986,6 +986,18 @@ impl LocalDatabase {
             .collect();
         conn.execute(sql, params_refs.as_slice())?;
         Ok(())
+    }
+
+    /// Enable or disable foreign key constraints
+    /// Used during sync to prevent FK violations when records arrive out of order
+    pub fn set_foreign_keys(&self, enabled: bool) -> SqlResult<()> {
+        let conn = self.conn.lock().unwrap();
+        let sql = if enabled {
+            "PRAGMA foreign_keys = ON"
+        } else {
+            "PRAGMA foreign_keys = OFF"
+        };
+        conn.execute_batch(sql)
     }
 
     /// Query soft-deleted records from a table (for sync)
@@ -1423,6 +1435,104 @@ impl LocalDatabase {
         }
 
         Ok(result)
+    }
+
+    /// Get unsynced practice progress records
+    pub fn get_unsynced_practice_progress(
+        &self,
+    ) -> SqlResult<Vec<(String, String, i32, i32, i32, i32, i64, i64, i64, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, language, total_sessions, total_words_practiced, current_streak,
+                    longest_streak, last_practice_date, created_at, updated_at, sync_version
+             FROM practice_progress
+             WHERE synced_at IS NULL AND deleted = 0",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+                row.get(7)?,
+                row.get(8)?,
+                row.get(9)?,
+            ))
+        })?;
+        rows.collect()
+    }
+
+    /// Get unsynced user learning languages
+    pub fn get_unsynced_user_learning_languages(&self) -> SqlResult<Vec<(String, String, i64, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, language, created_at, sync_version
+             FROM user_learning_languages
+             WHERE synced_at IS NULL AND deleted = 0",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })?;
+        rows.collect()
+    }
+
+    /// Get unsynced topics
+    pub fn get_unsynced_topics(&self) -> SqlResult<Vec<(String, String, i64, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, name, created_at, sync_version
+             FROM topics
+             WHERE synced_at IS NULL AND deleted = 0",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })?;
+        rows.collect()
+    }
+
+    /// Get unsynced tags
+    pub fn get_unsynced_tags(&self) -> SqlResult<Vec<(String, String, i64, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, name, created_at, sync_version
+             FROM tags
+             WHERE synced_at IS NULL AND deleted = 0",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok((row.get(0)?, row.get(1)?, row.get(2)?, row.get(3)?))
+        })?;
+        rows.collect()
+    }
+
+    /// Get unsynced collection shared users
+    pub fn get_unsynced_collection_shared_users(
+        &self,
+    ) -> SqlResult<Vec<(String, String, String, String, i64, i64)>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT id, collection_id, user_id, permission, created_at, sync_version
+             FROM collection_shared_users
+             WHERE synced_at IS NULL AND deleted = 0",
+        )?;
+
+        let rows = stmt.query_map([], |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+            ))
+        })?;
+        rows.collect()
     }
 
     /// Get all distinct tags from vocabularies

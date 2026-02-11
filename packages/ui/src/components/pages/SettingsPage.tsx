@@ -45,9 +45,16 @@ export interface SettingsPageProps {
    * Consistent with fin-catch pattern for embedded apps
    */
   onLogout?: () => void;
+  /**
+   * Whether running in embedded mode (hides server configuration)
+   */
+  embedded?: boolean;
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({
+  onLogout,
+  embedded = false,
+}) => {
   const { t, i18n } = useTranslation();
   const { navigate } = useNav();
   const { isAuthenticated, authStatus, logout } = useAuth();
@@ -634,7 +641,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
             </Card>
           )}
 
-          <SyncSettings />
+          <SyncSettings embedded={embedded} />
 
           {/* Browser Sync Section - Show on desktop OR when opened from desktop in browser */}
           {isDesktop() && (

@@ -376,7 +376,12 @@
     "neverSynced": "Never synced",
     "loginPrompt": "Sign in to sync your vocabulary and collections across all your devices.",
     "saveConfig": "Server Configuration",
-    "configureFailed": "Failed to configure sync"
+    "configureFailed": "Failed to configure sync",
+    "pushing": "Pushing changes...",
+    "pulling": "Pulling updates...",
+    "recordsPushed": "{{count}} records pushed",
+    "recordsPulled": "Page {{page}}: {{count}} records pulled",
+    "morePages": "more pages available"
   },
   "gdrive": {
     "title": "Google Drive Sync",

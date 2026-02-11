@@ -4,24 +4,36 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
-  Clock,
-  User,
   Server,
   Cloud,
   CloudOff,
-  AlertTriangle,
 } from "lucide-react";
 import { Button, Input, Card } from "@cham-lang/ui/components/atoms";
 import { getAuthService, getSyncService } from "@cham-lang/ui/adapters";
-import { AuthStatus, SyncResult, SyncStatus } from "@cham-lang/shared/types";
+import {
+  AuthStatus,
+  SyncProgress,
+  SyncResult,
+  SyncStatus,
+} from "@cham-lang/shared/types";
 
-export const SyncSettings: React.FC = () => {
+export interface SyncSettingsProps {
+  /**
+   * Whether running in embedded mode (hides server configuration)
+   */
+  embedded?: boolean;
+}
+
+export const SyncSettings: React.FC<SyncSettingsProps> = ({
+  embedded = false,
+}) => {
   const { t } = useTranslation();
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [serverUrl, setServerUrl] = useState("http://localhost:3000");
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<SyncResult | null>(null);
+  const [syncProgress, setSyncProgress] = useState<SyncProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoadingStatus, setIsLoadingStatus] = useState(true);
 
@@ -79,17 +91,29 @@ export const SyncSettings: React.FC = () => {
     setIsSyncing(true);
     setError(null);
     setSyncResult(null);
+    setSyncProgress(null);
 
     try {
       const syncService = getSyncService();
-      const result = await syncService.syncNow();
-      setSyncResult(result);
+
+      // Use progress-aware sync if available
+      if (syncService.syncWithProgress) {
+        const result = await syncService.syncWithProgress((progress) => {
+          setSyncProgress(progress);
+        });
+        setSyncResult(result);
+      } else {
+        const result = await syncService.syncNow();
+        setSyncResult(result);
+      }
+
       // Reload sync status to update last sync time
       await loadStatus();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("sync.failed"));
     } finally {
       setIsSyncing(false);
+      setSyncProgress(null);
     }
   };
 
@@ -218,6 +242,37 @@ export const SyncSettings: React.FC = () => {
             </div>
           )}
 
+          {/* Sync Progress */}
+          {isSyncing && syncProgress && (
+            <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
+                <span className="text-sm font-medium text-blue-700">
+                  {syncProgress.phase === "pushing"
+                    ? t("sync.pushing")
+                    : t("sync.pulling")}
+                </span>
+              </div>
+              <div className="text-sm text-blue-600">
+                {syncProgress.phase === "pushing" ? (
+                  <span>
+                    {t("sync.recordsPushed", {
+                      count: syncProgress.recordsPushed,
+                    })}
+                  </span>
+                ) : (
+                  <span>
+                    {t("sync.recordsPulled", {
+                      count: syncProgress.recordsPulled,
+                      page: syncProgress.currentPage,
+                    })}
+                    {syncProgress.hasMore && ` - ${t("sync.morePages")}`}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Actions */}
           <div className="mt-4 flex flex-col gap-3">
             {authStatus?.isAuthenticated && (
@@ -238,44 +293,46 @@ export const SyncSettings: React.FC = () => {
         </div>
       </Card>
 
-      {/* Server Configuration Card */}
-      <Card variant="glass">
-        <div className="p-2">
-          <div className="flex items-start gap-4">
-            <Server className="w-6 h-6 text-blue-500" />
-            <div className="flex-1">
-              <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
-                {t("settings.serverConfig")}
-              </h2>
-              <p className="mb-4 text-[var(--color-text-secondary)]">
-                {t("settings.serverConfigDescription")}
-              </p>
+      {/* Server Configuration Card - Hidden in embedded mode */}
+      {!embedded && (
+        <Card variant="glass">
+          <div className="p-2">
+            <div className="flex items-start gap-4">
+              <Server className="w-6 h-6 text-blue-500" />
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
+                  {t("settings.serverConfig")}
+                </h2>
+                <p className="mb-4 text-[var(--color-text-secondary)]">
+                  {t("settings.serverConfigDescription")}
+                </p>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
-                    {t("settings.serverUrl")}
-                  </label>
-                  <Input
-                    value={serverUrl}
-                    onChange={(e) => setServerUrl(e.target.value)}
-                    placeholder="http://localhost:3000"
-                    className="text-sm"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
+                      {t("settings.serverUrl")}
+                    </label>
+                    <Input
+                      value={serverUrl}
+                      onChange={(e) => setServerUrl(e.target.value)}
+                      placeholder="http://localhost:3000"
+                      className="text-sm"
+                    />
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleConfigureSync}
+                    disabled={isLoadingStatus || !serverUrl}
+                  >
+                    {t("sync.saveConfig")}
+                  </Button>
                 </div>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={handleConfigureSync}
-                  disabled={isLoadingStatus || !serverUrl}
-                >
-                  {t("sync.saveConfig")}
-                </Button>
               </div>
             </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
     </div>
   );
 };

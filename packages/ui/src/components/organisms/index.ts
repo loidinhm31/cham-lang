@@ -7,5 +7,5 @@ export { ShareCollectionDialog } from "./ShareCollectionDialog";
 export { BrowserSyncInitializer } from "./BrowserSyncInitializer";
 export { ServerDisconnectedOverlay } from "./ServerDisconnectedOverlay";
 export { AuthForm } from "./AuthForm";
-export { SyncSettings } from "./SyncSettings";
+export { SyncSettings, type SyncSettingsProps } from "./SyncSettings";
 export { Sidebar } from "./Sidebar";

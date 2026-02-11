@@ -61,7 +61,7 @@
         },
         { "name": "leitnerBox", "type": "integer", "nullable": false },
         { "name": "lastIntervalDays", "type": "integer", "nullable": false },
-        { "name": "failedInSession", "type": "integer", "nullable": false },
+        { "name": "failedInSession", "type": "boolean", "nullable": false },
         { "name": "retryCount", "type": "integer", "nullable": false },
         { "name": "completedModesInCycle", "type": "array", "nullable": true },
         { "name": "lastPracticed", "type": "integer", "nullable": false },
@@ -84,7 +84,7 @@
         },
         {
           "name": "showFailedWordsInSession",
-          "type": "integer",
+          "type": "boolean",
           "nullable": false
         },
         { "name": "newWordsPerDay", "type": "integer", "nullable": true },
@@ -96,10 +96,10 @@
         },
         {
           "name": "showHintInFillword",
-          "type": "integer",
+          "type": "boolean",
           "nullable": false
         },
-        { "name": "reminderEnabled", "type": "integer", "nullable": false },
+        { "name": "reminderEnabled", "type": "boolean", "nullable": false },
         { "name": "reminderTime", "type": "string", "nullable": false },
         { "name": "createdAt", "type": "integer", "nullable": false },
         { "name": "updatedAt", "type": "integer", "nullable": false },

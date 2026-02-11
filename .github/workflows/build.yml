@@ -91,6 +91,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
           VITE_GOOGLE_CLIENT_SECRET: ${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+          QM_CHAM_LANG_API_KEY: ${{ secrets.QM_CHAM_LANG_API_KEY }}
+          QM_CHAM_LANG_SERVER_URL: ${{ secrets.QM_CHAM_LANG_SERVER_URL }}
+          QM_CHAM_LANG_APP_ID: ${{ secrets.QM_CHAM_LANG_APP_ID }}
         with:
           projectPath: apps/native
           tagName: ${{ github.ref_name }}

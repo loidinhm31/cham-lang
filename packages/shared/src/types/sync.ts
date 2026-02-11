@@ -71,3 +71,14 @@ export interface SyncMetadata {
   appId?: string;
   apiKey?: string;
 }
+
+/**
+ * Progress information during sync operation
+ */
+export interface SyncProgress {
+  phase: "pushing" | "pulling";
+  recordsPushed: number;
+  recordsPulled: number;
+  hasMore: boolean;
+  currentPage: number;
+}

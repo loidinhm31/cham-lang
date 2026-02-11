@@ -3,7 +3,11 @@
  */
 
 import type { ISyncService } from "@cham-lang/ui/adapters/factory/interfaces";
-import type { SyncResult, SyncStatus } from "@cham-lang/shared/types";
+import type {
+  SyncProgress,
+  SyncResult,
+  SyncStatus,
+} from "@cham-lang/shared/types";
 import {
   createSyncClientConfig,
   type HttpClientFn,
@@ -61,6 +65,13 @@ export class IndexedDBSyncAdapter implements ISyncService {
   }
 
   async syncNow(): Promise<SyncResult> {
+    // Call syncWithProgress with a no-op callback for backwards compatibility
+    return this.syncWithProgress(() => {});
+  }
+
+  async syncWithProgress(
+    onProgress: (progress: SyncProgress) => void,
+  ): Promise<SyncResult> {
     // Refresh tokens before sync
     const { accessToken, refreshToken, userId } = await this.config.getTokens();
     if (accessToken && refreshToken) {
@@ -100,16 +111,68 @@ export class IndexedDBSyncAdapter implements ISyncService {
           }));
           await this.storage.markSynced(syncedIds);
         }
+
+        // Emit progress after push phase
+        onProgress({
+          phase: "pushing",
+          recordsPushed: pushed,
+          recordsPulled: 0,
+          hasMore: response.pull?.hasMore ?? false,
+          currentPage: 0,
+        });
       }
 
       if (response.pull) {
-        pulled = response.pull.records.length;
+        // Collect ALL records from ALL pages first to ensure proper ordering
+        const allRecords = [...response.pull.records];
+        pulled = allRecords.length;
 
-        if (pulled > 0) {
-          await this.storage.applyRemoteChanges(response.pull.records);
+        // Auto-continue pulling while has_more is true
+        let currentCheckpoint = response.pull.checkpoint;
+        let hasMore = response.pull.hasMore;
+        let page = 1;
+
+        // Emit progress after initial pull
+        onProgress({
+          phase: "pulling",
+          recordsPushed: pushed,
+          recordsPulled: pulled,
+          hasMore,
+          currentPage: page,
+        });
+
+        while (hasMore) {
+          page++;
+          console.log("Pulling more records, checkpoint:", currentCheckpoint);
+
+          const pullResponse = await this.client.pull(currentCheckpoint);
+
+          // Collect records from this page
+          allRecords.push(...pullResponse.records);
+          pulled += pullResponse.records.length;
+
+          currentCheckpoint = pullResponse.checkpoint;
+          hasMore = pullResponse.hasMore;
+
+          // Emit progress after each page
+          onProgress({
+            phase: "pulling",
+            recordsPushed: pushed,
+            recordsPulled: pulled,
+            hasMore,
+            currentPage: page,
+          });
         }
 
-        await this.storage.saveCheckpoint(response.pull.checkpoint);
+        // Apply ALL changes at once after collecting from all pages
+        console.log(
+          `Applying ${allRecords.length} total records from ${page} pages`,
+        );
+        if (allRecords.length > 0) {
+          await this.storage.applyRemoteChanges(allRecords);
+        }
+
+        await this.storage.saveCheckpoint(currentCheckpoint);
       }
 
       const syncedAt = Math.floor(Date.now() / 1000);

@@ -301,11 +301,11 @@ pub fn run() {
             app.manage(local_db);
 
             // Initialize auth and sync services
-            let server_url = std::env::var("SYNC_SERVER_URL")
+            let server_url = std::env::var("QM_CHAM_LANG_SERVER_URL")
                 .unwrap_or_else(|_| "http://localhost:3000".to_string());
             let app_id = std::env::var("SYNC_CENTER_APP_ID")
                 .unwrap_or_else(|_| "cham-lang".to_string());
-            let api_key = std::env::var("SYNC_CENTER_API_KEY")
+            let api_key = std::env::var("QM_CHAM_LANG_API_KEY")
                 .unwrap_or_default();
 
             let auth_service = AuthService::new(
