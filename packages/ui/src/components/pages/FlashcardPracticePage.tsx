@@ -129,7 +129,7 @@ export const FlashcardPracticePage: React.FC = () => {
 
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
-      const wordsProgress = progressData?.words_progress || [];
+      const wordsProgress = progressData?.wordsProgress || [];
 
       // Select words using the same logic for both study and practice mode
       // Study mode will use batch size just like practice mode
@@ -250,7 +250,7 @@ export const FlashcardPracticePage: React.FC = () => {
       const sessionResults = sessionManager.getSessionResults();
       const newStudiedIds = new Set(studiedVocabIds);
       sessionResults.forEach((result) => {
-        newStudiedIds.add(result.vocabulary_id);
+        newStudiedIds.add(result.vocabularyId);
       });
       setStudiedVocabIds(newStudiedIds);
     }
@@ -263,11 +263,11 @@ export const FlashcardPracticePage: React.FC = () => {
 
         // Save practice session
         await PracticeService.createPracticeSession({
-          collection_id: collectionId,
+          collectionId: collectionId,
           mode: "flashcard",
           language,
           results,
-          duration_seconds: stats.durationSeconds,
+          durationSeconds: stats.durationSeconds,
         });
 
         // Save updated progress for all words
@@ -275,19 +275,19 @@ export const FlashcardPracticePage: React.FC = () => {
         for (const progress of updatedProgress) {
           await PracticeService.updatePracticeProgress({
             language,
-            vocabulary_id: progress.vocabulary_id,
+            vocabularyId: progress.vocabularyId,
             word: progress.word,
-            correct: progress.correct_count > 0,
-            completed_modes_in_cycle: progress.completed_modes_in_cycle || [],
-            next_review_date: progress.next_review_date,
-            interval_days: progress.interval_days,
-            easiness_factor: progress.easiness_factor,
-            consecutive_correct_count: progress.consecutive_correct_count,
-            leitner_box: progress.leitner_box,
-            last_interval_days: progress.last_interval_days,
-            total_reviews: progress.total_reviews,
-            correct_count: progress.correct_count,
-            incorrect_count: progress.incorrect_count,
+            correct: progress.correctCount > 0,
+            completedModesInCycle: progress.completedModesInCycle || [],
+            nextReviewDate: progress.nextReviewDate,
+            intervalDays: progress.intervalDays,
+            easinessFactor: progress.easinessFactor,
+            consecutiveCorrectCount: progress.consecutiveCorrectCount,
+            leitnerBox: progress.leitnerBox,
+            lastIntervalDays: progress.lastIntervalDays,
+            totalReviews: progress.totalReviews,
+            correctCount: progress.correctCount,
+            incorrectCount: progress.incorrectCount,
           });
         }
       } catch (error) {
@@ -307,13 +307,13 @@ export const FlashcardPracticePage: React.FC = () => {
         const sessionResults = sessionManager?.getSessionResults() || [];
         const currentStudiedIds = new Set(studiedVocabIds);
         sessionResults.forEach((result) => {
-          currentStudiedIds.add(result.vocabulary_id);
+          currentStudiedIds.add(result.vocabularyId);
         });
         vocabData = vocabData.filter((v) => !currentStudiedIds.has(v.id || ""));
       }
 
       const progressData = await PracticeService.getPracticeProgress(language);
-      const wordsProgress = progressData?.words_progress || [];
+      const wordsProgress = progressData?.wordsProgress || [];
 
       const nextBatch = WordSelectionService.selectWordsForPractice(
         vocabData,
@@ -633,7 +633,7 @@ export const FlashcardPracticePage: React.FC = () => {
           key={`${currentVocab.id || currentVocab.word}-${questionCounter}`}
           front={currentVocab.word}
           subtitle={currentVocab.ipa}
-          audioUrl={currentVocab.audio_url}
+          audioUrl={currentVocab.audioUrl}
           back={getContent(currentVocab)}
           onFlip={setIsFlipped}
         />

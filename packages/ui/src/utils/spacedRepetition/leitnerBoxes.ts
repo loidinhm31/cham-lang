@@ -23,10 +23,10 @@ export interface BoxInfo {
  * Get metadata for all boxes based on settings
  */
 export function getBoxInfo(settings: LearningSettings): BoxInfo[] {
-  const intervals = BOX_INTERVAL_PRESETS[settings.leitner_box_count];
+  const intervals = BOX_INTERVAL_PRESETS[settings.leitnerBoxCount];
 
   // 3-box system
-  if (settings.leitner_box_count === 3) {
+  if (settings.leitnerBoxCount === 3) {
     return [
       {
         boxNumber: 1,
@@ -56,7 +56,7 @@ export function getBoxInfo(settings: LearningSettings): BoxInfo[] {
   }
 
   // 5-box system
-  if (settings.leitner_box_count === 5) {
+  if (settings.leitnerBoxCount === 5) {
     return [
       {
         boxNumber: 1,
@@ -178,13 +178,9 @@ export function getBoxDistribution(
   const total = wordsProgress.length;
   const distribution: BoxDistribution[] = [];
 
-  for (
-    let boxNumber = 1;
-    boxNumber <= settings.leitner_box_count;
-    boxNumber++
-  ) {
+  for (let boxNumber = 1; boxNumber <= settings.leitnerBoxCount; boxNumber++) {
     const wordCount = wordsProgress.filter(
-      (wp) => wp.leitner_box === boxNumber,
+      (wp) => wp.leitnerBox === boxNumber,
     ).length;
     distribution.push({
       boxNumber,
@@ -204,9 +200,9 @@ export function shouldAdvanceBox(
   settings: LearningSettings,
 ): boolean {
   return (
-    wordProgress.consecutive_correct_count >=
-      settings.consecutive_correct_required &&
-    wordProgress.leitner_box < settings.leitner_box_count
+    wordProgress.consecutiveCorrectCount >=
+      settings.consecutiveCorrectRequired &&
+    wordProgress.leitnerBox < settings.leitnerBoxCount
   );
 }
 
@@ -217,7 +213,7 @@ export function isWordMastered(
   wordProgress: WordProgress,
   settings: LearningSettings,
 ): boolean {
-  return wordProgress.leitner_box === settings.leitner_box_count;
+  return wordProgress.leitnerBox === settings.leitnerBoxCount;
 }
 
 /**
@@ -227,7 +223,7 @@ export function getWordsInBox(
   wordsProgress: WordProgress[],
   boxNumber: number,
 ): WordProgress[] {
-  return wordsProgress.filter((wp) => wp.leitner_box === boxNumber);
+  return wordsProgress.filter((wp) => wp.leitnerBox === boxNumber);
 }
 
 /**
@@ -242,7 +238,7 @@ export function getWordsDueToday(
   today.setHours(0, 0, 0, 0);
 
   return wordsProgress.filter((wp) => {
-    const reviewDate = new Date(wp.next_review_date);
+    const reviewDate = new Date(wp.nextReviewDate);
     reviewDate.setHours(0, 0, 0, 0);
     return reviewDate <= today;
   });
@@ -259,12 +255,8 @@ export function getDueWordsByBox(
   const dueWords = getWordsDueToday(wordsProgress, currentDate);
   const byBox = new Map<number, WordProgress[]>();
 
-  for (
-    let boxNumber = 1;
-    boxNumber <= settings.leitner_box_count;
-    boxNumber++
-  ) {
-    const wordsInBox = dueWords.filter((wp) => wp.leitner_box === boxNumber);
+  for (let boxNumber = 1; boxNumber <= settings.leitnerBoxCount; boxNumber++) {
+    const wordsInBox = dueWords.filter((wp) => wp.leitnerBox === boxNumber);
     byBox.set(boxNumber, wordsInBox);
   }
 
@@ -280,9 +272,9 @@ export function calculateMasteryPercentage(
 ): number {
   if (wordsProgress.length === 0) return 0;
 
-  const totalBoxes = settings.leitner_box_count;
+  const totalBoxes = settings.leitnerBoxCount;
   const sumOfBoxLevels = wordsProgress.reduce(
-    (sum, wp) => sum + wp.leitner_box,
+    (sum, wp) => sum + wp.leitnerBox,
     0,
   );
   const maxPossible = wordsProgress.length * totalBoxes;
@@ -313,10 +305,10 @@ export function getLearningStats(
   const masteredWords = wordsProgress.filter((wp) =>
     isWordMastered(wp, settings),
   ).length;
-  const newWords = wordsProgress.filter((wp) => wp.leitner_box === 1).length;
+  const newWords = wordsProgress.filter((wp) => wp.leitnerBox === 1).length;
   const learningWords = totalWords - masteredWords - newWords;
 
-  const sumOfBoxes = wordsProgress.reduce((sum, wp) => sum + wp.leitner_box, 0);
+  const sumOfBoxes = wordsProgress.reduce((sum, wp) => sum + wp.leitnerBox, 0);
   const averageBox = totalWords > 0 ? sumOfBoxes / totalWords : 0;
 
   const masteryPercentage = calculateMasteryPercentage(wordsProgress, settings);

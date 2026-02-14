@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { KeyRound, Lock, Mail, ShieldCheck, User } from "lucide-react";
-import { chamLangAPI } from "@cham-lang/ui/services";
+import { AuthService } from "@cham-lang/ui/services";
 import { Button, Input, Card } from "@cham-lang/ui/components/atoms";
 import { useTranslation } from "react-i18next";
 
@@ -37,7 +37,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     try {
       // Then login
-      await chamLangAPI.authLogin(loginEmail, loginPassword);
+      await AuthService.login(loginEmail, loginPassword);
       onLoginSuccess();
     } catch (err) {
       setError(
@@ -76,7 +76,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
     try {
       // Then register
-      await chamLangAPI.authRegister(
+      await AuthService.register(
         registerUsername,
         registerEmail,
         registerPassword,

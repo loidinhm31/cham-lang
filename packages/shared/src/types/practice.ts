@@ -10,99 +10,99 @@ export interface RepetitionProgress {
 }
 
 export interface PracticeResult {
-  vocabulary_id: string;
+  vocabularyId: string;
   word: string;
   correct: boolean;
   mode: PracticeMode;
-  time_spent_seconds: number;
+  timeSpentSeconds: number;
 }
 
 export interface PracticeSession {
   id?: string;
-  collection_id: string;
+  collectionId: string;
   mode: PracticeMode;
   language: string;
   topic?: string;
   level?: string;
   results: PracticeResult[];
-  total_questions: number;
-  correct_answers: number;
-  started_at: string;
-  completed_at: string;
-  duration_seconds: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  startedAt: string;
+  completedAt: string;
+  durationSeconds: number;
 }
 
 export interface WordProgress {
-  vocabulary_id: string;
+  vocabularyId: string;
   word: string;
-  correct_count: number;
-  incorrect_count: number;
-  last_practiced: string;
-  mastery_level: number; // 0-5 (legacy, kept for backward compatibility)
+  correctCount: number;
+  incorrectCount: number;
+  lastPracticed: string;
+  masteryLevel: number; // 0-5 (legacy, kept for backward compatibility)
 
   // Spaced Repetition Fields
-  next_review_date: string; // ISO date string - when this word should be reviewed next
-  interval_days: number; // Current interval between reviews in days
-  easiness_factor: number; // SM-2 easiness factor (1.3 - 2.5), default 2.5
-  consecutive_correct_count: number; // Number of consecutive correct answers (resets to 0 on failure)
+  nextReviewDate: string; // ISO date string - when this word should be reviewed next
+  intervalDays: number; // Current interval between reviews in days
+  easinessFactor: number; // SM-2 easiness factor (1.3 - 2.5), default 2.5
+  consecutiveCorrectCount: number; // Number of consecutive correct answers (resets to 0 on failure)
 
   // Leitner System Fields
-  leitner_box: number; // Current box number (1 to max_boxes)
-  last_interval_days: number; // Previous interval for tracking progression
+  leitnerBox: number; // Current box number (1 to max_boxes)
+  lastIntervalDays: number; // Previous interval for tracking progression
 
   // Session Tracking
-  total_reviews: number; // Total number of times this word has been reviewed
-  failed_in_session: boolean; // Flag to track if word failed in current session (for re-queuing)
-  retry_count: number; // Number of times word has been retried in current session
+  totalReviews: number; // Total number of times this word has been reviewed
+  failedInSession: boolean; // Flag to track if word failed in current session (for re-queuing)
+  retryCount: number; // Number of times word has been retried in current session
 
   // Multi-Mode Completion Tracking
-  completed_modes_in_cycle: string[]; // Tracks which modes (flashcard, fillword, multiplechoice) have been completed in current review cycle
+  completedModesInCycle: string[]; // Tracks which modes (flashcard, fillword, multiplechoice) have been completed in current review cycle
 }
 
 export interface UserPracticeProgress {
   id?: string;
   language: string;
-  words_progress: WordProgress[];
-  total_sessions: number;
-  total_words_practiced: number;
-  current_streak: number;
-  longest_streak: number;
-  last_practice_date: string;
-  created_at: string;
-  updated_at: string;
+  wordsProgress: WordProgress[];
+  totalSessions: number;
+  totalWordsPracticed: number;
+  currentStreak: number;
+  longestStreak: number;
+  lastPracticeDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreatePracticeSessionRequest {
-  collection_id: string;
+  collectionId: string;
   mode: PracticeMode;
   language: string;
   topic?: string;
   level?: string;
   results: PracticeResult[];
-  duration_seconds: number;
+  durationSeconds: number;
 }
 
 export interface UpdateProgressRequest {
   language: string;
-  vocabulary_id: string;
+  vocabularyId: string;
   word: string;
   correct: boolean;
-  completed_modes_in_cycle: string[]; // Array of modes (flashcard, fillword, multiplechoice) completed in current cycle
+  completedModesInCycle: string[]; // Array of modes (flashcard, fillword, multiplechoice) completed in current cycle
 
   // Spaced Repetition Fields
-  next_review_date: string; // ISO date string
-  interval_days: number;
-  easiness_factor: number;
-  consecutive_correct_count: number;
-  leitner_box: number;
-  last_interval_days: number;
-  total_reviews: number;
-  correct_count: number;
-  incorrect_count: number;
+  nextReviewDate: string; // ISO date string
+  intervalDays: number;
+  easinessFactor: number;
+  consecutiveCorrectCount: number;
+  leitnerBox: number;
+  lastIntervalDays: number;
+  totalReviews: number;
+  correctCount: number;
+  incorrectCount: number;
 }
 
 export interface PracticeQuestion {
-  vocabulary_id: string;
+  vocabularyId: string;
   word: string;
   definition: string;
   ipa: string;
@@ -117,29 +117,29 @@ export function createInitialWordProgress(
 ): WordProgress {
   const now = new Date().toISOString();
   return {
-    vocabulary_id: vocabularyId,
+    vocabularyId: vocabularyId,
     word: word,
-    correct_count: 0,
-    incorrect_count: 0,
-    last_practiced: now,
-    mastery_level: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+    lastPracticed: now,
+    masteryLevel: 0,
 
     // Spaced Repetition defaults
-    next_review_date: now, // Available for review immediately
-    interval_days: 0,
-    easiness_factor: 2.5, // SM-2 default
-    consecutive_correct_count: 0,
+    nextReviewDate: now, // Available for review immediately
+    intervalDays: 0,
+    easinessFactor: 2.5, // SM-2 default
+    consecutiveCorrectCount: 0,
 
     // Leitner System defaults
-    leitner_box: 1, // Start in box 1 (new words)
-    last_interval_days: 0,
+    leitnerBox: 1, // Start in box 1 (new words)
+    lastIntervalDays: 0,
 
     // Session tracking defaults
-    total_reviews: 0,
-    failed_in_session: false,
-    retry_count: 0,
+    totalReviews: 0,
+    failedInSession: false,
+    retryCount: 0,
 
     // Multi-mode completion tracking defaults
-    completed_modes_in_cycle: [],
+    completedModesInCycle: [],
   };
 }

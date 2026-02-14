@@ -10,9 +10,9 @@ export interface ExportCSVRequest {
 
 export interface ImportCSVRequest {
   filePath?: string;
-  csv_text?: string;
+  csvText?: string;
   collectionId?: string;
-  create_missing_collections?: boolean;
+  createMissingCollections?: boolean;
 }
 
 export interface SimpleImportRequest {
@@ -29,7 +29,7 @@ export interface ImportResult {
   imported: number;
   skipped: number;
   errors: string[];
-  collections_created?: string[];
+  collectionsCreated?: string[];
 }
 
 export interface ICSVService {

@@ -20,8 +20,8 @@ export class IndexedDBLearningSettingsAdapter implements ILearningSettingsServic
     const settings = {
       id: generateId(),
       ...DEFAULT_LEARNING_SETTINGS,
-      created_at: now,
-      updated_at: now,
+      createdAt: now,
+      updatedAt: now,
     };
 
     await db.learningSettings.add(settings);
@@ -36,7 +36,7 @@ export class IndexedDBLearningSettingsAdapter implements ILearningSettingsServic
     const updated = {
       ...existing,
       ...request,
-      updated_at: getCurrentTimestamp(),
+      updatedAt: getCurrentTimestamp(),
     };
 
     await db.learningSettings.update(existing.id!, updated);

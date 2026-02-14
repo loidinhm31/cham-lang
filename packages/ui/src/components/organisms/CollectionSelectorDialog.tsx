@@ -128,7 +128,7 @@ export const CollectionSelectorDialog: React.FC<
                           <span className="text-gray-500">•</span>
                           <span>
                             {t("collection.wordCount", {
-                              count: collection.word_count,
+                              count: collection.wordCount,
                             })}
                           </span>
                         </div>

@@ -28,7 +28,7 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
     name: initialData?.name || "",
     description: initialData?.description || "",
     language: initialData?.language || "en",
-    is_public: initialData?.is_public ?? false,
+    isPublic: initialData?.isPublic ?? false,
   });
 
   const languageOptions = [
@@ -90,9 +90,9 @@ export const CollectionForm: React.FC<CollectionFormProps> = ({
               fullWidth
               label={t("collections.visibility")}
               options={visibilityOptions}
-              value={formData.is_public.toString()}
+              value={formData.isPublic.toString()}
               onValueChange={(value) =>
-                setFormData({ ...formData, is_public: value === "true" })
+                setFormData({ ...formData, isPublic: value === "true" })
               }
             />
           </div>

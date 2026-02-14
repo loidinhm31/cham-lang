@@ -54,11 +54,11 @@ export class WordSelectionService {
     const selected: Vocabulary[] = [];
     const vocabularyMap = new Map(vocabularies.map((v) => [v.id || "", v]));
     const progressMap = new Map(
-      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+      wordsProgress.map((wp) => [wp.vocabularyId, wp]),
     );
 
     // Determine the maximum words to select
-    const maxWords = options.maxWords || settings.daily_review_limit || 100;
+    const maxWords = options.maxWords || settings.dailyReviewLimit || 100;
 
     // Helper function to check if a word is available for the current mode
     const isAvailableForMode = (vocabularyId: string): boolean => {
@@ -68,7 +68,7 @@ export class WordSelectionService {
       if (!progress) return true; // New words are always available
 
       // Check if this mode is already completed in the current cycle
-      const completedModes = progress.completed_modes_in_cycle || [];
+      const completedModes = progress.completedModesInCycle || [];
       return !completedModes.includes(options.currentMode);
     };
 
@@ -79,11 +79,11 @@ export class WordSelectionService {
       for (const wordProgress of dueWords) {
         if (selected.length >= maxWords) break; // Stop if we've reached the limit
 
-        if (isAvailableForMode(wordProgress.vocabulary_id)) {
-          const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
+        if (isAvailableForMode(wordProgress.vocabularyId)) {
+          const vocab = vocabularyMap.get(wordProgress.vocabularyId);
           if (vocab) {
             selected.push(vocab);
-            vocabularyMap.delete(wordProgress.vocabulary_id); // Remove to avoid duplicates
+            vocabularyMap.delete(wordProgress.vocabularyId); // Remove to avoid duplicates
           }
         }
       }
@@ -92,7 +92,7 @@ export class WordSelectionService {
     // 2. Add new words (never practiced before)
     // Limit new words based on both maxNewWords and remaining slots
     if (options.includeNewWords && selected.length < maxWords) {
-      const maxNew = options.maxNewWords || settings.new_words_per_day || 20;
+      const maxNew = options.maxNewWords || settings.newWordsPerDay || 20;
       const remainingSlots = maxWords - selected.length;
       const maxNewToAdd = Math.min(maxNew, remainingSlots);
 
@@ -127,7 +127,7 @@ export class WordSelectionService {
         if (!progress) return true; // New words are always available
 
         // Check if the word is due for review
-        const reviewDate = new Date(progress.next_review_date);
+        const reviewDate = new Date(progress.nextReviewDate);
         reviewDate.setHours(0, 0, 0, 0);
         return reviewDate <= today; // Only include if review date has passed
       });
@@ -141,8 +141,8 @@ export class WordSelectionService {
         if (!progressA) return 1; // New words at the end
         if (!progressB) return -1;
 
-        const dateA = new Date(progressA.last_practiced).getTime();
-        const dateB = new Date(progressB.last_practiced).getTime();
+        const dateA = new Date(progressA.lastPracticed).getTime();
+        const dateB = new Date(progressB.lastPracticed).getTime();
         return dateA - dateB; // Oldest first
       });
 
@@ -170,7 +170,7 @@ export class WordSelectionService {
 
     const selected: Vocabulary[] = [];
     for (const wordProgress of dueWords) {
-      const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
+      const vocab = vocabularyMap.get(wordProgress.vocabularyId);
       if (vocab) {
         selected.push(vocab);
       }
@@ -188,7 +188,7 @@ export class WordSelectionService {
     maxWords: number = 20,
   ): Vocabulary[] {
     const progressMap = new Map(
-      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+      wordsProgress.map((wp) => [wp.vocabularyId, wp]),
     );
     const newWords: Vocabulary[] = [];
 
@@ -219,7 +219,7 @@ export class WordSelectionService {
     const wordsToSelect = maxWords ? wordsInBox.slice(0, maxWords) : wordsInBox;
 
     for (const wordProgress of wordsToSelect) {
-      const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
+      const vocab = vocabularyMap.get(wordProgress.vocabularyId);
       if (vocab) {
         selected.push(vocab);
       }
@@ -232,7 +232,7 @@ export class WordSelectionService {
    * Filter failed words from a practice session that need to be retried
    */
   static filterFailedWords(wordsProgress: WordProgress[]): WordProgress[] {
-    return wordsProgress.filter((wp) => wp.failed_in_session);
+    return wordsProgress.filter((wp) => wp.failedInSession);
   }
 
   /**
@@ -247,7 +247,7 @@ export class WordSelectionService {
 
     const reQueued: Vocabulary[] = [];
     for (const wordProgress of failedWords) {
-      const vocab = vocabularyMap.get(wordProgress.vocabulary_id);
+      const vocab = vocabularyMap.get(wordProgress.vocabularyId);
       if (vocab) {
         reQueued.push(vocab);
       }
@@ -270,7 +270,7 @@ export class WordSelectionService {
     practicedWords: number;
   } {
     const progressMap = new Map(
-      wordsProgress.map((wp) => [wp.vocabulary_id, wp]),
+      wordsProgress.map((wp) => [wp.vocabularyId, wp]),
     );
     const dueWords = getWordsDueToday(wordsProgress);
 

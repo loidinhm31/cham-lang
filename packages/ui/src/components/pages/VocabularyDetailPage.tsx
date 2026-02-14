@@ -336,13 +336,13 @@ export const VocabularyDetailPage: React.FC = () => {
             </h1>
             <div className="flex items-center justify-center gap-3 mb-4">
               <p className="text-2xl text-white/90">{vocabulary.ipa}</p>
-              {vocabulary.audio_url && (
-                <AudioPlayer audioUrl={vocabulary.audio_url} size="lg" />
+              {vocabulary.audioUrl && (
+                <AudioPlayer audioUrl={vocabulary.audioUrl} size="lg" />
               )}
             </div>
             <div className="flex items-center justify-center gap-3">
               <Badge variant="glass" className="bg-white/20 text-white">
-                {t(`wordTypes.${vocabulary.word_type}`)}
+                {t(`wordTypes.${vocabulary.wordType}`)}
               </Badge>
               <span
                 className={`${levelColors[vocabulary.level]} text-white text-sm font-bold px-4 py-2 rounded-full`}
@@ -399,22 +399,24 @@ export const VocabularyDetailPage: React.FC = () => {
         </Card>
 
         {/* Example Sentences */}
-        {vocabulary.example_sentences.length > 0 && (
+        {vocabulary.exampleSentences.length > 0 && (
           <Card variant="glass">
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.exampleSentences")}
             </h2>
             <div className="space-y-3">
-              {vocabulary.example_sentences.map((sentence, idx) => (
-                <div
-                  key={idx}
-                  className="p-3 bg-white/40 dark:bg-white/5 rounded-xl"
-                >
-                  <p className="text-[var(--color-text-secondary)]">
-                    💬 {sentence}
-                  </p>
-                </div>
-              ))}
+              {vocabulary.exampleSentences.map(
+                (sentence: string, idx: number) => (
+                  <div
+                    key={idx}
+                    className="p-3 bg-white/40 dark:bg-white/5 rounded-xl"
+                  >
+                    <p className="text-[var(--color-text-secondary)]">
+                      💬 {sentence}
+                    </p>
+                  </div>
+                ),
+              )}
             </div>
           </Card>
         )}
@@ -436,25 +438,30 @@ export const VocabularyDetailPage: React.FC = () => {
         )}
 
         {/* Related Words */}
-        {vocabulary.related_words.length > 0 && (
+        {vocabulary.relatedWords.length > 0 && (
           <Card variant="glass">
             <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
               {t("vocabulary.relatedWords")}
             </h2>
             <div className="space-y-3">
-              {vocabulary.related_words.map((related, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between p-3 bg-white/40 dark:bg-white/5 rounded-xl"
-                >
-                  <span className="font-semibold text-[var(--color-text-primary)]">
-                    {related.word}
-                  </span>
-                  <Badge variant="glass" className="text-xs">
-                    {t(`relationships.${related.relationship}`)}
-                  </Badge>
-                </div>
-              ))}
+              {vocabulary.relatedWords.map(
+                (
+                  related: { word: string; relationship: string },
+                  idx: number,
+                ) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-3 bg-white/40 dark:bg-white/5 rounded-xl"
+                  >
+                    <span className="font-semibold text-[var(--color-text-primary)]">
+                      {related.word}
+                    </span>
+                    <Badge variant="glass" className="text-xs">
+                      {t(`relationships.${related.relationship}`)}
+                    </Badge>
+                  </div>
+                ),
+              )}
             </div>
           </Card>
         )}

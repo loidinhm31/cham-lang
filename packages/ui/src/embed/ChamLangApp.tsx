@@ -4,11 +4,45 @@ import { DialogProvider, ThemeProvider } from "@cham-lang/ui/contexts";
 import "@cham-lang/ui/i18n/config";
 import { AppShell } from "@cham-lang/ui/components/templates";
 import { BasePathContext, PortalContainerContext } from "@cham-lang/ui/hooks";
-import { getAllServices } from "@cham-lang/ui/adapters/factory";
+import {
+  getAllServices,
+  setAuthService,
+  setCollectionService,
+  setCSVService,
+  setGDriveService,
+  setLearningSettingsService,
+  setNotificationService,
+  setPracticeService,
+  setSyncService,
+  setVocabularyService,
+} from "@cham-lang/ui/adapters/factory";
 import {
   type IPlatformServices,
   PlatformProvider,
 } from "@cham-lang/ui/platform";
+import { isTauri } from "@cham-lang/ui/utils";
+
+// IndexedDB Adapters - used for ALL data storage across all platforms
+import {
+  BrowserNotificationAdapter,
+  IndexedDBCollectionAdapter,
+  IndexedDBCSVAdapter,
+  IndexedDBLearningSettingsAdapter,
+  IndexedDBPracticeAdapter,
+  IndexedDBSyncAdapter,
+  IndexedDBVocabularyAdapter,
+  WebGDriveAdapter,
+} from "@cham-lang/ui/adapters/web";
+
+// Tauri Adapters - only for platform-specific functionality
+import {
+  TauriGDriveAdapter,
+  TauriNotificationAdapter,
+} from "@cham-lang/ui/adapters/tauri";
+
+// Shared Adapters
+import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
+import { getAuthService } from "@cham-lang/ui/adapters/factory";
 
 export interface ChamLangAppProps {
   className?: string;
@@ -28,7 +62,7 @@ export interface ChamLangAppProps {
 }
 
 /**
- * ChamLangApp - Main embeddable component (matching fin-catch pattern)
+ * ChamLangApp - Main embeddable component
  *
  * When embedded in another app (like qm-center-app), this component:
  * 1. Uses shared localStorage tokens for SSO
@@ -43,13 +77,44 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
   basePath,
   className,
 }) => {
-  // Create services - memoized to prevent recreation on every render
-  const services = useMemo<IPlatformServices>(() => getAllServices(), []);
+  // Initialize services synchronously before first render
+  const platform = useMemo<IPlatformServices>(() => {
+    // Data platform - all platforms use IndexedDB
+    setCollectionService(new IndexedDBCollectionAdapter());
+    setVocabularyService(new IndexedDBVocabularyAdapter());
+    setPracticeService(new IndexedDBPracticeAdapter());
+    setLearningSettingsService(new IndexedDBLearningSettingsAdapter());
+    setCSVService(new IndexedDBCSVAdapter());
 
-  // Inject auth tokens when embedded (using auth adapter, matching fin-catch pattern)
+    // Platform-specific platform
+    if (isTauri()) {
+      setNotificationService(new TauriNotificationAdapter());
+      setGDriveService(new TauriGDriveAdapter());
+    } else {
+      setNotificationService(new BrowserNotificationAdapter());
+      setGDriveService(new WebGDriveAdapter());
+    }
+
+    // Auth service - single source of truth for tokens
+    const auth = new QmServerAuthAdapter();
+    setAuthService(auth);
+
+    const syncAdapter = new IndexedDBSyncAdapter({
+      getConfig: () => auth.getSyncConfig(),
+      getTokens: () => auth.getTokens(),
+      saveTokens: (accessToken, refreshToken, userId) =>
+        auth.saveTokensExternal(accessToken, refreshToken, userId),
+    });
+    setSyncService(syncAdapter);
+
+    return getAllServices();
+  }, []);
+
+  // Inject auth tokens when embedded (using auth adapter)
   useEffect(() => {
     if (authTokens?.accessToken && authTokens?.refreshToken) {
-      services.auth
+      const auth = getAuthService() as QmServerAuthAdapter;
+      auth
         .saveTokensExternal?.(
           authTokens.accessToken,
           authTokens.refreshToken,
@@ -57,7 +122,7 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
         )
         .catch(console.error);
     }
-  }, [authTokens, services.auth]);
+  }, [authTokens, platform.auth]);
 
   // Determine if we should skip auth (tokens provided externally)
   const skipAuth = !!(authTokens?.accessToken && authTokens?.refreshToken);
@@ -81,7 +146,7 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
 
   return (
     <div ref={containerRef} className={className}>
-      <PlatformProvider services={services}>
+      <PlatformProvider services={platform}>
         <ThemeProvider embedded={embedded}>
           <BasePathContext.Provider value={basePath || ""}>
             <PortalContainerContext.Provider value={portalContainer}>

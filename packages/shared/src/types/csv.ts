@@ -3,52 +3,52 @@
  */
 
 export interface CsvExportRequest {
-  collection_ids: string[];
+  collectionIds: string[];
 }
 
 export interface ExportResult {
   message: string;
-  file_path: string;
-  file_name: string;
+  filePath: string;
+  fileName: string;
 }
 
 export interface CsvImportRequest {
-  /** Either file_path or csv_text must be provided */
-  file_path?: string;
-  /** CSV content as plain text (alternative to file_path) */
-  csv_text?: string;
+  /** Either filePath or csvText must be provided */
+  filePath?: string;
+  /** CSV content as plain text (alternative to filePath) */
+  csvText?: string;
   /** If provided, import all vocabularies into this collection */
-  target_collection_id?: string;
-  create_missing_collections: boolean;
+  targetCollectionId?: string;
+  createMissingCollections: boolean;
 }
 
 export interface SimpleImportRequest {
   /** Tab-separated values: collection_name, word, definition */
-  csv_text: string;
+  csvText: string;
   /** Default language for new collections (e.g., "ko", "en", "vi") */
-  default_language: string;
+  defaultLanguage: string;
   /** If provided, import all vocabularies into this collection */
-  target_collection_id?: string;
+  targetCollectionId?: string;
   /** Auto-create collections if they don't exist */
-  create_missing_collections: boolean;
+  createMissingCollections: boolean;
 }
 
 export interface CsvImportResult {
   success: boolean;
-  rows_imported: number;
-  rows_failed: number;
+  rowsImported: number;
+  rowsFailed: number;
   errors: CsvImportError[];
-  collections_created: string[];
+  collectionsCreated: string[];
 }
 
 export interface CsvImportError {
-  row_number: number;
-  error_message: string;
-  row_data: string;
+  rowNumber: number;
+  errorMessage: string;
+  rowData: string;
 }
 
 export interface ValidationReport {
   valid: boolean;
-  total_rows: number;
+  totalRows: number;
   errors: CsvImportError[];
 }

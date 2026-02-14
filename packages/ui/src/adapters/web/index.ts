@@ -9,5 +9,14 @@ export { IndexedDBLearningSettingsAdapter } from "./IndexedDBLearningSettingsAda
 export { IndexedDBCSVAdapter } from "./IndexedDBCSVAdapter";
 export { BrowserNotificationAdapter } from "./BrowserNotificationAdapter";
 export { NoOpGDriveAdapter } from "./NoOpGDriveAdapter";
+export { WebGDriveAdapter } from "./WebGDriveAdapter";
 export { db, ChamLangDatabase } from "./database";
 export * from "./sync";
+export {
+  exportDatabaseToJSON,
+  importDatabaseFromJSON,
+  clearAllTables,
+  validateBackup,
+  getDatabaseStats,
+  type ChamLangBackup,
+} from "./dexieBackupUtils";

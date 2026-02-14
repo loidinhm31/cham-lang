@@ -35,59 +35,58 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
-    const previousBox = updated.leitner_box;
+    const previousBox = updated.leitnerBox;
 
     // Increment counters
-    updated.correct_count += 1;
-    updated.consecutive_correct_count += 1;
-    updated.total_reviews += 1;
-    updated.last_practiced = new Date().toISOString();
+    updated.correctCount += 1;
+    updated.consecutiveCorrectCount += 1;
+    updated.totalReviews += 1;
+    updated.lastPracticed = new Date().toISOString();
 
     // Update easiness factor (increase slightly for correct answer)
-    updated.easiness_factor = this.calculateEasinessFactor(
-      updated.easiness_factor,
+    updated.easinessFactor = this.calculateEasinessFactor(
+      updated.easinessFactor,
       5, // Quality 5 = perfect response
     );
 
     // Check if should advance to next box
     const shouldAdvance =
-      updated.consecutive_correct_count >=
-      settings.consecutive_correct_required;
+      updated.consecutiveCorrectCount >= settings.consecutiveCorrectRequired;
 
-    if (shouldAdvance && updated.leitner_box < settings.leitner_box_count) {
+    if (shouldAdvance && updated.leitnerBox < settings.leitnerBoxCount) {
       // Advance to next box
-      updated.leitner_box += 1;
-      updated.consecutive_correct_count = 0; // Reset for next box
+      updated.leitnerBox += 1;
+      updated.consecutiveCorrectCount = 0; // Reset for next box
     }
 
     // Calculate next interval using SM-2 formula
     const interval = this.calculateInterval(updated, settings);
-    updated.last_interval_days = updated.interval_days;
-    updated.interval_days = interval;
+    updated.lastIntervalDays = updated.intervalDays;
+    updated.intervalDays = interval;
 
     // Calculate next review date
     const nextReviewDate = addDays(new Date(), interval);
-    updated.next_review_date = nextReviewDate.toISOString();
+    updated.nextReviewDate = nextReviewDate.toISOString();
 
     // Update legacy mastery level
-    const total = updated.correct_count + updated.incorrect_count;
-    const ratio = updated.correct_count / total;
-    updated.mastery_level = Math.round(ratio * 5);
+    const total = updated.correctCount + updated.incorrectCount;
+    const ratio = updated.correctCount / total;
+    updated.masteryLevel = Math.round(ratio * 5);
 
     // Reset session flags
-    updated.failed_in_session = false;
-    updated.retry_count = 0;
+    updated.failedInSession = false;
+    updated.retryCount = 0;
 
     return {
       updatedProgress: updated,
-      boxChanged: updated.leitner_box !== previousBox,
+      boxChanged: updated.leitnerBox !== previousBox,
       previousBox,
-      newBox: updated.leitner_box,
+      newBox: updated.leitnerBox,
       nextReviewDate,
       intervalDays: interval,
       message:
-        shouldAdvance && updated.leitner_box !== previousBox
-          ? `Excellent! Advanced to Box ${updated.leitner_box}!`
+        shouldAdvance && updated.leitnerBox !== previousBox
+          ? `Excellent! Advanced to Box ${updated.leitnerBox}!`
           : `Correct! Next review in ${interval} day${interval !== 1 ? "s" : ""}`,
     };
   }
@@ -97,53 +96,53 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     settings: LearningSettings,
   ): ReviewResult {
     const updated = { ...wordProgress };
-    const previousBox = updated.leitner_box;
+    const previousBox = updated.leitnerBox;
 
     // Increment counters
-    updated.incorrect_count += 1;
-    updated.consecutive_correct_count = 0; // Reset consecutive count
-    updated.total_reviews += 1;
-    updated.last_practiced = new Date().toISOString();
+    updated.incorrectCount += 1;
+    updated.consecutiveCorrectCount = 0; // Reset consecutive count
+    updated.totalReviews += 1;
+    updated.lastPracticed = new Date().toISOString();
 
     // Update easiness factor (decrease for incorrect answer)
-    updated.easiness_factor = this.calculateEasinessFactor(
-      updated.easiness_factor,
+    updated.easinessFactor = this.calculateEasinessFactor(
+      updated.easinessFactor,
       0, // Quality 0 = complete blackout
     );
 
     // Move back to box 1
-    updated.leitner_box = 1;
+    updated.leitnerBox = 1;
 
     // Reset interval to minimum (1 day)
-    updated.last_interval_days = updated.interval_days;
-    updated.interval_days = 1;
+    updated.lastIntervalDays = updated.intervalDays;
+    updated.intervalDays = 1;
 
     // Set next review for tomorrow (or immediate if show_failed_words_in_session)
-    const nextReviewDate = settings.show_failed_words_in_session
+    const nextReviewDate = settings.showFailedWordsInSession
       ? new Date() // Immediate retry in same session
       : addDays(new Date(), 1);
 
-    updated.next_review_date = nextReviewDate.toISOString();
+    updated.nextReviewDate = nextReviewDate.toISOString();
 
     // Update legacy mastery level
-    const total = updated.correct_count + updated.incorrect_count;
-    const ratio = total > 0 ? updated.correct_count / total : 0;
-    updated.mastery_level = Math.round(ratio * 5);
+    const total = updated.correctCount + updated.incorrectCount;
+    const ratio = total > 0 ? updated.correctCount / total : 0;
+    updated.masteryLevel = Math.round(ratio * 5);
 
     // Set session flags for re-queuing
-    updated.failed_in_session = settings.show_failed_words_in_session;
-    updated.retry_count = settings.show_failed_words_in_session
-      ? updated.retry_count + 1
+    updated.failedInSession = settings.showFailedWordsInSession;
+    updated.retryCount = settings.showFailedWordsInSession
+      ? updated.retryCount + 1
       : 0;
 
     return {
       updatedProgress: updated,
-      boxChanged: updated.leitner_box !== previousBox,
+      boxChanged: updated.leitnerBox !== previousBox,
       previousBox,
-      newBox: updated.leitner_box,
+      newBox: updated.leitnerBox,
       nextReviewDate,
-      intervalDays: updated.interval_days,
-      message: settings.show_failed_words_in_session
+      intervalDays: updated.intervalDays,
+      message: settings.showFailedWordsInSession
         ? "Incorrect. Let's try this one again!"
         : "Incorrect. Moved to Box 1. Review again tomorrow.",
     };
@@ -159,7 +158,7 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
 
   getBoxInterval(boxNumber: number, settings: LearningSettings): number {
     // For SM-2, we don't use fixed box intervals, but we provide a reference
-    const presets = BOX_INTERVAL_PRESETS[settings.leitner_box_count];
+    const presets = BOX_INTERVAL_PRESETS[settings.leitnerBoxCount];
     return presets[boxNumber - 1] || presets[presets.length - 1];
   }
 
@@ -171,27 +170,27 @@ export class SM2Algorithm implements SpacedRepetitionAlgorithm {
     _settings: LearningSettings,
   ): number {
     const {
-      consecutive_correct_count,
-      interval_days,
-      easiness_factor,
-      leitner_box,
+      consecutiveCorrectCount,
+      intervalDays,
+      easinessFactor,
+      leitnerBox,
     } = wordProgress;
 
     // First review in current box
-    if (consecutive_correct_count === 0) {
+    if (consecutiveCorrectCount === 0) {
       return 1;
     }
 
     // Second review in current box
-    if (consecutive_correct_count === 1) {
+    if (consecutiveCorrectCount === 1) {
       return 6;
     }
 
     // Subsequent reviews: multiply previous interval by easiness factor
     // Also consider the Leitner box as a multiplier
-    const boxMultiplier = Math.pow(1.5, leitner_box - 1);
+    const boxMultiplier = Math.pow(1.5, leitnerBox - 1);
     const newInterval = Math.round(
-      interval_days * easiness_factor * boxMultiplier,
+      intervalDays * easinessFactor * boxMultiplier,
     );
 
     // Ensure minimum interval of 1 day

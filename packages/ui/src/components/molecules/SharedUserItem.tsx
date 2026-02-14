@@ -44,7 +44,7 @@ export const SharedUserItem: React.FC<SharedUserItemProps> = ({
     try {
       setLoading(true);
       await onPermissionChange(
-        sharedUser.user_id,
+        sharedUser.userId,
         newPermission as "viewer" | "editor",
       );
     } catch (error) {
@@ -70,7 +70,7 @@ export const SharedUserItem: React.FC<SharedUserItemProps> = ({
 
     try {
       setLoading(true);
-      await onRemove(sharedUser.user_id);
+      await onRemove(sharedUser.userId);
     } catch (error) {
       console.error("Failed to remove user:", error);
     } finally {
@@ -85,8 +85,8 @@ export const SharedUserItem: React.FC<SharedUserItemProps> = ({
     <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-300 bg-white hover:border-gray-400 transition-colors">
       {/* User ID Badge */}
       <Badge variant={badgeVariant} className="flex-shrink-0 max-w-[150px]">
-        <div className="truncate" title={sharedUser.user_id}>
-          {sharedUser.user_id}
+        <div className="truncate" title={sharedUser.userId}>
+          {sharedUser.userId}
         </div>
       </Badge>
 

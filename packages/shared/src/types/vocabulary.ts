@@ -3,7 +3,7 @@ export interface PaginatedResponse<T> {
   total: number;
   offset: number;
   limit: number;
-  has_more: boolean;
+  hasMore: boolean;
 }
 
 export type WordType =
@@ -35,75 +35,75 @@ export interface Definition {
 }
 
 export interface RelatedWord {
-  word_id?: string;
+  wordId?: string;
   word: string;
   relationship: WordRelationship;
 }
 
 export interface Vocabulary {
-  id?: string; // Rust field name
+  id?: string;
   word: string;
-  word_type: WordType;
+  wordType: WordType;
   level: LanguageLevel;
   ipa: string;
-  audio_url?: string; // Optional audio pronunciation URL
+  audioUrl?: string; // Optional audio pronunciation URL
   concept?: string; // Optional concept field for alternative learning mode
   definitions: Definition[];
-  example_sentences: string[];
+  exampleSentences: string[];
   topics: string[];
   tags: string[];
-  related_words: RelatedWord[];
-  created_at: string;
-  updated_at: string;
+  relatedWords: RelatedWord[];
+  createdAt: string;
+  updatedAt: string;
   language: string;
-  collection_id: string;
+  collectionId: string;
 }
 
 export interface CreateVocabularyRequest {
   word: string;
-  word_type: WordType;
+  wordType: WordType;
   level: LanguageLevel;
   ipa: string;
-  audio_url?: string;
+  audioUrl?: string;
   concept?: string;
   definitions: Definition[];
-  example_sentences: string[];
+  exampleSentences: string[];
   topics: string[];
   tags: string[];
-  related_words: RelatedWord[];
+  relatedWords: RelatedWord[];
   language: string;
-  collection_id: string;
+  collectionId: string;
 }
 
 export interface UpdateVocabularyRequest {
   id: string;
   word?: string;
-  word_type?: WordType;
+  wordType?: WordType;
   level?: LanguageLevel;
   ipa?: string;
-  audio_url?: string;
+  audioUrl?: string;
   concept?: string;
   definitions?: Definition[];
-  example_sentences?: string[];
+  exampleSentences?: string[];
   topics?: string[];
   tags?: string[];
-  related_words?: RelatedWord[];
-  collection_id?: string;
+  relatedWords?: RelatedWord[];
+  collectionId?: string;
 }
 
 export interface BulkMoveRequest {
-  vocabulary_ids: string[];
-  target_collection_id: string;
+  vocabularyIds: string[];
+  targetCollectionId: string;
 }
 
 export interface BulkMoveResult {
-  moved_count: number;
-  skipped_count: number;
+  movedCount: number;
+  skippedCount: number;
 }
 
 export interface SearchQuery {
   query: string;
-  word_type?: WordType;
+  wordType?: WordType;
   level?: LanguageLevel;
   topics?: string[];
   language?: string;

@@ -40,20 +40,20 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
 
   const [formData, setFormData] = useState<CreateVocabularyRequest>({
     word: initialData?.word || "",
-    word_type: initialData?.word_type || "n/a",
+    wordType: initialData?.wordType || "n/a",
     level: initialData?.level || "N/A",
     ipa: initialData?.ipa || "",
-    audio_url: initialData?.audio_url || "",
+    audioUrl: initialData?.audioUrl || "",
     concept: initialData?.concept || "",
     definitions: initialData?.definitions || [
       { meaning: "", translation: "", example: "" },
     ],
-    example_sentences: initialData?.example_sentences || [""],
+    exampleSentences: initialData?.exampleSentences || [""],
     topics: initialData?.topics || [""],
     tags: initialData?.tags || [""],
-    related_words: initialData?.related_words || [],
+    relatedWords: initialData?.relatedWords || [],
     language: initialData?.language || "en",
-    collection_id: initialData?.collection_id || "",
+    collectionId: initialData?.collectionId || "",
   });
 
   useEffect(() => {
@@ -62,15 +62,15 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
 
   // Load levels when collection changes
   useEffect(() => {
-    if (formData.collection_id) {
+    if (formData.collectionId) {
       const selectedCollection = collections.find(
-        (c) => getCollectionId(c) === formData.collection_id,
+        (c) => getCollectionId(c) === formData.collectionId,
       );
       if (selectedCollection) {
         loadLevels(selectedCollection.language);
       }
     }
-  }, [formData.collection_id, collections]);
+  }, [formData.collectionId, collections]);
 
   const loadCollections = async () => {
     try {
@@ -78,12 +78,12 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
       setCollections(data);
 
       // Auto-select first collection if no initial data
-      if (!initialData?.collection_id && data.length > 0) {
+      if (!initialData?.collectionId && data.length > 0) {
         const firstCollection = data[0];
         const collectionId = getCollectionId(firstCollection);
         setFormData((prev) => ({
           ...prev,
-          collection_id: collectionId || "",
+          collectionId: collectionId || "",
           language: firstCollection.language,
         }));
       }
@@ -156,7 +156,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     if (selectedCollection) {
       setFormData({
         ...formData,
-        collection_id: collectionId,
+        collectionId: collectionId,
         language: selectedCollection.language,
       });
     }
@@ -167,10 +167,10 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     // Filter out empty values
     const cleanedData = {
       ...formData,
-      audio_url: formData.audio_url?.trim() || undefined,
+      audioUrl: formData.audioUrl?.trim() || undefined,
       concept: formData.concept?.trim() || "",
       definitions: formData.definitions.filter((d) => d.meaning.trim() !== ""),
-      example_sentences: formData.example_sentences.filter(
+      exampleSentences: formData.exampleSentences.filter(
         (s) => s.trim() !== "",
       ),
       topics: formData.topics.filter((t) => t.trim() !== ""),
@@ -209,23 +209,21 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
   const addExampleSentence = () => {
     setFormData({
       ...formData,
-      example_sentences: [...formData.example_sentences, ""],
+      exampleSentences: [...formData.exampleSentences, ""],
     });
   };
 
   const removeExampleSentence = (index: number) => {
     setFormData({
       ...formData,
-      example_sentences: formData.example_sentences.filter(
-        (_, i) => i !== index,
-      ),
+      exampleSentences: formData.exampleSentences.filter((_, i) => i !== index),
     });
   };
 
   const updateExampleSentence = (index: number, value: string) => {
-    const newSentences = [...formData.example_sentences];
+    const newSentences = [...formData.exampleSentences];
     newSentences[index] = value;
-    setFormData({ ...formData, example_sentences: newSentences });
+    setFormData({ ...formData, exampleSentences: newSentences });
   };
 
   const addTopic = () => {
@@ -287,7 +285,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
                 fullWidth
                 label={t("vocabulary.collection")}
                 options={collectionOptions}
-                value={formData.collection_id}
+                value={formData.collectionId}
                 onValueChange={handleCollectionChange}
               />
             )}
@@ -308,11 +306,11 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
               fullWidth
               label={t("vocabulary.wordType")}
               options={wordTypeOptions}
-              value={formData.word_type}
+              value={formData.wordType}
               onValueChange={(value) =>
                 setFormData({
                   ...formData,
-                  word_type: value as WordType,
+                  wordType: value as WordType,
                 })
               }
             />
@@ -345,25 +343,25 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
             <div className="space-y-2">
               <Input
                 label={t("vocabulary.audioUrl") || "Audio URL"}
-                value={formData.audio_url || ""}
+                value={formData.audioUrl || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, audio_url: e.target.value })
+                  setFormData({ ...formData, audioUrl: e.target.value })
                 }
                 placeholder="https://example.com/audio.mp3"
               />
-              {formData.audio_url &&
-                formData.audio_url.trim() !== "" &&
-                !validateAudioUrl(formData.audio_url) && (
+              {formData.audioUrl &&
+                formData.audioUrl.trim() !== "" &&
+                !validateAudioUrl(formData.audioUrl) && (
                   <p className="text-sm text-red-600">
                     {t("vocabulary.invalidAudioUrl") ||
                       "Invalid audio URL format"}
                   </p>
                 )}
-              {formData.audio_url &&
-                formData.audio_url.trim() !== "" &&
-                validateAudioUrl(formData.audio_url) && (
+              {formData.audioUrl &&
+                formData.audioUrl.trim() !== "" &&
+                validateAudioUrl(formData.audioUrl) && (
                   <div className="flex items-center gap-2">
-                    <AudioPlayer audioUrl={formData.audio_url} size="sm" />
+                    <AudioPlayer audioUrl={formData.audioUrl} size="sm" />
                     <span className="text-sm text-gray-600">
                       {t("vocabulary.previewAudio") || "Preview"}
                     </span>
@@ -471,7 +469,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
             </Button>
           </div>
 
-          {formData.example_sentences.map((sentence, index) => (
+          {formData.exampleSentences.map((sentence, index) => (
             <div key={index} className="flex gap-2">
               <Input
                 placeholder={t("vocabulary.exampleSentence")}
@@ -479,7 +477,7 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
                 onChange={(e) => updateExampleSentence(index, e.target.value)}
                 className="flex-1"
               />
-              {formData.example_sentences.length > 1 && (
+              {formData.exampleSentences.length > 1 && (
                 <button
                   type="button"
                   onClick={() => removeExampleSentence(index)}

@@ -103,7 +103,7 @@ export const PracticeModePage: React.FC = () => {
 
       // Load practice progress
       const progressData = await PracticeService.getPracticeProgress(language);
-      const wordsProgress = progressData?.words_progress || [];
+      const wordsProgress = progressData?.wordsProgress || [];
 
       // Calculate statistics
       const stats = WordSelectionService.getWordStatistics(
@@ -149,7 +149,7 @@ export const PracticeModePage: React.FC = () => {
 
   const collectionOptions = collections.map((collection) => ({
     value: collection.id || "",
-    label: `${collection.name} (${collection.word_count} words)`,
+    label: `${collection.name} (${collection.wordCount} words)`,
   }));
 
   const selectedCollectionData = collections.find(
@@ -258,7 +258,7 @@ export const PracticeModePage: React.FC = () => {
                         {t("collections.words")}:
                       </span>
                       <span className="font-semibold text-[var(--color-text-primary)]">
-                        {selectedCollectionData.word_count}
+                        {selectedCollectionData.wordCount}
                       </span>
                     </div>
                     <div className="text-sm text-[var(--color-text-secondary)] mt-2">

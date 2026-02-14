@@ -4,7 +4,7 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
-import { chamLangAPI } from "@cham-lang/ui/services";
+import { CollectionService } from "@cham-lang/ui/services";
 
 interface UseCollectionsOptions {
   autoLoad?: boolean;
@@ -24,7 +24,7 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
     setIsLoading(true);
     setError(null);
     try {
-      const collectionList = await chamLangAPI.getUserCollections();
+      const collectionList = await CollectionService.getUserCollections();
       setCollections(collectionList);
       // Auto-select first collection if none selected
       setSelectedCollectionId((prev) => {
@@ -45,7 +45,7 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
   const createCollection = async (
     request: CreateCollectionRequest,
   ): Promise<string> => {
-    const collectionId = await chamLangAPI.createCollection(request);
+    const collectionId = await CollectionService.createCollection(request);
     await loadCollections();
     setSelectedCollectionId(collectionId);
     return collectionId;
@@ -54,12 +54,12 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
   const updateCollection = async (
     request: UpdateCollectionRequest,
   ): Promise<void> => {
-    await chamLangAPI.updateCollection(request);
+    await CollectionService.updateCollection(request);
     await loadCollections();
   };
 
   const deleteCollection = async (collectionId: string): Promise<void> => {
-    await chamLangAPI.deleteCollection(collectionId);
+    await CollectionService.deleteCollection(collectionId);
     await loadCollections();
     if (selectedCollectionId === collectionId) {
       setSelectedCollectionId(
@@ -74,7 +74,7 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
     collectionId: string,
     shareWithUsername: string,
   ): Promise<void> => {
-    await chamLangAPI.shareCollection(collectionId, shareWithUsername);
+    await CollectionService.shareCollection(collectionId, shareWithUsername);
     await loadCollections();
   };
 
@@ -82,7 +82,7 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
     collectionId: string,
     userIdToRemove: string,
   ): Promise<void> => {
-    await chamLangAPI.unshareCollection(collectionId, userIdToRemove);
+    await CollectionService.unshareCollection(collectionId, userIdToRemove);
     await loadCollections();
   };
 

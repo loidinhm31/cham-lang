@@ -58,22 +58,22 @@ export const HomePage: React.FC = () => {
       case "latestUpdated":
         return sorted.sort(
           (a, b) =>
-            new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime(),
         );
       case "latestCreated":
         return sorted.sort(
           (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         );
       case "oldestUpdated":
         return sorted.sort(
           (a, b) =>
-            new Date(a.updated_at).getTime() - new Date(b.updated_at).getTime(),
+            new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(),
         );
       case "oldestCreated":
         return sorted.sort(
           (a, b) =>
-            new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
       case "name":
         return sorted.sort((a, b) => a.name.localeCompare(b.name));
@@ -132,7 +132,7 @@ export const HomePage: React.FC = () => {
           },
         );
         matchingVocabularies.forEach((v) => {
-          if (v.collection_id) collectionIds.add(v.collection_id);
+          if (v.collectionId) collectionIds.add(v.collectionId);
         });
       }
 
@@ -143,7 +143,7 @@ export const HomePage: React.FC = () => {
           v.topics.some((topic) => selectedTopics.includes(topic)),
         );
         topicMatches.forEach((v) => {
-          if (v.collection_id) collectionIds.add(v.collection_id);
+          if (v.collectionId) collectionIds.add(v.collectionId);
         });
       }
 
@@ -154,7 +154,7 @@ export const HomePage: React.FC = () => {
           v.tags.some((tag) => selectedTags.includes(tag)),
         );
         tagMatches.forEach((v) => {
-          if (v.collection_id) collectionIds.add(v.collection_id);
+          if (v.collectionId) collectionIds.add(v.collectionId);
         });
       }
 

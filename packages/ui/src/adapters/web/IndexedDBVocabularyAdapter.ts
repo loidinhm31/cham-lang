@@ -18,17 +18,17 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
       withSyncTracking({
         id,
         ...request,
-        created_at: now,
-        updated_at: now,
+        createdAt: now,
+        updatedAt: now,
       }),
     );
 
     // Update collection word count
-    const collection = await db.collections.get(request.collection_id);
+    const collection = await db.collections.get(request.collectionId);
     if (collection) {
-      await db.collections.update(request.collection_id, {
-        word_count: (collection.word_count || 0) + 1,
-        updated_at: now,
+      await db.collections.update(request.collectionId, {
+        wordCount: (collection.wordCount || 0) + 1,
+        updatedAt: now,
       });
     }
 
@@ -45,7 +45,7 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     language?: string,
     limit?: number,
   ): Promise<Vocabulary[]> {
-    let query = db.vocabularies.orderBy("created_at").reverse();
+    let query = db.vocabularies.orderBy("createdAt").reverse();
     if (language) {
       const all = await query.toArray();
       const filtered = all.filter((v) => v.language === language);
@@ -60,31 +60,31 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     if (!existing) throw new Error(`Vocabulary not found: ${request.id}`);
 
     const { id, ...updates } = request;
-    const oldCollectionId = existing.collection_id;
+    const oldCollectionId = existing.collectionId;
 
     await db.vocabularies.update(
       id,
       withSyncTracking(
         {
           ...updates,
-          updated_at: getCurrentTimestamp(),
+          updatedAt: getCurrentTimestamp(),
         },
         existing,
       ),
     );
 
     // Update word counts if collection changed
-    if (updates.collection_id && updates.collection_id !== oldCollectionId) {
+    if (updates.collectionId && updates.collectionId !== oldCollectionId) {
       const oldCollection = await db.collections.get(oldCollectionId);
       if (oldCollection) {
         await db.collections.update(oldCollectionId, {
-          word_count: Math.max(0, (oldCollection.word_count || 0) - 1),
+          wordCount: Math.max(0, (oldCollection.wordCount || 0) - 1),
         });
       }
-      const newCollection = await db.collections.get(updates.collection_id);
+      const newCollection = await db.collections.get(updates.collectionId);
       if (newCollection) {
-        await db.collections.update(updates.collection_id, {
-          word_count: (newCollection.word_count || 0) + 1,
+        await db.collections.update(updates.collectionId, {
+          wordCount: (newCollection.wordCount || 0) + 1,
         });
       }
     }
@@ -95,12 +95,12 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
   async deleteVocabulary(id: string): Promise<string> {
     const vocab = await db.vocabularies.get(id);
     if (vocab) {
-      await trackDelete("vocabularies", id, vocab.sync_version ?? 1);
+      await trackDelete("vocabularies", id, vocab.syncVersion ?? 1);
       await db.vocabularies.delete(id);
-      const collection = await db.collections.get(vocab.collection_id);
+      const collection = await db.collections.get(vocab.collectionId);
       if (collection) {
-        await db.collections.update(vocab.collection_id, {
-          word_count: Math.max(0, (collection.word_count || 0) - 1),
+        await db.collections.update(vocab.collectionId, {
+          wordCount: Math.max(0, (collection.wordCount || 0) - 1),
         });
       }
     }
@@ -116,22 +116,22 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
 
     for (const vocabId of vocabularyIds) {
       const vocab = await db.vocabularies.get(vocabId);
-      if (!vocab || vocab.collection_id === targetCollectionId) {
+      if (!vocab || vocab.collectionId === targetCollectionId) {
         skippedCount++;
         continue;
       }
 
-      const oldCollectionId = vocab.collection_id;
+      const oldCollectionId = vocab.collectionId;
       await db.vocabularies.update(vocabId, {
-        collection_id: targetCollectionId,
-        updated_at: getCurrentTimestamp(),
+        collectionId: targetCollectionId,
+        updatedAt: getCurrentTimestamp(),
       });
 
       // Update old collection count
       const oldColl = await db.collections.get(oldCollectionId);
       if (oldColl) {
         await db.collections.update(oldCollectionId, {
-          word_count: Math.max(0, (oldColl.word_count || 0) - 1),
+          wordCount: Math.max(0, (oldColl.wordCount || 0) - 1),
         });
       }
 
@@ -142,11 +142,11 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     const targetColl = await db.collections.get(targetCollectionId);
     if (targetColl) {
       await db.collections.update(targetCollectionId, {
-        word_count: (targetColl.word_count || 0) + movedCount,
+        wordCount: (targetColl.wordCount || 0) + movedCount,
       });
     }
 
-    return { moved_count: movedCount, skipped_count: skippedCount };
+    return { movedCount: movedCount, skippedCount: skippedCount };
   }
 
   async searchVocabularies(query: SearchQuery): Promise<Vocabulary[]> {
@@ -180,10 +180,10 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     limit?: number,
   ): Promise<Vocabulary[]> {
     let results = await db.vocabularies
-      .where("collection_id")
+      .where("collectionId")
       .equals(collectionId)
       .toArray();
-    results.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    results.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return (limit ? results.slice(0, limit) : results) as Vocabulary[];
   }
 
@@ -193,10 +193,10 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     offset?: number,
   ): Promise<PaginatedResponse<Vocabulary>> {
     const all = await db.vocabularies
-      .where("collection_id")
+      .where("collectionId")
       .equals(collectionId)
       .toArray();
-    all.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    all.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
     const total = all.length;
     const start = offset || 0;
@@ -208,7 +208,7 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
       total,
       offset: start,
       limit: limit || total,
-      has_more: end < total,
+      hasMore: end < total,
     };
   }
 

@@ -25,7 +25,7 @@ let simpleInstance: SimpleAlgorithm | null = null;
 export function getAlgorithm(
   settings: LearningSettings,
 ): SpacedRepetitionAlgorithm {
-  switch (settings.sr_algorithm) {
+  switch (settings.srAlgorithm) {
     case "sm2":
       if (!sm2Instance) {
         sm2Instance = new SM2Algorithm();
@@ -47,7 +47,7 @@ export function getAlgorithm(
     default:
       // Default to Modified SM-2 if unknown algorithm
       console.warn(
-        `Unknown algorithm: ${settings.sr_algorithm}, defaulting to modifiedsm2`,
+        `Unknown algorithm: ${settings.srAlgorithm}, defaulting to modifiedsm2`,
       );
       if (!modifiedSm2Instance) {
         modifiedSm2Instance = new ModifiedSM2Algorithm();

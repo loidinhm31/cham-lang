@@ -1,9 +1,13 @@
 /**
  * Service Factory
- * Returns the correct service implementation based on platform detection
+ * Uses setter/getter pattern for service initialization
+ *
+ * ARCHITECTURE:
+ * - Services are set externally via setters (e.g., in ChamLangApp.tsx)
+ * - Getters throw if service not initialized (enforces explicit setup)
+ * - Platform-specific adapters: GDrive (native OAuth), Notifications (native)
+ * - All data storage uses IndexedDB adapters across all platforms
  */
-
-import { isOpenedFromDesktop, isTauri } from "@cham-lang/ui/utils";
 
 // Interfaces
 import type {
@@ -18,46 +22,7 @@ import type {
   IVocabularyService,
 } from "@cham-lang/ui/adapters/factory/interfaces";
 
-// Tauri Adapters
-// Sync & Auth Adapters
-import {
-  TauriAuthAdapter,
-  TauriCollectionAdapter,
-  TauriCSVAdapter,
-  TauriGDriveAdapter,
-  TauriLearningSettingsAdapter,
-  TauriNotificationAdapter,
-  TauriPracticeAdapter,
-  TauriSyncAdapter,
-  TauriVocabularyAdapter,
-} from "@cham-lang/ui/adapters/tauri";
-
-// HTTP Adapters (communicate with desktop SQLite backend via HTTP)
-import {
-  HttpCollectionAdapter,
-  HttpCSVAdapter,
-  HttpGDriveAdapter,
-  HttpLearningSettingsAdapter,
-  HttpNotificationAdapter,
-  HttpPracticeAdapter,
-  HttpVocabularyAdapter,
-} from "@cham-lang/ui/adapters/http";
-
-// IndexedDB Adapters (standalone web app)
-import {
-  BrowserNotificationAdapter,
-  IndexedDBCollectionAdapter,
-  IndexedDBCSVAdapter,
-  IndexedDBLearningSettingsAdapter,
-  IndexedDBPracticeAdapter,
-  IndexedDBSyncAdapter,
-  IndexedDBVocabularyAdapter,
-  NoOpGDriveAdapter,
-} from "@cham-lang/ui/adapters/web";
-import { env } from "@cham-lang/shared/utils";
-import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
-
-// Singleton instances (lazy initialized)
+// Singleton instances (set via setters)
 let vocabularyService: IVocabularyService | null = null;
 let collectionService: ICollectionService | null = null;
 let practiceService: IPracticeService | null = null;
@@ -68,155 +33,172 @@ let gdriveService: IGDriveService | null = null;
 let syncService: ISyncService | null = null;
 let authService: IAuthService | null = null;
 
-/**
- * Determine which adapter set to use:
- * - "tauri": Running in Tauri webview (native desktop/mobile)
- * - "http": Browser opened from desktop app (HTTP to embedded Axum server)
- * - "indexeddb": Standalone web app (IndexedDB/Dexie for local storage)
- */
-const getAdapterType = (): "tauri" | "http" | "indexeddb" => {
-  if (isTauri()) return "tauri";
-  if (isOpenedFromDesktop()) return "http";
-  return "indexeddb";
+// ============= Setters =============
+
+export const setVocabularyService = (service: IVocabularyService): void => {
+  vocabularyService = service;
 };
 
+export const setCollectionService = (service: ICollectionService): void => {
+  collectionService = service;
+};
+
+export const setPracticeService = (service: IPracticeService): void => {
+  practiceService = service;
+};
+
+export const setLearningSettingsService = (
+  service: ILearningSettingsService,
+): void => {
+  learningSettingsService = service;
+};
+
+export const setNotificationService = (service: INotificationService): void => {
+  notificationService = service;
+};
+
+export const setCSVService = (service: ICSVService): void => {
+  csvService = service;
+};
+
+export const setGDriveService = (service: IGDriveService): void => {
+  gdriveService = service;
+};
+
+export const setSyncService = (service: ISyncService): void => {
+  syncService = service;
+};
+
+export const setAuthService = (service: IAuthService): void => {
+  authService = service;
+};
+
+// ============= Getters =============
+
 /**
- * Get the Vocabulary Service for the current platform
+ * Get the Vocabulary Service
+ * @throws Error if service not initialized
  */
 export const getVocabularyService = (): IVocabularyService => {
   if (!vocabularyService) {
-    const type = getAdapterType();
-    if (type === "tauri") vocabularyService = new TauriVocabularyAdapter();
-    else if (type === "http") vocabularyService = new HttpVocabularyAdapter();
-    else vocabularyService = new IndexedDBVocabularyAdapter();
+    throw new Error(
+      "VocabularyService not initialized. Call setVocabularyService first.",
+    );
   }
   return vocabularyService;
 };
 
 /**
- * Get the Collection Service for the current platform
+ * Get the Collection Service
+ * @throws Error if service not initialized
  */
 export const getCollectionService = (): ICollectionService => {
   if (!collectionService) {
-    const type = getAdapterType();
-    if (type === "tauri") collectionService = new TauriCollectionAdapter();
-    else if (type === "http") collectionService = new HttpCollectionAdapter();
-    else {
-      collectionService = new IndexedDBCollectionAdapter();
-    }
+    throw new Error(
+      "CollectionService not initialized. Call setCollectionService first.",
+    );
   }
   return collectionService;
 };
 
 /**
- * Get the Practice Service for the current platform
+ * Get the Practice Service
+ * @throws Error if service not initialized
  */
 export const getPracticeService = (): IPracticeService => {
   if (!practiceService) {
-    const type = getAdapterType();
-    if (type === "tauri") practiceService = new TauriPracticeAdapter();
-    else if (type === "http") practiceService = new HttpPracticeAdapter();
-    else practiceService = new IndexedDBPracticeAdapter();
+    throw new Error(
+      "PracticeService not initialized. Call setPracticeService first.",
+    );
   }
   return practiceService;
 };
 
 /**
- * Get the Learning Settings Service for the current platform
+ * Get the Learning Settings Service
+ * @throws Error if service not initialized
  */
 export const getLearningSettingsService = (): ILearningSettingsService => {
   if (!learningSettingsService) {
-    const type = getAdapterType();
-    if (type === "tauri")
-      learningSettingsService = new TauriLearningSettingsAdapter();
-    else if (type === "http")
-      learningSettingsService = new HttpLearningSettingsAdapter();
-    else learningSettingsService = new IndexedDBLearningSettingsAdapter();
+    throw new Error(
+      "LearningSettingsService not initialized. Call setLearningSettingsService first.",
+    );
   }
   return learningSettingsService;
 };
 
 /**
- * Get the Notification Service for the current platform
+ * Get the Notification Service
+ * @throws Error if service not initialized
  */
 export const getNotificationService = (): INotificationService => {
   if (!notificationService) {
-    const type = getAdapterType();
-    if (type === "tauri") notificationService = new TauriNotificationAdapter();
-    else if (type === "http")
-      notificationService = new HttpNotificationAdapter();
-    else notificationService = new BrowserNotificationAdapter();
+    throw new Error(
+      "NotificationService not initialized. Call setNotificationService first.",
+    );
   }
   return notificationService;
 };
 
 /**
- * Get the CSV Service for the current platform
+ * Get the CSV Service
+ * @throws Error if service not initialized
  */
 export const getCSVService = (): ICSVService => {
   if (!csvService) {
-    const type = getAdapterType();
-    if (type === "tauri") csvService = new TauriCSVAdapter();
-    else if (type === "http") csvService = new HttpCSVAdapter();
-    else {
-      csvService = new IndexedDBCSVAdapter();
-    }
+    throw new Error("CSVService not initialized. Call setCSVService first.");
   }
   return csvService;
 };
 
 /**
- * Get the Google Drive Service for the current platform
+ * Get the Google Drive Service
+ * @throws Error if service not initialized
  */
 export const getGDriveService = (): IGDriveService => {
   if (!gdriveService) {
-    const type = getAdapterType();
-    if (type === "tauri") gdriveService = new TauriGDriveAdapter();
-    else if (type === "http") gdriveService = new HttpGDriveAdapter();
-    else gdriveService = new NoOpGDriveAdapter();
+    throw new Error(
+      "GdriveService not initialized. Call setGDriveService first.",
+    );
   }
   return gdriveService;
 };
 
 /**
- * Get the Auth Service for the current platform
+ * Get the Auth Service
+ * @throws Error if service not initialized
  */
 export const getAuthService = (): IAuthService => {
   if (!authService) {
-    const type = getAdapterType();
-    if (type === "tauri") authService = new TauriAuthAdapter();
-    else authService = new QmServerAuthAdapter();
+    throw new Error("AuthService not initialized. Call setAuthService first.");
   }
   return authService;
 };
 
 /**
- * Get the Sync Service for the current platform
+ * Get the Sync Service
+ * @throws Error if service not initialized
  */
 export const getSyncService = (): ISyncService => {
   if (!syncService) {
-    const type = getAdapterType();
-    if (type === "tauri") {
-      syncService = new TauriSyncAdapter();
-    } else {
-      // For web (indexeddb and http), use IndexedDB sync with auth token provider
-      const auth = getAuthService();
-      syncService = new IndexedDBSyncAdapter({
-        serverUrl: env.serverUrl,
-        appId: env.appId,
-        apiKey: env.apiKey,
-        getTokens: () => auth.getTokens(),
-        saveTokens: auth.saveTokensExternal
-          ? (a, r, u) => auth.saveTokensExternal!(a, r, u)
-          : undefined,
-      });
-    }
+    throw new Error("SyncService not initialized. Call setSyncService first.");
   }
   return syncService;
 };
 
+export const getSyncServiceOptional = (): ISyncService | null => {
+  return syncService;
+};
+
+export const getAuthServiceOptional = (): IAuthService | null => {
+  return authService;
+};
+
+// ============= Utilities =============
+
 /**
  * Get all services as an object (useful for context providers)
+ * @throws Error if any required service is not initialized
  */
 export const getAllServices = () => ({
   vocabulary: getVocabularyService(),
@@ -231,7 +213,7 @@ export const getAllServices = () => ({
 });
 
 /**
- * Reset all service instances (useful for testing)
+ * Reset all service instances (useful for testing or logout)
  */
 export const resetServices = (): void => {
   vocabularyService = null;

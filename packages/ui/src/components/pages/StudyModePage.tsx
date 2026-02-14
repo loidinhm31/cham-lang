@@ -206,7 +206,7 @@ export const StudyModePage: React.FC = () => {
                     {t("collections.words")}:
                   </span>
                   <span className="font-semibold text-[var(--color-text-primary)]">
-                    {collection.word_count}
+                    {collection.wordCount}
                   </span>
                 </div>
               </div>
@@ -464,7 +464,7 @@ export const StudyModePage: React.FC = () => {
                         ? t("study.testNormal") || "Normal Test"
                         : t("study.testIntensive") || "Intensive Test"}
                       {" - "}
-                      {collection.word_count} {t("practice.words") || "words"}
+                      {collection.wordCount} {t("practice.words") || "words"}
                     </p>
                     <p className="text-sm text-green-700 dark:text-green-300">
                       {testMode === "normal"

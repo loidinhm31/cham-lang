@@ -99,7 +99,7 @@ export function isDueForReview(
   wordProgress: WordProgress,
   currentDate: Date = new Date(),
 ): boolean {
-  const reviewDate = new Date(wordProgress.next_review_date);
+  const reviewDate = new Date(wordProgress.nextReviewDate);
   return reviewDate <= currentDate;
 }
 
@@ -110,7 +110,7 @@ export function getDaysUntilReview(
   wordProgress: WordProgress,
   currentDate: Date = new Date(),
 ): number {
-  const reviewDate = new Date(wordProgress.next_review_date);
+  const reviewDate = new Date(wordProgress.nextReviewDate);
   const diffTime = reviewDate.getTime() - currentDate.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   return Math.max(0, diffDays);

@@ -5,12 +5,12 @@ import { db, generateId, type PendingChange } from "./database";
  */
 export function withSyncTracking<T extends Record<string, unknown>>(
   entity: T,
-  existing?: { sync_version?: number },
-): T & { sync_version: number; synced_at: undefined } {
+  existing?: { syncVersion?: number },
+): T & { syncVersion: number; syncedAt: undefined } {
   return {
     ...entity,
-    sync_version: (existing?.sync_version ?? 0) + 1,
-    synced_at: undefined, // Mark as unsynced
+    syncVersion: (existing?.syncVersion ?? 0) + 1,
+    syncedAt: undefined, // Mark as unsynced
   };
 }
 

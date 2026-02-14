@@ -1,5 +1,5 @@
 export interface SharedUser {
-  user_id: string;
+  userId: string;
   permission: "viewer" | "editor";
 }
 
@@ -8,12 +8,12 @@ export interface Collection {
   name: string;
   description: string;
   language: string;
-  shared_by?: string;
-  shared_with: SharedUser[];
-  is_public: boolean;
-  word_count: number;
-  created_at: string;
-  updated_at: string;
+  sharedBy?: string;
+  sharedWith: SharedUser[];
+  isPublic: boolean;
+  wordCount: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const getCollectionId = (collection: Collection): string | undefined => {
@@ -27,13 +27,13 @@ export interface CreateCollectionRequest {
   name: string;
   description: string;
   language: string;
-  is_public: boolean;
+  isPublic: boolean;
 }
 
 export interface UpdateCollectionRequest {
   id: string;
   name?: string;
   description?: string;
-  is_public?: boolean;
-  shared_with?: SharedUser[];
+  isPublic?: boolean;
+  sharedWith?: SharedUser[];
 }

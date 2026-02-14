@@ -28,4 +28,4 @@ export type {
   VersionMetadata,
 } from "./IGDriveService";
 export type { ISyncService } from "./ISyncService";
-export type { IAuthService } from "./IAuthService";
+export type { IAuthService, RequiredSyncConfig } from "./IAuthService";

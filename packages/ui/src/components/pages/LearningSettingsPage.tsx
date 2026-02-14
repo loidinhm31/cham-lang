@@ -40,14 +40,14 @@ export const LearningSettingsPage: React.FC = () => {
       const data = await LearningSettingsService.getOrCreateLearningSettings();
 
       // Update form state
-      setAlgorithm(data.sr_algorithm);
-      setBoxCount(data.leitner_box_count as LeitnerBoxCount);
-      setConsecutiveCorrect(data.consecutive_correct_required);
-      setShowFailedWords(data.show_failed_words_in_session);
-      setNewWordsPerDay(data.new_words_per_day || 20);
-      setDailyReviewLimit(data.daily_review_limit || 100);
-      setAutoAdvanceTimeout(data.auto_advance_timeout_seconds);
-      setShowHint(data.show_hint_in_fillword);
+      setAlgorithm(data.srAlgorithm);
+      setBoxCount(data.leitnerBoxCount as LeitnerBoxCount);
+      setConsecutiveCorrect(data.consecutiveCorrectRequired);
+      setShowFailedWords(data.showFailedWordsInSession);
+      setNewWordsPerDay(data.newWordsPerDay || 20);
+      setDailyReviewLimit(data.dailyReviewLimit || 100);
+      setAutoAdvanceTimeout(data.autoAdvanceTimeoutSeconds);
+      setShowHint(data.showHintInFillword);
     } catch (error) {
       console.error("Failed to load settings:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -60,14 +60,14 @@ export const LearningSettingsPage: React.FC = () => {
     try {
       setSaving(true);
       await LearningSettingsService.updateLearningSettings({
-        sr_algorithm: algorithm,
-        leitner_box_count: boxCount,
-        consecutive_correct_required: consecutiveCorrect,
-        show_failed_words_in_session: showFailedWords,
-        new_words_per_day: newWordsPerDay,
-        daily_review_limit: dailyReviewLimit,
-        auto_advance_timeout_seconds: autoAdvanceTimeout,
-        show_hint_in_fillword: showHint,
+        srAlgorithm: algorithm,
+        leitnerBoxCount: boxCount,
+        consecutiveCorrectRequired: consecutiveCorrect,
+        showFailedWordsInSession: showFailedWords,
+        newWordsPerDay: newWordsPerDay,
+        dailyReviewLimit: dailyReviewLimit,
+        autoAdvanceTimeoutSeconds: autoAdvanceTimeout,
+        showHintInFillword: showHint,
       });
       showAlert(t("settings.saved") || "Settings saved successfully!", {
         variant: "success",

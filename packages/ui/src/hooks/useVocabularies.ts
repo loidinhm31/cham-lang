@@ -5,7 +5,7 @@ import type {
   UpdateVocabularyRequest,
   SearchQuery,
 } from "@cham-lang/shared/types";
-import { chamLangAPI } from "@cham-lang/ui/services";
+import { VocabularyService } from "@cham-lang/ui/services";
 
 interface UseVocabulariesOptions {
   language?: string;
@@ -30,12 +30,12 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
     try {
       let vocabList: Vocabulary[];
       if (collectionId) {
-        vocabList = await chamLangAPI.getVocabulariesByCollection(
+        vocabList = await VocabularyService.getVocabulariesByCollection(
           collectionId,
           limit,
         );
       } else {
-        vocabList = await chamLangAPI.getAllVocabularies(language, limit);
+        vocabList = await VocabularyService.getAllVocabularies(language, limit);
       }
       setVocabularies(vocabList);
     } catch (err) {
@@ -50,7 +50,7 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
   const createVocabulary = async (
     request: CreateVocabularyRequest,
   ): Promise<string> => {
-    const vocabularyId = await chamLangAPI.createVocabulary(request);
+    const vocabularyId = await VocabularyService.createVocabulary(request);
     await loadVocabularies();
     setSelectedVocabularyId(vocabularyId);
     return vocabularyId;
@@ -59,12 +59,12 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
   const updateVocabulary = async (
     request: UpdateVocabularyRequest,
   ): Promise<void> => {
-    await chamLangAPI.updateVocabulary(request);
+    await VocabularyService.updateVocabulary(request);
     await loadVocabularies();
   };
 
   const deleteVocabulary = async (vocabularyId: string): Promise<void> => {
-    await chamLangAPI.deleteVocabulary(vocabularyId);
+    await VocabularyService.deleteVocabulary(vocabularyId);
     await loadVocabularies();
     if (selectedVocabularyId === vocabularyId) {
       setSelectedVocabularyId(
@@ -79,7 +79,7 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
     setIsLoading(true);
     setError(null);
     try {
-      const results = await chamLangAPI.searchVocabularies(query);
+      const results = await VocabularyService.searchVocabularies(query);
       setVocabularies(results);
     } catch (err) {
       setError(
@@ -94,7 +94,10 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
     vocabularyIds: string[],
     targetCollectionId: string,
   ): Promise<void> => {
-    await chamLangAPI.bulkMoveVocabularies(vocabularyIds, targetCollectionId);
+    await VocabularyService.bulkMoveVocabularies(
+      vocabularyIds,
+      targetCollectionId,
+    );
     await loadVocabularies();
   };
 

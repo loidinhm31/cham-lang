@@ -32,7 +32,7 @@ function determineWordStatus(
   wordProgress: WordProgress | undefined,
 ): WordStatus {
   // NEW if no progress or no prior practice
-  if (!wordProgress || wordProgress.total_reviews === 0) {
+  if (!wordProgress || wordProgress.totalReviews === 0) {
     return "NEW";
   }
 
@@ -45,12 +45,12 @@ function determineWordStatus(
  */
 function determineProgressStatus(wordProgress: WordProgress): WordStatus {
   // Validate and clamp values to prevent invalid data
-  const box = Math.max(1, Math.min(wordProgress.leitner_box, 7)); // Clamp between 1-7
+  const box = Math.max(1, Math.min(wordProgress.leitnerBox, 7)); // Clamp between 1-7
   const consecutive = Math.max(
     0,
-    Math.min(wordProgress.consecutive_correct_count, 100),
+    Math.min(wordProgress.consecutiveCorrectCount, 100),
   ); // Clamp between 0-100
-  const totalReviews = Math.max(0, wordProgress.total_reviews); // Minimum 0
+  const totalReviews = Math.max(0, wordProgress.totalReviews); // Minimum 0
 
   // MASTERED: In final box (5+) or box 3 with strong performance
   if (box >= 5 || (box === 3 && consecutive >= 2)) {
@@ -79,7 +79,7 @@ export interface SessionState {
   currentWord: Vocabulary | null; // Currently displayed word
 
   // Progress tracking
-  wordProgressMap: Map<string, WordProgress>; // vocabulary_id -> WordProgress
+  wordProgressMap: Map<string, WordProgress>; // vocabularyId -> WordProgress
   sessionResults: PracticeResult[]; // Results for this session
 
   // Session metadata
@@ -121,7 +121,7 @@ export class SessionManager {
     // Initialize word progress map
     const progressMap = new Map<string, WordProgress>();
     wordsProgress.forEach((wp) => {
-      progressMap.set(wp.vocabulary_id, { ...wp });
+      progressMap.set(wp.vocabularyId, { ...wp });
     });
 
     // Initialize status and repetition tracking
@@ -319,11 +319,11 @@ export class SessionManager {
 
     // Record session result
     this.state.sessionResults.push({
-      vocabulary_id: vocabularyId,
+      vocabularyId: vocabularyId,
       word: vocabulary.word,
       correct: true,
       mode: this.state.mode,
-      time_spent_seconds: timeSpentSeconds,
+      timeSpentSeconds: timeSpentSeconds,
     });
 
     let reviewResult: ReviewResult;
@@ -344,17 +344,15 @@ export class SessionManager {
         reviewResult = {
           updatedProgress: wordProgress,
           boxChanged: false,
-          previousBox: wordProgress.leitner_box,
-          newBox: wordProgress.leitner_box,
-          nextReviewDate: new Date(wordProgress.next_review_date),
-          intervalDays: wordProgress.interval_days,
+          previousBox: wordProgress.leitnerBox,
+          newBox: wordProgress.leitnerBox,
+          nextReviewDate: new Date(wordProgress.nextReviewDate),
+          intervalDays: wordProgress.intervalDays,
           message: "Study mode - progress not tracked",
         };
       } else {
         // Practice mode - update progress
-        const completedModes = [
-          ...(wordProgress.completed_modes_in_cycle || []),
-        ];
+        const completedModes = [...(wordProgress.completedModesInCycle || [])];
         if (!completedModes.includes(this.state.mode)) {
           completedModes.push(this.state.mode);
         }
@@ -372,8 +370,8 @@ export class SessionManager {
             wordProgress,
             this.settings,
           );
-          reviewResult.updatedProgress.completed_modes_in_cycle = [];
-          reviewResult.message = `Word mastered! Advanced to box ${reviewResult.updatedProgress.leitner_box}`;
+          reviewResult.updatedProgress.completedModesInCycle = [];
+          reviewResult.message = `Word mastered! Advanced to box ${reviewResult.updatedProgress.leitnerBox}`;
 
           // Update repetition requirements if status changed due to box advancement
           if (reviewResult.boxChanged && repTracker) {
@@ -393,16 +391,16 @@ export class SessionManager {
           reviewResult = {
             updatedProgress: {
               ...wordProgress,
-              completed_modes_in_cycle: completedModes,
-              total_reviews: wordProgress.total_reviews + 1,
-              correct_count: wordProgress.correct_count + 1,
-              last_practiced: new Date().toISOString(),
+              completedModesInCycle: completedModes,
+              totalReviews: wordProgress.totalReviews + 1,
+              correctCount: wordProgress.correctCount + 1,
+              lastPracticed: new Date().toISOString(),
             },
             boxChanged: false,
-            previousBox: wordProgress.leitner_box,
-            newBox: wordProgress.leitner_box,
-            nextReviewDate: new Date(wordProgress.next_review_date),
-            intervalDays: wordProgress.interval_days,
+            previousBox: wordProgress.leitnerBox,
+            newBox: wordProgress.leitnerBox,
+            nextReviewDate: new Date(wordProgress.nextReviewDate),
+            intervalDays: wordProgress.intervalDays,
             message: `Mode completed! ${3 - completedModes.length} more mode(s) to advance.`,
           };
         }
@@ -418,10 +416,10 @@ export class SessionManager {
       reviewResult = {
         updatedProgress: wordProgress,
         boxChanged: false,
-        previousBox: wordProgress.leitner_box,
-        newBox: wordProgress.leitner_box,
-        nextReviewDate: new Date(wordProgress.next_review_date),
-        intervalDays: wordProgress.interval_days,
+        previousBox: wordProgress.leitnerBox,
+        newBox: wordProgress.leitnerBox,
+        nextReviewDate: new Date(wordProgress.nextReviewDate),
+        intervalDays: wordProgress.intervalDays,
         message: `Correct! ${repTracker?.completedRepetitions}/${repTracker?.requiredRepetitions} repetitions (${status})`,
       };
     }
@@ -457,11 +455,11 @@ export class SessionManager {
 
     // Add to session results (always track session results)
     this.state.sessionResults.push({
-      vocabulary_id: vocabularyId,
+      vocabularyId: vocabularyId,
       word: vocabulary.word,
       correct: false,
       mode: this.state.mode,
-      time_spent_seconds: timeSpentSeconds,
+      timeSpentSeconds: timeSpentSeconds,
     });
 
     // Check if max failures exceeded - force complete the word to prevent infinite loop
@@ -485,7 +483,7 @@ export class SessionManager {
       if (failedIdx >= 0) {
         this.state.failedWordsQueue.splice(failedIdx, 1);
       }
-    } else if (this.settings.show_failed_words_in_session) {
+    } else if (this.settings.showFailedWordsInSession) {
       // Re-queue if settings allow and not exceeded max failures
       const alreadyInQueue = this.state.failedWordsQueue.some(
         (w) => w.id === vocabularyId,
@@ -515,10 +513,10 @@ export class SessionManager {
       return {
         updatedProgress: wordProgress,
         boxChanged: false,
-        previousBox: wordProgress.leitner_box,
-        newBox: wordProgress.leitner_box,
-        nextReviewDate: new Date(wordProgress.next_review_date),
-        intervalDays: wordProgress.interval_days,
+        previousBox: wordProgress.leitnerBox,
+        newBox: wordProgress.leitnerBox,
+        nextReviewDate: new Date(wordProgress.nextReviewDate),
+        intervalDays: wordProgress.intervalDays,
         message: maxFailuresExceeded
           ? `Skipped after ${MAX_FAILURES_PER_WORD} failures (study mode)`
           : "Study mode - progress not tracked",
@@ -546,7 +544,7 @@ export class SessionManager {
 
     // Reset completed modes in cycle since the word was answered incorrectly
     // User must complete all modes correctly in the same review cycle
-    reviewResult.updatedProgress.completed_modes_in_cycle = [];
+    reviewResult.updatedProgress.completedModesInCycle = [];
 
     // Update message if max failures exceeded
     if (maxFailuresExceeded) {
@@ -633,12 +631,12 @@ export class SessionManager {
   getUpdatedWordProgress(): WordProgress[] {
     // Get vocabulary IDs that were actually practiced in this session
     const practicedVocabIds = new Set(
-      this.state.sessionResults.map((result) => result.vocabulary_id),
+      this.state.sessionResults.map((result) => result.vocabularyId),
     );
 
     // Only return progress for words that were actually practiced
     return Array.from(this.state.wordProgressMap.values()).filter((progress) =>
-      practicedVocabIds.has(progress.vocabulary_id),
+      practicedVocabIds.has(progress.vocabularyId),
     );
   }
 
@@ -719,22 +717,22 @@ export class SessionManager {
   ): WordProgress {
     const now = new Date().toISOString();
     return {
-      vocabulary_id: vocabularyId,
+      vocabularyId: vocabularyId,
       word: word,
-      correct_count: 0,
-      incorrect_count: 0,
-      last_practiced: now,
-      mastery_level: 0,
-      next_review_date: now,
-      interval_days: 0,
-      easiness_factor: 2.5,
-      consecutive_correct_count: 0,
-      leitner_box: 1,
-      last_interval_days: 0,
-      total_reviews: 0,
-      failed_in_session: false,
-      retry_count: 0,
-      completed_modes_in_cycle: [],
+      correctCount: 0,
+      incorrectCount: 0,
+      lastPracticed: now,
+      masteryLevel: 0,
+      nextReviewDate: now,
+      intervalDays: 0,
+      easinessFactor: 2.5,
+      consecutiveCorrectCount: 0,
+      leitnerBox: 1,
+      lastIntervalDays: 0,
+      totalReviews: 0,
+      failedInSession: false,
+      retryCount: 0,
+      completedModesInCycle: [],
     };
   }
 }

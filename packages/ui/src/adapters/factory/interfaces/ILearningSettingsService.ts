@@ -10,16 +10,16 @@ import type {
 } from "@cham-lang/shared/types";
 
 export interface UpdateLearningSettingsRequest {
-  sr_algorithm?: SpacedRepetitionAlgorithm;
-  leitner_box_count?: LeitnerBoxCount;
-  consecutive_correct_required?: number;
-  show_failed_words_in_session?: boolean;
-  new_words_per_day?: number;
-  daily_review_limit?: number;
-  auto_advance_timeout_seconds?: number;
-  show_hint_in_fillword?: boolean;
-  reminder_enabled?: boolean;
-  reminder_time?: string;
+  srAlgorithm?: SpacedRepetitionAlgorithm;
+  leitnerBoxCount?: LeitnerBoxCount;
+  consecutiveCorrectRequired?: number;
+  showFailedWordsInSession?: boolean;
+  newWordsPerDay?: number;
+  dailyReviewLimit?: number;
+  autoAdvanceTimeoutSeconds?: number;
+  showHintInFillword?: boolean;
+  reminderEnabled?: boolean;
+  reminderTime?: string;
 }
 
 export interface ILearningSettingsService {

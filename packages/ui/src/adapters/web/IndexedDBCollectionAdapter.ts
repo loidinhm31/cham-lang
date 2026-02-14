@@ -11,11 +11,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   private async hydrateSharedWith(collection: Collection): Promise<Collection> {
     if (!collection.id) return collection;
     const sharedUsers = await db.collectionSharedUsers
-      .where("collection_id")
+      .where("collectionId")
       .equals(collection.id)
       .toArray();
-    collection.shared_with = sharedUsers.map((su) => ({
-      user_id: su.user_id,
+    collection.sharedWith = sharedUsers.map((su) => ({
+      userId: su.userId,
       permission: su.permission as "viewer" | "editor",
     }));
     return collection;
@@ -30,11 +30,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
         name: request.name,
         description: request.description,
         language: request.language,
-        shared_with: [],
-        is_public: request.is_public,
-        word_count: 0,
-        created_at: now,
-        updated_at: now,
+        sharedWith: [],
+        isPublic: request.isPublic,
+        wordCount: 0,
+        createdAt: now,
+        updatedAt: now,
       }),
     );
     return id;
@@ -48,7 +48,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
   async getUserCollections(): Promise<Collection[]> {
     const collections = await db.collections.toArray();
-    collections.sort((a, b) => b.created_at.localeCompare(a.created_at));
+    collections.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return Promise.all(
       collections.map((c) => this.hydrateSharedWith(c as Collection)),
     );
@@ -56,14 +56,14 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
   async getPublicCollections(language?: string): Promise<Collection[]> {
     let collections = await db.collections
-      .where("is_public")
+      .where("isPublic")
       .equals(1) // Dexie stores booleans as 0/1
       .toArray();
 
     // Fallback: filter manually since boolean indexing can be tricky
     if (collections.length === 0) {
       const all = await db.collections.toArray();
-      collections = all.filter((c) => c.is_public);
+      collections = all.filter((c) => c.isPublic);
     }
 
     if (language) {
@@ -82,7 +82,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       withSyncTracking(
         {
           ...updates,
-          updated_at: getCurrentTimestamp(),
+          updatedAt: getCurrentTimestamp(),
         },
         existing,
       ),
@@ -97,19 +97,19 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       async () => {
         // Track vocabulary deletions for sync
         const vocabs = await db.vocabularies
-          .where("collection_id")
+          .where("collectionId")
           .equals(id)
           .toArray();
         for (const vocab of vocabs) {
-          await trackDelete("vocabularies", vocab.id, vocab.sync_version ?? 1);
+          await trackDelete("vocabularies", vocab.id, vocab.syncVersion ?? 1);
         }
         // Track collection deletion for sync
         const collection = await db.collections.get(id);
         if (collection) {
-          await trackDelete("collections", id, collection.sync_version ?? 1);
+          await trackDelete("collections", id, collection.syncVersion ?? 1);
         }
         // Delete all vocabularies in this collection
-        await db.vocabularies.where("collection_id").equals(id).delete();
+        await db.vocabularies.where("collectionId").equals(id).delete();
         // Delete the collection
         await db.collections.delete(id);
       },
@@ -126,9 +126,9 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
     // Check if already shared with this user
     const existing = await db.collectionSharedUsers
-      .where("collection_id")
+      .where("collectionId")
       .equals(collectionId)
-      .filter((su) => su.user_id === shareWithUserId)
+      .filter((su) => su.userId === shareWithUserId)
       .first();
     if (existing) {
       return "Collection already shared with this user";
@@ -141,24 +141,21 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     await db.collectionSharedUsers.add(
       withSyncTracking({
         id,
-        collection_id: collectionId,
-        user_id: shareWithUserId,
+        collectionId: collectionId,
+        userId: shareWithUserId,
         permission: "viewer",
-        created_at: now,
+        createdAt: now,
       }),
     );
 
-    // Update the collection's shared_with array for immediate UI feedback
+    // Update the collection's sharedWith array for immediate UI feedback
     const sharedWith = [
-      ...collection.shared_with,
-      { user_id: shareWithUserId, permission: "viewer" },
+      ...collection.sharedWith,
+      { userId: shareWithUserId, permission: "viewer" },
     ];
     await db.collections.update(
       collectionId,
-      withSyncTracking(
-        { shared_with: sharedWith, updated_at: now },
-        collection,
-      ),
+      withSyncTracking({ sharedWith: sharedWith, updatedAt: now }, collection),
     );
 
     return "Collection shared successfully";
@@ -173,31 +170,28 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
     // Find and track deletion of the shared user record
     const sharedUserRecord = await db.collectionSharedUsers
-      .where("collection_id")
+      .where("collectionId")
       .equals(collectionId)
-      .filter((su) => su.user_id === userIdToRemove)
+      .filter((su) => su.userId === userIdToRemove)
       .first();
 
     if (sharedUserRecord) {
       await trackDelete(
         "collectionSharedUsers",
         sharedUserRecord.id,
-        sharedUserRecord.sync_version ?? 1,
+        sharedUserRecord.syncVersion ?? 1,
       );
       await db.collectionSharedUsers.delete(sharedUserRecord.id);
     }
 
-    // Update the collection's shared_with array for immediate UI feedback
-    const sharedWith = collection.shared_with.filter(
-      (su) => su.user_id !== userIdToRemove,
+    // Update the collection's sharedWith array for immediate UI feedback
+    const sharedWith = collection.sharedWith.filter(
+      (su) => su.userId !== userIdToRemove,
     );
     const now = getCurrentTimestamp();
     await db.collections.update(
       collectionId,
-      withSyncTracking(
-        { shared_with: sharedWith, updated_at: now },
-        collection,
-      ),
+      withSyncTracking({ sharedWith: sharedWith, updatedAt: now }, collection),
     );
 
     return "Collection unshared successfully";
@@ -205,10 +199,10 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
   async updateCollectionWordCount(collectionId: string): Promise<void> {
     const count = await db.vocabularies
-      .where("collection_id")
+      .where("collectionId")
       .equals(collectionId)
       .count();
-    await db.collections.update(collectionId, { word_count: count });
+    await db.collections.update(collectionId, { wordCount: count });
   }
 
   async getLevelConfiguration(language: string): Promise<string[]> {

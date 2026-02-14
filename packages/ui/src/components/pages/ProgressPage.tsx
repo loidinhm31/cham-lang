@@ -91,18 +91,18 @@ export const ProgressPage: React.FC = () => {
       // Load practice progress
       const progress = await PracticeService.getPracticeProgress(language);
       if (progress) {
-        setPracticeStreak(progress.current_streak);
-        setWordsPracticed(progress.total_words_practiced);
+        setPracticeStreak(progress.currentStreak);
+        setWordsPracticed(progress.totalWordsPracticed);
 
         // Calculate level progress
         const levelStats = calculateLevelProgress(
           vocabularies,
-          progress.words_progress,
+          progress.wordsProgress,
         );
         setLevelProgress(levelStats);
 
         // Calculate spaced repetition statistics
-        calculateSpacedRepetitionStats(progress.words_progress, settings);
+        calculateSpacedRepetitionStats(progress.wordsProgress, settings);
       } else {
         setPracticeStreak(0);
         setWordsPracticed(0);
@@ -122,7 +122,7 @@ export const ProgressPage: React.FC = () => {
 
   const calculateLevelProgress = (
     vocabularies: Vocabulary[],
-    wordsProgress: Array<{ vocabulary_id: string; mastery_level: number }>,
+    wordsProgress: Array<{ vocabularyId: string; masteryLevel: number }>,
   ): LevelProgress[] => {
     // Get all unique levels from vocabularies
     const levelMap = new Map<string, { total: number; practiced: number }>();
@@ -133,10 +133,8 @@ export const ProgressPage: React.FC = () => {
       current.total += 1;
 
       // Check if this word has been practiced
-      const wordProg = wordsProgress.find(
-        (wp) => wp.vocabulary_id === vocab.id,
-      );
-      if (wordProg && wordProg.mastery_level > 0) {
+      const wordProg = wordsProgress.find((wp) => wp.vocabularyId === vocab.id);
+      if (wordProg && wordProg.masteryLevel > 0) {
         current.practiced += 1;
       }
 

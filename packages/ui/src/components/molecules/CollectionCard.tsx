@@ -27,8 +27,8 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
   const colorIndex = collection.name.length % collectionColors.length;
   const cardColor = collectionColors[colorIndex];
 
-  const isOwner = !collection.shared_by;
-  const isShared = collection.shared_with.length > 0;
+  const isOwner = !collection.sharedBy;
+  const isShared = collection.sharedWith.length > 0;
 
   return (
     <Card variant={cardColor} hover onClick={onClick}>
@@ -55,7 +55,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
                   className="flex items-center gap-1 text-xs"
                 >
                   <Users className="w-3 h-3" />
-                  <span>{collection.shared_with.length}</span>
+                  <span>{collection.sharedWith.length}</span>
                 </Badge>
               )}
             </div>
@@ -70,7 +70,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
           className="flex items-center gap-1.5 px-3 py-1.5 shrink-0 ml-2"
         >
           <BookOpen className="w-4 h-4" />
-          <span className="font-bold">{collection.word_count}</span>
+          <span className="font-bold">{collection.wordCount}</span>
         </Badge>
       </div>
 

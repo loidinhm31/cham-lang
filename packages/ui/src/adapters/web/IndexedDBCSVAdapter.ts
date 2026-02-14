@@ -25,13 +25,13 @@ export class IndexedDBCSVAdapter implements ICSVService {
       if (!collection) continue;
 
       const vocabs = await db.vocabularies
-        .where("collection_id")
+        .where("collectionId")
         .equals(collectionId)
         .toArray();
 
       for (const vocab of vocabs) {
         const definitions = vocab.definitions.map((d) => d.meaning).join("; ");
-        const examples = vocab.example_sentences.join("; ");
+        const examples = vocab.exampleSentences.join("; ");
         const topics = vocab.topics.join("; ");
         const tags = vocab.tags.join("; ");
 
@@ -39,7 +39,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
           [
             csvEscape(collection.name),
             csvEscape(vocab.word),
-            csvEscape(vocab.word_type),
+            csvEscape(vocab.wordType),
             csvEscape(vocab.level),
             csvEscape(vocab.ipa),
             csvEscape(vocab.language),
@@ -78,17 +78,17 @@ export class IndexedDBCSVAdapter implements ICSVService {
   async importVocabulariesCSV(
     request: ImportCSVRequest,
   ): Promise<ImportResult> {
-    if (!request.csv_text) {
+    if (!request.csvText) {
       return {
         imported: 0,
         skipped: 0,
         errors: [
-          "File-based CSV import is not supported in web mode. Provide csv_text instead.",
+          "File-based CSV import is not supported in web mode. Provide csvText instead.",
         ],
       };
     }
 
-    const lines = parseCSVLines(request.csv_text);
+    const lines = parseCSVLines(request.csvText);
     if (lines.length < 2) {
       return {
         imported: 0,
@@ -160,7 +160,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
         const cached = collectionCache.get(collectionName.toLowerCase());
         if (cached) {
           collectionId = cached;
-        } else if (request.create_missing_collections) {
+        } else if (request.createMissingCollections) {
           // Create collection
           const newId = generateId();
           const lang =
@@ -170,11 +170,11 @@ export class IndexedDBCSVAdapter implements ICSVService {
             name: collectionName,
             description: "",
             language: lang,
-            shared_with: [],
-            is_public: false,
-            word_count: 0,
-            created_at: now,
-            updated_at: now,
+            sharedWith: [],
+            isPublic: false,
+            wordCount: 0,
+            createdAt: now,
+            updatedAt: now,
           });
           collectionCache.set(collectionName.toLowerCase(), newId);
           collectionsCreated.push(collectionName);
@@ -235,20 +235,20 @@ export class IndexedDBCSVAdapter implements ICSVService {
         await db.vocabularies.add({
           id: generateId(),
           word,
-          word_type:
+          wordType:
             wordTypeIdx !== -1 ? row[wordTypeIdx]?.trim() || "n/a" : "n/a",
           level: levelIdx !== -1 ? row[levelIdx]?.trim() || "" : "",
           ipa: ipaIdx !== -1 ? row[ipaIdx]?.trim() || "" : "",
           definitions,
-          example_sentences: examples,
+          exampleSentences: examples,
           topics,
           tags,
-          related_words: related,
+          relatedWords: related,
           language:
             langIdx !== -1 && row[langIdx]?.trim() ? row[langIdx].trim() : "en",
-          collection_id: collectionId,
-          created_at: now,
-          updated_at: now,
+          collectionId: collectionId,
+          createdAt: now,
+          updatedAt: now,
         });
 
         imported++;
@@ -267,7 +267,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
       const coll = await db.collections.get(collId);
       if (coll) {
         await db.collections.update(collId, {
-          word_count: (coll.word_count || 0) + count,
+          wordCount: (coll.wordCount || 0) + count,
         });
       }
     }
@@ -276,7 +276,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
       imported,
       skipped,
       errors,
-      collections_created: collectionsCreated,
+      collectionsCreated: collectionsCreated,
     };
   }
 
@@ -310,20 +310,20 @@ export class IndexedDBCSVAdapter implements ICSVService {
         await db.vocabularies.add({
           id: generateId(),
           word: item.word.trim(),
-          word_type: "n/a",
+          wordType: "n/a",
           level: "",
           ipa: item.ipa || "",
           definitions: item.definition?.trim()
             ? [{ meaning: item.definition.trim() }]
             : [],
-          example_sentences: [],
+          exampleSentences: [],
           topics: [],
           tags: [],
-          related_words: [],
+          relatedWords: [],
           language: language || "en",
-          collection_id: collectionId,
-          created_at: now,
-          updated_at: now,
+          collectionId: collectionId,
+          createdAt: now,
+          updatedAt: now,
         });
 
         imported++;
@@ -337,7 +337,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
     const coll = await db.collections.get(collectionId);
     if (coll) {
       await db.collections.update(collectionId, {
-        word_count: (coll.word_count || 0) + imported,
+        wordCount: (coll.wordCount || 0) + imported,
       });
     }
 

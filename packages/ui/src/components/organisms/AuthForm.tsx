@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LogIn, UserPlus, Mail, Lock, User } from "lucide-react";
 import { Button, Input } from "@cham-lang/ui/components/atoms";
-import { getAuthService } from "@cham-lang/ui/adapters";
+import { AuthService } from "@cham-lang/ui/services";
 import { AuthResponse } from "@cham-lang/shared/types";
 import { useDialog } from "@cham-lang/ui/contexts";
 
@@ -30,18 +30,17 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
     }
 
     setLoading(true);
-    const authService = getAuthService();
 
     try {
       let response: AuthResponse;
 
       if (isLogin) {
-        response = await authService.login(email, password);
+        response = await AuthService.login(email, password);
         showAlert(t("auth.loginSuccess") || "Logged in successfully", {
           variant: "success",
         });
       } else {
-        response = await authService.register(username, email, password);
+        response = await AuthService.register(username, email, password);
         showAlert(t("auth.registerSuccess") || "Account created successfully", {
           variant: "success",
         });

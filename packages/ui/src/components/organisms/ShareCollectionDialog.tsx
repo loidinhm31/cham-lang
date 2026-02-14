@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import { X, Users } from "lucide-react";
 import { Button, Input } from "@cham-lang/ui/components/atoms";
 import { SharedUserItem } from "@cham-lang/ui/components/molecules";
-import { CollectionService } from "@cham-lang/ui/services";
-import { getAuthService } from "@cham-lang/ui/adapters";
+import { AuthService, CollectionService } from "@cham-lang/ui/services";
 import { useDialog } from "@cham-lang/ui/contexts";
 import type { Collection } from "@cham-lang/shared/types";
 
@@ -34,8 +33,7 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
   useEffect(() => {
     const loadCurrentUser = async () => {
       try {
-        const authService = getAuthService();
-        const tokens = await authService.getTokens();
+        const tokens = await AuthService.getTokens();
         if (tokens.userId) {
           setCurrentUserId(tokens.userId);
         }
@@ -86,8 +84,8 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
 
     // Check if already shared with this user
     // Note: We'll check again after lookup, but this is a quick check if username matches any existing IDs (unlikely but possible)
-    const isAlreadyShared = collection.shared_with.some(
-      (user) => user.user_id === username.trim(),
+    const isAlreadyShared = collection.sharedWith.some(
+      (user) => user.userId === username.trim(),
     );
     if (isAlreadyShared) {
       return t("collections.shareDialog.alreadyShared");
@@ -109,8 +107,7 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
       setLoading(true);
 
       // Lookup user first
-      const authService = getAuthService();
-      const user = await authService.lookupUserByUsername(username.trim());
+      const user = await AuthService.lookupUserByUsername(username.trim());
 
       if (!user) {
         setError(t("collections.shareDialog.userNotFound"));
@@ -126,8 +123,8 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
       }
 
       // Check if already shared (using ID)
-      const isAlreadyShared = collection.shared_with.some(
-        (sharedUser) => sharedUser.user_id === user.userId,
+      const isAlreadyShared = collection.sharedWith.some(
+        (sharedUser) => sharedUser.userId === user.userId,
       );
       if (isAlreadyShared) {
         setError(t("collections.shareDialog.alreadyShared"));
@@ -165,14 +162,14 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
     newPermission: "viewer" | "editor",
   ) => {
     try {
-      // Update permission by modifying the shared_with array
-      const updatedSharedWith = collection.shared_with.map((user) =>
-        user.user_id === userId ? { ...user, permission: newPermission } : user,
+      // Update permission by modifying the sharedWith array
+      const updatedSharedWith = collection.sharedWith.map((user) =>
+        user.userId === userId ? { ...user, permission: newPermission } : user,
       );
 
       await CollectionService.updateCollection({
         id: collection.id!,
-        shared_with: updatedSharedWith,
+        sharedWith: updatedSharedWith,
       });
 
       showAlert(t("collections.shareDialog.permissionChanged"), {
@@ -211,8 +208,8 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
 
   if (!isOpen) return null;
 
-  // Only owner can share (shared_by is undefined/null for own collections)
-  const isOwner = !collection.shared_by;
+  // Only owner can share (sharedBy is undefined/null for own collections)
+  const isOwner = !collection.sharedBy;
 
   return (
     <div
@@ -318,19 +315,19 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
           <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
             <Users className="w-4 h-4" />
             {t("collections.shareDialog.sharedWith", {
-              count: collection.shared_with.length,
+              count: collection.sharedWith.length,
             })}
           </h3>
 
-          {collection.shared_with.length === 0 ? (
+          {collection.sharedWith.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
               {t("collections.shareDialog.notSharedYet")}
             </div>
           ) : (
             <div className="space-y-2">
-              {collection.shared_with.map((sharedUser) => (
+              {collection.sharedWith.map((sharedUser) => (
                 <SharedUserItem
-                  key={sharedUser.user_id}
+                  key={sharedUser.userId}
                   sharedUser={sharedUser}
                   collectionId={collection.id!}
                   isOwner={isOwner}

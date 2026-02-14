@@ -66,7 +66,7 @@ export const CollectionDetailPage: React.FC = () => {
       setCollection(collectionData);
       setVocabularies(vocabResponse.items);
       setTotalCount(vocabResponse.total);
-      setHasMore(vocabResponse.has_more);
+      setHasMore(vocabResponse.hasMore);
     } catch (error) {
       console.error("Failed to load collection:", error);
       showAlert(t("messages.error"), { variant: "error" });
@@ -94,7 +94,7 @@ export const CollectionDetailPage: React.FC = () => {
       if (vocabResponse.items.length > 0) {
         setVocabularies((prev) => [...prev, ...vocabResponse.items]);
         setPage(nextPage);
-        setHasMore(vocabResponse.has_more);
+        setHasMore(vocabResponse.hasMore);
       } else {
         setHasMore(false);
       }
@@ -144,7 +144,7 @@ export const CollectionDetailPage: React.FC = () => {
         collectionId: id,
         vocabularyIds: vocabularies.map((v) => v.id),
         currentIndex: index,
-        totalWords: collection?.word_count,
+        totalWords: collection?.wordCount,
         canEdit,
       },
     });
@@ -197,7 +197,7 @@ export const CollectionDetailPage: React.FC = () => {
         targetCollectionId,
       );
 
-      showAlert(t("collection.moveSuccess", { count: result.moved_count }), {
+      showAlert(t("collection.moveSuccess", { count: result.movedCount }), {
         variant: "success",
       });
 
@@ -260,7 +260,7 @@ export const CollectionDetailPage: React.FC = () => {
               >
                 <BookOpen className="w-4 h-4" />
                 <span className="font-bold">
-                  {collection.word_count} {t("collections.words")}
+                  {collection.wordCount} {t("collections.words")}
                 </span>
               </Badge>
             </div>
@@ -337,7 +337,7 @@ export const CollectionDetailPage: React.FC = () => {
                 {t("buttons.edit")}
               </Button>
             )}
-            {!collection.shared_by && (
+            {!collection.sharedBy && (
               <Button
                 variant="secondary"
                 size="sm"

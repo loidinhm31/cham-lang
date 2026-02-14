@@ -1,14 +1,8 @@
-import type {
-  SyncProgress,
-  SyncResult,
-  SyncStatus,
-} from "../../../../../shared/src/types/sync";
+import type { SyncProgress, SyncResult, SyncStatus } from "@cham-lang/shared";
 
 /**
  * Sync service interface for data synchronization
- * Implemented by platform-specific adapters:
- * - TauriSyncAdapter: Uses Tauri invoke for desktop
- * - IndexedDBSyncAdapter: Uses QmSyncClient directly for web
+ * Implemented by IndexedDBSyncAdapter which uses QmSyncClient for all platforms
  */
 export interface ISyncService {
   /**

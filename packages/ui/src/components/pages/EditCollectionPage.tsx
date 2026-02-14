@@ -49,7 +49,7 @@ export const EditCollectionPage: React.FC = () => {
         name: collection.name,
         description: collection.description || "",
         language: collection.language,
-        is_public: collection.is_public,
+        isPublic: collection.isPublic,
       });
     } catch (error) {
       console.error("Failed to load collection:", error);

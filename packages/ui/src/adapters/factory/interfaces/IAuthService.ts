@@ -1,11 +1,15 @@
 import type { AuthResponse, AuthStatus, SyncConfig } from "@cham-lang/shared";
 
+/** Sync config with all required fields (used when reading current config) */
+export type RequiredSyncConfig = Required<SyncConfig>;
+
 /**
  * Auth service interface for user authentication
  * Implemented by platform-specific adapters
  */
 export interface IAuthService {
   configureSync(config: SyncConfig): Promise<void>;
+  getSyncConfig(): RequiredSyncConfig;
   register(
     username: string,
     email: string,

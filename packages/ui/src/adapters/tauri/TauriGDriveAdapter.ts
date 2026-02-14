@@ -1,9 +1,12 @@
 /**
  * Tauri Google Drive Adapter
- * Implements IGDriveService using Tauri backend commands and plugin
+ * Implements IGDriveService using Tauri OAuth plugin for authentication
+ * and IndexedDB (Dexie) for data backup/restore
+ *
+ * Note: Uses native OAuth plugin for refresh token support, but backs up
+ * IndexedDB data (not SQLite) since all platforms now use IndexedDB.
  */
 
-import { invoke } from "@tauri-apps/api/core";
 import {
   signIn as tauriSignIn,
   signOut as tauriSignOut,
@@ -14,11 +17,29 @@ import {
   GoogleAuthResponse,
   IGDriveService,
 } from "@cham-lang/ui/adapters/factory/interfaces";
+import {
+  exportDatabaseToJSON,
+  importDatabaseFromJSON,
+  clearAllTables,
+  validateBackup,
+  type ChamLangBackup,
+} from "@cham-lang/ui/adapters/web";
 
 // OAuth configuration from environment
 const GOOGLE_CLIENT_ID = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || "";
 const GOOGLE_CLIENT_SECRET =
   (import.meta as any).env.VITE_GOOGLE_CLIENT_SECRET || "";
+
+// Google Drive API endpoints
+const DRIVE_API_BASE = "https://www.googleapis.com/drive/v3";
+const DRIVE_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3";
+
+// Backup file name (JSON format for IndexedDB data)
+const BACKUP_FILE_NAME = "chamlang_backup.json";
+const BACKUP_MIME_TYPE = "application/json";
+
+// Google Drive app data folder (private to this app)
+const APP_DATA_FOLDER = "appDataFolder";
 
 /**
  * Success HTML for OAuth popup
@@ -92,6 +113,7 @@ export class TauriGDriveAdapter implements IGDriveService {
         "email",
         "profile",
         "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive.appdata",
       ],
       successHtmlResponse: SUCCESS_HTML,
     });
@@ -167,38 +189,169 @@ export class TauriGDriveAdapter implements IGDriveService {
   }
 
   /**
-   * Backup database to Google Drive using Tauri backend
+   * Find existing backup file in Google Drive
+   */
+  private async findBackupFile(
+    accessToken: string,
+  ): Promise<{ id: string; modifiedTime: string; size: string } | null> {
+    const query = encodeURIComponent(
+      `name='${BACKUP_FILE_NAME}' and '${APP_DATA_FOLDER}' in parents and trashed=false`,
+    );
+    const response = await fetch(
+      `${DRIVE_API_BASE}/files?spaces=${APP_DATA_FOLDER}&q=${query}&fields=files(id,name,modifiedTime,size)`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || "Failed to search Google Drive");
+    }
+
+    const data = await response.json();
+    if (data.files && data.files.length > 0) {
+      return data.files[0];
+    }
+    return null;
+  }
+
+  /**
+   * Backup IndexedDB database to Google Drive as JSON
    */
   async backupToGDrive(accessToken: string): Promise<string> {
-    return await invoke<string>("backup_to_gdrive", { accessToken });
+    // Export database to JSON
+    const backup = await exportDatabaseToJSON();
+    const backupJSON = JSON.stringify(backup, null, 2);
+    const blob = new Blob([backupJSON], { type: BACKUP_MIME_TYPE });
+
+    // Check if backup file already exists
+    const existingFile = await this.findBackupFile(accessToken);
+
+    let response: Response;
+
+    if (existingFile) {
+      // Update existing file
+      response = await fetch(
+        `${DRIVE_UPLOAD_API}/files/${existingFile.id}?uploadType=media`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": BACKUP_MIME_TYPE,
+          },
+          body: blob,
+        },
+      );
+    } else {
+      // Create new file in appDataFolder
+      const metadata = {
+        name: BACKUP_FILE_NAME,
+        mimeType: BACKUP_MIME_TYPE,
+        parents: [APP_DATA_FOLDER],
+      };
+
+      const formData = new FormData();
+      formData.append(
+        "metadata",
+        new Blob([JSON.stringify(metadata)], { type: "application/json" }),
+      );
+      formData.append("file", blob);
+
+      response = await fetch(`${DRIVE_UPLOAD_API}/files?uploadType=multipart`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+    }
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        error.error?.message || "Failed to upload backup to Google Drive",
+      );
+    }
+
+    const result = await response.json();
+    return `Backup successful! File: ${result.name}`;
   }
 
   /**
-   * Restore database from Google Drive using Tauri backend
+   * Restore IndexedDB database from Google Drive JSON backup
    */
   async restoreFromGDrive(accessToken: string): Promise<string> {
-    return await invoke<string>("restore_from_gdrive", { accessToken });
+    // Find backup file
+    const backupFile = await this.findBackupFile(accessToken);
+
+    if (!backupFile) {
+      throw new Error(
+        "No backup found in Google Drive. Please create a backup first.",
+      );
+    }
+
+    // Download file content
+    const response = await fetch(
+      `${DRIVE_API_BASE}/files/${backupFile.id}?alt=media`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(
+        error.error?.message || "Failed to download backup from Google Drive",
+      );
+    }
+
+    const backupData = await response.json();
+
+    // Validate backup structure
+    if (!validateBackup(backupData)) {
+      throw new Error(
+        "Invalid backup format. The backup file may be corrupted.",
+      );
+    }
+
+    // Import into database
+    await importDatabaseFromJSON(backupData as ChamLangBackup);
+
+    const stats = (backupData as ChamLangBackup).tables;
+    const vocabCount = stats.vocabularies.length;
+    const collectionCount = stats.collections.length;
+
+    return `Restore successful! Restored ${vocabCount} vocabularies and ${collectionCount} collections.`;
   }
 
   /**
-   * Get backup info from Google Drive using Tauri backend
+   * Get backup information from Google Drive
    */
   async getBackupInfo(accessToken: string): Promise<BackupInfo | null> {
     try {
-      const infoStr = await invoke<string>("get_gdrive_backup_info", {
-        accessToken,
-      });
-      // Parse the format: "File: xxx\nLast modified: xxx\nSize: xxx KB"
-      const lines = infoStr.split("\n");
-      const fileName = lines[0]?.replace("File: ", "") || "chamlang_backup.db";
-      const modifiedTime =
-        lines[1]?.replace("Last modified: ", "") || "Unknown";
-      const sizeKB = parseInt(
-        lines[2]?.replace("Size: ", "").replace(" KB", "") || "0",
-        10,
-      );
+      const backupFile = await this.findBackupFile(accessToken);
 
-      return { fileName, modifiedTime, sizeKB };
+      if (!backupFile) {
+        return null;
+      }
+
+      // Format the modified time
+      const modifiedDate = new Date(backupFile.modifiedTime);
+      const formattedTime = modifiedDate.toLocaleString();
+
+      // Convert size to KB
+      const sizeKB = Math.round(parseInt(backupFile.size, 10) / 1024);
+
+      return {
+        fileName: BACKUP_FILE_NAME,
+        modifiedTime: formattedTime,
+        sizeKB,
+      };
     } catch (error) {
       console.error("Failed to get backup info:", error);
       return null;
@@ -206,21 +359,32 @@ export class TauriGDriveAdapter implements IGDriveService {
   }
 
   /**
-   * Check version difference using Tauri backend
+   * Check if remote version differs from local
    */
   async checkVersionDifference(accessToken: string): Promise<boolean> {
-    return await invoke<boolean>("check_version_difference", { accessToken });
+    try {
+      const backupInfo = await this.getBackupInfo(accessToken);
+      // If no backup exists, there's no difference to sync
+      if (!backupInfo) {
+        return false;
+      }
+      // For now, just indicate if a backup exists
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /**
-   * Clear local database using Tauri backend
+   * Clear local IndexedDB database
    */
   async clearLocalDatabase(): Promise<string> {
-    return await invoke<string>("clear_local_database");
+    await clearAllTables();
+    return "Local database cleared successfully";
   }
 
   /**
-   * Tauri always supports Google Drive sync
+   * Tauri supports Google Drive sync when configured
    */
   isSupported(): boolean {
     return !!GOOGLE_CLIENT_ID;

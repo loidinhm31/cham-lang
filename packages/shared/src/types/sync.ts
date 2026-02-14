@@ -47,7 +47,6 @@ export interface SyncStatus {
   authenticated: boolean;
   lastSyncAt?: number; // Unix timestamp
   pendingChanges: number;
-  serverUrl?: string;
 }
 
 /**

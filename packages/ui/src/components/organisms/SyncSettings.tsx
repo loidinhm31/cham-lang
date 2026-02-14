@@ -9,24 +9,20 @@ import {
   CloudOff,
 } from "lucide-react";
 import { Button, Input, Card } from "@cham-lang/ui/components/atoms";
-import { getAuthService, getSyncService } from "@cham-lang/ui/adapters";
+import { AuthService, SyncService } from "@cham-lang/ui/services";
 import {
   AuthStatus,
   SyncProgress,
   SyncResult,
   SyncStatus,
 } from "@cham-lang/shared/types";
+import { isTauri } from "@cham-lang/ui/utils";
 
 export interface SyncSettingsProps {
-  /**
-   * Whether running in embedded mode (hides server configuration)
-   */
-  embedded?: boolean;
+
 }
 
-export const SyncSettings: React.FC<SyncSettingsProps> = ({
-  embedded = false,
-}) => {
+export const SyncSettings: React.FC<SyncSettingsProps> = () => {
   const { t } = useTranslation();
   const [authStatus, setAuthStatus] = useState<AuthStatus | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
@@ -45,17 +41,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const loadStatus = async () => {
     setIsLoadingStatus(true);
     try {
-      const authService = getAuthService();
-      const syncService = getSyncService();
-
       const [auth, sync] = await Promise.all([
-        authService.getStatus(),
-        syncService.getStatus(),
+        AuthService.getStatus(),
+        SyncService.getStatus(),
       ]);
       setAuthStatus(auth);
       setSyncStatus(sync);
-      if (sync.serverUrl) {
-        setServerUrl(sync.serverUrl);
+      if (auth.serverUrl) {
+        setServerUrl(auth.serverUrl);
       }
       setError(null);
     } catch (err) {
@@ -69,11 +62,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 
   const handleConfigureSync = async () => {
     try {
-      const authService = getAuthService();
-      await authService.configureSync({
+      await AuthService.configureSync({
         serverUrl,
-        appId: "cham-lang",
-        apiKey: "", // API key is not needed for user auth
       });
       await loadStatus();
       setError(null);
@@ -94,18 +84,11 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     setSyncProgress(null);
 
     try {
-      const syncService = getSyncService();
-
-      // Use progress-aware sync if available
-      if (syncService.syncWithProgress) {
-        const result = await syncService.syncWithProgress((progress) => {
-          setSyncProgress(progress);
-        });
-        setSyncResult(result);
-      } else {
-        const result = await syncService.syncNow();
-        setSyncResult(result);
-      }
+      // Use progress-aware sync
+      const result = await SyncService.syncWithProgress((progress) => {
+        setSyncProgress(progress);
+      });
+      setSyncResult(result);
 
       // Reload sync status to update last sync time
       await loadStatus();
@@ -138,10 +121,10 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           <div className="flex items-start gap-4">
             <Cloud className="w-6 h-6 text-blue-500" />
             <div className="flex-1">
-              <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
+              <h2 className="text-2xl font-semibold mb-2 text-(--color-text-primary)">
                 {t("settings.cloudSync")}
               </h2>
-              <p className="mb-4 text-[var(--color-text-secondary)]">
+              <p className="mb-4 text-text-secondary">
                 {t("settings.cloudSyncDescription")}
               </p>
 
@@ -154,7 +137,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
                 ) : (
                   <CloudOff className="w-4 h-4 text-gray-400" />
                 )}
-                <span className="text-sm text-[var(--color-text-secondary)]">
+                <span className="text-sm text-text-secondary">
                   {isSyncing
                     ? t("sync.syncing")
                     : authStatus?.isAuthenticated
@@ -162,7 +145,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
                       : t("auth.notLoggedIn")}
                 </span>
                 {syncStatus?.lastSyncAt && (
-                  <span className="text-xs text-[var(--color-text-muted)]">
+                  <span className="text-xs text-text-muted">
                     — {t("sync.lastSync")}:{" "}
                     {formatTimestamp(syncStatus.lastSyncAt)}
                   </span>
@@ -207,26 +190,26 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               {syncResult.success && (
                 <div className="grid grid-cols-3 gap-3">
                   <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
-                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                    <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.pushed}
                     </div>
-                    <div className="text-xs text-[var(--color-text-muted)]">
+                    <div className="text-xs text-text-muted">
                       {t("sync.pushed")}
                     </div>
                   </div>
                   <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
-                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                    <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.pulled}
                     </div>
-                    <div className="text-xs text-[var(--color-text-muted)]">
+                    <div className="text-xs text-text-muted">
                       {t("sync.pulled")}
                     </div>
                   </div>
                   <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
-                    <div className="text-lg font-bold text-[var(--color-text-primary)]">
+                    <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.conflicts}
                     </div>
-                    <div className="text-xs text-[var(--color-text-muted)]">
+                    <div className="text-xs text-text-muted">
                       {t("sync.conflicts")}
                     </div>
                   </div>
@@ -293,23 +276,23 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         </div>
       </Card>
 
-      {/* Server Configuration Card - Hidden in embedded mode */}
-      {!embedded && (
+      {/* Server Configuration Card - Only shown in Tauri (native) mode */}
+      {isTauri() && (
         <Card variant="glass">
           <div className="p-2">
             <div className="flex items-start gap-4">
               <Server className="w-6 h-6 text-blue-500" />
               <div className="flex-1">
-                <h2 className="text-2xl font-semibold mb-2 text-[var(--color-text-primary)]">
+                <h2 className="text-2xl font-semibold mb-2 text-(--color-text-primary)">
                   {t("settings.serverConfig")}
                 </h2>
-                <p className="mb-4 text-[var(--color-text-secondary)]">
+                <p className="mb-4 text-text-secondary">
                   {t("settings.serverConfigDescription")}
                 </p>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="mb-2 block text-sm font-medium text-[var(--color-text-primary)]">
+                    <label className="mb-2 block text-sm font-medium text-(--color-text-primary)">
                       {t("settings.serverUrl")}
                     </label>
                     <Input

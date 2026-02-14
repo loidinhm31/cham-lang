@@ -42,8 +42,8 @@ export function useCollectionPermission(
     return { isOwner: false, canEdit: false, permission: null, loading };
   }
 
-  // No shared_by means this is the owner's collection
-  if (!collection.shared_by) {
+  // No sharedBy means this is the owner's collection
+  if (!collection.sharedBy) {
     return {
       isOwner: true,
       canEdit: true,
@@ -52,12 +52,12 @@ export function useCollectionPermission(
     };
   }
 
-  // Shared collection - check permission in shared_with
+  // Shared collection - check permission in sharedWith
   if (loading || !userId) {
     return { isOwner: false, canEdit: false, permission: null, loading };
   }
 
-  const sharedEntry = collection.shared_with?.find((s) => s.user_id === userId);
+  const sharedEntry = collection.sharedWith?.find((s) => s.userId === userId);
 
   if (sharedEntry?.permission === "editor") {
     return {

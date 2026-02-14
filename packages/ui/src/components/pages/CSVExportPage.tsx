@@ -82,7 +82,7 @@ export const CSVExportPage: React.FC = () => {
 
       showAlert(
         t("csv.exportSuccess", { message: result.message }) +
-          `\n\nFile: ${result.file_name}`,
+          `\n\nFile: ${result.fileName}`,
         {
           variant: "success",
         },
@@ -103,7 +103,7 @@ export const CSVExportPage: React.FC = () => {
       const id = getCollectionId(c);
       return id !== undefined && selectedIds.has(id);
     })
-    .reduce((sum, c) => sum + c.word_count, 0);
+    .reduce((sum, c) => sum + c.wordCount, 0);
 
   return (
     <>
@@ -192,7 +192,7 @@ export const CSVExportPage: React.FC = () => {
                             </div>
                             <div className="text-sm text-[var(--color-text-secondary)]">
                               {collection.language.toUpperCase()} •{" "}
-                              {collection.word_count} {t("collections.words")}
+                              {collection.wordCount} {t("collections.words")}
                             </div>
                           </div>
                         </div>

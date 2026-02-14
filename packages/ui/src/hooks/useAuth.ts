@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import type { AuthStatus } from "@cham-lang/shared/types";
-import { getAuthService } from "@cham-lang/ui/adapters/factory";
+import { AuthService } from "@cham-lang/ui/services";
 
 export interface UseAuthOptions {
   /**
@@ -34,8 +34,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
     isCheckingRef.current = true;
     setIsLoading(true);
     try {
-      const authService = getAuthService();
-      const status = await authService.getStatus();
+      const status = await AuthService.getStatus();
       setAuthStatus(status);
       setError(null);
     } catch (err) {
@@ -51,8 +50,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   const logout = useCallback(async () => {
     try {
-      const authService = getAuthService();
-      await authService.logout();
+      await AuthService.logout();
       setAuthStatus({ isAuthenticated: false });
       setError(null);
     } catch (err) {
@@ -62,8 +60,7 @@ export const useAuth = (options: UseAuthOptions = {}) => {
 
   const refreshToken = useCallback(async () => {
     try {
-      const authService = getAuthService();
-      await authService.refreshToken();
+      await AuthService.refreshToken();
       await checkAuthStatus();
       setError(null);
     } catch (err) {

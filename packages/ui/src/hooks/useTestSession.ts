@@ -9,7 +9,7 @@ import type { Vocabulary } from "@cham-lang/shared/types";
 export type TestMode = "normal" | "intensive";
 
 export interface TestResult {
-  vocabulary_id: string;
+  vocabularyId: string;
   word: string;
   correct: boolean;
   attempts: number; // For intensive mode
@@ -28,7 +28,7 @@ interface TestSessionState {
   allWords: Vocabulary[];
   queue: Vocabulary[];
   currentWord: Vocabulary | null;
-  results: Map<string, TestResult>; // vocabulary_id -> TestResult
+  results: Map<string, TestResult>; // vocabularyId -> TestResult
   completed: boolean;
   startTime: Date;
 }
@@ -112,7 +112,7 @@ export const useTestSession = (
 
         // Update or create result
         const newResult: TestResult = {
-          vocabulary_id: vocabId,
+          vocabularyId: vocabId,
           word: prev.currentWord.word,
           correct: existingResult ? existingResult.correct || correct : correct,
           attempts: (existingResult?.attempts || 0) + 1,

@@ -144,10 +144,10 @@ export const CollectionsPage: React.FC = () => {
                     <div className="flex items-center gap-4 text-sm text-[var(--color-text-muted)]">
                       <span className="flex items-center gap-1">
                         <BookOpen className="w-4 h-4" />
-                        {collection.word_count} {t("collections.words")}
+                        {collection.wordCount} {t("collections.words")}
                       </span>
                       <span className="flex items-center gap-1">
-                        {collection.is_public ? (
+                        {collection.isPublic ? (
                           <>
                             <Globe className="w-4 h-4" />
                             {t("collections.public")}

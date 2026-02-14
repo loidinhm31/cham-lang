@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { isTauri } from "@cham-lang/ui/utils";
-import { HttpGDriveAdapter } from "@cham-lang/ui/adapters";
+import { WebGDriveAdapter } from "@cham-lang/ui/adapters/web";
 
 interface SyncNotificationContextType {
   hasSyncNotification: boolean;
@@ -12,8 +12,8 @@ const SyncNotificationContext = createContext<
   SyncNotificationContextType | undefined
 >(undefined);
 
-// HTTP adapter instance for web platform (GDrive not supported in browser)
-const httpGDriveAdapter = new HttpGDriveAdapter();
+// Web adapter instance for GDrive operations
+const webGDriveAdapter = new WebGDriveAdapter();
 
 export const SyncNotificationProvider: React.FC<{
   children: React.ReactNode;
@@ -42,7 +42,7 @@ export const SyncNotificationProvider: React.FC<{
         } else {
           // Use WebGDriveAdapter for web platform
           isDifferent =
-            await httpGDriveAdapter.checkVersionDifference(accessToken);
+            await webGDriveAdapter.checkVersionDifference(accessToken);
         }
 
         setHasSyncNotification(isDifferent);
@@ -68,7 +68,7 @@ export const SyncNotificationProvider: React.FC<{
               newAccessToken = response.accessToken;
             } else {
               // Use WebGDriveAdapter for token refresh
-              const response = await httpGDriveAdapter.refreshToken();
+              const response = await webGDriveAdapter.refreshToken();
               newAccessToken = response.accessToken;
             }
 
@@ -84,7 +84,7 @@ export const SyncNotificationProvider: React.FC<{
               });
             } else {
               isDifferent =
-                await httpGDriveAdapter.checkVersionDifference(newAccessToken);
+                await webGDriveAdapter.checkVersionDifference(newAccessToken);
             }
 
             setHasSyncNotification(isDifferent);

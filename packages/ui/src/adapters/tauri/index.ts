@@ -1,13 +1,12 @@
 /**
- * Tauri Adapters - Export all Tauri service adapters
+ * Tauri Adapters - Platform-specific adapters for Tauri desktop/mobile
+ *
+ * These adapters provide platform-specific functionality that requires native access:
+ * - TauriGDriveAdapter: Native Google OAuth for Google Drive backup
+ * - TauriNotificationAdapter: Native OS notifications
+ *
+ * Note: Data storage now uses IndexedDB on all platforms (see web/IndexedDB* adapters).
  */
 
-export { TauriVocabularyAdapter } from "./TauriVocabularyAdapter";
-export { TauriCollectionAdapter } from "./TauriCollectionAdapter";
-export { TauriPracticeAdapter } from "./TauriPracticeAdapter";
-export { TauriLearningSettingsAdapter } from "./TauriLearningSettingsAdapter";
 export { TauriNotificationAdapter } from "./TauriNotificationAdapter";
-export { TauriCSVAdapter } from "./TauriCSVAdapter";
 export { TauriGDriveAdapter } from "./TauriGDriveAdapter";
-export { TauriSyncAdapter } from "./TauriSyncAdapter";
-export { TauriAuthAdapter } from "./TauriAuthAdapter";

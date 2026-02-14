@@ -119,29 +119,29 @@ export const CSVImportPage: React.FC = () => {
       let result;
       if (importMode === "simple") {
         result = await CsvService.importSimpleVocabularies({
-          csv_text: simpleCsvText,
-          default_language: defaultLanguage,
-          target_collection_id:
+          csvText: simpleCsvText,
+          defaultLanguage: defaultLanguage,
+          targetCollectionId:
             targetCollectionId && targetCollectionId !== ""
               ? targetCollectionId
               : undefined,
-          create_missing_collections: autoCreateCollections,
+          createMissingCollections: autoCreateCollections,
         });
       } else {
         result = await CsvService.importVocabularies({
-          file_path:
+          filePath:
             importMode === "file" && !fileContent ? selectedFile! : undefined,
-          csv_text:
+          csvText:
             importMode === "text"
               ? csvText
               : importMode === "file" && fileContent
                 ? fileContent
                 : undefined,
-          target_collection_id:
+          targetCollectionId:
             targetCollectionId && targetCollectionId !== ""
               ? targetCollectionId
               : undefined,
-          create_missing_collections: autoCreateCollections,
+          createMissingCollections: autoCreateCollections,
         });
       }
 
@@ -429,28 +429,28 @@ export const CSVImportPage: React.FC = () => {
                       {t("csv.rowsImported")}:
                     </span>
                     <span className="font-semibold text-green-600 dark:text-green-400">
-                      {importResult.rows_imported}
+                      {importResult.rowsImported}
                     </span>
                   </div>
 
-                  {importResult.rows_failed > 0 && (
+                  {importResult.rowsFailed > 0 && (
                     <div className="flex justify-between">
                       <span className="text-[var(--color-text-secondary)]">
                         {t("csv.rowsFailed")}:
                       </span>
                       <span className="font-semibold text-red-600 dark:text-red-400">
-                        {importResult.rows_failed}
+                        {importResult.rowsFailed}
                       </span>
                     </div>
                   )}
 
-                  {importResult.collections_created.length > 0 && (
+                  {importResult.collectionsCreated.length > 0 && (
                     <div className="flex justify-between">
                       <span className="text-[var(--color-text-secondary)]">
                         {t("csv.collectionsCreated")}:
                       </span>
                       <span className="font-semibold text-blue-600 dark:text-blue-400">
-                        {importResult.collections_created.length}
+                        {importResult.collectionsCreated.length}
                       </span>
                     </div>
                   )}
@@ -466,14 +466,14 @@ export const CSVImportPage: React.FC = () => {
                       {importResult.errors.slice(0, 10).map((error, idx) => (
                         <div key={idx} className="text-xs">
                           <span className="font-medium text-red-700">
-                            Row {error.row_number}:
+                            Row {error.rowNumber}:
                           </span>{" "}
                           <span className="text-red-600">
-                            {error.error_message}
+                            {error.errorMessage}
                           </span>
-                          {error.row_data && (
+                          {error.rowData && (
                             <div className="text-red-500 ml-4 truncate">
-                              {error.row_data}
+                              {error.rowData}
                             </div>
                           )}
                         </div>

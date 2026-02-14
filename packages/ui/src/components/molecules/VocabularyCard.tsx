@@ -50,7 +50,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
 
   return (
     <Card
-      variant={cardVariants[vocabulary.word_type]}
+      variant={cardVariants[vocabulary.wordType]}
       hover
       onClick={onClick}
       className={
@@ -88,9 +88,9 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
           </div>
         </div>
         <span
-          className={`${wordTypeColors[vocabulary.word_type]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] shrink-0 ml-2`}
+          className={`${wordTypeColors[vocabulary.wordType]} text-sm font-bold px-3 py-1.5 rounded-xl border-2 shadow-[0_3px_0_rgba(0,0,0,0.1),0_2px_4px_rgba(0,0,0,0.05)] shrink-0 ml-2`}
         >
-          {vocabulary.word_type}
+          {vocabulary.wordType}
         </span>
       </div>
 

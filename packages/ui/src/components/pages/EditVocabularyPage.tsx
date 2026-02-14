@@ -59,10 +59,10 @@ export const EditVocabularyPage: React.FC = () => {
         await VocabularyService.getVocabulary(vocabId);
 
       // Load parent collection for permission check
-      if (vocabulary.collection_id) {
+      if (vocabulary.collectionId) {
         try {
           const collection = await CollectionService.getCollection(
-            vocabulary.collection_id,
+            vocabulary.collectionId,
           );
           setParentCollection(collection);
         } catch {
@@ -73,17 +73,17 @@ export const EditVocabularyPage: React.FC = () => {
       // Convert Vocabulary to CreateVocabularyRequest format
       setInitialData({
         word: vocabulary.word,
-        word_type: vocabulary.word_type,
+        wordType: vocabulary.wordType,
         level: vocabulary.level,
         ipa: vocabulary.ipa,
         concept: vocabulary.concept,
         definitions: vocabulary.definitions,
-        example_sentences: vocabulary.example_sentences,
-        audio_url: vocabulary.audio_url,
+        exampleSentences: vocabulary.exampleSentences,
+        audioUrl: vocabulary.audioUrl,
         topics: vocabulary.topics,
-        related_words: vocabulary.related_words,
+        relatedWords: vocabulary.relatedWords,
         language: vocabulary.language,
-        collection_id: vocabulary.collection_id,
+        collectionId: vocabulary.collectionId,
       });
     } catch (error) {
       console.error("Failed to load vocabulary:", error);

@@ -19,19 +19,18 @@ function createMockVocabulary(id: string, word: string): Vocabulary {
   return {
     id,
     word,
-    word_type: "noun",
+    wordType: "noun",
     level: "A1",
     ipa: "/test/",
     definitions: [{ meaning: "test meaning" }],
-    example_sentences: [],
+    exampleSentences: [],
     topics: [],
     tags: [],
-    related_words: [],
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    relatedWords: [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     language: "en",
-    collection_id: "test-collection",
-    user_id: "test-user",
+    collectionId: "test-collection",
   };
 }
 
@@ -41,22 +40,22 @@ function createMockWordProgress(
   overrides: Partial<WordProgress> = {},
 ): WordProgress {
   return {
-    vocabulary_id: vocabularyId,
+    vocabularyId: vocabularyId,
     word,
-    correct_count: 0,
-    incorrect_count: 0,
-    last_practiced: new Date().toISOString(),
-    mastery_level: 0,
-    next_review_date: new Date().toISOString(),
-    interval_days: 0,
-    easiness_factor: 2.5,
-    consecutive_correct_count: 0,
-    leitner_box: 1,
-    last_interval_days: 0,
-    total_reviews: 0,
-    failed_in_session: false,
-    retry_count: 0,
-    completed_modes_in_cycle: [],
+    correctCount: 0,
+    incorrectCount: 0,
+    lastPracticed: new Date().toISOString(),
+    masteryLevel: 0,
+    nextReviewDate: new Date().toISOString(),
+    intervalDays: 0,
+    easinessFactor: 2.5,
+    consecutiveCorrectCount: 0,
+    leitnerBox: 1,
+    lastIntervalDays: 0,
+    totalReviews: 0,
+    failedInSession: false,
+    retryCount: 0,
+    completedModesInCycle: [],
     ...overrides,
   };
 }
@@ -65,15 +64,14 @@ function createMockSettings(
   overrides: Partial<LearningSettings> = {},
 ): LearningSettings {
   return {
-    user_id: "test-user",
-    sr_algorithm: "modifiedsm2",
-    leitner_box_count: 5,
-    consecutive_correct_required: 3,
-    show_failed_words_in_session: true,
-    auto_advance_timeout_seconds: 2,
-    show_hint_in_fillword: true,
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    srAlgorithm: "modifiedsm2",
+    leitnerBoxCount: 5,
+    consecutiveCorrectRequired: 3,
+    showFailedWordsInSession: true,
+    autoAdvanceTimeoutSeconds: 2,
+    showHintInFillword: true,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
     ...overrides,
   };
 }
@@ -102,8 +100,8 @@ describe("SessionManager - Constructor", () => {
   it("TC-1.2: should initialize with words and matching progress", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      total_reviews: 5,
-      leitner_box: 3,
+      totalReviews: 5,
+      leitnerBox: 3,
     });
 
     const manager = new SessionManager(
@@ -117,7 +115,7 @@ describe("SessionManager - Constructor", () => {
 
     const state = manager.getState();
     expect(state.wordProgressMap.get("vocab-1")).toBeDefined();
-    expect(state.wordProgressMap.get("vocab-1")?.total_reviews).toBe(5);
+    expect(state.wordProgressMap.get("vocab-1")?.totalReviews).toBe(5);
   });
 
   it("TC-1.3: should initialize words without progress as NEW status", () => {
@@ -171,8 +169,8 @@ describe("SessionManager - Constructor", () => {
   it("TC-1.6: should assign MASTERED status with 1 required repetition for box 5+", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
+      leitnerBox: 5,
+      totalReviews: 10,
     });
 
     const manager = new SessionManager(
@@ -193,8 +191,8 @@ describe("SessionManager - Constructor", () => {
   it("TC-1.7: should assign ALMOST_DONE status with 1 required repetition for box 4", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 4,
-      total_reviews: 5,
+      leitnerBox: 4,
+      totalReviews: 5,
     });
 
     const manager = new SessionManager(
@@ -215,8 +213,8 @@ describe("SessionManager - Constructor", () => {
   it("TC-1.8: should assign STILL_LEARNING status with 2 required repetitions for box 2", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 2,
-      total_reviews: 3,
+      leitnerBox: 2,
+      totalReviews: 3,
     });
 
     const manager = new SessionManager(
@@ -296,9 +294,9 @@ describe("SessionManager - getNextWord", () => {
   it("TC-2.4: should return null when session is complete", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
 
     const manager = new SessionManager(
@@ -348,9 +346,9 @@ describe("SessionManager - handleCorrectAnswer", () => {
   it("TC-3.2: should move word to completedWords after all repetitions", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
 
     const manager = new SessionManager(
@@ -374,9 +372,9 @@ describe("SessionManager - handleCorrectAnswer", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     // Use MASTERED status (box 5) so only 1 repetition is needed to trigger completion
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
 
     const manager = new SessionManager(
@@ -401,9 +399,9 @@ describe("SessionManager - handleCorrectAnswer", () => {
     // Use STILL_LEARNING status (box 2) so 2 repetitions are required
     // This means after 1 correct answer, still needs more reps before mode completion
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 2,
-      total_reviews: 3,
-      completed_modes_in_cycle: [], // No modes completed yet
+      leitnerBox: 2,
+      totalReviews: 3,
+      completedModesInCycle: [], // No modes completed yet
     });
 
     const manager = new SessionManager(
@@ -432,10 +430,10 @@ describe("SessionManager - handleCorrectAnswer", () => {
     // Set consecutive_correct_count to 2 so after 1 more correct (becomes 3)
     // it meets the consecutive_correct_required threshold (default 3) to advance
     const almostDoneProgress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 4,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
-      consecutive_correct_count: 2, // Needs 1 more to reach 3 (threshold)
+      leitnerBox: 4,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
+      consecutiveCorrectCount: 2, // Needs 1 more to reach 3 (threshold)
     });
 
     const manager = new SessionManager(
@@ -452,8 +450,8 @@ describe("SessionManager - handleCorrectAnswer", () => {
 
     // All 3 modes completed + all reps done + consecutive_correct_count >= 3 = box advances from 4 to 5
     expect(result.boxChanged).toBe(true);
-    expect(result.updatedProgress.leitner_box).toBeGreaterThan(4);
-    expect(result.updatedProgress.completed_modes_in_cycle).toEqual([]);
+    expect(result.updatedProgress.leitnerBox).toBeGreaterThan(4);
+    expect(result.updatedProgress.completedModesInCycle).toEqual([]);
     expect(result.message).toContain("mastered");
   });
 
@@ -515,10 +513,10 @@ describe("SessionManager - handleCorrectAnswer", () => {
 
     const results = manager.getSessionResults();
     expect(results).toHaveLength(1);
-    expect(results[0].vocabulary_id).toBe("vocab-1");
+    expect(results[0].vocabularyId).toBe("vocab-1");
     expect(results[0].correct).toBe(true);
     expect(results[0].mode).toBe("flashcard");
-    expect(results[0].time_spent_seconds).toBe(5);
+    expect(results[0].timeSpentSeconds).toBe(5);
   });
 });
 
@@ -556,7 +554,7 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     const manager = new SessionManager(
       [vocab],
       [],
-      createMockSettings({ show_failed_words_in_session: true }),
+      createMockSettings({ showFailedWordsInSession: true }),
       "flashcard",
       "collection-1",
       "en",
@@ -575,7 +573,7 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     const manager = new SessionManager(
       [vocab],
       [],
-      createMockSettings({ show_failed_words_in_session: true }),
+      createMockSettings({ showFailedWordsInSession: true }),
       "flashcard",
       "collection-1",
       "en",
@@ -596,7 +594,7 @@ describe("SessionManager - handleIncorrectAnswer", () => {
   it("TC-4.4: should not update progress in study mode", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 3,
+      leitnerBox: 3,
     });
 
     const manager = new SessionManager(
@@ -613,14 +611,14 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     const result = manager.handleIncorrectAnswer(vocab, 5);
 
     expect(result.message).toContain("Study mode");
-    expect(result.updatedProgress.leitner_box).toBe(3); // Unchanged
+    expect(result.updatedProgress.leitnerBox).toBe(3); // Unchanged
   });
 
   it("TC-4.5: should process incorrect answer and regress box when tracking", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 3,
-      total_reviews: 5,
+      leitnerBox: 3,
+      totalReviews: 5,
     });
 
     const manager = new SessionManager(
@@ -637,14 +635,14 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     const result = manager.handleIncorrectAnswer(vocab, 5);
 
     // Box should regress (algorithm dependent)
-    expect(result.updatedProgress.leitner_box).toBeLessThanOrEqual(3);
+    expect(result.updatedProgress.leitnerBox).toBeLessThanOrEqual(3);
   });
 
   it("TC-4.6: should reset completed_modes_in_cycle on incorrect answer", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 3,
-      completed_modes_in_cycle: ["flashcard"],
+      leitnerBox: 3,
+      completedModesInCycle: ["flashcard"],
     });
 
     const manager = new SessionManager(
@@ -659,7 +657,7 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     manager.getNextWord();
     const result = manager.handleIncorrectAnswer(vocab, 5);
 
-    expect(result.updatedProgress.completed_modes_in_cycle).toEqual([]);
+    expect(result.updatedProgress.completedModesInCycle).toEqual([]);
   });
 
   it("TC-4.7: should move to completed immediately when show_failed_words_in_session is false", () => {
@@ -668,7 +666,7 @@ describe("SessionManager - handleIncorrectAnswer", () => {
     const manager = new SessionManager(
       [vocab],
       [],
-      createMockSettings({ show_failed_words_in_session: false }),
+      createMockSettings({ showFailedWordsInSession: false }),
       "flashcard",
       "collection-1",
       "en",
@@ -757,7 +755,7 @@ describe("SessionManager - skipWord", () => {
     const manager = new SessionManager(
       [vocab],
       [],
-      createMockSettings({ show_failed_words_in_session: true }),
+      createMockSettings({ showFailedWordsInSession: true }),
       "flashcard",
       "collection-1",
       "en",
@@ -784,9 +782,9 @@ describe("SessionManager - Session State", () => {
   it("TC-6.1: should return true for isSessionComplete when both queues empty", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
 
     const manager = new SessionManager(
@@ -810,7 +808,7 @@ describe("SessionManager - Session State", () => {
     const manager = new SessionManager(
       [vocab],
       [],
-      createMockSettings({ show_failed_words_in_session: true }),
+      createMockSettings({ showFailedWordsInSession: true }),
       "flashcard",
       "collection-1",
       "en",
@@ -830,7 +828,7 @@ describe("SessionManager - Session State", () => {
     const manager = new SessionManager(
       [vocab1, vocab2],
       [],
-      createMockSettings({ show_failed_words_in_session: false }),
+      createMockSettings({ showFailedWordsInSession: false }),
       "flashcard",
       "collection-1",
       "en",
@@ -852,14 +850,14 @@ describe("SessionManager - Session State", () => {
     const vocab1 = createMockVocabulary("vocab-1", "hello");
     const vocab2 = createMockVocabulary("vocab-2", "world");
     const progress1 = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
     const progress2 = createMockWordProgress("vocab-2", "world", {
-      leitner_box: 5,
-      total_reviews: 10,
-      completed_modes_in_cycle: ["flashcard", "fillword"],
+      leitnerBox: 5,
+      totalReviews: 10,
+      completedModesInCycle: ["flashcard", "fillword"],
     });
 
     const manager = new SessionManager(
@@ -938,8 +936,8 @@ describe("SessionManager - Edge Cases", () => {
   it("TC-7.2: should allow selecting single word even when it was last shown", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 1,
-      total_reviews: 1,
+      leitnerBox: 1,
+      totalReviews: 1,
     });
 
     const manager = new SessionManager(
@@ -962,8 +960,8 @@ describe("SessionManager - Edge Cases", () => {
   it("TC-7.3: should clamp out-of-range leitner box values", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 99, // Invalid - should be clamped to 7
-      total_reviews: 5,
+      leitnerBox: 99, // Invalid - should be clamped to 7
+      totalReviews: 5,
     });
 
     const manager = new SessionManager(
@@ -1005,9 +1003,9 @@ describe("SessionManager - Edge Cases", () => {
   it("TC-7.5: should handle very high consecutive_correct_count (clamped to 100)", () => {
     const vocab = createMockVocabulary("vocab-1", "hello");
     const progress = createMockWordProgress("vocab-1", "hello", {
-      leitner_box: 3,
-      consecutive_correct_count: 999, // Should be clamped
-      total_reviews: 50,
+      leitnerBox: 3,
+      consecutiveCorrectCount: 999, // Should be clamped
+      totalReviews: 50,
     });
 
     const manager = new SessionManager(
@@ -1042,7 +1040,7 @@ describe("SessionManager - Edge Cases", () => {
     const updatedProgress = manager.getUpdatedWordProgress();
     expect(updatedProgress.length).toBeGreaterThanOrEqual(1);
     expect(
-      updatedProgress.find((p) => p.vocabulary_id === "vocab-1"),
+      updatedProgress.find((p) => p.vocabularyId === "vocab-1"),
     ).toBeDefined();
   });
 
@@ -1097,9 +1095,9 @@ describe("SessionManager - Integration", () => {
     ];
     const progressList = vocabs.map((v) =>
       createMockWordProgress(v.id!, v.word, {
-        leitner_box: 5,
-        total_reviews: 10,
-        completed_modes_in_cycle: ["flashcard", "fillword"],
+        leitnerBox: 5,
+        totalReviews: 10,
+        completedModesInCycle: ["flashcard", "fillword"],
       }),
     );
 
@@ -1138,7 +1136,7 @@ describe("SessionManager - Integration", () => {
     const manager = new SessionManager(
       vocabs,
       [],
-      createMockSettings({ show_failed_words_in_session: false }),
+      createMockSettings({ showFailedWordsInSession: false }),
       "flashcard",
       "collection-1",
       "en",
