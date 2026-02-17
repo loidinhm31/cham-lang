@@ -12,15 +12,15 @@
     "./react-internal": "./react-internal.js"
   },
   "dependencies": {
-    "@eslint/js": "^9.17.0",
-    "eslint": "^9.17.0",
-    "eslint-config-prettier": "^9.1.0",
+    "@eslint/js": "^9.39.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-only-warn": "^1.1.0",
-    "eslint-plugin-react": "^7.37.2",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.14",
-    "eslint-plugin-turbo": "^2.3.3",
-    "typescript-eslint": "^8.18.0",
-    "globals": "^15.14.0"
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.26",
+    "eslint-plugin-turbo": "^2.8.9",
+    "globals": "^15.15.0",
+    "typescript-eslint": "^8.56.0"
   }
 }

@@ -1,19 +1,19 @@
 /**
- * Centralized auth storage keys for qm-center ecosystem.
+ * Centralized auth storage keys for qm-hub ecosystem.
  *
- * These keys are shared across all apps (qm-center-app, cham-lang, etc.)
+ * These keys are shared across all apps (qm-hub-app, cham-lang, etc.)
  * to enable single sign-on via localStorage.
  */
 export const AUTH_STORAGE_KEYS = {
-  ACCESS_TOKEN: "qm-center-access-token",
-  REFRESH_TOKEN: "qm-center-refresh-token",
-  USER_ID: "qm-center-user-id",
-  APPS: "qm-center-apps",
-  IS_ADMIN: "qm-center-is-admin",
-  SERVER_URL: "qm-center-server-url",
-  APP_ID: "qm-center-app-id",
-  API_KEY: "qm-center-api-key",
-  OTP_TYPE: "qm-center-otp-type",
+  ACCESS_TOKEN: "qm-hub-access-token",
+  REFRESH_TOKEN: "qm-hub-refresh-token",
+  USER_ID: "qm-hub-user-id",
+  APPS: "qm-hub-apps",
+  IS_ADMIN: "qm-hub-is-admin",
+  SERVER_URL: "qm-hub-server-url",
+  APP_ID: "qm-hub-app-id",
+  API_KEY: "qm-hub-api-key",
+  OTP_TYPE: "qm-hub-otp-type",
 } as const;
 
 export type AuthStorageKey =

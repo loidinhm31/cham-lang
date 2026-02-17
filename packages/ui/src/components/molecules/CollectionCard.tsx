@@ -35,7 +35,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-start gap-2 mb-2">
-            <h3 className="text-2xl font-bold text-gray-900 flex-1">
+            <h3 className="text-2xl font-bold text-[var(--color-text-primary)] flex-1">
               {collection.name}
             </h3>
             {/* Sharing status badges */}
@@ -60,7 +60,7 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
               )}
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm font-semibold text-indigo-600">
+          <div className="flex items-center gap-2 text-sm font-semibold text-[var(--color-primary-600)]">
             <Globe className="w-4 h-4" />
             <span className="capitalize">{collection.language}</span>
           </div>
@@ -75,13 +75,13 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({
       </div>
 
       {collection.description && (
-        <p className="text-gray-800 font-medium mb-4 line-clamp-2">
+        <p className="text-[var(--color-text-primary)] font-medium mb-4 line-clamp-2">
           {collection.description}
         </p>
       )}
 
       <div className="flex items-center justify-end">
-        <button className="text-indigo-600 font-bold text-sm flex items-center hover:text-indigo-700 transition-colors">
+        <button className="text-[var(--color-primary-600)] font-bold text-sm flex items-center hover:text-[var(--color-primary-700)] transition-colors">
           {t("buttons.viewDetails")} <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>

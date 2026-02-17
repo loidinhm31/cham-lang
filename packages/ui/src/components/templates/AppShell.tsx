@@ -234,12 +234,7 @@ export const AppShell: React.FC<AppShellProps> = ({
                   <Route path="/progress" element={<ProgressPage />} />
                   <Route
                     path="/settings"
-                    element={
-                      <SettingsPage
-                        onLogout={handleLogout}
-                        embedded={embedded}
-                      />
-                    }
+                    element={<SettingsPage onLogout={handleLogout} />}
                   />
                   <Route
                     path="/login"

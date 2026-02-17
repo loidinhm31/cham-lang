@@ -39,9 +39,7 @@ export interface SettingsPageProps {
   onLogout?: () => void;
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({
-  onLogout,
-}) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
   const { t, i18n } = useTranslation();
   const { navigate } = useNav();
   const { isAuthenticated, authStatus, logout } = useAuth();

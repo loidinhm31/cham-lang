@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 
-export type Theme = "light" | "dark" | "chameleon" | "simple";
+export type Theme = "light" | "dark" | "chameleon" | "simple" | "cyber";
 
-// Custom event name for theme changes (used by ShadowWrapper in qm-center-app)
+// Custom event name for theme changes (used by ShadowWrapper in qm-hub-app)
 export const CHAM_LANG_THEME_EVENT = "cham-lang-theme-change";
 export const CHAM_LANG_THEME_STORAGE_KEY = "cham-lang-theme";
 
@@ -16,7 +16,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 interface ThemeProviderProps {
   children: React.ReactNode;
   /**
-   * When true, the app is embedded in another app (e.g., qm-center).
+   * When true, the app is embedded in another app (e.g., qm-hub).
    * In embedded mode, theme changes are dispatched via custom events
    * instead of modifying document.documentElement directly.
    * This prevents theme conflicts between multiple embedded apps.
@@ -35,7 +35,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       savedTheme === "light" ||
       savedTheme === "dark" ||
       savedTheme === "chameleon" ||
-      savedTheme === "simple"
+      savedTheme === "simple" ||
+      savedTheme === "cyber"
     ) {
       return savedTheme;
     }
@@ -64,7 +65,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
       root.setAttribute("data-theme", theme);
 
       // Remove all previous theme classes
-      root.classList.remove("dark", "chameleon", "simple");
+      root.classList.remove("dark", "chameleon", "simple", "cyber");
 
       if (theme === "dark") {
         root.classList.add("dark");
@@ -72,6 +73,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
         root.classList.add("chameleon");
       } else if (theme === "simple") {
         root.classList.add("simple");
+      } else if (theme === "cyber") {
+        root.classList.add("cyber");
       }
     }
   }, [theme, embedded]);

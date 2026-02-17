@@ -136,7 +136,7 @@ importers:
 
   packages/shared:
     dependencies:
-      '@qm-center/sync-client-types':
+      '@qm-hub/sync-client-types':
         specifier: ^0.2.0
         version: 0.2.0
       clsx:
@@ -166,6 +166,12 @@ importers:
       '@fontsource/fredoka':
         specifier: ^5.1.0
         version: 5.2.10
+      '@fontsource/ibm-plex-sans':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/jetbrains-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -556,6 +562,12 @@ packages:
   '@fontsource/fredoka@5.2.10':
     resolution: {integrity: sha512-DyzPCmTf0PkBbAu+gNvnPzfD/dYIXlyp+Zcb76jEQyt/vmRKGZgkH8FFF9W2sICDaA5p+GLk1XGFjWh5PPX+lg==}
 
+  '@fontsource/ibm-plex-sans@5.2.8':
+    resolution: {integrity: sha512-eztSXjDhPhcpxNIiGTgMebdLP9qS4rWkysuE1V7c+DjOR0qiezaiDaTwQE7bTnG5HxAY/8M43XKDvs3cYq6ZYQ==}
+
+  '@fontsource/jetbrains-mono@5.2.8':
+    resolution: {integrity: sha512-6w8/SG4kqvIMu7xd7wt6x3idn1Qux3p9N62s6G3rfldOUYHpWcc2FKrqf+Vo44jRvqWj2oAtTHrZXEP23oSKwQ==}
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -588,7 +600,7 @@ packages:
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
 
-  '@qm-center/sync-client-types@0.2.0':
+  '@qm-hub/sync-client-types@0.2.0':
     resolution: {integrity: sha512-7ApnlePZAACqTvCNwFwZgszVsKvcKqJjsdMPZ1F9QhJrhLTs5n3YtV3GZM0PLYcAPKgmcCgHIequ6SYtFjqEKg==}
 
   '@radix-ui/number@1.1.1':
@@ -2942,6 +2954,10 @@ snapshots:
 
   '@fontsource/fredoka@5.2.10': {}
 
+  '@fontsource/ibm-plex-sans@5.2.8': {}
+
+  '@fontsource/jetbrains-mono@5.2.8': {}
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.7':
@@ -2972,7 +2988,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@qm-center/sync-client-types@0.2.0': {}
+  '@qm-hub/sync-client-types@0.2.0': {}
 
   '@radix-ui/number@1.1.1': {}
 

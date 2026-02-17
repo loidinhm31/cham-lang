@@ -18,9 +18,7 @@ import {
 } from "@cham-lang/shared/types";
 import { isTauri } from "@cham-lang/ui/utils";
 
-export interface SyncSettingsProps {
-
-}
+export interface SyncSettingsProps {}
 
 export const SyncSettings: React.FC<SyncSettingsProps> = () => {
   const { t } = useTranslation();

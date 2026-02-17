@@ -64,6 +64,13 @@ export const ThemePreviewPage: React.FC = () => {
             >
               Simple
             </Button>
+            <Button
+              variant={theme === "cyber" ? "primary" : "outline"}
+              onClick={() => setTheme("cyber")}
+              size="sm"
+            >
+              Cyber
+            </Button>
           </div>
         </div>
 
@@ -161,17 +168,17 @@ export const ThemePreviewPage: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card variant="clay-peach">
-              <CardContent className="pt-6 font-bold text-gray-700">
+              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
                 Clay Peach
               </CardContent>
             </Card>
             <Card variant="clay-blue">
-              <CardContent className="pt-6 font-bold text-gray-700">
+              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
                 Clay Blue
               </CardContent>
             </Card>
             <Card variant="clay-mint">
-              <CardContent className="pt-6 font-bold text-gray-700">
+              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
                 Clay Mint
               </CardContent>
             </Card>

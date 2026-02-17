@@ -6,6 +6,12 @@
 @import "@fontsource/fredoka/600.css";
 @import "@fontsource/fredoka/700.css";
 
+@import "@fontsource/jetbrains-mono/300.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/jetbrains-mono/700.css";
+
 @source "../**/*.{ts,tsx}";
 
 /* Tailwind v4 CSS-First Configuration */
@@ -13,6 +19,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant chameleon (&:where(.chameleon, .chameleon *));
 @custom-variant simple (&:where(.simple, .simple *));
+@custom-variant cyber (&:where(.cyber, .cyber *));
+
 
 @theme {
   /* Claymorphism Vibrant Colors */
@@ -276,6 +284,87 @@
     --bg-gradient: none;
     /* No gradient, just white */
   }
+
+  .cyber {
+    /* Cyber Theme - Developer Terminal Aesthetic */
+    --color-bg-light: #0F172A;
+    --color-bg-white: #1E293B;
+    --color-text-primary: #F1F5F9;
+    --color-text-secondary: #94A3B8;
+    --color-text-muted: #64748B;
+    --color-border-light: #334155;
+
+    /* Cyber Primary - VS Code Blue */
+    --color-primary-50: #EFF6FF;
+    --color-primary-100: #DBEAFE;
+    --color-primary-200: #BFDBFE;
+    --color-primary-300: #93C5FD;
+    --color-primary-400: #60A5FA;
+    --color-primary-500: #3B82F6;
+    --color-primary-600: #2563EB;
+    --color-primary-700: #1D4ED8;
+    --color-primary-800: #1E40AF;
+    --color-primary-900: #1E3A8A;
+
+    /* Cyber Secondary - Slate */
+    --color-secondary-50: #F8FAFC;
+    --color-secondary-100: #F1F5F9;
+    --color-secondary-200: #E2E8F0;
+    --color-secondary-300: #CBD5E1;
+    --color-secondary-400: #94A3B8;
+    --color-secondary-500: #64748B;
+    --color-secondary-600: #475569;
+    --color-secondary-700: #334155;
+    --color-secondary-800: #1E293B;
+    --color-secondary-900: #0F172A;
+
+    /* Cyber Accent - Orange */
+    --color-accent-50: #FFF7ED;
+    --color-accent-100: #FFEDD5;
+    --color-accent-200: #FED7AA;
+    --color-accent-300: #FDBA74;
+    --color-accent-400: #FB923C;
+    --color-accent-500: #F97316;
+    --color-accent-600: #EA580C;
+    --color-accent-700: #C2410C;
+    --color-accent-800: #9A3412;
+    --color-accent-900: #7C2D12;
+
+    /* Cyber clay colors */
+    --color-clay-peach: #334155;
+    --color-clay-blue: #1E293B;
+    --color-clay-mint: #10B981;
+    --color-clay-lilac: #A855F7;
+    --color-clay-yellow: #FACC15;
+    --color-clay-pink: #EC4899;
+
+    /* Cyber Shadows */
+    --color-clay-shadow-1: rgba(0, 0, 0, 0.5);
+    --color-clay-shadow-2: rgba(0, 0, 0, 0.4);
+    --color-clay-shadow-inset: rgba(59, 130, 246, 0.1);
+
+    --color-shadow-primary: rgba(59, 130, 246, 0.3);
+    --color-shadow-primary-soft: rgba(59, 130, 246, 0.2);
+
+    --glass-bg: rgba(30, 41, 59, 0.9);
+    --bg-gradient: linear-gradient(to bottom right, #0F172A, #1E293B, #0F172A);
+
+    /* Typography */
+    --font-family-heading: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+    --font-family-body: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+  }
+}
+
+/* Cyber theme font application */
+.cyber,
+.cyber *,
+.cyber .font-mono,
+.cyber code,
+.cyber pre,
+[data-theme="cyber"] .font-mono,
+[data-theme="cyber"] code,
+[data-theme="cyber"] pre {
+  font-family: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
 }
 
 /* Animation Keyframes */
@@ -373,7 +462,8 @@
   }
 }
 
-body {
+body,
+.shadow-body {
   font-family: var(--font-family-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -485,6 +575,25 @@ h6 {
   background-color: var(--color-clay-pink);
 }
 
+/* Cyber theme clay overrides - lighter borders for dark backgrounds */
+.cyber .clay-card,
+[data-theme="cyber"] .clay-card {
+  background-color: var(--color-bg-white);
+  border-color: var(--color-border-light);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1);
+}
+
+.cyber .clay-btn,
+[data-theme="cyber"] .clay-btn {
+  border-color: var(--color-border-light);
+}
+
+.cyber .clay-badge,
+[data-theme="cyber"] .clay-badge {
+  border-color: var(--color-border-light);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 /* Legacy glass effects (keeping for compatibility) */
 .glass-effect {
   background: rgb(255 255 255 / 0.4);
@@ -496,6 +605,13 @@ h6 {
   background: rgb(0 0 0 / 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+/* Cyber glass card - terminal aesthetic */
+.cyber .glass-effect,
+[data-theme="cyber"] .glass-effect {
+  background: var(--glass-bg);
+  border: 1px solid var(--color-border-light);
 }
 
 /* Animations */
