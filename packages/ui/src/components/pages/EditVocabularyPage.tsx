@@ -144,7 +144,7 @@ export const EditVocabularyPage: React.FC = () => {
           backTo={id ? `/vocabulary/${id}` : "/"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-[var(--color-text-secondary)]">
+          <div className="text-(--color-text-secondary)">
             {t("app.loading")}
           </div>
         </div>

@@ -26,12 +26,12 @@ export const ThemePreviewPage: React.FC = () => {
       <TopBar title="Theme Preview" showBack={true} />
       <div className="min-h-screen px-4 md:px-8 py-8 pb-24 space-y-8">
         {/* Header Control */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-[var(--color-bg-white)] p-6 rounded-3xl border border-[var(--color-border-light)] backdrop-blur-md shadow-lg">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-(--color-bg-white) p-6 rounded-3xl border border-(--color-border-light) backdrop-blur-md shadow-lg">
           <div>
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
+            <h2 className="text-2xl font-bold text-(--color-text-primary)">
               Current Theme: <span className="capitalize">{theme}</span>
             </h2>
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-(--color-text-secondary)">
               Toggle themes to verify component adaptability
             </p>
           </div>
@@ -76,7 +76,7 @@ export const ThemePreviewPage: React.FC = () => {
 
         {/* Buttons Section */}
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+          <h3 className="text-xl font-bold text-(--color-text-primary)">
             Buttons
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -125,7 +125,7 @@ export const ThemePreviewPage: React.FC = () => {
 
         {/* Inputs Section */}
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+          <h3 className="text-xl font-bold text-(--color-text-primary)">
             Form Elements
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -163,22 +163,22 @@ export const ThemePreviewPage: React.FC = () => {
 
         {/* Cards Variants */}
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+          <h3 className="text-xl font-bold text-(--color-text-primary)">
             Card Variants
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card variant="clay-peach">
-              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
+              <CardContent className="pt-6 font-bold text-(--color-text-primary)">
                 Clay Peach
               </CardContent>
             </Card>
             <Card variant="clay-blue">
-              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
+              <CardContent className="pt-6 font-bold text-(--color-text-primary)">
                 Clay Blue
               </CardContent>
             </Card>
             <Card variant="clay-mint">
-              <CardContent className="pt-6 font-bold text-[var(--color-text-primary)]">
+              <CardContent className="pt-6 font-bold text-(--color-text-primary)">
                 Clay Mint
               </CardContent>
             </Card>
@@ -192,30 +192,30 @@ export const ThemePreviewPage: React.FC = () => {
 
         {/* Typography & Colors */}
         <section className="space-y-4">
-          <h3 className="text-xl font-bold text-[var(--color-text-primary)]">
+          <h3 className="text-xl font-bold text-(--color-text-primary)">
             Typography & Icons
           </h3>
           <Card>
             <CardContent className="space-y-4 pt-6">
-              <h1 className="text-4xl font-bold text-[var(--color-text-primary)]">
+              <h1 className="text-4xl font-bold text-(--color-text-primary)">
                 Heading 1
               </h1>
-              <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">
+              <h2 className="text-3xl font-bold text-(--color-text-primary)">
                 Heading 2
               </h2>
-              <h3 className="text-2xl font-bold text-[var(--color-text-primary)]">
+              <h3 className="text-2xl font-bold text-(--color-text-primary)">
                 Heading 3
               </h3>
-              <p className="text-[var(--color-text-secondary)]">
+              <p className="text-(--color-text-secondary)">
                 This is body text. The quick brown fox jumps over the lazy dog.
                 It should utilize the secondary text color variable.
               </p>
-              <p className="text-[var(--color-text-muted)] text-sm">
+              <p className="text-(--color-text-muted) text-sm">
                 This is muted text used for captions and hints.
               </p>
 
               <div className="flex gap-4 pt-4">
-                <div className="flex items-center gap-2 text-[var(--color-primary-600)]">
+                <div className="flex items-center gap-2 text-(--color-primary-600)">
                   <Info /> <span>Primary Info</span>
                 </div>
                 <div className="flex items-center gap-2 text-green-600">
@@ -224,7 +224,7 @@ export const ThemePreviewPage: React.FC = () => {
                 <div className="flex items-center gap-2 text-amber-500">
                   <AlertTriangle /> <span>Warning</span>
                 </div>
-                <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
+                <div className="flex items-center gap-2 text-(--color-text-muted)">
                   <Clock /> <span>Muted Icon</span>
                 </div>
               </div>

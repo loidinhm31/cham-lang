@@ -55,7 +55,7 @@ const SUCCESS_HTML = `
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #667eea;
             display: flex; align-items: center; justify-content: center;
             min-height: 100vh; padding: 20px;
         }
@@ -73,7 +73,7 @@ const SUCCESS_HTML = `
         h1 { color: #1f2937; font-size: 28px; font-weight: 700; margin-bottom: 12px; }
         p { color: #6b7280; font-size: 16px; line-height: 1.6; margin-bottom: 16px; }
         .close-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #667eea;
             color: white; border: none; border-radius: 8px;
             padding: 14px 32px; font-size: 16px; font-weight: 600;
             cursor: pointer; width: 100%;

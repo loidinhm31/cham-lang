@@ -13,17 +13,24 @@ interface VocabularyCardProps {
 }
 
 const wordTypeColors: Record<WordType, string> = {
-  "n/a": "bg-gray-200 text-[var(--color-text-primary)] border-gray-300",
-  noun: "bg-[#98FF98] text-[var(--color-text-primary)] border-[#7EE57E]",
-  verb: "bg-[#ADD8E6] text-[var(--color-text-primary)] border-[#8FC4DE]",
-  adjective: "bg-[#E6E6FA] text-[var(--color-text-primary)] border-[#D0D0F0]",
-  adverb: "bg-[#FFF9C4] text-[var(--color-text-primary)] border-[#FFF59D]",
-  pronoun: "bg-[#FDBCB4] text-[var(--color-text-primary)] border-[#FCA89D]",
-  preposition: "bg-[#FFD1DC] text-[var(--color-text-primary)] border-[#FFB3C1]",
-  conjunction: "bg-[#FFE4B5] text-[var(--color-text-primary)] border-[#FFD89B]",
+  "n/a":
+    "bg-(--color-word-default) text-(--color-text-primary) border-(--color-word-default-border)",
+  noun: "bg-(--color-word-noun) text-(--color-text-primary) border-(--color-word-noun-border)",
+  verb: "bg-(--color-word-verb) text-(--color-text-primary) border-(--color-word-verb-border)",
+  adjective:
+    "bg-(--color-word-adjective) text-(--color-text-primary) border-(--color-word-adjective-border)",
+  adverb:
+    "bg-(--color-word-adverb) text-(--color-text-primary) border-(--color-word-adverb-border)",
+  pronoun:
+    "bg-(--color-word-pronoun) text-(--color-text-primary) border-(--color-word-pronoun-border)",
+  preposition:
+    "bg-(--color-word-preposition) text-(--color-text-primary) border-(--color-word-preposition-border)",
+  conjunction:
+    "bg-(--color-word-conjunction) text-(--color-text-primary) border-(--color-word-conjunction-border)",
   interjection:
-    "bg-[#DDA0DD] text-[var(--color-text-primary)] border-[#C77DC7]",
-  phrase: "bg-[#F0E68C] text-[var(--color-text-primary)] border-[#E6D66C]",
+    "bg-(--color-word-phrase) text-(--color-text-primary) border-(--color-word-phrase-border)",
+  phrase:
+    "bg-(--color-word-phrase-alt) text-(--color-text-primary) border-(--color-word-phrase-alt-border)",
 };
 
 export const VocabularyCard: React.FC<VocabularyCardProps> = ({
@@ -75,15 +82,15 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
             />
           )}
           <div className="flex-1">
-            <h3 className="text-2xl font-bold text-[var(--color-text-primary)] mb-1 whitespace-pre-line">
+            <h3 className="text-2xl font-bold text-(--color-text-primary) mb-1 whitespace-pre-line">
               {vocabulary.word}
             </h3>
             {vocabulary.concept && (
-              <p className="font-medium text-[var(--color-text-secondary)] -mt-1 mb-1 italic">
+              <p className="font-medium text-(--color-text-secondary) -mt-1 mb-1 italic">
                 {vocabulary.concept}
               </p>
             )}
-            <p className="text-sm font-semibold text-[var(--color-primary-600)]">
+            <p className="text-sm font-semibold text-(--color-primary-600)">
               {vocabulary.ipa}
             </p>
           </div>
@@ -96,7 +103,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
       </div>
 
       {vocabulary.definitions.length > 0 && (
-        <p className="text-xl text-[var(--color-text-primary)] font-semibold mb-4 line-clamp-2">
+        <p className="text-xl text-(--color-text-primary) font-semibold mb-4 line-clamp-2">
           {vocabulary.definitions[0].meaning}
         </p>
       )}
@@ -114,7 +121,7 @@ export const VocabularyCard: React.FC<VocabularyCardProps> = ({
             </Badge>
           )}
         </div>
-        <button className="text-[var(--color-primary-600)] font-bold text-sm flex items-center hover:text-[var(--color-primary-700)] transition-colors">
+        <button className="text-(--color-primary-600) font-bold text-sm flex items-center hover:text-(--color-primary-700) transition-colors">
           {t("buttons.viewDetails")} <ChevronRight className="w-4 h-4 ml-1" />
         </button>
       </div>

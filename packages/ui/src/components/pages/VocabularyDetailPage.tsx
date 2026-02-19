@@ -227,7 +227,7 @@ export const VocabularyDetailPage: React.FC = () => {
           backTo={collectionId ? `/collections/${collectionId}` : "/"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-[var(--color-text-secondary)]">
+          <div className="text-(--color-text-secondary)">
             {t("app.loading")}
           </div>
         </div>
@@ -302,7 +302,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {vocabularyIds && currentIndex !== undefined && (
           <>
             {/* Progress Indicator */}
-            <div className="text-center text-sm text-[var(--color-text-muted)] mb-4">
+            <div className="text-center text-sm text-(--color-text-muted) mb-4">
               {currentIndex + 1} / {totalWords || vocabularyIds.length}
             </div>
 
@@ -313,7 +313,7 @@ export const VocabularyDetailPage: React.FC = () => {
                   onClick={goToPrevious}
                   className="pointer-events-auto p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 rounded-full shadow-lg transition-all hover:scale-110"
                 >
-                  <ChevronLeft className="w-8 h-8 text-[var(--color-text-primary)]" />
+                  <ChevronLeft className="w-8 h-8 text-(--color-text-primary)" />
                 </button>
               )}
               <div className="flex-1" />
@@ -322,7 +322,7 @@ export const VocabularyDetailPage: React.FC = () => {
                   onClick={goToNext}
                   className="pointer-events-auto p-3 bg-white/90 dark:bg-slate-800/90 hover:bg-white dark:hover:bg-slate-700 rounded-full shadow-lg transition-all hover:scale-110"
                 >
-                  <ChevronRight className="w-8 h-8 text-[var(--color-text-primary)]" />
+                  <ChevronRight className="w-8 h-8 text-(--color-text-primary)" />
                 </button>
               )}
             </div>
@@ -358,11 +358,11 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Concept */}
         {vocabulary.concept && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
               {t("vocabulary.concept") || "Concept"}
             </h2>
-            <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
-              <p className="text-lg text-[var(--color-text-primary)] leading-relaxed">
+            <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-2xl border-2 border-purple-200 dark:border-purple-800">
+              <p className="text-lg text-(--color-text-primary) leading-relaxed">
                 💡 {vocabulary.concept}
               </p>
             </div>
@@ -371,7 +371,7 @@ export const VocabularyDetailPage: React.FC = () => {
 
         {/* Definitions */}
         <Card variant="glass">
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+          <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
             {t("vocabulary.definitions")}
           </h2>
           <div className="space-y-4">
@@ -380,7 +380,7 @@ export const VocabularyDetailPage: React.FC = () => {
                 key={idx}
                 className="p-4 bg-white/40 dark:bg-white/5 rounded-2xl"
               >
-                <p className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                <p className="text-lg font-semibold text-(--color-text-primary) mb-2">
                   {def.meaning}
                 </p>
                 {def.translation && (
@@ -389,7 +389,7 @@ export const VocabularyDetailPage: React.FC = () => {
                   </p>
                 )}
                 {def.example && (
-                  <p className="text-sm text-[var(--color-text-secondary)] italic">
+                  <p className="text-sm text-(--color-text-secondary) italic">
                     "{def.example}"
                   </p>
                 )}
@@ -401,7 +401,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Example Sentences */}
         {vocabulary.exampleSentences.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
               {t("vocabulary.exampleSentences")}
             </h2>
             <div className="space-y-3">
@@ -411,7 +411,7 @@ export const VocabularyDetailPage: React.FC = () => {
                     key={idx}
                     className="p-3 bg-white/40 dark:bg-white/5 rounded-xl"
                   >
-                    <p className="text-[var(--color-text-secondary)]">
+                    <p className="text-(--color-text-secondary)">
                       💬 {sentence}
                     </p>
                   </div>
@@ -424,7 +424,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Topics */}
         {vocabulary.topics.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
               {t("vocabulary.topics")}
             </h2>
             <div className="flex flex-wrap gap-2">
@@ -440,7 +440,7 @@ export const VocabularyDetailPage: React.FC = () => {
         {/* Related Words */}
         {vocabulary.relatedWords.length > 0 && (
           <Card variant="glass">
-            <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+            <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
               {t("vocabulary.relatedWords")}
             </h2>
             <div className="space-y-3">
@@ -453,7 +453,7 @@ export const VocabularyDetailPage: React.FC = () => {
                     key={idx}
                     className="flex items-center justify-between p-3 bg-white/40 dark:bg-white/5 rounded-xl"
                   >
-                    <span className="font-semibold text-[var(--color-text-primary)]">
+                    <span className="font-semibold text-(--color-text-primary)">
                       {related.word}
                     </span>
                     <Badge variant="glass" className="text-xs">

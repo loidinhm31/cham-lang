@@ -11,7 +11,7 @@
     "./constants": "./src/constants/index.ts"
   },
   "dependencies": {
-    "@qm-hub/sync-client-types": "^0.2.1",
+    "@qm-hub/sync-client-types": "^0.2.2",
     "clsx": "^2.1.1",
     "tailwind-merge": "^3.4.1"
   },

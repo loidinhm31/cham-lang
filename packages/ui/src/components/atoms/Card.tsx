@@ -3,21 +3,20 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@cham-lang/shared/utils";
 
 const cardVariants = cva(
-  "clay-card rounded-3xl p-4 border-[3px] border-[var(--color-border-light)] transition-all duration-200 shadow-clay-card",
+  "clay-card rounded-3xl p-4 border-[3px] border-(--color-border-light) transition-all duration-200 shadow-clay-card",
   {
     variants: {
       variant: {
-        default: "bg-[var(--color-bg-white)]",
-        glass: "bg-[var(--glass-bg)] backdrop-blur-md",
+        default: "bg-(--color-bg-white)",
+        glass: "bg-(--glass-bg) backdrop-blur-md",
         "clay-gray": "bg-gray-200",
-        "clay-peach": "bg-[var(--color-clay-peach)]",
-        "clay-blue": "bg-[var(--color-clay-blue)]",
-        "clay-mint": "bg-[var(--color-clay-mint)]",
-        "clay-lilac": "bg-[var(--color-clay-lilac)]",
-        "clay-yellow": "bg-[var(--color-clay-yellow)]",
-        "clay-pink": "bg-[var(--color-clay-pink)]",
-        gradient:
-          "bg-linear-to-br from-[var(--color-secondary-500)] to-[var(--color-primary-500)] text-white",
+        "clay-peach": "bg-(--color-clay-peach)",
+        "clay-blue": "bg-(--color-clay-blue)",
+        "clay-mint": "bg-(--color-clay-mint)",
+        "clay-lilac": "bg-(--color-clay-lilac)",
+        "clay-yellow": "bg-(--color-clay-yellow)",
+        "clay-pink": "bg-(--color-clay-pink)",
+        gradient: "btn-secondary-primary text-white",
       },
       hover: {
         true: "cursor-pointer hover:translate-y-[-2px] hover:shadow-clay-card-hover active:translate-y-[2px] active:shadow-clay-card-active",
@@ -74,7 +73,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-semibold leading-none tracking-tight text-[var(--color-text-primary)]",
+      "font-semibold leading-none tracking-tight text-(--color-text-primary)",
       className,
     )}
     {...props}

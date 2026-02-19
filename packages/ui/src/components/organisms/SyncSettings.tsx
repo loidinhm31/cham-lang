@@ -153,7 +153,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
               {/* Pending changes badge */}
               {syncStatus?.pendingChanges !== undefined &&
                 syncStatus.pendingChanges > 0 && (
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-blue-50 text-blue-600 border border-blue-100">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-(--color-primary-500)/10 text-(--color-primary-500) border border-(--color-primary-500)/30">
                     <AlertCircle className="w-3 h-3" />
                     {syncStatus.pendingChanges} {t("sync.pendingChanges")}
                   </div>
@@ -166,8 +166,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
             <div
               className={`mt-4 p-4 rounded-lg border ${
                 syncResult.success
-                  ? "bg-green-50 border-green-200"
-                  : "bg-red-50 border-red-200"
+                  ? "bg-green-500/10 border-green-500/30"
+                  : "bg-red-500/10 border-red-500/30"
               }`}
             >
               <div className="flex items-center gap-2 mb-3">
@@ -187,7 +187,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
 
               {syncResult.success && (
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                  <div className="bg-(--color-bg-white) text-center p-2 rounded border border-(--color-border-light)">
                     <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.pushed}
                     </div>
@@ -195,7 +195,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
                       {t("sync.pushed")}
                     </div>
                   </div>
-                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                  <div className="bg-(--color-bg-white) text-center p-2 rounded border border-(--color-border-light)">
                     <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.pulled}
                     </div>
@@ -203,7 +203,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
                       {t("sync.pulled")}
                     </div>
                   </div>
-                  <div className="bg-white/60 text-center p-2 rounded border border-gray-100">
+                  <div className="bg-(--color-bg-white) text-center p-2 rounded border border-(--color-border-light)">
                     <div className="text-lg font-bold text-(--color-text-primary)">
                       {syncResult.conflicts}
                     </div>
@@ -218,23 +218,23 @@ export const SyncSettings: React.FC<SyncSettingsProps> = () => {
 
           {/* Error */}
           {error && (
-            <div className="mt-4 p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-600">
+            <div className="mt-4 p-3 rounded-lg text-sm bg-red-500/10 border border-red-500/30 text-red-500">
               {error}
             </div>
           )}
 
           {/* Sync Progress */}
           {isSyncing && syncProgress && (
-            <div className="mt-4 p-3 rounded-lg bg-blue-50 border border-blue-200">
+            <div className="mt-4 p-3 rounded-lg bg-(--color-primary-500)/10 border border-(--color-primary-500)/30">
               <div className="flex items-center gap-2 mb-2">
-                <RefreshCw className="w-4 h-4 animate-spin text-blue-500" />
-                <span className="text-sm font-medium text-blue-700">
+                <RefreshCw className="w-4 h-4 animate-spin text-(--color-primary-500)" />
+                <span className="text-sm font-medium text-(--color-primary-500)">
                   {syncProgress.phase === "pushing"
                     ? t("sync.pushing")
                     : t("sync.pulling")}
                 </span>
               </div>
-              <div className="text-sm text-blue-600">
+              <div className="text-sm text-(--color-text-secondary)">
                 {syncProgress.phase === "pushing" ? (
                   <span>
                     {t("sync.recordsPushed", {

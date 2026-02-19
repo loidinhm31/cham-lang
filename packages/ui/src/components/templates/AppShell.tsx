@@ -189,7 +189,7 @@ export const AppShell: React.FC<AppShellProps> = ({
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "var(--bg-gradient)" }}
+        style={{ background: "var(--color-bg-app)" }}
       >
         <LoadingSpinner size="lg" />
       </div>
@@ -201,7 +201,7 @@ export const AppShell: React.FC<AppShellProps> = ({
       <SyncNotificationProvider>
         <div
           className="min-h-screen relative overflow-hidden"
-          style={{ background: "var(--bg-gradient)" }}
+          style={{ background: "var(--color-bg-app)" }}
         >
           {showNavigation && (
             <Sidebar

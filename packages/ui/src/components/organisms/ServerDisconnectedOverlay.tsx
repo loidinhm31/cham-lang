@@ -76,7 +76,7 @@ export const ServerDisconnectedOverlay: React.FC<
         )}
 
         {/* Visual indicator */}
-        <div className="bg-gradient-to-br from-orange-500 to-red-600 p-8 text-white text-center">
+        <div className="btn-orange p-8 text-white text-center">
           <div className="w-20 h-20 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
             <WifiOff className="w-10 h-10" />
           </div>

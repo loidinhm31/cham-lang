@@ -228,7 +228,7 @@ export const CollectionDetailPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-light)] transition-colors duration-200 pb-10">
+    <div className="min-h-screen bg-(--color-bg-light) transition-colors duration-200 pb-10">
       <TopBar title={collection.name} showBack backTo={backRoute} />
 
       {/* Bulk Action Toolbar */}
@@ -277,7 +277,7 @@ export const CollectionDetailPage: React.FC = () => {
             className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800"
           >
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-500 to-cyan-600 flex items-center justify-center flex-shrink-0">
+              <div className="w-16 h-16 rounded-2xl btn-blue flex items-center justify-center flex-shrink-0">
                 <GraduationCap className="w-8 h-8 text-white" />
               </div>
               <div className="flex-1">
@@ -362,10 +362,10 @@ export const CollectionDetailPage: React.FC = () => {
 
         {/* Vocabulary List */}
         <div>
-          <h2 className="text-2xl font-bold text-[var(--color-text-primary)] mb-4">
+          <h2 className="text-2xl font-bold text-(--color-text-primary) mb-4">
             {t("vocabulary.title")}{" "}
             {totalCount > 0 && (
-              <span className="text-[var(--color-text-muted)] text-lg font-normal">
+              <span className="text-(--color-text-muted) text-lg font-normal">
                 ({vocabularies.length}/{totalCount})
               </span>
             )}

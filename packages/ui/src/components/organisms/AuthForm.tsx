@@ -59,14 +59,14 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
 
   return (
     <div className="w-full">
-      <div className="flex mb-6 bg-[var(--color-secondary-100)] dark:bg-slate-800/50 p-1 rounded-lg border border-[var(--color-border-light)]">
+      <div className="flex mb-6 bg-(--color-secondary-100) dark:bg-slate-800/50 p-1 rounded-lg border border-(--color-border-light)">
         <button
           type="button"
           onClick={() => setIsLogin(true)}
           className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
             isLogin
-              ? "bg-[var(--color-bg-white)] text-[var(--color-primary-600)] shadow-sm dark:text-[var(--color-primary-400)]"
-              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              ? "bg-(--color-bg-white) text-(--color-primary-600) shadow-sm dark:text-(--color-primary-400)"
+              : "text-(--color-text-muted) hover:text-(--color-text-primary)"
           }`}
         >
           {t("auth.login") || "Log In"}
@@ -76,8 +76,8 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
           onClick={() => setIsLogin(false)}
           className={`flex-1 py-2 text-sm font-medium rounded-md transition-all ${
             !isLogin
-              ? "bg-[var(--color-bg-white)] text-[var(--color-primary-600)] shadow-sm dark:text-[var(--color-primary-400)]"
-              : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              ? "bg-(--color-bg-white) text-(--color-primary-600) shadow-sm dark:text-(--color-primary-400)"
+              : "text-(--color-text-muted) hover:text-(--color-text-primary)"
           }`}
         >
           {t("auth.register") || "Sign Up"}
@@ -87,11 +87,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
       <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <div className="space-y-1">
-            <label className="text-sm font-medium text-[var(--color-text-primary)]">
+            <label className="text-sm font-medium text-(--color-text-primary)">
               {t("auth.username") || "Username"}
             </label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--color-text-muted)" />
               <Input
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
@@ -105,11 +105,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         )}
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-[var(--color-text-primary)]">
+          <label className="text-sm font-medium text-(--color-text-primary)">
             {t("auth.email") || "Email"}
           </label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--color-text-muted)" />
             <Input
               type="email"
               value={email}
@@ -121,11 +121,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onSuccess }) => {
         </div>
 
         <div className="space-y-1">
-          <label className="text-sm font-medium text-[var(--color-text-primary)]">
+          <label className="text-sm font-medium text-(--color-text-primary)">
             {t("auth.password") || "Password"}
           </label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-(--color-text-muted)" />
             <Input
               type="password"
               value={password}

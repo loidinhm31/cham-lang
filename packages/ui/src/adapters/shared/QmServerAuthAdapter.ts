@@ -15,6 +15,7 @@ export interface QmServerAuthConfig {
   baseUrl?: string;
   appId?: string;
   apiKey?: string;
+  apiBasePath?: string;
 }
 
 const STORAGE_KEYS = AUTH_STORAGE_KEYS;
@@ -23,6 +24,7 @@ export class QmServerAuthAdapter implements IAuthService {
   private baseUrl: string;
   private appId: string;
   private apiKey: string;
+  private apiBasePath: string;
   private statusCache: AuthStatus | null = null;
   private statusCacheTimestamp: number = 0;
   private static STATUS_CACHE_TTL = 10000;
@@ -47,6 +49,7 @@ export class QmServerAuthAdapter implements IAuthService {
       this.appId = config?.appId || env.appId;
       this.apiKey = config?.apiKey || env.apiKey;
     }
+    this.apiBasePath = config?.apiBasePath ?? "/api/v1";
   }
 
   private getStoredValue(key: string): string | null {
@@ -122,7 +125,7 @@ export class QmServerAuthAdapter implements IAuthService {
     const result = await this.post<
       { username: string; email: string; password: string },
       AuthResponse
-    >("/api/v1/auth/register", { username, email, password });
+    >(`${this.apiBasePath}/auth/register`, { username, email, password });
 
     this.storeAuthData(result);
     return result;
@@ -132,7 +135,7 @@ export class QmServerAuthAdapter implements IAuthService {
     const result = await this.post<
       { email: string; password: string },
       AuthResponse
-    >("/api/v1/auth/login", { email, password });
+    >(`${this.apiBasePath}/auth/login`, { email, password });
 
     this.storeAuthData(result);
     return result;
@@ -157,7 +160,7 @@ export class QmServerAuthAdapter implements IAuthService {
       { refreshToken: string },
       { accessToken: string; refreshToken: string }
     >(
-      "/api/v1/auth/refresh",
+      `${this.apiBasePath}/auth/refresh`,
       { refreshToken },
       {
         Authorization: `Bearer ${accessToken}`,
@@ -281,7 +284,7 @@ export class QmServerAuthAdapter implements IAuthService {
     const accessToken = await this.getAccessToken();
     if (!accessToken) throw new Error("Not authenticated");
 
-    const url = new URL(`${this.baseUrl}/api/v1/auth/lookup`);
+    const url = new URL(`${this.baseUrl}${this.apiBasePath}/auth/lookup`);
     url.searchParams.set("username", username);
 
     const response = await fetch(url.toString(), {

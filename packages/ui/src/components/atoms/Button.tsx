@@ -8,18 +8,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary:
-          "text-white bg-linear-to-br from-[var(--color-primary-400)] to-[var(--color-primary-600)] border-[var(--color-primary-600)]",
-        secondary:
-          "text-white bg-linear-to-br from-[var(--color-secondary-400)] to-[var(--color-secondary-600)] border-[var(--color-secondary-600)]",
+        primary: "text-white btn-primary border-(--color-primary-600)",
+        secondary: "text-white btn-secondary border-(--color-secondary-600)",
         glass:
-          "text-[var(--color-text-primary)] bg-[var(--color-bg-white)] border-[var(--color-border-light)] hover:bg-[var(--color-bg-white)]/80 backdrop-blur-md",
+          "text-(--color-text-primary) bg-(--color-bg-white) border-(--color-border-light) hover:bg-(--color-bg-white)/80 backdrop-blur-md",
         outline:
-          "text-[var(--color-primary-600)] dark:text-[var(--color-primary-400)] bg-[var(--color-bg-white)] border-[var(--color-primary-500)] hover:bg-indigo-50 dark:hover:bg-indigo-950/50 shadow-[0_4px_0_rgba(79,70,229,0.2)] dark:shadow-[0_4px_0_rgba(56,189,248,0.2)]",
-        success:
-          "text-white bg-linear-to-br from-emerald-400 to-teal-500 border-emerald-700",
-        danger:
-          "text-white bg-linear-to-br from-red-400 to-pink-500 border-red-700",
+          "text-(--color-primary-600) dark:text-(--color-primary-400) bg-(--color-bg-white) border-(--color-primary-500) hover:bg-indigo-50 dark:hover:bg-indigo-950/50 shadow-[0_4px_0_rgba(79,70,229,0.2)] dark:shadow-[0_4px_0_rgba(56,189,248,0.2)]",
+        success: "text-white btn-success border-emerald-700",
+        danger: "text-white btn-danger border-red-700",
       },
       size: {
         xs: "py-1.5 px-3 text-xs",

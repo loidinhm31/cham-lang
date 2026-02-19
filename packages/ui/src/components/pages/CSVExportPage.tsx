@@ -113,10 +113,10 @@ export const CSVExportPage: React.FC = () => {
           <div className="flex items-center gap-3 mb-4">
             <FileDown className="w-8 h-8 text-chameleon-600 dark:text-chameleon-400" />
             <div>
-              <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
+              <h2 className="text-2xl font-bold text-(--color-text-primary)">
                 {t("csv.exportCollections")}
               </h2>
-              <p className="text-[var(--color-text-secondary)]">
+              <p className="text-(--color-text-secondary)">
                 {t("csv.exportDescription")}
               </p>
             </div>
@@ -154,7 +154,7 @@ export const CSVExportPage: React.FC = () => {
                     : t("csv.selectAll")}
                 </button>
 
-                <div className="text-sm text-[var(--color-text-secondary)]">
+                <div className="text-sm text-(--color-text-secondary)">
                   {t("csv.selectedCount", {
                     selected: selectedIds.size,
                     total: collections.length,
@@ -177,20 +177,20 @@ export const CSVExportPage: React.FC = () => {
                         className={`w-full p-4 rounded-lg border-2 transition-all text-left ${
                           isSelected
                             ? "border-chameleon-600 bg-chameleon-50 dark:bg-chameleon-900/30 dark:border-chameleon-500"
-                            : "border-[var(--color-border-light)] bg-[var(--color-bg-white)] hover:border-gray-300 dark:hover:border-slate-600"
+                            : "border-(--color-border-light) bg-(--color-bg-white) hover:border-gray-300 dark:hover:border-slate-600"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           {isSelected ? (
                             <CheckSquare className="w-5 h-5 text-chameleon-600 dark:text-chameleon-400 flex-shrink-0" />
                           ) : (
-                            <Square className="w-5 h-5 text-[var(--color-text-muted)] flex-shrink-0" />
+                            <Square className="w-5 h-5 text-(--color-text-muted) flex-shrink-0" />
                           )}
                           <div className="flex-1">
-                            <div className="font-semibold text-[var(--color-text-primary)]">
+                            <div className="font-semibold text-(--color-text-primary)">
                               {collection.name}
                             </div>
-                            <div className="text-sm text-[var(--color-text-secondary)]">
+                            <div className="text-sm text-(--color-text-secondary)">
                               {collection.language.toUpperCase()} •{" "}
                               {collection.wordCount} {t("collections.words")}
                             </div>

@@ -59,7 +59,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
       <div className={`flip-card-inner ${isFlipped ? "flipped" : ""}`}>
         {/* Front - Vibrant Gradient Clay Card */}
         <div className="flip-card-front">
-          <div className="h-full w-full bg-gradient-to-br from-indigo-400 via-purple-500 to-pink-500 rounded-[32px] border-[4px] border-purple-700 shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center p-8">
+          <div className="h-full w-full bg-indigo-500 rounded-[32px] border-[4px] border-purple-700 shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex flex-col items-center justify-center p-8">
             <div className="w-28 h-28 bg-white/20 rounded-full flex items-center justify-center mb-6 shadow-lg">
               <img src={chameleonIcon} alt="Cham Lang" className="w-20 h-20" />
             </div>
@@ -82,7 +82,7 @@ export const FlashCard: React.FC<FlashCardProps> = ({
 
         {/* Back - Pastel Clay Card */}
         <div className="flip-card-back">
-          <div className="h-full w-full bg-[#FFF9C4] rounded-[32px] border-[4px] border-[#FFF59D] shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex items-center justify-center p-8">
+          <div className="h-full w-full bg-(--color-word-adverb) rounded-[32px] border-[4px] border-(--color-word-adverb-border) shadow-[0_12px_0_rgba(0,0,0,0.2),0_6px_20px_rgba(0,0,0,0.15),inset_0_-3px_6px_rgba(0,0,0,0.1)] flex items-center justify-center p-8">
             <div className="text-center">
               <div className="text-6xl mb-6">💡</div>
               <p className="text-3xl font-bold text-gray-900 mb-6 leading-relaxed whitespace-pre-line">

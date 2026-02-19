@@ -81,8 +81,7 @@
   --glass-bg: rgba(255, 255, 255, 0.6);
 
   /* Theme Backgrounds */
-  --bg-gradient: linear-gradient(to bottom right, #fde68a, #cffafe, #99f6e4);
-  /* amber-200 via cyan-100 to teal-200 */
+  --color-bg-app: #cffafe;
 
   /* Custom Animations */
   --animate-float: float 3s ease-in-out infinite;
@@ -139,6 +138,38 @@
 
     --color-shadow-primary: rgba(79, 70, 229, 0.3);
     --color-shadow-primary-soft: rgba(79, 70, 229, 0.2);
+
+    /* Vocabulary word type colors */
+    --color-word-noun: #98FF98;
+    --color-word-noun-border: #7EE57E;
+    --color-word-verb: #ADD8E6;
+    --color-word-verb-border: #8FC4DE;
+    --color-word-adjective: #E6E6FA;
+    --color-word-adjective-border: #D0D0F0;
+    --color-word-adverb: #FFF9C4;
+    --color-word-adverb-border: #FFF59D;
+    --color-word-pronoun: #FDBCB4;
+    --color-word-pronoun-border: #FCA89D;
+    --color-word-preposition: #FFD1DC;
+    --color-word-preposition-border: #FFB3C1;
+    --color-word-conjunction: #FFE4B5;
+    --color-word-conjunction-border: #FFD89B;
+    --color-word-phrase: #DDA0DD;
+    --color-word-phrase-border: #C77DC7;
+    --color-word-phrase-alt: #F0E68C;
+    --color-word-phrase-alt-border: #E6D66C;
+    --color-word-default: #E2E8F0;
+    --color-word-default-border: #CBD5E1;
+
+    /* Practice answer state colors */
+    --color-answer-correct: #98FF98;
+    --color-answer-correct-border: #7EE57E;
+    --color-answer-incorrect: #FFD1DC;
+    --color-answer-incorrect-border: #FFB3C1;
+    --color-answer-neutral: #E6E6FA;
+    --color-answer-neutral-border: #D0D0F0;
+    --color-answer-blur: #FFF9C4;
+    --color-answer-blur-border: #FFF59D;
   }
 
   .chameleon {
@@ -196,7 +227,7 @@
     --color-clay-pink: #f2f9e6;
 
     --glass-bg: rgba(255, 255, 255, 0.25);
-    --bg-gradient: linear-gradient(135deg, #e5f3cc 0%, #9ace57 50%, #b3db66 100%);
+    --color-bg-app: #e5f3cc;
   }
 
   .dark {
@@ -219,7 +250,37 @@
     --color-clay-shadow-inset: rgba(255, 255, 255, 0.05);
 
     --glass-bg: rgba(30, 27, 75, 0.6);
-    --bg-gradient: linear-gradient(to bottom right, #1e1b4b, #312e81, #1e1b4b);
+    --color-bg-app: #1e1b4b;
+
+    /* Word type colors - semi-transparent for dark backgrounds */
+    --color-word-noun: rgba(152, 255, 152, 0.2);
+    --color-word-noun-border: rgba(126, 229, 126, 0.4);
+    --color-word-verb: rgba(173, 216, 230, 0.2);
+    --color-word-verb-border: rgba(143, 196, 222, 0.4);
+    --color-word-adjective: rgba(230, 230, 250, 0.2);
+    --color-word-adjective-border: rgba(208, 208, 240, 0.4);
+    --color-word-adverb: rgba(255, 249, 196, 0.2);
+    --color-word-adverb-border: rgba(255, 245, 157, 0.4);
+    --color-word-pronoun: rgba(253, 188, 180, 0.2);
+    --color-word-pronoun-border: rgba(252, 168, 157, 0.4);
+    --color-word-preposition: rgba(255, 209, 220, 0.2);
+    --color-word-preposition-border: rgba(255, 179, 193, 0.4);
+    --color-word-conjunction: rgba(255, 228, 181, 0.2);
+    --color-word-conjunction-border: rgba(255, 216, 155, 0.4);
+    --color-word-phrase: rgba(221, 160, 221, 0.2);
+    --color-word-phrase-border: rgba(199, 125, 199, 0.4);
+    --color-word-phrase-alt: rgba(240, 230, 140, 0.2);
+    --color-word-phrase-alt-border: rgba(230, 214, 108, 0.4);
+    --color-word-default: rgba(226, 232, 240, 0.2);
+    --color-word-default-border: rgba(203, 213, 225, 0.4);
+    --color-answer-correct: rgba(152, 255, 152, 0.2);
+    --color-answer-correct-border: rgba(126, 229, 126, 0.4);
+    --color-answer-incorrect: rgba(255, 209, 220, 0.2);
+    --color-answer-incorrect-border: rgba(255, 179, 193, 0.4);
+    --color-answer-neutral: rgba(230, 230, 250, 0.2);
+    --color-answer-neutral-border: rgba(208, 208, 240, 0.4);
+    --color-answer-blur: rgba(255, 249, 196, 0.2);
+    --color-answer-blur-border: rgba(255, 245, 157, 0.4);
   }
 
   .simple {
@@ -281,8 +342,37 @@
     --color-clay-shadow-inset: transparent;
 
     --glass-bg: rgba(255, 255, 255, 0.9);
-    --bg-gradient: none;
-    /* No gradient, just white */
+    --color-bg-app: #ffffff;
+
+    /* Word type colors - grayscale for simple theme */
+    --color-word-noun: #000000;
+    --color-word-noun-border: #000000;
+    --color-word-verb: #222222;
+    --color-word-verb-border: #222222;
+    --color-word-adjective: #444444;
+    --color-word-adjective-border: #444444;
+    --color-word-adverb: #666666;
+    --color-word-adverb-border: #666666;
+    --color-word-pronoun: #888888;
+    --color-word-pronoun-border: #888888;
+    --color-word-preposition: #AAAAAA;
+    --color-word-preposition-border: #AAAAAA;
+    --color-word-conjunction: #CCCCCC;
+    --color-word-conjunction-border: #CCCCCC;
+    --color-word-phrase: #DDDDDD;
+    --color-word-phrase-border: #DDDDDD;
+    --color-word-phrase-alt: #EEEEEE;
+    --color-word-phrase-alt-border: #EEEEEE;
+    --color-word-default: #F8F8F8;
+    --color-word-default-border: #DDDDDD;
+    --color-answer-correct: #CCCCCC;
+    --color-answer-correct-border: #AAAAAA;
+    --color-answer-incorrect: #888888;
+    --color-answer-incorrect-border: #666666;
+    --color-answer-neutral: #DDDDDD;
+    --color-answer-neutral-border: #BBBBBB;
+    --color-answer-blur: #EEEEEE;
+    --color-answer-blur-border: #CCCCCC;
   }
 
   .cyber {
@@ -347,11 +437,41 @@
     --color-shadow-primary-soft: rgba(59, 130, 246, 0.2);
 
     --glass-bg: rgba(30, 41, 59, 0.9);
-    --bg-gradient: linear-gradient(to bottom right, #0F172A, #1E293B, #0F172A);
+    --color-bg-app: #0F172A;
 
     /* Typography */
     --font-family-heading: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
     --font-family-body: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
+
+    /* Word type colors - semi-transparent for cyber theme */
+    --color-word-noun: rgba(152, 255, 152, 0.2);
+    --color-word-noun-border: rgba(126, 229, 126, 0.4);
+    --color-word-verb: rgba(173, 216, 230, 0.2);
+    --color-word-verb-border: rgba(143, 196, 222, 0.4);
+    --color-word-adjective: rgba(230, 230, 250, 0.2);
+    --color-word-adjective-border: rgba(208, 208, 240, 0.4);
+    --color-word-adverb: rgba(255, 249, 196, 0.2);
+    --color-word-adverb-border: rgba(255, 245, 157, 0.4);
+    --color-word-pronoun: rgba(253, 188, 180, 0.2);
+    --color-word-pronoun-border: rgba(252, 168, 157, 0.4);
+    --color-word-preposition: rgba(255, 209, 220, 0.2);
+    --color-word-preposition-border: rgba(255, 179, 193, 0.4);
+    --color-word-conjunction: rgba(255, 228, 181, 0.2);
+    --color-word-conjunction-border: rgba(255, 216, 155, 0.4);
+    --color-word-phrase: rgba(221, 160, 221, 0.2);
+    --color-word-phrase-border: rgba(199, 125, 199, 0.4);
+    --color-word-phrase-alt: rgba(240, 230, 140, 0.2);
+    --color-word-phrase-alt-border: rgba(230, 214, 108, 0.4);
+    --color-word-default: rgba(226, 232, 240, 0.2);
+    --color-word-default-border: rgba(203, 213, 225, 0.4);
+    --color-answer-correct: rgba(152, 255, 152, 0.2);
+    --color-answer-correct-border: rgba(126, 229, 126, 0.4);
+    --color-answer-incorrect: rgba(255, 209, 220, 0.2);
+    --color-answer-incorrect-border: rgba(255, 179, 193, 0.4);
+    --color-answer-neutral: rgba(230, 230, 250, 0.2);
+    --color-answer-neutral-border: rgba(208, 208, 240, 0.4);
+    --color-answer-blur: rgba(255, 249, 196, 0.2);
+    --color-answer-blur-border: rgba(255, 245, 157, 0.4);
   }
 }
 
@@ -594,6 +714,35 @@ h6 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
+/* Solid color button/element background utilities */
+.btn-primary {
+  background: var(--color-primary-500);
+}
+.btn-secondary {
+  background: var(--color-secondary-500);
+}
+.btn-secondary-primary {
+  background: var(--color-primary-500);
+}
+.btn-success {
+  background: #10b981;
+}
+.btn-danger {
+  background: #ef4444;
+}
+.btn-hero {
+  background: #a855f7;
+}
+.btn-indigo {
+  background: #6366f1;
+}
+.btn-orange {
+  background: #f97316;
+}
+.btn-blue {
+  background: #3b82f6;
+}
+
 /* Legacy glass effects (keeping for compatibility) */
 .glass-effect {
   background: rgb(255 255 255 / 0.4);
@@ -649,58 +798,9 @@ h6 {
 
 /* Gradient Text */
 .gradient-text {
-  background: linear-gradient(135deg,
-      var(--color-accent-500) 0%,
-      var(--color-primary-500) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-accent-500);
 }
 
-/* Button Styles - Updated for Claymorphism */
-.btn-primary {
-  border-radius: 16px;
-  border: 3px solid rgba(0, 0, 0, 0.15);
-  box-shadow: var(--shadow-clay-btn);
-  transition: all 200ms ease-out;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(to right, rgb(251 191 36), rgb(249 115 22));
-  color: white;
-  padding: 0.75rem 1.5rem;
-}
-
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-clay-btn-hover);
-}
-
-.btn-primary:active {
-  transform: translateY(3px);
-  box-shadow: var(--shadow-clay-btn-active);
-}
-
-.btn-secondary {
-  border-radius: 16px;
-  border: 3px solid rgba(0, 0, 0, 0.15);
-  box-shadow: var(--shadow-clay-btn);
-  transition: all 200ms ease-out;
-  font-weight: 600;
-  cursor: pointer;
-  background: linear-gradient(to right, rgb(129 140 248), rgb(168 85 247));
-  color: white;
-  padding: 0.75rem 1.5rem;
-}
-
-.btn-secondary:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-clay-btn-hover);
-}
-
-.btn-secondary:active {
-  transform: translateY(3px);
-  box-shadow: var(--shadow-clay-btn-active);
-}
 
 /* Card Styles - Updated for Claymorphism */
 .card-clay {
@@ -854,7 +954,7 @@ h6 {
 /* Word Type Badges - Simple Theme Grayscale Gradient */
 
 /* Noun: Darkest (Black) */
-[data-theme="simple"] .clay-card span[class*="bg-[#98FF98]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-noun"] {
   background-color: #000000 !important;
   color: white !important;
   border-color: #000000 !important;
@@ -862,7 +962,7 @@ h6 {
 }
 
 /* Verb: Very Dark Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#ADD8E6]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-verb"] {
   background-color: #222222 !important;
   color: white !important;
   border-color: #222222 !important;
@@ -870,7 +970,7 @@ h6 {
 }
 
 /* Adjective: Dark Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#E6E6FA]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-adjective"] {
   background-color: #444444 !important;
   color: white !important;
   border-color: #444444 !important;
@@ -878,7 +978,7 @@ h6 {
 }
 
 /* Adverb: Medium Dark Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#FFF9C4]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-adverb"] {
   background-color: #666666 !important;
   color: white !important;
   border-color: #666666 !important;
@@ -886,7 +986,7 @@ h6 {
 }
 
 /* Pronoun: Medium Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#FDBCB4]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-pronoun"] {
   background-color: #888888 !important;
   color: white !important;
   border-color: #888888 !important;
@@ -894,7 +994,7 @@ h6 {
 }
 
 /* Preposition: Light Gray (Switch to Black Text) */
-[data-theme="simple"] .clay-card span[class*="bg-[#FFD1DC]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-preposition"] {
   background-color: #AAAAAA !important;
   color: black !important;
   border-color: #AAAAAA !important;
@@ -902,7 +1002,7 @@ h6 {
 }
 
 /* Conjunction: Lighter Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#FFE4B5]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-conjunction"] {
   background-color: #CCCCCC !important;
   color: black !important;
   border-color: #CCCCCC !important;
@@ -910,7 +1010,7 @@ h6 {
 }
 
 /* Interjection: Very Light Gray */
-[data-theme="simple"] .clay-card span[class*="bg-[#DDA0DD]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-phrase"] {
   background-color: #DDDDDD !important;
   color: black !important;
   border-color: #DDDDDD !important;
@@ -918,7 +1018,7 @@ h6 {
 }
 
 /* Phrase: Near White */
-[data-theme="simple"] .clay-card span[class*="bg-[#F0E68C]"] {
+[data-theme="simple"] .clay-card span[class*="bg-(--color-word-phrase-alt"] {
   background-color: #EEEEEE !important;
   color: black !important;
   border-color: #EEEEEE !important;

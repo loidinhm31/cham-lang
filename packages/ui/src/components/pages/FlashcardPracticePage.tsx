@@ -360,7 +360,7 @@ export const FlashcardPracticePage: React.FC = () => {
           backTo={isStudyMode ? "/" : "/practice"}
         />
         <div className="flex items-center justify-center h-64">
-          <div className="text-[var(--color-text-secondary)]">
+          <div className="text-(--color-text-secondary)">
             {t("app.loading")}
           </div>
         </div>
@@ -506,7 +506,7 @@ export const FlashcardPracticePage: React.FC = () => {
         />
         <div className="px-4 pt-6">
           <Card variant="glass" className="text-center p-8">
-            <p className="text-[var(--color-text-secondary)]">
+            <p className="text-(--color-text-secondary)">
               {t("vocabulary.noResults")}
             </p>
             <Button
@@ -581,7 +581,7 @@ export const FlashcardPracticePage: React.FC = () => {
         {/* Progress */}
         <Card variant="glass">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-semibold text-[var(--color-text-secondary)]">
+            <span className="text-sm font-semibold text-(--color-text-secondary)">
               {t("practice.progress")}
             </span>
             <span
@@ -596,7 +596,7 @@ export const FlashcardPracticePage: React.FC = () => {
           </div>
           <div className="w-full h-3 bg-white/60 dark:bg-white/10 rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all duration-300 ${isTestMode ? "bg-gradient-to-r from-green-500 to-emerald-600" : isStudyMode ? "bg-gradient-to-r from-blue-500 to-cyan-600" : "bg-gradient-to-r from-teal-500 to-cyan-600"}`}
+              className={`h-full rounded-full transition-all duration-300 ${isTestMode ? "bg-green-500" : isStudyMode ? "bg-blue-500" : "bg-teal-500"}`}
               style={{
                 width: `${isTestMode ? testSession.getProgress().percentage : sessionManager ? sessionManager.getProgressPercentage() : 0}%`,
               }}
@@ -621,7 +621,7 @@ export const FlashcardPracticePage: React.FC = () => {
                   ).requiredRepetitions
                 }
               />
-              <div className="text-sm text-[var(--color-text-secondary)]">
+              <div className="text-sm text-(--color-text-secondary)">
                 Question {sessionManager.getSessionStats().totalQuestions + 1}
               </div>
             </div>

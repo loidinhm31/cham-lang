@@ -1,558 +1,311 @@
-# Cham Lang - Language Learning App
+# Cham Lang
 
-A modern, offline-first vocabulary learning application built with Tauri 2, React, TypeScript, and SQLite. Features spaced repetition learning, multiple practice modes, audio playback, daily reminders, and optional Google Drive sync. Supports both desktop and Android platforms.
+An offline-first vocabulary learning app with spaced repetition. Runs as a standalone web app, Tauri desktop app, and Android app. Embeddable in [qm-hub-app](../../qm-hub-app) via Shadow DOM.
 
-## Table of Contents
-
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-- [Configuration](#configuration)
-- [Development Commands](#development-commands)
-- [Mobile/Android Support](#mobileandroid-support)
-- [Recent Updates](#recent-updates)
-- [Troubleshooting](#troubleshooting)
+**Current version:** 0.4.1
 
 ## Features
 
 ### Vocabulary Management
 
-- **Comprehensive Word Information**
-  - Word definitions with translations
-  - IPA pronunciation guide
-  - Audio pronunciation (supports MP3, WAV, OGG, M4A, AAC formats)
-  - Example sentences
-  - Word types (noun, verb, adjective, etc.)
-  - Language-specific proficiency levels (CEFR for European languages, Basic/Intermediate/Advanced for Asian languages)
-  - Topic categorization
-  - Related words (synonyms, antonyms, derivatives)
-  - Optional concept field for alternative learning prompts
-- **Audio Playback**: Integrated audio player with support for online audio URLs
-- **Pagination**: Efficient lazy loading for large vocabulary lists
+- Words with definitions, IPA pronunciation, audio URL, example sentences, topics, tags, related words
+- Optional **concept field** for alternative learning prompts
+- Language-specific proficiency levels (CEFR A1–C2 for European languages; Basic/Intermediate/Advanced for Asian languages)
+- CSV import/export (with or without headers)
+- Soft delete on all records
 
-### Collection-Based Organization
+### Collections
 
-- **Collections**: Organize vocabularies into language-specific collections
-- **Word Count Tracking**: Automatic word count per collection
-- **Import/Export**: CSV and plain text CSV support
-- **Soft Deletion**: Collections and words use soft delete for data recovery
+- Organize vocabularies into language-specific collections
+- Collection sharing: invite other users as editors via `collectionSharedUsers`
+- Word count tracked automatically
 
 ### Practice Modes
 
-Three comprehensive practice modes with spaced repetition:
+| Mode            | Description                              |
+| --------------- | ---------------------------------------- |
+| Flashcard       | See definition/concept → recall word     |
+| Fill Word       | Fill missing word in an example sentence |
+| Multiple Choice | Choose correct definition from options   |
 
-1. **Flashcard Practice**: See definition/concept, recall the word
-2. **Fill Word Practice**: Fill in missing word from example sentence
-   - **Bidirectional Support**: Practice definition→word or word→definition
-   - **Hint System**: Toggle-able hints for extra support
-3. **Multiple Choice Practice**: Choose correct definition from options
+All modes support:
 
-**Special Features**:
+- **Concept Mode** — toggle between Definition and Concept prompts
+- **Study Mode** — practice without tracking progress
+- **Bidirectional** fill word (definition→word or word→definition)
+- Configurable auto-advance timeout (default 2 s)
 
-- **Concept Mode**: Toggle between Definition Mode and Concept Mode for alternative learning prompts
-- **Study Mode vs Practice Mode**: Choose to practice with or without progress tracking
-- **Multi-Mode Completion**: Words must complete all three modes in a review cycle to advance boxes
-- **Auto-Advance**: Configurable auto-advance timeout (default: 2 seconds)
+### Spaced Repetition
 
-### Spaced Repetition Learning
+Three algorithm options:
 
-- **Three Algorithm Options**:
-  - SM-2 (SuperMemo 2) with dynamic easiness factor
-  - Modified SM-2 with fixed intervals per Leitner box
-  - Simple Doubling (interval doubles on each success)
+- **SM-2** — dynamic easiness factor
+- **Modified SM-2** — fixed intervals per Leitner box
+- **Simple Doubling** — interval doubles on each success
 
-- **Leitner Box System**: Configurable 3, 5, or 7 boxes with progressive review intervals
-- **Smart Word Selection**: Prioritizes due words, limits new words per session
-- **Progress Tracking**:
-  - Per-word statistics including streak, interval, easiness factor
-  - Per-language progress segregation
-  - Box distribution visualization
-  - Session statistics with duration and accuracy
-- **Advanced Settings**:
-  - New words per day limit (default: 20)
-  - Daily review limit (default: 100)
-  - Consecutive correct threshold per box
-  - Auto-advance timeout (default: 2 seconds)
-  - Hint display preferences
+Configurable Leitner box count (3, 5, or 7). Words must complete all three practice modes in a cycle to advance boxes.
+
+### Sync with qm-hub Server
+
+- Checkpoint-based offline-first sync via `IndexedDBSyncAdapter`
+- Dual auth: `X-API-Key` + `X-App-Id` (app identity) and `Authorization: Bearer` (user JWT)
+- Per-table `lastSyncTimestamp` stored in `_syncMeta`
+- Client-generated UUIDs — records created fully offline
+- Soft delete with TTL propagated to server
 
 ### Google Drive Backup
 
-- **Optional Cloud Sync**: Backup entire database to Google Drive
-- **Conflict Detection**: Version tracking prevents data loss
-- **Easy Restore**: One-click restore from cloud backup
-- **Privacy**: Works completely offline if you prefer
+- Backup and restore entire database to/from Google Drive
+- Version tracking prevents data loss on restore
+- Works completely offline if preferred
 
-### Beautiful UI/UX
+### Daily Reminders
 
-- **Chameleon Theme**: Colorful, adaptive design with glassmorphism effects
-- **Smooth Animations**: Floating background elements and transitions
-- **Mobile-First Design**: Responsive layout optimized for all screen sizes
-- **Bottom Navigation**: Easy thumb-accessible navigation
+- Set a daily reminder time from Learning Settings
+- Persists through app closure and device reboots (WorkManager on Android, async delay on desktop)
+- Auto-reschedules for the next day after firing
+- Android 13+ runtime permission handling
 
-### Multi-language Support
+### Multi-Theme UI
 
-- **Interface Languages**: English and Vietnamese (extensible i18n system)
-- **Learning Languages**: Supports English, Vietnamese, Spanish, French, German, Korean, Japanese, Chinese
-- **Language-Specific Levels**:
-  - CEFR (A1-C2) for European languages
-  - Basic/Intermediate/Advanced for Asian languages
+Five themes selectable at runtime: **Light (Chameleon)**, **Dark**, **Simple**, **Cyber**, **Green**. All components use CSS custom properties (`--color-bg-app`, `--color-primary-500`, etc.) — no hardcoded colors or gradients.
 
-### Daily Reminders & Notifications
-
-**Daily Reminder** (New in v0.0.15):
-
-- **Schedule Study Reminders**: Set a daily reminder at a specific time to practice vocabulary
-- **Persistent Reminders**: Notifications persist through app closure and device reboots
-- **Auto-Rescheduling**: Automatically reschedules for the next day after the reminder fires
-- **Cross-Platform**: Works on Desktop (Windows, macOS, Linux) and Android
-- **Easy Configuration**: Enable/disable and set time from Learning Settings page
-
-**Scheduled Notifications**:
-
-- Schedule one-time or recurring notifications
-- Works on both Desktop and Android
-- Runtime permission handling on Android 13+
-- Test notification features for debugging
-
-**Implementation:**
-
-1. **Frontend (ProfilePage.tsx)**
-
-   ```typescript
-   import {
-     isPermissionGranted,
-     requestPermission,
-   } from "@tauri-apps/plugin-notification";
-
-   // Check/request permission
-   let permissionGranted = await isPermissionGranted();
-   if (!permissionGranted) {
-     const permission = await requestPermission();
-     permissionGranted = permission === "granted";
-   }
-
-   // Schedule notification
-   await invoke("schedule_test_notification_one_minute");
-   ```
-
-2. **Backend (notification_commands.rs)**
-
-   ```rust
-   use tauri_plugin_schedule_task::{ScheduleTaskRequest, ScheduleTime, ScheduleTaskExt};
-
-   #[tauri::command]
-   pub async fn schedule_notification(app: AppHandle, title: String, body: String, delay_seconds: u64) {
-     let mut parameters = HashMap::new();
-     parameters.insert("title".to_string(), title);
-     parameters.insert("body".to_string(), body);
-
-     let task_request = ScheduleTaskRequest {
-       task_name: format!("notification_{}", chrono::Utc::now().timestamp()),
-       schedule_time: ScheduleTime::Duration(delay_seconds),
-       parameters: Some(parameters),
-     };
-
-     app.schedule_task().schedule_task(task_request).await?;
-   }
-   ```
-
-3. **Task Handler (scheduled_task_handler.rs)**
-
-   ```rust
-   impl<R: Runtime> ScheduledTaskHandler<R> for NotificationTaskHandler {
-     fn handle_scheduled_task(&self, task_name: &str, parameters: HashMap<String, String>, app: &AppHandle<R>) {
-       // Desktop: Use Tauri's notification API
-       // Android: Handled by MainActivity (see below)
-     }
-   }
-   ```
-
-4. **Android Native (NotificationHelper.kt)**
-   - **Purpose**: Send notifications using Android's native NotificationManager
-   - **Why needed**: Tauri's notification API requires active app context, unavailable in background workers
-   - **Usage**: Called by MainActivity when scheduled task triggers
-
-5. **Android Native (MainActivity.kt)**
-   - Intercepts scheduled task launches via `onNewIntent()` / `onCreate()`
-   - Extracts notification parameters from intent extras
-   - Calls `NotificationHelper.sendNotification()` to display notification
-
-6. **NotificationWorker.kt** (not currently used)
-   - Alternative approach to send notifications directly from WorkManager
-   - Can be used for more efficient notification delivery without launching MainActivity
-
-**Required Dependencies:**
-
-```toml
-# Cargo.toml
-tauri-plugin-notification = "2"
-tauri-plugin-schedule-task = "0.1"
-```
-
-```json
-// package.json
-"@tauri-apps/plugin-notification": "^2.3.3"
-```
-
-**Android Configuration:**
-
-```gradle
-// build.gradle.kts
-android {
-  defaultConfig {
-    minSdk = 26  // Required by schedule-task plugin
-  }
-}
-dependencies {
-  implementation("androidx.work:work-runtime-ktx:2.9.0")
-}
-```
-
-```xml
-<!-- AndroidManifest.xml -->
-<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-<uses-permission android:name="android.permission.WAKE_LOCK"/>
-<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-```
-
-**Plugin Initialization (lib.rs):**
-
-```rust
-// IMPORTANT: schedule-task must be initialized FIRST
-tauri::Builder::default()
-    .plugin(tauri_plugin_schedule_task::init_with_handler(NotificationTaskHandler))
-    .plugin(tauri_plugin_notification::init())
-    // ... other plugins
-```
-
-**How It Works:**
-
-- **Desktop**: Plugin uses Tauri's async runtime to delay task execution (like setTimeout)
-- **Android**: Plugin uses WorkManager to schedule background workers that run even when app is closed
-  - When time arrives, WorkManager launches MainActivity with intent extras
-  - MainActivity extracts notification parameters and displays notification using native Android API
-
-### Architecture
-
-- **Atomic Design Pattern**:
-  - **Atoms**: Button, Input, TextArea, Select, Badge, Card, Modal, AudioPlayer
-  - **Molecules**: SearchBar, VocabularyCard, TopBar, BottomNavigation, StatsCard
-  - **Organisms**: VocabularyList, VocabularyForm, CollectionList, PracticeModeSelector
-  - **Templates**: MainLayout
-  - **Pages**: Home, Collections, AddVocabulary, VocabularyDetail, Practice modes (Flashcard, Fill Word, Multiple Choice), Settings, Learning Settings, Profile, Statistics
-
-- **Offline-First**: All data stored locally in SQLite
-- **Service Layer**: Clean separation between frontend and Tauri backend
-- **Type Safety**: Full TypeScript coverage with shared types
-
-### Database
-
-- **SQLite Backend**: Lightweight, embedded database with bundled support
-- **Cross-Platform**: Works on desktop and Android
-- **Platform-Specific Storage**: Automatic app data directory selection
-- **Schema Versioning**: Migration system for database updates
-- **Comprehensive Schema**:
-  - Core tables: users, collections, vocabularies, definitions, example sentences
-  - Practice tables: practice_sessions, practice_results, word_progress, word_progress_completed_modes
-  - Organization: topics, tags, related words (many-to-many relationships)
-  - Settings: learning_settings with algorithm, box count, and notification preferences
-  - Sync: database_metadata for Google Drive version tracking
+---
 
 ## Tech Stack
 
 ### Frontend
 
-- **React 19** - UI library
-- **TypeScript** - Type safety
-- **Tailwind CSS 4** - Styling
-- **React Router DOM 7** - Navigation
-- **React i18next** - Internationalization
-- **Lucide React** - Icon library
-- **Framer Motion** - Animations
-- **React Hook Form** - Form management
+| Library                  | Version | Purpose                                                     |
+| ------------------------ | ------- | ----------------------------------------------------------- |
+| React                    | 19      | UI                                                          |
+| TypeScript               | 5.8     | Type safety                                                 |
+| Tailwind CSS             | 4       | Styling (via `@tailwindcss/vite`, no PostCSS)               |
+| React Router DOM         | 7       | Navigation                                                  |
+| Dexie.js                 | 4       | IndexedDB (all platforms)                                   |
+| react-i18next / i18next  | latest  | i18n (EN, VI)                                               |
+| Framer Motion            | 12      | Animations                                                  |
+| React Hook Form          | 7       | Forms                                                       |
+| Radix UI                 | latest  | Accessible primitives (Select, Dialog, Accordion, Checkbox) |
+| Lucide React             | latest  | Icons                                                       |
+| class-variance-authority | latest  | Component variants                                          |
 
-### Backend
+### Backend (Tauri — minimal)
 
-- **Tauri 2** - Desktop/mobile app framework
-- **Rust** - Backend language
-- **rusqlite7** - Embedded SQLite database with bundled support
-- **Tauri Plugins**:
-  - `tauri-plugin-google-auth 0.3` - Google OAuth authentication
-  - `tauri-plugin-notification 2` - Native notifications
-  - `tauri-plugin-schedule-task` - Background task scheduling
-  - `tauri-plugin-dialog 2` - File dialogs
-  - `tauri-plugin-opener 2` - Open files/URLs
-- **serde + serde_json** - Serialization/deserialization
-- **chrono** - Date/time handling
-- **uuid** - ID generation
-- **reqwest** - HTTP client for Google Drive API
-- **csv** - CSV parsing for import/export
+The Rust backend only provides native platform features. All data lives in IndexedDB.
 
-## Installation
+| Crate/Plugin                   | Purpose                                  |
+| ------------------------------ | ---------------------------------------- |
+| tauri 2                        | App framework                            |
+| tauri-plugin-notification 2    | Native notifications                     |
+| tauri-plugin-schedule-task     | Background task scheduling (custom fork) |
+| tauri-plugin-google-auth 0.3   | Google OAuth for Drive backup            |
+| tauri-plugin-dialog 2          | File dialogs                             |
+| tauri-plugin-store 2           | Key-value store                          |
+| tauri-plugin-opener 2          | Open files/URLs                          |
+| tauri-plugin-single-instance 2 | Single instance guard (desktop only)     |
 
-### Prerequisites
+---
 
-- Node.js 18+ and pnpm
-- Rust 1.70+
-- For Android: Android SDK and NDK
-
-### Setup Steps
-
-1. **Clone the repository**
-
-   ```bash
-   git clone <repository-url>
-   cd cham-lang
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   pnpm install
-   ```
-
-3. **Run in development mode**
-
-   ```bash
-   # Desktop
-   pnpm tauri dev
-
-   # Android (requires Android SDK)
-   pnpm tauri android dev
-   ```
-
-## Usage
-
-### Getting Started
-
-1. Launch the application
-2. The app creates a local SQLite database automatically
-3. Create your first collection from the Collections page
-4. Start adding vocabulary words
-
-### Creating Collections
-
-1. Navigate to Collections page
-2. Click "Add Collection"
-3. Enter collection name and select language
-4. Start adding words to your collection
-
-### Adding Vocabulary
-
-1. Select a collection
-2. Click "Add Word" button
-3. Fill in word details:
-   - Word text
-   - Word type
-   - Proficiency level
-   - IPA pronunciation
-   - Definitions (with translations)
-   - Optional concept (alternative learning prompt)
-   - Example sentences
-   - Topics
-   - Related words
-4. Click "Save"
-
-### Practicing Vocabulary
-
-1. Navigate to Practice page
-2. Select a collection
-3. Choose practice mode (Flashcard, Fill Word, or Multiple Choice)
-4. Toggle between Concept Mode and Definition Mode (if concept exists)
-5. Complete the session
-6. Review your results and progress
-
-### Configuring Spaced Repetition
-
-1. Go to Settings page
-2. Choose spaced repetition algorithm (SM-2, Modified SM-2, or Simple Doubling)
-3. Configure Leitner box count (3, 5, or 7 boxes)
-4. Set consecutive correct threshold
-5. Adjust review intervals per box
-6. Set daily new word limit (default: 20)
-7. Set daily review limit (default: 100)
-8. Configure auto-advance timeout
-9. Toggle hint display in fill word mode
-
-### Setting Up Daily Reminders
-
-1. Go to Learning Settings page
-2. Enable "Daily Reminder"
-3. Set your preferred reminder time (e.g., 09:00 for 9 AM)
-4. Save settings
-5. Grant notification permissions when prompted (Android 13+)
-6. Reminder will automatically reschedule for the next day after each notification
-
-### Google Drive Backup
-
-1. Go to Profile page
-2. Click "Backup to Google Drive"
-3. Authenticate with Google account
-4. Database is uploaded to your Google Drive
-
-To restore:
-
-1. Click "Restore from Google Drive"
-2. System checks for version conflicts
-3. Confirm restore operation
-
-### Import/Export
-
-- **Export Collection**: Export vocabulary to CSV format
-- **Import from CSV**: Import words from CSV file (with or without headers)
-- **Plain Text Import**: Import simple word lists
-
-## Project Structure
+## Monorepo Structure
 
 ```
 cham-lang/
-├── src/
-│   ├── components/
-│   │   ├── atoms/          # Basic UI components
-│   │   ├── molecules/      # Composite components
-│   │   ├── organisms/      # Complex components
-│   │   ├── templates/      # Page layouts
-│   │   └── pages/          # Full pages
-│   ├── i18n/
-│   │   ├── config.ts       # i18n configuration
-│   │   └── locales/        # Translation files
-│   │       ├── en/
-│   │       └── vi/
-│   ├── types/              # TypeScript types
-│   ├── services/           # Tauri command wrappers
-│   └── utils/              # Utility functions
-│       └── spacedRepetition/  # SR algorithms
-├── src-tauri/
-│   ├── gen/android/app/src/main/java/com/loidinh/cham_lang/
-│   │   ├── MainActivity.kt           # Handles scheduled task intents
-│   │   ├── NotificationHelper.kt     # Native Android notification sender
-│   │   └── NotificationWorker.kt     # Alternative worker implementation
-│   └── src/
-│       ├── models.rs                 # Data models
-│       ├── local_db.rs               # SQLite operations
-│       ├── commands.rs               # Vocabulary commands
-│       ├── collection_commands.rs    # Collection commands
-│       ├── gdrive.rs                 # Google Drive sync
-│       ├── notification_commands.rs  # Notification scheduling commands
-│       ├── scheduled_task_handler.rs # Background task handler
-│       └── lib.rs                    # Main entry point
+├── apps/
+│   ├── web/              # Standalone web app (Vite + React 19, port 5173)
+│   └── native/           # Tauri v2 desktop + Android
+│       └── src-tauri/
+│           └── src/
+│               ├── lib.rs                    # App init, plugin registration, tray
+│               ├── main.rs                   # Entry point
+│               ├── notification_commands.rs  # Tauri commands for scheduling
+│               └── scheduled_task_handler.rs # Background task handler
+├── packages/
+│   ├── ui/               # All React components, adapters, services, hooks
+│   │   └── src/
+│   │       ├── components/
+│   │       │   ├── atoms/        # Button, Input, Select, Card, Modal, AudioPlayer
+│   │       │   ├── molecules/    # SearchBar, VocabularyCard, TopBar, BottomNavigation
+│   │       │   ├── organisms/    # VocabularyList, CollectionList, PracticeModeSelector, Sidebar
+│   │       │   ├── templates/    # AppShell, MainLayout
+│   │       │   └── pages/        # Full page components (see list below)
+│   │       ├── adapters/
+│   │       │   ├── web/          # IndexedDB adapters (Dexie.js) for all data ops
+│   │       │   ├── tauri/        # TauriNotificationAdapter, TauriGDriveAdapter
+│   │       │   ├── shared/       # QmServerAuthAdapter (HTTP sync auth)
+│   │       │   └── factory/      # ServiceFactory + interfaces
+│   │       ├── services/         # Business logic, SessionManager
+│   │       ├── hooks/            # React hooks
+│   │       ├── contexts/         # PlatformContext
+│   │       ├── i18n/             # EN + VI translations
+│   │       ├── styles/           # global.css (Tailwind v4, CSS vars, themes)
+│   │       └── embed/            # ChamLangApp embed entry point
+│   ├── shared/           # Types, constants, utilities (no React deps)
+│   ├── tsconfig/         # Shared TS configs
+│   └── eslint-config/    # Shared ESLint config
 └── README.md
 ```
 
-## Configuration
+### Pages
 
-### Tailwind CSS
+`AddVocabulary`, `CollectionDetail`, `Collections`, `CreateCollection`, `CSVExport`, `CSVImport`, `EditCollection`, `EditVocabulary`, `FillWordPractice`, `FlashcardPractice`, `HomePage`, `LearningSettings`, `Login`, `MultipleChoicePractice`, `OAuthCallback`, `PracticeMode`, `Progress`, `Settings`, `StudyMode`, `ThemePreview`, `VocabularyDetail`
 
-The project uses Tailwind CSS 4 with custom chameleon theme colors:
+---
 
-- Primary: Teal/Cyan gradient
-- Secondary: Amber/Orange gradient
-- Accent colors: Emerald, Orange, Pink
+## Database (IndexedDB via Dexie.js v4)
 
-### Internationalization
+Schema version 4 — defined in `packages/ui/src/adapters/web/database.ts`.
 
-Add new interface languages by:
+**Core tables** (camelCase fields, matching server JSON):
 
-1. Creating a new locale folder in `src/i18n/locales/`
-2. Adding translation JSON files
-3. Importing in `src/i18n/config.ts`
-4. Adding to language selector
+| Table                   | Description                                                               |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `vocabularies`          | Words with embedded definitions, examples, topics, tags, relatedWords     |
+| `collections`           | Language-specific word collections with sharing info                      |
+| `practiceSessions`      | Completed sessions with embedded results                                  |
+| `wordProgress`          | Per-word spaced repetition state (Leitner box, easiness factor, interval) |
+| `practiceProgress`      | Per-language statistics (streaks, totals)                                 |
+| `learningSettings`      | SR algorithm config, daily limits, reminder time                          |
+| `topics`, `tags`        | Organization                                                              |
+| `userLearningLanguages` | Languages the user is studying                                            |
+| `collectionSharedUsers` | Sharing permissions between users                                         |
 
-Add new learning languages by:
+**Sync tables:**
 
-1. Update `get_level_config()` in `src-tauri/src/models.rs`
-2. Add language-specific level options
-3. Update TypeScript types if needed
+| Table             | Description                                 |
+| ----------------- | ------------------------------------------- |
+| `_syncMeta`       | Checkpoint timestamps per table (key-value) |
+| `_pendingChanges` | Queued deletes for sync propagation         |
+
+Required sync columns on every synced table: `syncVersion`, `syncedAt`, `createdAt`, `updatedAt`, `deleted`, `deletedAt`.
+
+---
+
+## Architecture
+
+### ServiceFactory Pattern
+
+Services are initialized in `ChamLangApp.tsx` using setters, not auto-detected globally:
+
+```typescript
+// Data — all platforms use IndexedDB
+setVocabularyService(new IndexedDBVocabularyAdapter());
+setCollectionService(new IndexedDBCollectionAdapter());
+
+// Platform-specific
+if (isTauri()) {
+  setNotificationService(new TauriNotificationAdapter());
+  setGDriveService(new TauriGDriveAdapter());
+} else {
+  setNotificationService(new BrowserNotificationAdapter());
+  setGDriveService(new WebGDriveAdapter());
+}
+```
+
+Access services via getters (`getVocabularyService()`) — throws if not initialized.
+
+### Embeddable Component
+
+`ChamLangApp` in `packages/ui/src/embed/ChamLangApp.tsx` runs standalone or embedded in `qm-hub-app`:
+
+```tsx
+<ChamLangApp
+  useRouter={false} // share parent's BrowserRouter
+  embedded={true} // hide outer navigation
+  basePath="/cham-lang"
+  authTokens={{ accessToken, refreshToken, userId }}
+  onLogoutRequest={() => {}}
+/>
+```
+
+---
 
 ## Development Commands
 
-### Type Checking
-
 ```bash
-# Frontend
+# Install dependencies (from cham-lang root)
+pnpm install
+
+# Dev
+pnpm dev:web          # Web dev server — port 5173
+pnpm dev:tauri        # Tauri desktop app
+
+# Build
+pnpm build            # All packages
+pnpm build:web        # Web only
+pnpm build:tauri      # Tauri only
+
+# Test
+pnpm test             # Vitest watch mode
+pnpm test:run         # Single run
+pnpm test:coverage    # Coverage report
+
+# Lint & format
+pnpm lint
+pnpm format
+
+# Android
+pnpm tauri android dev                  # Run on device/emulator
+pnpm tauri android build --apk true     # Build APK
+
+# Type check
 pnpm tsc --noEmit
 
-# Backend
-cargo check --manifest-path=src-tauri/Cargo.toml
+# Rust (from apps/native/src-tauri/)
+cargo check
+cargo build
 ```
 
-### Building
+---
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+, pnpm 9.1.0
+- Rust 1.70+
+- For Android: Android SDK + NDK (minSdk 26)
+
+### Environment
 
 ```bash
-# Production build
-pnpm build
-
-# Android APK
-pnpm tauri android build --apk true
+# packages/ui or apps/web — Google OAuth for Drive backup
+cp .env.example .env
+# Set VITE_GOOGLE_CLIENT_ID
 ```
 
-### Android Development
+---
+
+## Android Support
+
+- Minimum SDK 26 (required by `tauri-plugin-schedule-task`)
+- WorkManager for background notification scheduling
+- Native `NotificationHelper.kt` for Android 13+ notifications
+- Google Drive OAuth via native plugin
 
 ```bash
-# Initialize Android (first time only)
-pnpm tauri android init
+pnpm tauri android dev                  # Development
+pnpm tauri android build --apk true     # Production APK
 
-# Run on Android
-pnpm tauri android dev
-
-# View Android logs
-timeout 10 /home/loidinh/Android/Sdk/platform-tools/adb logcat
+# Logs
+adb logcat | grep -i cham
 ```
 
-## Mobile/Android Support
+---
 
-The app fully supports Android with:
+## i18n
 
-- SQLite database (platform-specific storage)
-- Google Drive sync (OAuth authentication)
-- Touch-optimized UI
-- Bottom navigation for easy thumb access
+Interface languages: **English**, **Vietnamese**. Translations in `packages/ui/src/i18n/locales/`.
 
-### Building for Android
+Learning languages: English, Vietnamese, Spanish, French, German, Korean, Japanese, Chinese.
 
-1. Ensure Android SDK is installed
-2. Run `pnpm tauri android init` (first time only)
-3. Connect device or start emulator
-4. Run `pnpm tauri android dev` for development
-5. Run `pnpm tauri android build --apk true` for production
+---
 
-## Troubleshooting
+## Anti-Patterns to Avoid
 
-### Database Issues
-
-- Database is created automatically in app data directory
-- Check logs for SQLite errors
-- Use Google Drive backup/restore for data recovery
-
-### TypeScript Errors
-
-```bash
-pnpm tsc --noEmit
-```
-
-### Rust Compilation Errors
-
-```bash
-cargo check --manifest-path=src-tauri/Cargo.toml
-```
-
-### Android Debugging
-
-```bash
-# Monitor Android logs
-adb logcat
-
-# Filter for app logs
-adb logcat | grep -i chameleon
-```
-
-### Anti-Patterns to Avoid
-
-- Don't use `invoke()` directly in components - use service layer
-- Don't modify database from frontend - use Tauri commands
-- Don't create global state unnecessarily
-- Don't bypass SessionManager in practice pages
-- Don't hard-code language levels - use backend configuration
+- Don't call `invoke()` directly for data — all data ops use IndexedDB adapters
+- Don't bypass `usePlatform()` / `ServiceFactory` getters in components
+- Don't bypass `SessionManager` in practice pages
+- Don't hardcode language levels — use backend configuration
+- Don't use `dark:` Tailwind variants — use CSS custom properties (`--color-*`)
+- Don't use hardcoded colors or gradients — use theme-aware CSS variables

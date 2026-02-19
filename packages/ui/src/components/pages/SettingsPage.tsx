@@ -695,8 +695,8 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
                   >
                     {t("settings.decrease") || "Decrease"}
                   </Button>
-                  <div className="px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border-2 border-indigo-200 dark:border-indigo-800 text-center">
-                    <span className="text-sm font-bold text-indigo-900 dark:text-indigo-300">
+                  <div className="px-4 py-2 bg-(--color-primary-500)/10 rounded-lg border-2 border-(--color-primary-500)/30 text-center">
+                    <span className="text-sm font-bold text-(--color-primary-500)">
                       {t(`fontSizes.${currentFontSize}`) ||
                         FontSizeService.getConfig(currentFontSize).label}
                     </span>
@@ -727,7 +727,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
                   />
 
                   {/* Preview Text */}
-                  <div className="bg-gray-50 dark:bg-slate-700/30 border border-gray-200 dark:border-slate-600 rounded-lg p-4">
+                  <div className="bg-(--color-bg-white) border border-(--color-border-light) rounded-lg p-4">
                     <p className="text-xs text-text-secondary mb-2">
                       {t("settings.preview") || "Preview:"}
                     </p>
@@ -848,12 +848,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
                 </div>
 
                 {reminderEnabled && (
-                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
-                    <p className="text-sm text-indigo-800 font-medium">
+                  <div className="bg-(--color-primary-500)/10 border border-(--color-primary-500)/30 rounded-lg p-3">
+                    <p className="text-sm text-(--color-text-primary) font-medium">
                       {t("reminder.reminderActive") ||
                         "Daily reminder is active"}
                     </p>
-                    <p className="text-xs text-indigo-700 mt-1">
+                    <p className="text-xs text-(--color-text-secondary) mt-1">
                       {t("reminder.reminderActiveDescription") ||
                         `You will receive a notification every day at ${reminderTime}`}
                     </p>
@@ -932,11 +932,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
                 {isConfigured && (
                   <div className="space-y-3">
                     {backupInfo && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <p className="text-sm text-green-800 font-medium">
+                      <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
+                        <p className="text-sm text-(--color-text-primary) font-medium">
                           {t("gdrive.backupFound")}
                         </p>
-                        <pre className="text-xs text-green-700 mt-1 overflow-auto">
+                        <pre className="text-xs text-(--color-text-secondary) mt-1 overflow-auto">
                           {backupInfo}
                         </pre>
                       </div>
@@ -982,11 +982,11 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout }) => {
                   {t("settings.dangerZoneDescription")}
                 </p>
 
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm text-red-800 font-medium">
+                <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                  <p className="text-sm text-red-600 font-medium">
                     {t("database.clearLocalDatabase")}
                   </p>
-                  <p className="text-xs text-red-700 mt-1">
+                  <p className="text-xs text-red-500 mt-1">
                     {t("database.clearDatabaseWarning")}
                   </p>
                 </div>

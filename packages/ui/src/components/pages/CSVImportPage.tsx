@@ -174,10 +174,10 @@ export const CSVImportPage: React.FC = () => {
             <div className="flex items-center gap-3">
               <FileUp className="w-8 h-8 text-chameleon-600 dark:text-chameleon-400" />
               <div>
-                <h2 className="text-2xl font-bold text-[var(--color-text-primary)]">
+                <h2 className="text-2xl font-bold text-(--color-text-primary)">
                   {t("csv.importVocabularies")}
                 </h2>
-                <p className="text-[var(--color-text-secondary)]">
+                <p className="text-(--color-text-secondary)">
                   {t("csv.importDescription")}
                 </p>
               </div>
@@ -197,14 +197,14 @@ export const CSVImportPage: React.FC = () => {
 
           {/* Import Mode Toggle */}
           <div className="mb-6">
-            <div className="flex gap-2 p-1 bg-[var(--color-secondary-100)] dark:bg-slate-800/50 rounded-lg w-fit">
+            <div className="flex gap-2 p-1 bg-(--color-secondary-100) dark:bg-slate-800/50 rounded-lg w-fit">
               <button
                 onClick={() => setImportMode("file")}
                 disabled={isImporting}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   importMode === "file"
-                    ? "bg-[var(--color-bg-white)] text-chameleon-600 dark:text-chameleon-400 shadow-sm"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    ? "bg-(--color-bg-white) text-chameleon-600 dark:text-chameleon-400 shadow-sm"
+                    : "text-(--color-text-muted) hover:text-(--color-text-primary)"
                 }`}
               >
                 <Folder className="w-4 h-4 inline mr-2" />
@@ -215,8 +215,8 @@ export const CSVImportPage: React.FC = () => {
                 disabled={isImporting}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   importMode === "text"
-                    ? "bg-[var(--color-bg-white)] text-chameleon-600 dark:text-chameleon-400 shadow-sm"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    ? "bg-(--color-bg-white) text-chameleon-600 dark:text-chameleon-400 shadow-sm"
+                    : "text-(--color-text-muted) hover:text-(--color-text-primary)"
                 }`}
               >
                 <FileText className="w-4 h-4 inline mr-2" />
@@ -227,8 +227,8 @@ export const CSVImportPage: React.FC = () => {
                 disabled={isImporting}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   importMode === "simple"
-                    ? "bg-[var(--color-bg-white)] text-chameleon-600 dark:text-chameleon-400 shadow-sm"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    ? "bg-(--color-bg-white) text-chameleon-600 dark:text-chameleon-400 shadow-sm"
+                    : "text-(--color-text-muted) hover:text-(--color-text-primary)"
                 }`}
               >
                 <Upload className="w-4 h-4 inline mr-2" />
@@ -240,7 +240,7 @@ export const CSVImportPage: React.FC = () => {
           {/* File Upload Mode */}
           {importMode === "file" && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+              <label className="block text-sm font-medium text-(--color-text-primary) mb-2">
                 {t("csv.selectFile")}
               </label>
               <div className="flex gap-3">
@@ -254,8 +254,8 @@ export const CSVImportPage: React.FC = () => {
                   {t("csv.chooseFile")}
                 </Button>
                 {selectedFile && (
-                  <div className="flex-1 flex items-center px-4 py-2 bg-[var(--color-bg-white)] rounded-lg border border-[var(--color-border-light)]">
-                    <span className="text-sm text-[var(--color-text-secondary)] truncate">
+                  <div className="flex-1 flex items-center px-4 py-2 bg-(--color-bg-white) rounded-lg border border-(--color-border-light)">
+                    <span className="text-sm text-(--color-text-secondary) truncate">
                       {getFileName(selectedFile)}
                     </span>
                   </div>
@@ -267,7 +267,7 @@ export const CSVImportPage: React.FC = () => {
           {/* Text Paste Mode */}
           {importMode === "text" && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+              <label className="block text-sm font-medium text-(--color-text-primary) mb-2">
                 {t("csv.pasteCSVContent")}
               </label>
               <textarea
@@ -276,9 +276,9 @@ export const CSVImportPage: React.FC = () => {
                 disabled={isImporting}
                 rows={10}
                 placeholder={t("csv.csvPlaceholder")}
-                className="w-full px-4 py-3 border border-[var(--color-border-light)] rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 font-mono text-sm bg-[var(--color-bg-white)] text-[var(--color-text-primary)]"
+                className="w-full px-4 py-3 border border-(--color-border-light) rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 font-mono text-sm bg-(--color-bg-white) text-(--color-text-primary)"
               />
-              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+              <p className="text-xs text-(--color-text-muted) mt-1">
                 {t("csv.pasteHelp")}
               </p>
             </div>
@@ -333,9 +333,9 @@ export const CSVImportPage: React.FC = () => {
           {/* Target Collection Selection */}
           {!isLoading && collections.length > 0 && (
             <div className="mb-6">
-              <label className="block text-sm font-medium text-[var(--color-text-primary)] mb-2">
+              <label className="block text-sm font-medium text-(--color-text-primary) mb-2">
                 {t("csv.targetCollection")}{" "}
-                <span className="text-[var(--color-text-muted)] font-normal">
+                <span className="text-(--color-text-muted) font-normal">
                   ({t("csv.optional")})
                 </span>
               </label>
@@ -343,7 +343,7 @@ export const CSVImportPage: React.FC = () => {
                 value={targetCollectionId}
                 onChange={(e) => setTargetCollectionId(e.target.value)}
                 disabled={isImporting}
-                className="w-full px-4 py-2 border border-[var(--color-border-light)] rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 bg-[var(--color-bg-white)] text-[var(--color-text-primary)]"
+                className="w-full px-4 py-2 border border-(--color-border-light) rounded-lg focus:ring-2 focus:ring-chameleon-500 focus:border-chameleon-500 bg-(--color-bg-white) text-(--color-text-primary)"
               >
                 <option value="">{t("csv.useCollectionFromCsv")}</option>
                 {collections.map((collection) => (
@@ -355,7 +355,7 @@ export const CSVImportPage: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <p className="text-xs text-[var(--color-text-muted)] mt-1">
+              <p className="text-xs text-(--color-text-muted) mt-1">
                 {t("csv.targetCollectionHelp")}
               </p>
             </div>
@@ -417,7 +417,7 @@ export const CSVImportPage: React.FC = () => {
                 <AlertCircle className="w-6 h-6 text-yellow-600 flex-shrink-0" />
               )}
               <div className="flex-1">
-                <h3 className="text-lg font-semibold text-[var(--color-text-primary)] mb-2">
+                <h3 className="text-lg font-semibold text-(--color-text-primary) mb-2">
                   {importResult.success
                     ? t("csv.importSuccessTitle")
                     : t("csv.importPartialSuccessTitle")}
@@ -425,7 +425,7 @@ export const CSVImportPage: React.FC = () => {
 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-[var(--color-text-secondary)]">
+                    <span className="text-(--color-text-secondary)">
                       {t("csv.rowsImported")}:
                     </span>
                     <span className="font-semibold text-green-600 dark:text-green-400">
@@ -435,7 +435,7 @@ export const CSVImportPage: React.FC = () => {
 
                   {importResult.rowsFailed > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[var(--color-text-secondary)]">
+                      <span className="text-(--color-text-secondary)">
                         {t("csv.rowsFailed")}:
                       </span>
                       <span className="font-semibold text-red-600 dark:text-red-400">
@@ -446,7 +446,7 @@ export const CSVImportPage: React.FC = () => {
 
                   {importResult.collectionsCreated.length > 0 && (
                     <div className="flex justify-between">
-                      <span className="text-[var(--color-text-secondary)]">
+                      <span className="text-(--color-text-secondary)">
                         {t("csv.collectionsCreated")}:
                       </span>
                       <span className="font-semibold text-blue-600 dark:text-blue-400">

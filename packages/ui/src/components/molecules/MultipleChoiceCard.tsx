@@ -63,18 +63,18 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
     }
 
     if (option === correctAnswer) {
-      return "bg-[#98FF98] border-[#7EE57E] text-emerald-900";
+      return "bg-(--color-answer-correct) border-(--color-answer-correct-border) text-emerald-900";
     }
 
     if (option === selectedOption && option !== correctAnswer) {
-      return "bg-[#FFD1DC] border-[#FFB3C1] text-red-900";
+      return "bg-(--color-answer-incorrect) border-(--color-answer-incorrect-border) text-red-900";
     }
 
     return "bg-gray-200 border-gray-400 text-gray-500";
   };
 
   return (
-    <div className="h-full w-full bg-[#E6E6FA] rounded-[32px] border-[4px] border-[#D0D0F0] shadow-[0_12px_0_rgba(0,0,0,0.15),0_6px_20px_rgba(0,0,0,0.12),inset_0_-3px_6px_rgba(0,0,0,0.08)] p-8">
+    <div className="h-full w-full bg-(--color-word-adjective) rounded-[32px] border-[4px] border-(--color-word-adjective-border) shadow-[0_12px_0_rgba(0,0,0,0.15),0_6px_20px_rgba(0,0,0,0.12),inset_0_-3px_6px_rgba(0,0,0,0.08)] p-8">
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">🎯</div>
@@ -127,8 +127,8 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
           <div
             className={`mt-6 p-6 rounded-3xl text-center border-[3px] shadow-[0_4px_0_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.1)] ${
               selectedOption === correctAnswer
-                ? "bg-[#98FF98] border-[#7EE57E] text-emerald-900"
-                : "bg-[#FFD1DC] border-[#FFB3C1] text-red-900"
+                ? "bg-(--color-answer-correct) border-(--color-answer-correct-border) text-emerald-900"
+                : "bg-(--color-answer-incorrect) border-(--color-answer-incorrect-border) text-red-900"
             }`}
           >
             <p className="font-black text-2xl mb-2">

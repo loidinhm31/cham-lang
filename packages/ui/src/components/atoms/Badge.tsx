@@ -13,12 +13,15 @@ const badgeVariants = cva(
         warning: "bg-orange-500 text-white border-orange-600",
         info: "bg-cyan-500 text-white border-cyan-600",
         glass: "bg-white text-gray-800 border-gray-300",
-        peach: "bg-[#FDBCB4] text-gray-800 border-[#FCA89D]",
-        blue: "bg-[#ADD8E6] text-gray-800 border-[#8FC4DE]",
-        mint: "bg-[#98FF98] text-gray-800 border-[#7EE57E]",
-        lilac: "bg-[#E6E6FA] text-gray-800 border-[#D0D0F0]",
-        yellow: "bg-[#FFF9C4] text-gray-800 border-[#FFF59D]",
-        pink: "bg-[#FFD1DC] text-gray-800 border-[#FFB3C1]",
+        peach:
+          "bg-(--color-word-pronoun) text-gray-800 border-(--color-word-pronoun-border)",
+        blue: "bg-(--color-word-verb) text-gray-800 border-(--color-word-verb-border)",
+        mint: "bg-(--color-word-noun) text-gray-800 border-(--color-word-noun-border)",
+        lilac:
+          "bg-(--color-word-adjective) text-gray-800 border-(--color-word-adjective-border)",
+        yellow:
+          "bg-(--color-word-adverb) text-gray-800 border-(--color-word-adverb-border)",
+        pink: "bg-(--color-word-preposition) text-gray-800 border-(--color-word-preposition-border)",
       },
     },
     defaultVariants: {

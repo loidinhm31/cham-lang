@@ -98,7 +98,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
     <div
       className="min-h-screen flex items-center justify-center px-4 py-8"
       style={{
-        background: "var(--bg-gradient)",
+        background: "var(--color-bg-app)",
       }}
     >
       <div className="w-full max-w-md">
@@ -107,7 +107,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           <div
             className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
             style={{
-              background: "linear-gradient(135deg, #7b61ff 0%, #00d4ff 100%)",
+              background: "var(--color-primary-500)",
               boxShadow: "0 0 30px rgba(123, 97, 255, 0.5)",
             }}
           >
@@ -115,16 +115,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           </div>
           <h1
             className="text-3xl font-extrabold mb-2"
-            style={{
-              background: "linear-gradient(135deg, #00d4ff 0%, #7b61ff 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
+            style={{ color: "var(--color-primary-500)" }}
           >
             Cham Lang
           </h1>
-          <p className="text-[var(--color-text-secondary)] text-sm">
+          <p className="text-(--color-text-secondary) text-sm">
             {t("auth.subtitle") || "Sync your learning progress across devices"}
           </p>
         </div>
@@ -145,9 +140,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               className="flex-1 py-2 px-4 rounded-md text-sm font-semibold transition-all"
               style={{
                 background:
-                  mode === "login"
-                    ? "linear-gradient(135deg, #7b61ff 0%, #5a3fff 100%)"
-                    : "transparent",
+                  mode === "login" ? "var(--color-primary-500)" : "transparent",
                 color: mode === "login" ? "#ffffff" : "#a0aec0",
                 boxShadow:
                   mode === "login"
@@ -167,7 +160,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               style={{
                 background:
                   mode === "register"
-                    ? "linear-gradient(135deg, #7b61ff 0%, #5a3fff 100%)"
+                    ? "var(--color-primary-500)"
                     : "transparent",
                 color: mode === "register" ? "#ffffff" : "#a0aec0",
                 boxShadow:
@@ -200,10 +193,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="login-email"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" style={{ color: "#00d4ff" }} />
+                    <Mail
+                      className="w-4 h-4"
+                      style={{ color: "var(--color-primary-400)" }}
+                    />
                     {t("auth.email") || "Email"}
                   </div>
                 </label>
@@ -221,10 +217,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="login-password"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" style={{ color: "#00d4ff" }} />
+                    <Lock
+                      className="w-4 h-4"
+                      style={{ color: "var(--color-primary-400)" }}
+                    />
                     {t("auth.password") || "Password"}
                   </div>
                 </label>
@@ -259,10 +258,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="register-username"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4" style={{ color: "#00d4ff" }} />
+                    <User
+                      className="w-4 h-4"
+                      style={{ color: "var(--color-primary-400)" }}
+                    />
                     {t("auth.username") || "Username"}
                   </div>
                 </label>
@@ -280,10 +282,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="register-email"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" style={{ color: "#00d4ff" }} />
+                    <Mail
+                      className="w-4 h-4"
+                      style={{ color: "var(--color-primary-400)" }}
+                    />
                     {t("auth.email") || "Email"}
                   </div>
                 </label>
@@ -301,10 +306,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="register-password"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" style={{ color: "#00d4ff" }} />
+                    <Lock
+                      className="w-4 h-4"
+                      style={{ color: "var(--color-primary-400)" }}
+                    />
                     {t("auth.password") || "Password"}
                   </div>
                 </label>
@@ -329,12 +337,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
               <div>
                 <label
                   htmlFor="register-confirm-password"
-                  className="block text-sm font-bold mb-2 text-[var(--color-text-primary)]"
+                  className="block text-sm font-bold mb-2 text-(--color-text-primary)"
                 >
                   <div className="flex items-center gap-2">
                     <KeyRound
                       className="w-4 h-4"
-                      style={{ color: "#00d4ff" }}
+                      style={{ color: "var(--color-primary-400)" }}
                     />
                     {t("auth.confirmPassword") || "Confirm Password"}
                   </div>

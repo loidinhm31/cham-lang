@@ -220,7 +220,7 @@ export const ProgressPage: React.FC = () => {
       <>
         <TopBar title={t("nav.progress")} showBack={false} />
         <div className="flex items-center justify-center h-64">
-          <div className="text-[var(--color-text-secondary)]">
+          <div className="text-(--color-text-secondary)">
             {t("app.loading")}
           </div>
         </div>
@@ -234,7 +234,7 @@ export const ProgressPage: React.FC = () => {
 
       <div className="px-3 pt-4 space-y-3">
         {loading && (
-          <div className="text-center py-8 text-[var(--color-text-secondary)]">
+          <div className="text-center py-8 text-(--color-text-secondary)">
             {t("common.loading")}
           </div>
         )}
@@ -242,7 +242,7 @@ export const ProgressPage: React.FC = () => {
         {availableLanguages.length > 0 && currentLanguage && (
           <Card variant="glass">
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-[var(--color-text-secondary)]">
+              <label className="text-xs font-semibold text-(--color-text-secondary)">
                 {t("vocabulary.language") || "Language"}
               </label>
               {availableLanguages.length > 1 ? (
@@ -254,7 +254,7 @@ export const ProgressPage: React.FC = () => {
                     // Persist selection to localStorage
                     localStorage.setItem("progress_selected_language", newLang);
                   }}
-                  className="w-full px-3 py-1.5 text-sm border border-[var(--color-border-light)] rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-[var(--color-bg-white)] text-[var(--color-text-primary)]"
+                  className="w-full px-3 py-1.5 text-sm border border-(--color-border-light) rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 bg-(--color-bg-white) text-(--color-text-primary)"
                 >
                   {availableLanguages.map((lang) => (
                     <option key={lang} value={lang}>
@@ -263,7 +263,7 @@ export const ProgressPage: React.FC = () => {
                   ))}
                 </select>
               ) : (
-                <div className="px-3 py-1.5 text-sm font-semibold text-[var(--color-text-primary)] bg-[var(--color-bg-white)] rounded-lg border border-[var(--color-border-light)]">
+                <div className="px-3 py-1.5 text-sm font-semibold text-(--color-text-primary) bg-(--color-bg-white) rounded-lg border border-(--color-border-light)">
                   {currentLanguage.toUpperCase()}
                 </div>
               )}
@@ -281,7 +281,7 @@ export const ProgressPage: React.FC = () => {
               {/* Progress Chart - Real Data */}
               {levelProgress.length > 0 ? (
                 <Card variant="glass">
-                  <h3 className="text-base font-bold text-[var(--color-text-primary)] mb-2">
+                  <h3 className="text-base font-bold text-(--color-text-primary) mb-2">
                     {t("vocabulary.level")} {t("nav.progress")}
                   </h3>
                   <div className="space-y-2">
@@ -289,10 +289,10 @@ export const ProgressPage: React.FC = () => {
                       <div key={level.level}>
                         <div className="flex items-center justify-between mb-1">
                           <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-semibold text-[var(--color-text-secondary)]">
+                            <span className="text-xs font-semibold text-(--color-text-secondary)">
                               {level.level}
                             </span>
-                            <span className="text-xs text-[var(--color-text-muted)]">
+                            <span className="text-xs text-(--color-text-muted)">
                               ({level.practiced}/{level.total})
                             </span>
                           </div>
@@ -302,7 +302,7 @@ export const ProgressPage: React.FC = () => {
                         </div>
                         <div className="w-full h-2 bg-white/60 dark:bg-white/10 rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-teal-500 to-cyan-600 rounded-full transition-all duration-500"
+                            className="h-full bg-teal-500 rounded-full transition-all duration-500"
                             style={{ width: `${level.percentage}%` }}
                           ></div>
                         </div>
@@ -313,7 +313,7 @@ export const ProgressPage: React.FC = () => {
               ) : (
                 <Card variant="glass">
                   <div className="text-center py-6">
-                    <p className="text-sm text-[var(--color-text-muted)]">
+                    <p className="text-sm text-(--color-text-muted)">
                       No vocabulary data yet. Start adding words to see progress
                       by level!
                     </p>
@@ -342,7 +342,7 @@ export const ProgressPage: React.FC = () => {
               <>
                 {/* Mastery Overview Card */}
                 <Card variant="glass">
-                  <h3 className="text-base font-bold text-[var(--color-text-primary)] mb-3">
+                  <h3 className="text-base font-bold text-(--color-text-primary) mb-3">
                     {t("learningProgress.overview")}
                   </h3>
                   <div className="space-y-3">
@@ -351,7 +351,7 @@ export const ProgressPage: React.FC = () => {
                       <div className="text-5xl font-bold text-teal-600 dark:text-teal-400 mb-1">
                         {learningStats.masteryPercentage}%
                       </div>
-                      <p className="text-sm text-[var(--color-text-secondary)]">
+                      <p className="text-sm text-(--color-text-secondary)">
                         {t("learningProgress.overallMastery")}
                       </p>
                     </div>
@@ -362,7 +362,7 @@ export const ProgressPage: React.FC = () => {
                         <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                           {learningStats.masteredWords}
                         </div>
-                        <p className="text-xs text-[var(--color-text-secondary)]">
+                        <p className="text-xs text-(--color-text-secondary)">
                           {t("learningProgress.mastered")}
                         </p>
                       </div>
@@ -370,7 +370,7 @@ export const ProgressPage: React.FC = () => {
                         <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                           {learningStats.learningWords}
                         </div>
-                        <p className="text-xs text-[var(--color-text-secondary)]">
+                        <p className="text-xs text-(--color-text-secondary)">
                           {t("learningProgress.learning")}
                         </p>
                       </div>
@@ -378,7 +378,7 @@ export const ProgressPage: React.FC = () => {
                         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                           {learningStats.newWords}
                         </div>
-                        <p className="text-xs text-[var(--color-text-secondary)]">
+                        <p className="text-xs text-(--color-text-secondary)">
                           {t("learningProgress.new")}
                         </p>
                       </div>
@@ -388,18 +388,18 @@ export const ProgressPage: React.FC = () => {
 
                 {/* Review Queue Card */}
                 <Card variant="glass">
-                  <h3 className="text-base font-bold text-[var(--color-text-primary)] mb-3">
+                  <h3 className="text-base font-bold text-(--color-text-primary) mb-3">
                     {t("learningProgress.reviewQueue")}
                   </h3>
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between p-3 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded-lg border border-orange-200 dark:border-orange-800">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl">📅</span>
                         <div>
-                          <p className="text-sm font-semibold text-[var(--color-text-primary)]">
+                          <p className="text-sm font-semibold text-(--color-text-primary)">
                             {t("learningProgress.dueToday")}
                           </p>
-                          <p className="text-xs text-[var(--color-text-secondary)]">
+                          <p className="text-xs text-(--color-text-secondary)">
                             {t("learningProgress.readyForReview")}
                           </p>
                         </div>
@@ -409,7 +409,7 @@ export const ProgressPage: React.FC = () => {
                       </div>
                     </div>
                     <div className="flex items-center justify-between p-2 bg-white/60 dark:bg-white/10 rounded-lg">
-                      <p className="text-sm text-[var(--color-text-primary)]">
+                      <p className="text-sm text-(--color-text-primary)">
                         {t("learningProgress.averageBoxLevel")}
                       </p>
                       <p className="text-lg font-bold text-teal-600 dark:text-teal-400">
@@ -421,7 +421,7 @@ export const ProgressPage: React.FC = () => {
 
                 {/* Leitner Box Distribution Card */}
                 <Card variant="glass">
-                  <h3 className="text-base font-bold text-[var(--color-text-primary)] mb-3">
+                  <h3 className="text-base font-bold text-(--color-text-primary) mb-3">
                     {t("learningProgress.progressByStage")}
                   </h3>
                   <div className="space-y-2.5">
@@ -437,10 +437,10 @@ export const ProgressPage: React.FC = () => {
                             <div className="flex items-center gap-2">
                               <span className="text-lg">{info.icon}</span>
                               <div>
-                                <span className="text-sm font-semibold text-[var(--color-text-primary)]">
+                                <span className="text-sm font-semibold text-(--color-text-primary)">
                                   {info.name}
                                 </span>
-                                <p className="text-xs text-[var(--color-text-secondary)]">
+                                <p className="text-xs text-(--color-text-secondary)">
                                   {box.wordCount} {t("learningProgress.words")}
                                 </p>
                               </div>

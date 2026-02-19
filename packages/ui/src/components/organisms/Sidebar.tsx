@@ -95,7 +95,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div
           className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{
-            background: "linear-gradient(135deg, #6366f1 0%, #a855f7 100%)",
+            background: "#6366f1",
             boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)",
           }}
         >
@@ -103,7 +103,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
         {!isCollapsed && (
           <div className="overflow-hidden">
-            <h1 className="text-lg font-bold text-[var(--color-text-primary)] whitespace-nowrap">
+            <h1 className="text-lg font-bold text-(--color-text-primary) whitespace-nowrap">
               Cham Lang
             </h1>
           </div>
@@ -126,8 +126,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     isCollapsed ? "px-0 justify-center" : "px-4"
                   } ${
                     isActive
-                      ? "bg-gradient-to-br from-indigo-500 to-purple-500 text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
-                      : "text-[var(--color-text-secondary)] hover:bg-white/20"
+                      ? "btn-indigo text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
+                      : "text-(--color-text-secondary) hover:bg-white/20"
                   }`}
                 >
                   <Icon
@@ -161,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Collapse Toggle */}
       <button
         onClick={onToggleCollapse}
-        className="mx-3 mb-3 p-2 rounded-lg transition-all hover:bg-white/20 flex items-center justify-center text-[var(--color-text-secondary)]"
+        className="mx-3 mb-3 p-2 rounded-lg transition-all hover:bg-white/20 flex items-center justify-center text-(--color-text-secondary)"
         title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
       >
         {isCollapsed ? (
@@ -192,7 +192,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className={`w-5 h-5 ${
                 hasSyncNotification
                   ? "text-blue-500"
-                  : "text-[var(--color-text-secondary)]"
+                  : "text-(--color-text-secondary)"
               }`}
             />
             {hasSyncNotification && (
@@ -204,7 +204,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className={`text-sm font-medium ${
                 hasSyncNotification
                   ? "text-blue-500"
-                  : "text-[var(--color-text-secondary)]"
+                  : "text-(--color-text-secondary)"
               }`}
             >
               {hasSyncNotification ? "Sync available" : "Up to date"}

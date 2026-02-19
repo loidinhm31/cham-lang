@@ -98,7 +98,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
   }, [awaitingSelfAssessment, handleSelfAssessment]);
 
   return (
-    <div className="h-full w-full bg-[#ADD8E6] rounded-[32px] border-[4px] border-[#8FC4DE] shadow-[0_12px_0_rgba(0,0,0,0.15),0_6px_20px_rgba(0,0,0,0.12),inset_0_-3px_6px_rgba(0,0,0,0.08)] p-8">
+    <div className="h-full w-full bg-(--color-word-verb) rounded-[32px] border-[4px] border-(--color-word-verb-border) shadow-[0_12px_0_rgba(0,0,0,0.15),0_6px_20px_rgba(0,0,0,0.12),inset_0_-3px_6px_rgba(0,0,0,0.08)] p-8">
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">✏️</div>
@@ -116,7 +116,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
             )}
           </div>
           {hint && !submitted && (
-            <div className="mt-6 px-5 py-3 bg-[#FFF9C4] rounded-2xl border-2 border-[#FFF59D] shadow-sm inline-block">
+            <div className="mt-6 px-5 py-3 bg-(--color-answer-blur) rounded-2xl border-2 border-(--color-answer-blur-border) shadow-sm inline-block">
               <p className="text-sm font-bold text-gray-800">💡 Hint: {hint}</p>
             </div>
           )}
@@ -221,8 +221,8 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
               <div
                 className={`p-6 rounded-3xl text-center border-[3px] shadow-[0_4px_0_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.1)] ${
                   isCorrect
-                    ? "bg-[#98FF98] border-[#7EE57E] text-emerald-900"
-                    : "bg-[#FFD1DC] border-[#FFB3C1] text-red-900"
+                    ? "bg-(--color-answer-correct) border-(--color-answer-correct-border) text-emerald-900"
+                    : "bg-(--color-answer-incorrect) border-(--color-answer-incorrect-border) text-red-900"
                 }`}
               >
                 <p className="font-black text-2xl mb-3">

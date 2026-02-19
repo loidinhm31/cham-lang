@@ -65,10 +65,10 @@ export const OAuthCallbackPage: React.FC = () => {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#667eea] to-[#764ba2] p-5">
+    <div className="min-h-screen flex items-center justify-center bg-(--color-primary-500) p-5">
       <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center shadow-2xl max-w-sm w-full">
         {status === "processing" && (
-          <div className="w-16 h-16 border-4 border-gray-200 border-t-[#667eea] rounded-full mx-auto mb-6 animate-spin" />
+          <div className="w-16 h-16 border-4 border-gray-200 border-t-(--color-primary-500) rounded-full mx-auto mb-6 animate-spin" />
         )}
 
         {status === "success" && (
@@ -107,14 +107,14 @@ export const OAuthCallbackPage: React.FC = () => {
         {status !== "processing" && (
           <button
             onClick={() => window.close()}
-            className="w-full bg-gradient-to-br from-[#667eea] to-[#764ba2] text-white border-none rounded-lg py-3.5 px-8 text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-full bg-(--color-primary-500) text-white border-none rounded-lg py-3.5 px-8 text-base font-semibold cursor-pointer hover:opacity-90 transition-opacity"
           >
             Close Window
           </button>
         )}
 
         <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-lg font-bold bg-gradient-to-br from-[#667eea] to-[#764ba2] bg-clip-text text-transparent">
+          <div className="text-lg font-bold text-(--color-primary-500)">
             Cham Lang
           </div>
           <p className="text-xs text-gray-400 mt-1">Adapt to Learn</p>
