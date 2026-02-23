@@ -49,11 +49,13 @@ export class IndexedDBSyncStorage {
   async getPendingChanges(userId?: string): Promise<SyncRecord[]> {
     const records: SyncRecord[] = [];
 
-    // Get unsynced collections (skip shared collections - don't push someone else's collection)
+    // Get unsynced collections.
+    // Editors can push collection metadata changes (rename, etc.) to shared collections.
+    // ownerId always reflects the actual collection owner (sharedBy for shared, or self).
+    // The server remaps editor writes to the owner's document via effective_user_id.
     const collections = await db.collections.toArray();
     for (const collection of collections) {
       if (collection.syncedAt === undefined || collection.syncedAt === null) {
-        if (collection.sharedBy) continue;
         records.push({
           tableName: "collections",
           rowId: collection.id,
@@ -62,7 +64,7 @@ export class IndexedDBSyncStorage {
             name: collection.name,
             description: collection.description,
             language: collection.language,
-            ownerId: userId ?? null,
+            ownerId: collection.sharedBy ?? userId ?? null,
             sharedBy: collection.sharedBy ?? null,
             isPublic: collection.isPublic,
             wordCount: collection.wordCount,

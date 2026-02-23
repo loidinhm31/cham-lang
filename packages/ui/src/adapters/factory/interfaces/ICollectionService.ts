@@ -22,10 +22,16 @@ export interface ICollectionService {
   shareCollection(
     collectionId: string,
     shareWithUserId: string,
+    permission?: "viewer" | "editor",
   ): Promise<string>;
   unshareCollection(
     collectionId: string,
     userIdToRemove: string,
+  ): Promise<string>;
+  updateSharePermission(
+    collectionId: string,
+    userId: string,
+    permission: "viewer" | "editor",
   ): Promise<string>;
 
   // Metadata

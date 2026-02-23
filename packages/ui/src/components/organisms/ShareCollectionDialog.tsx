@@ -132,7 +132,7 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
         return;
       }
 
-      await CollectionService.shareCollection(collection.id!, user.userId);
+      await CollectionService.shareCollection(collection.id!, user.userId, selectedPermission);
 
       // Show success message
       showAlert(t("collections.shareDialog.shareSuccess"), {
@@ -162,21 +162,16 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
     newPermission: "viewer" | "editor",
   ) => {
     try {
-      // Update permission by modifying the sharedWith array
-      const updatedSharedWith = collection.sharedWith.map((user) =>
-        user.userId === userId ? { ...user, permission: newPermission } : user,
+      await CollectionService.updateSharePermission(
+        collection.id!,
+        userId,
+        newPermission,
       );
-
-      await CollectionService.updateCollection({
-        id: collection.id!,
-        sharedWith: updatedSharedWith,
-      });
 
       showAlert(t("collections.shareDialog.permissionChanged"), {
         variant: "success",
       });
 
-      // Trigger callback to refresh collection data
       if (onShareSuccess) {
         onShareSuccess();
       }
