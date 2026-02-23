@@ -146,8 +146,8 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
 
   return (
     <div ref={containerRef} className={className}>
-      <PlatformProvider services={platform}>
-        <ThemeProvider embedded={embedded}>
+      <ThemeProvider embedded={embedded}>
+        <PlatformProvider services={platform}>
           <BasePathContext.Provider value={basePath || ""}>
             <PortalContainerContext.Provider value={portalContainer}>
               <DialogProvider>
@@ -155,8 +155,8 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
               </DialogProvider>
             </PortalContainerContext.Provider>
           </BasePathContext.Provider>
-        </ThemeProvider>
-      </PlatformProvider>
+        </PlatformProvider>
+      </ThemeProvider>
     </div>
   );
 };

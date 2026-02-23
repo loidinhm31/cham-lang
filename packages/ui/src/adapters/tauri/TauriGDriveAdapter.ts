@@ -24,6 +24,7 @@ import {
   validateBackup,
   type ChamLangBackup,
 } from "@cham-lang/ui/adapters/web";
+import { serviceLogger } from "@cham-lang/ui/utils";
 
 // OAuth configuration from environment
 const GOOGLE_CLIENT_ID = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || "";
@@ -124,7 +125,7 @@ export class TauriGDriveAdapter implements IGDriveService {
         const payload = JSON.parse(atob(response.idToken.split(".")[1]));
         email = payload.email;
       } catch (e) {
-        console.error("Failed to parse ID token:", e);
+        serviceLogger.gdriveError("Failed to parse ID token:", e);
       }
     }
 
@@ -155,7 +156,10 @@ export class TauriGDriveAdapter implements IGDriveService {
         idToken: response.idToken,
       };
     } catch (error) {
-      console.error("Plugin refresh failed, trying manual refresh:", error);
+      serviceLogger.gdriveError(
+        "Plugin refresh failed, trying manual refresh:",
+        error,
+      );
 
       // Fallback to manual refresh
       const storedRefreshToken = localStorage.getItem("gdrive_refresh_token");
@@ -353,7 +357,7 @@ export class TauriGDriveAdapter implements IGDriveService {
         sizeKB,
       };
     } catch (error) {
-      console.error("Failed to get backup info:", error);
+      serviceLogger.gdriveError("Failed to get backup info:", error);
       return null;
     }
   }

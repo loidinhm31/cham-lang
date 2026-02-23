@@ -231,6 +231,7 @@
   }
 
   .dark {
+    color-scheme: dark;
     --color-bg-light: #0f172a;
     /* Slate-900 - Darker/Desaturated background for text pop */
     --color-bg-white: #1e293b;
@@ -377,6 +378,7 @@
 
   .cyber {
     /* Cyber Theme - Developer Terminal Aesthetic */
+    color-scheme: dark;
     --color-bg-light: #0F172A;
     --color-bg-white: #1E293B;
     --color-text-primary: #F1F5F9;

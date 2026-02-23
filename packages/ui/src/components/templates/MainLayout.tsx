@@ -1,6 +1,6 @@
 import React from "react";
 import { Outlet } from "react-router-dom";
-import { BottomNavigation } from "@cham-lang/ui/components/molecules";
+import { BottomNavigation } from "@cham-lang/ui/components/organisms";
 
 export const MainLayout: React.FC = () => {
   return (

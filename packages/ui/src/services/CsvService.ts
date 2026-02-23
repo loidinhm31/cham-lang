@@ -1,7 +1,6 @@
 /**
  * CSV Service
- * Uses platform adapter for cross-platform compatibility
- * Lazy service access + error handling pattern
+ * Direct passthrough to the platform adapter via ServiceFactory
  * Maintains backward compatibility with existing component usage
  */
 
@@ -33,13 +32,7 @@ export class CsvService {
    * Get the export directory path
    */
   static async getExportDirectory(): Promise<string> {
-    try {
-      const service = getCSVService();
-      return await service.getExportDirectory();
-    } catch (error) {
-      console.error("Error getting export directory:", error);
-      throw CsvService.handleError(error);
-    }
+    return getCSVService().getExportDirectory();
   }
 
   /**
@@ -49,51 +42,41 @@ export class CsvService {
     collectionIds: string[],
     exportPath?: string,
   ): Promise<ExportResult> {
-    try {
-      if (isTauri()) {
-        // Use Tauri invoke for full export result
-        return invoke("export_collections_csv", {
-          collectionIds,
-          exportPath,
-        });
-      }
-      // Web mode returns a simplified result
-      const service = getCSVService();
-      const message = await service.exportCollectionsCSV(
+    if (isTauri()) {
+      // Use Tauri invoke for full export result
+      return invoke("export_collections_csv", {
         collectionIds,
         exportPath,
-      );
-      return {
-        message,
-        filePath: "Downloads",
-        fileName: `chamlang_export_${new Date().toISOString().split("T")[0]}.csv`,
-      };
-    } catch (error) {
-      console.error("Error exporting CSV:", error);
-      throw CsvService.handleError(error);
+      });
     }
+    // Web mode returns a simplified result
+    const service = getCSVService();
+    const message = await service.exportCollectionsCSV(
+      collectionIds,
+      exportPath,
+    );
+    return {
+      message,
+      filePath: "Downloads",
+      fileName: `chamlang_export_${new Date().toISOString().split("T")[0]}.csv`,
+    };
   }
 
   /**
    * Open file dialog to choose CSV file for import
    */
   static async chooseImportFile(): Promise<string | null> {
-    try {
-      if (isTauri()) {
-        // Use Tauri file dialog
-        const { open } = await import("@tauri-apps/plugin-dialog");
-        const result = await open({
-          multiple: false,
-          filters: [{ name: "CSV Files", extensions: ["csv"] }],
-        });
-        return result as string | null;
-      }
-      // Web mode doesn't use file paths - returns null to trigger text input mode
-      return null;
-    } catch (error) {
-      console.error("Error choosing import file:", error);
-      throw CsvService.handleError(error);
+    if (isTauri()) {
+      // Use Tauri file dialog
+      const { open } = await import("@tauri-apps/plugin-dialog");
+      const result = await open({
+        multiple: false,
+        filters: [{ name: "CSV Files", extensions: ["csv"] }],
+      });
+      return result as string | null;
     }
+    // Web mode doesn't use file paths - returns null to trigger text input mode
+    return null;
   }
 
   /**
@@ -142,26 +125,14 @@ export class CsvService {
   static async chooseCSVSaveLocation(
     defaultName: string,
   ): Promise<string | null> {
-    try {
-      const service = getCSVService();
-      return await service.chooseCSVSaveLocation(defaultName);
-    } catch (error) {
-      console.error("Error choosing CSV save location:", error);
-      throw CsvService.handleError(error);
-    }
+    return getCSVService().chooseCSVSaveLocation(defaultName);
   }
 
   /**
    * Open the export directory in file explorer
    */
   static async openExportDirectory(): Promise<void> {
-    try {
-      const service = getCSVService();
-      return await service.openExportDirectory();
-    } catch (error) {
-      console.error("Error opening export directory:", error);
-      throw CsvService.handleError(error);
-    }
+    return getCSVService().openExportDirectory();
   }
 
   /**
@@ -170,15 +141,82 @@ export class CsvService {
   static async importVocabularies(
     request: CsvImportRequest,
   ): Promise<CsvImportResult> {
-    try {
-      if (isTauri()) {
-        return invoke("import_vocabularies_csv", { request });
+    if (isTauri()) {
+      return invoke("import_vocabularies_csv", { request });
+    }
+    // Web mode: use adapter for text-based import
+    const service = getCSVService();
+    const result = await service.importVocabulariesCSV({
+      csvText: request.csvText,
+      collectionId: request.targetCollectionId,
+      createMissingCollections: request.createMissingCollections,
+    });
+
+    return {
+      success: result.errors.length === 0 && result.imported > 0,
+      rowsImported: result.imported,
+      rowsFailed: result.skipped,
+      errors: result.errors.map((e, i) => ({
+        rowNumber: i + 1,
+        errorMessage: e,
+        rowData: "",
+      })),
+      collectionsCreated: result.collectionsCreated || [],
+    };
+  }
+
+  /**
+   * Import simple vocabulary list (word + definition)
+   */
+  static async importSimpleVocabularies(
+    request: TypesSimpleImportRequest,
+  ): Promise<CsvImportResult> {
+    if (isTauri()) {
+      return invoke("import_simple_vocabularies", { request });
+    }
+    // Web mode: parse and import
+    const parsed = this.parseSimpleVocabularyText(request.csvText);
+    if (parsed.length === 0) {
+      return {
+        success: false,
+        rowsImported: 0,
+        rowsFailed: 0,
+        errors: [
+          {
+            rowNumber: 0,
+            errorMessage: "No valid vocabulary entries found",
+            rowData: "",
+          },
+        ],
+        collectionsCreated: [],
+      };
+    }
+
+    // Check if any entries have collection names and no target collection is set
+    const hasCollectionNames = parsed.some((w) => w.collection_name);
+    if (hasCollectionNames && !request.targetCollectionId) {
+      // Convert to full CSV format and use importVocabulariesCSV for collection auto-creation
+      const csvLines = ["collection_name,word,definitions,language"];
+      for (const w of parsed) {
+        const escape = (v: string) => {
+          if (v.includes(",") || v.includes('"') || v.includes("\n")) {
+            return `"${v.replace(/"/g, '""')}"`;
+          }
+          return v;
+        };
+        csvLines.push(
+          [
+            escape(w.collection_name || ""),
+            escape(w.word),
+            escape(w.definition),
+            escape(request.defaultLanguage || "en"),
+          ].join(","),
+        );
       }
-      // Web mode: use adapter for text-based import
+
       const service = getCSVService();
       const result = await service.importVocabulariesCSV({
-        csvText: request.csvText,
-        collectionId: request.targetCollectionId,
+        csvText: csvLines.join("\n"),
         createMissingCollections: request.createMissingCollections,
       });
 
@@ -193,133 +231,51 @@ export class CsvService {
         })),
         collectionsCreated: result.collectionsCreated || [],
       };
-    } catch (error) {
-      console.error("Error importing CSV:", error);
-      throw CsvService.handleError(error);
     }
-  }
 
-  /**
-   * Import simple vocabulary list (word + definition)
-   */
-  static async importSimpleVocabularies(
-    request: TypesSimpleImportRequest,
-  ): Promise<CsvImportResult> {
-    try {
-      if (isTauri()) {
-        return invoke("import_simple_vocabularies", { request });
-      }
-      // Web mode: parse and import
-      const parsed = this.parseSimpleVocabularyText(request.csvText);
-      if (parsed.length === 0) {
-        return {
-          success: false,
-          rowsImported: 0,
-          rowsFailed: 0,
-          errors: [
-            {
-              rowNumber: 0,
-              errorMessage: "No valid vocabulary entries found",
-              rowData: "",
-            },
-          ],
-          collectionsCreated: [],
-        };
-      }
+    // Use the adapter for actual import
+    const service = getCSVService();
+    const result = await service.importSimpleVocabularies({
+      collectionId: request.targetCollectionId || "",
+      language: request.defaultLanguage,
+      words: parsed.map((w) => ({
+        word: w.word,
+        definition: w.definition,
+      })),
+    });
 
-      // Check if any entries have collection names and no target collection is set
-      const hasCollectionNames = parsed.some((w) => w.collection_name);
-      if (hasCollectionNames && !request.targetCollectionId) {
-        // Convert to full CSV format and use importVocabulariesCSV for collection auto-creation
-        const csvLines = ["collection_name,word,definitions,language"];
-        for (const w of parsed) {
-          const escape = (v: string) => {
-            if (v.includes(",") || v.includes('"') || v.includes("\n")) {
-              return `"${v.replace(/"/g, '""')}"`;
-            }
-            return v;
-          };
-          csvLines.push(
-            [
-              escape(w.collection_name || ""),
-              escape(w.word),
-              escape(w.definition),
-              escape(request.defaultLanguage || "en"),
-            ].join(","),
-          );
-        }
-
-        const service = getCSVService();
-        const result = await service.importVocabulariesCSV({
-          csvText: csvLines.join("\n"),
-          createMissingCollections: request.createMissingCollections,
-        });
-
-        return {
-          success: result.errors.length === 0 && result.imported > 0,
-          rowsImported: result.imported,
-          rowsFailed: result.skipped,
-          errors: result.errors.map((e, i) => ({
-            rowNumber: i + 1,
-            errorMessage: e,
-            rowData: "",
-          })),
-          collectionsCreated: result.collectionsCreated || [],
-        };
-      }
-
-      // Use the adapter for actual import
-      const service = getCSVService();
-      const result = await service.importSimpleVocabularies({
-        collectionId: request.targetCollectionId || "",
-        language: request.defaultLanguage,
-        words: parsed.map((w) => ({
-          word: w.word,
-          definition: w.definition,
-        })),
-      });
-
-      return {
-        success: result.errors.length === 0 && result.imported > 0,
-        rowsImported: result.imported,
-        rowsFailed: result.skipped,
-        errors: result.errors.map((e, i) => ({
-          rowNumber: i + 1,
-          errorMessage: e,
-          rowData: "",
-        })),
-        collectionsCreated: result.collectionsCreated || [],
-      };
-    } catch (error) {
-      console.error("Error simple importing:", error);
-      throw CsvService.handleError(error);
-    }
+    return {
+      success: result.errors.length === 0 && result.imported > 0,
+      rowsImported: result.imported,
+      rowsFailed: result.skipped,
+      errors: result.errors.map((e, i) => ({
+        rowNumber: i + 1,
+        errorMessage: e,
+        rowData: "",
+      })),
+      collectionsCreated: result.collectionsCreated || [],
+    };
   }
 
   /**
    * Generate and download a CSV template file
    */
   static async generateTemplate(): Promise<string> {
-    try {
-      if (isTauri()) {
-        // Use Tauri file save dialog
-        const { save } = await import("@tauri-apps/plugin-dialog");
-        const filePath = await save({
-          defaultPath: "chamlang_template.csv",
-          filters: [{ name: "CSV Files", extensions: ["csv"] }],
-        });
-        if (!filePath) {
-          throw new Error("No file path selected");
-        }
-        return invoke("generate_csv_template", { filePath });
+    if (isTauri()) {
+      // Use Tauri file save dialog
+      const { save } = await import("@tauri-apps/plugin-dialog");
+      const filePath = await save({
+        defaultPath: "chamlang_template.csv",
+        filters: [{ name: "CSV Files", extensions: ["csv"] }],
+      });
+      if (!filePath) {
+        throw new Error("No file path selected");
       }
-      // Web mode: trigger browser download
-      const service = getCSVService();
-      return await service.generateCSVTemplate("chamlang_template.csv");
-    } catch (error) {
-      console.error("Error generating CSV template:", error);
-      throw CsvService.handleError(error);
+      return invoke("generate_csv_template", { filePath });
     }
+    // Web mode: trigger browser download
+    const service = getCSVService();
+    return service.generateCSVTemplate("chamlang_template.csv");
   }
 
   /**
@@ -383,11 +339,6 @@ export class CsvService {
    */
   static async downloadTemplate(): Promise<string> {
     return this.generateTemplate();
-  }
-
-  private static handleError(error: unknown): Error {
-    if (typeof error === "string") return new Error(error);
-    return error instanceof Error ? error : new Error("Unknown error occurred");
   }
 }
 

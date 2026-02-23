@@ -16,6 +16,7 @@ import {
   validateBackup,
   type ChamLangBackup,
 } from "./dexieBackupUtils";
+import { serviceLogger } from "@cham-lang/ui/utils";
 
 // OAuth configuration from environment
 const GOOGLE_CLIENT_ID = (import.meta as any).env.VITE_GOOGLE_CLIENT_ID || "";
@@ -198,7 +199,7 @@ export class WebGDriveAdapter implements IGDriveService {
           google.accounts.oauth2.revoke(accessToken);
         }
       } catch (error) {
-        console.error("Error revoking token:", error);
+        serviceLogger.gdriveError("Error revoking token:", error);
       }
     }
 
@@ -428,7 +429,7 @@ export class WebGDriveAdapter implements IGDriveService {
         sizeKB,
       };
     } catch (error) {
-      console.error("Failed to get backup info:", error);
+      serviceLogger.gdriveError("Failed to get backup info:", error);
       return null;
     }
   }

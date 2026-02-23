@@ -1,7 +1,6 @@
 export { SearchBar } from "./SearchBar";
 export { VocabularyCard } from "./VocabularyCard";
 export { TopBar } from "./TopBar";
-export { BottomNavigation } from "./BottomNavigation";
 export { CollectionCard } from "./CollectionCard";
 export { StatsCard } from "./StatsCard";
 export { FillWordCard } from "./FillWordCard";

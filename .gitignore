@@ -45,4 +45,13 @@ apps/native/src-tauri/gen/android/buildSrc/build/
 # Rust target
 apps/native/src-tauri/target/
 
-cham-lang-keystore.jks
+*.jks
+.shared
+.agent
+.claude
+
+packages/**/node_modules
+packages/**/dist
+apps/**/node_modules
+apps/**/dist
+apps/**/.turbo

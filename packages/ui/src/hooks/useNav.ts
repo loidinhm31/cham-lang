@@ -25,5 +25,5 @@ export function useNav() {
     }
   };
 
-  return { to, navigate };
+  return { to, navigate, basePath };
 }

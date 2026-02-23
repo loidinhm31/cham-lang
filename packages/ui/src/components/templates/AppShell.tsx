@@ -1,10 +1,10 @@
 import React, { lazy, Suspense, useState } from "react";
 import { Navigate, Route, Routes, useOutletContext } from "react-router-dom";
 import { useNav } from "@cham-lang/ui/hooks";
-import { BottomNavigation } from "@cham-lang/ui/components/molecules";
 import {
   BrowserSyncInitializer,
   Sidebar,
+  BottomNavigation,
 } from "@cham-lang/ui/components/organisms";
 import { useAuth } from "@cham-lang/ui/hooks";
 import "@cham-lang/ui/i18n/config";
@@ -211,7 +211,7 @@ export const AppShell: React.FC<AppShellProps> = ({
           )}
 
           <div
-            className={`relative z-10 pb-32 md:pb-0 transition-all duration-300 ${
+            className={`relative z-10 pb-24 md:pb-6 transition-all duration-300 ${
               isCollapsed ? "md:ml-16" : "md:ml-64"
             }`}
           >

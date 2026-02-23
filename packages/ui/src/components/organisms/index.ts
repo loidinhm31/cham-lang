@@ -9,3 +9,4 @@ export { ServerDisconnectedOverlay } from "./ServerDisconnectedOverlay";
 export { AuthForm } from "./AuthForm";
 export { SyncSettings, type SyncSettingsProps } from "./SyncSettings";
 export { Sidebar } from "./Sidebar";
+export { BottomNavigation } from "./BottomNavigation";

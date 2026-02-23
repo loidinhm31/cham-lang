@@ -1,7 +1,6 @@
 /**
  * Practice Service
- * Uses platform adapter for cross-platform compatibility
- * Lazy service access + error handling pattern
+ * Direct passthrough to the platform adapter via ServiceFactory
  */
 
 import { getPracticeService } from "@cham-lang/ui/adapters";
@@ -18,68 +17,33 @@ export class PracticeService {
   static async createPracticeSession(
     request: CreatePracticeSessionRequest,
   ): Promise<string> {
-    try {
-      const service = getPracticeService();
-      return await service.createPracticeSession(request);
-    } catch (error) {
-      console.error("Error creating practice session:", error);
-      throw PracticeService.handleError(error);
-    }
+    return getPracticeService().createPracticeSession(request);
   }
 
   static async getPracticeSessions(
     language: string,
     limit?: number,
   ): Promise<PracticeSession[]> {
-    try {
-      const service = getPracticeService();
-      return await service.getPracticeSessions(language, limit);
-    } catch (error) {
-      console.error("Error getting practice sessions:", error);
-      throw PracticeService.handleError(error);
-    }
+    return getPracticeService().getPracticeSessions(language, limit);
   }
 
   // Progress management
   static async updatePracticeProgress(
     request: UpdateProgressRequest,
   ): Promise<string> {
-    try {
-      const service = getPracticeService();
-      return await service.updatePracticeProgress(request);
-    } catch (error) {
-      console.error("Error updating practice progress:", error);
-      throw PracticeService.handleError(error);
-    }
+    return getPracticeService().updatePracticeProgress(request);
   }
 
   static async getPracticeProgress(
     language: string,
   ): Promise<UserPracticeProgress | null> {
-    try {
-      const service = getPracticeService();
-      return await service.getPracticeProgress(language);
-    } catch (error) {
-      console.error("Error getting practice progress:", error);
-      throw PracticeService.handleError(error);
-    }
+    return getPracticeService().getPracticeProgress(language);
   }
 
   static async getWordProgress(
     language: string,
     vocabularyId: string,
   ): Promise<WordProgress | null> {
-    try {
-      const service = getPracticeService();
-      return await service.getWordProgress(language, vocabularyId);
-    } catch (error) {
-      console.error("Error getting word progress:", error);
-      throw PracticeService.handleError(error);
-    }
-  }
-
-  private static handleError(error: unknown): Error {
-    if (typeof error === "string") return new Error(error);
-    return error instanceof Error ? error : new Error("Unknown error occurred");
+    return getPracticeService().getWordProgress(language, vocabularyId);
   }
 }

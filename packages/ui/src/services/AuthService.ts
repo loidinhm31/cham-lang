@@ -1,7 +1,6 @@
 /**
  * Auth Service
- * Uses platform adapter for cross-platform compatibility
- * Lazy service access + error handling pattern
+ * Direct passthrough to the platform adapter via ServiceFactory
  */
 
 import { getAuthService } from "@cham-lang/ui/adapters";
@@ -16,13 +15,7 @@ export class AuthService {
    * Configure sync with server URL and API keys
    */
   static async configureSync(config: SyncConfig): Promise<void> {
-    try {
-      const service = getAuthService();
-      await service.configureSync(config);
-    } catch (error) {
-      console.error("Error configuring sync:", error);
-      throw AuthService.handleError(error);
-    }
+    return getAuthService().configureSync(config);
   }
 
   /**
@@ -33,78 +26,42 @@ export class AuthService {
     email: string,
     password: string,
   ): Promise<AuthResponse> {
-    try {
-      const service = getAuthService();
-      return await service.register(username, email, password);
-    } catch (error) {
-      console.error("Error registering user:", error);
-      throw AuthService.handleError(error);
-    }
+    return getAuthService().register(username, email, password);
   }
 
   /**
    * Login with email and password
    */
   static async login(email: string, password: string): Promise<AuthResponse> {
-    try {
-      const service = getAuthService();
-      return await service.login(email, password);
-    } catch (error) {
-      console.error("Error logging in:", error);
-      throw AuthService.handleError(error);
-    }
+    return getAuthService().login(email, password);
   }
 
   /**
    * Logout current user
    */
   static async logout(): Promise<void> {
-    try {
-      const service = getAuthService();
-      await service.logout();
-    } catch (error) {
-      console.error("Error logging out:", error);
-      throw AuthService.handleError(error);
-    }
+    return getAuthService().logout();
   }
 
   /**
    * Refresh the access token
    */
   static async refreshToken(): Promise<void> {
-    try {
-      const service = getAuthService();
-      await service.refreshToken();
-    } catch (error) {
-      console.error("Error refreshing token:", error);
-      throw AuthService.handleError(error);
-    }
+    return getAuthService().refreshToken();
   }
 
   /**
    * Get current authentication status
    */
   static async getStatus(): Promise<AuthStatus> {
-    try {
-      const service = getAuthService();
-      return await service.getStatus();
-    } catch (error) {
-      console.error("Error getting auth status:", error);
-      return { isAuthenticated: false };
-    }
+    return getAuthService().getStatus();
   }
 
   /**
    * Check if user is authenticated
    */
   static async isAuthenticated(): Promise<boolean> {
-    try {
-      const service = getAuthService();
-      return await service.isAuthenticated();
-    } catch (error) {
-      console.error("Error checking authentication:", error);
-      return false;
-    }
+    return getAuthService().isAuthenticated();
   }
 
   /**
@@ -115,13 +72,7 @@ export class AuthService {
     refreshToken?: string;
     userId?: string;
   }> {
-    try {
-      const service = getAuthService();
-      return await service.getTokens();
-    } catch (error) {
-      console.error("Error getting tokens:", error);
-      return {};
-    }
+    return getAuthService().getTokens();
   }
 
   /**
@@ -130,17 +81,6 @@ export class AuthService {
   static async lookupUserByUsername(
     username: string,
   ): Promise<{ userId: string; username: string } | null> {
-    try {
-      const service = getAuthService();
-      return await service.lookupUserByUsername(username);
-    } catch (error) {
-      console.error("Error looking up user:", error);
-      throw AuthService.handleError(error);
-    }
-  }
-
-  private static handleError(error: unknown): Error {
-    if (typeof error === "string") return new Error(error);
-    return error instanceof Error ? error : new Error("Unknown error occurred");
+    return getAuthService().lookupUserByUsername(username);
   }
 }

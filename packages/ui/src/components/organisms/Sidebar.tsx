@@ -10,7 +10,7 @@ import {
   Settings,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useNav } from "@cham-lang/ui/hooks";
 import { useSyncNotification } from "@cham-lang/ui/contexts";
 
@@ -24,6 +24,7 @@ interface NavItem {
 interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  className?: string;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -32,7 +33,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { t } = useTranslation();
   const { to, navigate } = useNav();
-  const location = useLocation();
   const { hasSyncNotification } = useSyncNotification();
 
   const navItems: NavItem[] = [
@@ -59,17 +59,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const handleNotificationClick = () => {
     navigate("/settings");
-  };
-
-  // Check if the current path matches or starts with the nav item path
-  const isPathActive = (navPath: string) => {
-    const fullPath = to(navPath);
-    if (navPath === "/") {
-      return location.pathname === fullPath;
-    }
-    return (
-      location.pathname === fullPath || location.pathname.startsWith(fullPath)
-    );
   };
 
   return (
@@ -114,44 +103,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <nav className="flex-1 px-3 py-4">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = isPathActive(item.path);
             const Icon = item.icon;
 
             return (
               <li key={item.id}>
-                <button
-                  onClick={() => navigate(item.path)}
+                <NavLink
+                  to={to(item.path)}
+                  end={item.path === "/"}
                   title={isCollapsed ? item.label : undefined}
-                  className={`w-full flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${
-                    isCollapsed ? "px-0 justify-center" : "px-4"
-                  } ${
-                    isActive
-                      ? "btn-indigo text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
-                      : "text-(--color-text-secondary) hover:bg-white/20"
-                  }`}
-                >
-                  <Icon
-                    className={`w-5 h-5 flex-shrink-0 transition-all ${
+                  className={({ isActive }) =>
+                    `w-full flex items-center gap-3 py-3 rounded-xl transition-all duration-200 group ${
+                      isCollapsed ? "px-0 justify-center" : "px-4"
+                    } ${
                       isActive
-                        ? "stroke-[2.5]"
-                        : "stroke-2 group-hover:stroke-[2.5]"
-                    }`}
-                  />
-                  {!isCollapsed && (
+                        ? "btn-indigo text-white shadow-[0_4px_12px_rgba(99,102,241,0.3)]"
+                        : "text-(--color-text-secondary) hover:bg-white/20"
+                    }`
+                  }
+                >
+                  {({ isActive }) => (
                     <>
-                      <span
-                        className={`text-sm whitespace-nowrap ${
-                          isActive ? "font-bold" : "font-medium"
+                      <Icon
+                        className={`w-5 h-5 flex-shrink-0 transition-all ${
+                          isActive
+                            ? "stroke-[2.5]"
+                            : "stroke-2 group-hover:stroke-[2.5]"
                         }`}
-                      >
-                        {item.label}
-                      </span>
-                      {isActive && (
-                        <div className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white" />
+                      />
+                      {!isCollapsed && (
+                        <>
+                          <span
+                            className={`text-sm whitespace-nowrap ${
+                              isActive ? "font-bold" : "font-medium"
+                            }`}
+                          >
+                            {item.label}
+                          </span>
+                          {isActive && (
+                            <div className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0 bg-white" />
+                          )}
+                        </>
                       )}
                     </>
                   )}
-                </button>
+                </NavLink>
               </li>
             );
           })}

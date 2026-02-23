@@ -1,7 +1,6 @@
 /**
  * Learning Settings Service
- * Uses platform adapter for cross-platform compatibility
- * Lazy service access + error handling pattern
+ * Direct passthrough to the platform adapter via ServiceFactory
  */
 
 import { getLearningSettingsService } from "@cham-lang/ui/adapters";
@@ -15,26 +14,14 @@ export class LearningSettingsService {
    * Get the user's learning settings (returns null if not set)
    */
   static async getLearningSettings(): Promise<LearningSettings | null> {
-    try {
-      const service = getLearningSettingsService();
-      return await service.getLearningSettings();
-    } catch (error) {
-      console.error("Error getting learning settings:", error);
-      throw LearningSettingsService.handleError(error);
-    }
+    return getLearningSettingsService().getLearningSettings();
   }
 
   /**
    * Get the user's learning settings, or create default settings if none exist
    */
   static async getOrCreateLearningSettings(): Promise<LearningSettings> {
-    try {
-      const service = getLearningSettingsService();
-      return await service.getOrCreateLearningSettings();
-    } catch (error) {
-      console.error("Error getting or creating learning settings:", error);
-      throw LearningSettingsService.handleError(error);
-    }
+    return getLearningSettingsService().getOrCreateLearningSettings();
   }
 
   /**
@@ -45,13 +32,7 @@ export class LearningSettingsService {
       ReturnType<typeof getLearningSettingsService>["updateLearningSettings"]
     >[0],
   ): Promise<LearningSettings> {
-    try {
-      const service = getLearningSettingsService();
-      return await service.updateLearningSettings(request);
-    } catch (error) {
-      console.error("Error updating learning settings:", error);
-      throw LearningSettingsService.handleError(error);
-    }
+    return getLearningSettingsService().updateLearningSettings(request);
   }
 
   /**
@@ -79,10 +60,5 @@ export class LearningSettingsService {
    */
   static async getSettingsWithDefaults(): Promise<LearningSettings> {
     return this.getOrCreateLearningSettings();
-  }
-
-  private static handleError(error: unknown): Error {
-    if (typeof error === "string") return new Error(error);
-    return error instanceof Error ? error : new Error("Unknown error occurred");
   }
 }

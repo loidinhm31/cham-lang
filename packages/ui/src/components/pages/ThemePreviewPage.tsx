@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   Info,
   Clock,
+  Monitor,
 } from "lucide-react";
 
 export const ThemePreviewPage: React.FC = () => {
@@ -70,6 +71,14 @@ export const ThemePreviewPage: React.FC = () => {
               size="sm"
             >
               Cyber
+            </Button>
+            <Button
+              variant={theme === "system" ? "primary" : "outline"}
+              onClick={() => setTheme("system")}
+              size="sm"
+              icon={Monitor}
+            >
+              System
             </Button>
           </div>
         </div>

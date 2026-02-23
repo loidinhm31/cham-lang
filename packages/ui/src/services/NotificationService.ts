@@ -1,7 +1,6 @@
 /**
  * Notification Service
- * Uses platform adapter for cross-platform compatibility
- * Lazy service access + error handling pattern
+ * Direct passthrough to the platform adapter via ServiceFactory
  */
 
 import { getNotificationService } from "@cham-lang/ui/adapters";
@@ -21,26 +20,14 @@ export class NotificationService {
    * Check if notification permission is granted
    */
   static async isPermissionGranted(): Promise<boolean> {
-    try {
-      const service = getNotificationService();
-      return await service.isPermissionGranted();
-    } catch (error) {
-      console.error("Error checking notification permission:", error);
-      return false;
-    }
+    return getNotificationService().isPermissionGranted();
   }
 
   /**
    * Request notification permission from user
    */
   static async requestPermission(): Promise<"granted" | "denied" | "default"> {
-    try {
-      const service = getNotificationService();
-      return await service.requestPermission();
-    } catch (error) {
-      console.error("Error requesting notification permission:", error);
-      return "denied";
-    }
+    return getNotificationService().requestPermission();
   }
 
   /**
@@ -48,26 +35,14 @@ export class NotificationService {
    * @returns true if permission granted, false otherwise
    */
   static async ensurePermission(): Promise<boolean> {
-    try {
-      const service = getNotificationService();
-      return await service.ensurePermission();
-    } catch (error) {
-      console.error("Error ensuring notification permission:", error);
-      return false;
-    }
+    return getNotificationService().ensurePermission();
   }
 
   /**
    * Send a test notification immediately
    */
   static async sendTestNotification(): Promise<string> {
-    try {
-      const service = getNotificationService();
-      return await service.sendTestNotification();
-    } catch (error) {
-      console.error("Error sending test notification:", error);
-      throw NotificationService.handleError(error);
-    }
+    return getNotificationService().sendTestNotification();
   }
 
   /**
@@ -78,26 +53,14 @@ export class NotificationService {
       ReturnType<typeof getNotificationService>["scheduleNotification"]
     >[0],
   ): Promise<string> {
-    try {
-      const service = getNotificationService();
-      return await service.scheduleNotification(request);
-    } catch (error) {
-      console.error("Error scheduling notification:", error);
-      throw NotificationService.handleError(error);
-    }
+    return getNotificationService().scheduleNotification(request);
   }
 
   /**
    * Schedule a test notification for 1 minute from now
    */
   static async scheduleTestNotificationOneMinute(): Promise<string> {
-    try {
-      const service = getNotificationService();
-      return await service.scheduleTestNotificationOneMinute();
-    } catch (error) {
-      console.error("Error scheduling test notification:", error);
-      throw NotificationService.handleError(error);
-    }
+    return getNotificationService().scheduleTestNotificationOneMinute();
   }
 
   /**
@@ -109,26 +72,14 @@ export class NotificationService {
       ReturnType<typeof getNotificationService>["scheduleDailyReminder"]
     >[0],
   ): Promise<string> {
-    try {
-      const service = getNotificationService();
-      return await service.scheduleDailyReminder(request);
-    } catch (error) {
-      console.error("Error scheduling daily reminder:", error);
-      throw NotificationService.handleError(error);
-    }
+    return getNotificationService().scheduleDailyReminder(request);
   }
 
   /**
    * Cancel the daily reminder
    */
   static async cancelDailyReminder(): Promise<string> {
-    try {
-      const service = getNotificationService();
-      return await service.cancelDailyReminder();
-    } catch (error) {
-      console.error("Error canceling daily reminder:", error);
-      throw NotificationService.handleError(error);
-    }
+    return getNotificationService().cancelDailyReminder();
   }
 
   /**
@@ -140,17 +91,9 @@ export class NotificationService {
       ReturnType<typeof getNotificationService>["scheduleDailyReminder"]
     >[0],
   ): Promise<{ success: boolean; message: string }> {
-    try {
-      const service = getNotificationService();
-      return await service.scheduleDailyReminderWithPermission(request);
-    } catch (error) {
-      console.error("Error scheduling daily reminder with permission:", error);
-      return {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      };
-    }
+    return getNotificationService().scheduleDailyReminderWithPermission(
+      request,
+    );
   }
 
   /**
@@ -161,24 +104,6 @@ export class NotificationService {
     success: boolean;
     message: string;
   }> {
-    try {
-      const service = getNotificationService();
-      return await service.scheduleTestNotificationWithPermission();
-    } catch (error) {
-      console.error(
-        "Error scheduling test notification with permission:",
-        error,
-      );
-      return {
-        success: false,
-        message:
-          error instanceof Error ? error.message : "Unknown error occurred",
-      };
-    }
-  }
-
-  private static handleError(error: unknown): Error {
-    if (typeof error === "string") return new Error(error);
-    return error instanceof Error ? error : new Error("Unknown error occurred");
+    return getNotificationService().scheduleTestNotificationWithPermission();
   }
 }

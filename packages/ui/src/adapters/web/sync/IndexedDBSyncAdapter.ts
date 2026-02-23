@@ -8,6 +8,7 @@ import type {
   SyncResult,
   SyncStatus,
 } from "@cham-lang/shared/types";
+import { serviceLogger } from "@cham-lang/ui/utils";
 import {
   createSyncClientConfig,
   type HttpClientFn,
@@ -172,7 +173,10 @@ export class IndexedDBSyncAdapter implements ISyncService {
 
         while (hasMore) {
           page++;
-          console.log("Pulling more records, checkpoint:", currentCheckpoint);
+          serviceLogger.syncDebug(
+            "Pulling more records, checkpoint:",
+            currentCheckpoint,
+          );
 
           const pullResponse = await client.pull(currentCheckpoint);
 
@@ -194,7 +198,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
         }
 
         // Apply ALL changes at once after collecting from all pages
-        console.log(
+        serviceLogger.syncDebug(
           `Applying ${allRecords.length} total records from ${page} pages`,
         );
         if (allRecords.length > 0) {
@@ -215,7 +219,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
         syncedAt,
       };
     } catch (error) {
-      console.error("Sync failed:", error);
+      serviceLogger.syncError("Sync failed:", error);
       return {
         pushed: 0,
         pulled: 0,

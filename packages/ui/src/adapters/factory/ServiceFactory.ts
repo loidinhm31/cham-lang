@@ -21,6 +21,7 @@ import type {
   ISyncService,
   IVocabularyService,
 } from "@cham-lang/ui/adapters/factory/interfaces";
+import { serviceLogger } from "@cham-lang/ui/utils";
 
 // Singleton instances (set via setters)
 let vocabularyService: IVocabularyService | null = null;
@@ -37,40 +38,49 @@ let authService: IAuthService | null = null;
 
 export const setVocabularyService = (service: IVocabularyService): void => {
   vocabularyService = service;
+  serviceLogger.factory("Set VocabularyService");
 };
 
 export const setCollectionService = (service: ICollectionService): void => {
   collectionService = service;
+  serviceLogger.factory("Set CollectionService");
 };
 
 export const setPracticeService = (service: IPracticeService): void => {
   practiceService = service;
+  serviceLogger.factory("Set PracticeService");
 };
 
 export const setLearningSettingsService = (
   service: ILearningSettingsService,
 ): void => {
   learningSettingsService = service;
+  serviceLogger.factory("Set LearningSettingsService");
 };
 
 export const setNotificationService = (service: INotificationService): void => {
   notificationService = service;
+  serviceLogger.factory("Set NotificationService");
 };
 
 export const setCSVService = (service: ICSVService): void => {
   csvService = service;
+  serviceLogger.factory("Set CSVService");
 };
 
 export const setGDriveService = (service: IGDriveService): void => {
   gdriveService = service;
+  serviceLogger.factory("Set GDriveService");
 };
 
 export const setSyncService = (service: ISyncService): void => {
   syncService = service;
+  serviceLogger.factory("Set SyncService");
 };
 
 export const setAuthService = (service: IAuthService): void => {
   authService = service;
+  serviceLogger.factory("Set AuthService");
 };
 
 // ============= Getters =============
@@ -225,4 +235,5 @@ export const resetServices = (): void => {
   gdriveService = null;
   syncService = null;
   authService = null;
+  serviceLogger.factory("Reset all services");
 };
