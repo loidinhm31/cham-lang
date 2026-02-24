@@ -4,14 +4,15 @@ import type { Collection } from "@cham-lang/shared/types";
 interface CollectionPermission {
   isOwner: boolean;
   canEdit: boolean;
-  permission: "owner" | "editor" | "viewer" | null;
+  /** Derived UI role — not a stored field. All shared access is viewer-only. */
+  role: "owner" | "viewer" | null;
   loading: boolean;
 }
 
 export function useCollectionPermission(
   collection: Collection | null,
 ): CollectionPermission {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,7 +40,7 @@ export function useCollectionPermission(
   }, []);
 
   if (!collection) {
-    return { isOwner: false, canEdit: false, permission: null, loading };
+    return { isOwner: false, canEdit: false, role: null, loading };
   }
 
   // No sharedBy means this is the owner's collection
@@ -47,31 +48,16 @@ export function useCollectionPermission(
     return {
       isOwner: true,
       canEdit: true,
-      permission: "owner",
+      role: "owner",
       loading: false,
     };
   }
 
-  // Shared collection - check permission in sharedWith
-  if (loading || !userId) {
-    return { isOwner: false, canEdit: false, permission: null, loading };
-  }
-
-  const sharedEntry = collection.sharedWith?.find((s) => s.userId === userId);
-
-  if (sharedEntry?.permission === "editor") {
-    return {
-      isOwner: false,
-      canEdit: true,
-      permission: "editor",
-      loading: false,
-    };
-  }
-
+  // Shared collection — viewer-only, canEdit is always false for non-owners
   return {
     isOwner: false,
     canEdit: false,
-    permission: "viewer",
+    role: "viewer",
     loading: false,
   };
 }

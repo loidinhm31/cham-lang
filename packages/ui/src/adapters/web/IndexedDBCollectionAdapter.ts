@@ -16,7 +16,6 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       .toArray();
     collection.sharedWith = sharedUsers.map((su) => ({
       userId: su.userId,
-      permission: su.permission as "viewer" | "editor",
     }));
     return collection;
   }
@@ -120,7 +119,6 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   async shareCollection(
     collectionId: string,
     shareWithUserId: string,
-    permission: "viewer" | "editor" = "viewer",
   ): Promise<string> {
     const collection = await db.collections.get(collectionId);
     if (!collection) throw new Error(`Collection not found: ${collectionId}`);
@@ -144,59 +142,18 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
         id,
         collectionId: collectionId,
         userId: shareWithUserId,
-        permission,
         createdAt: now,
       }),
     );
 
     // Update the collection's sharedWith array for immediate UI feedback
-    const sharedWith = [
-      ...collection.sharedWith,
-      { userId: shareWithUserId, permission },
-    ];
+    const sharedWith = [...collection.sharedWith, { userId: shareWithUserId }];
     await db.collections.update(
       collectionId,
       withSyncTracking({ sharedWith: sharedWith, updatedAt: now }, collection),
     );
 
     return "Collection shared successfully";
-  }
-
-  async updateSharePermission(
-    collectionId: string,
-    userId: string,
-    permission: "viewer" | "editor",
-  ): Promise<string> {
-    const [collection, sharedUserRecord] = await Promise.all([
-      db.collections.get(collectionId),
-      db.collectionSharedUsers
-        .where("collectionId")
-        .equals(collectionId)
-        .filter((su) => su.userId === userId)
-        .first(),
-    ]);
-
-    if (!collection) throw new Error(`Collection not found: ${collectionId}`);
-    if (!sharedUserRecord) throw new Error(`Shared user record not found`);
-
-    const now = getCurrentTimestamp();
-
-    // Update the source-of-truth record (hydrateSharedWith reads from here)
-    await db.collectionSharedUsers.update(
-      sharedUserRecord.id,
-      withSyncTracking({ permission }, sharedUserRecord),
-    );
-
-    // Keep the denormalized sharedWith array in sync
-    const sharedWith = collection.sharedWith.map((su) =>
-      su.userId === userId ? { ...su, permission } : su,
-    );
-    await db.collections.update(
-      collectionId,
-      withSyncTracking({ sharedWith, updatedAt: now }, collection),
-    );
-
-    return "Permission updated successfully";
   }
 
   async unshareCollection(

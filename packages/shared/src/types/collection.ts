@@ -1,6 +1,5 @@
 export interface SharedUser {
   userId: string;
-  permission: "viewer" | "editor";
 }
 
 export interface Collection {

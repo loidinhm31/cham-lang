@@ -28,8 +28,8 @@ beforeEach(async () => {
   await db._pendingChanges.clear();
 });
 
-describe("shareCollection with permission parameter", () => {
-  it("shares with default viewer permission", async () => {
+describe("shareCollection", () => {
+  it("creates sharing record with no permission field (viewer-only model)", async () => {
     await createTestCollection();
     await adapter.shareCollection("coll-1", "user-2");
 
@@ -37,41 +37,17 @@ describe("shareCollection with permission parameter", () => {
       .where("collectionId")
       .equals("coll-1")
       .first();
-    expect(su?.permission).toBe("viewer");
+    expect(su?.userId).toBe("user-2");
+    expect(su).not.toHaveProperty("permission");
 
     const coll = await db.collections.get("coll-1");
-    expect(coll?.sharedWith).toContainEqual({ userId: "user-2", permission: "viewer" });
-  });
-
-  it("shares with explicit editor permission", async () => {
-    await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "editor");
-
-    const su = await db.collectionSharedUsers
-      .where("collectionId")
-      .equals("coll-1")
-      .first();
-    expect(su?.permission).toBe("editor");
-
-    const coll = await db.collections.get("coll-1");
-    expect(coll?.sharedWith).toContainEqual({ userId: "user-2", permission: "editor" });
-  });
-
-  it("shares with explicit viewer permission", async () => {
-    await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "viewer");
-
-    const su = await db.collectionSharedUsers
-      .where("collectionId")
-      .equals("coll-1")
-      .first();
-    expect(su?.permission).toBe("viewer");
+    expect(coll?.sharedWith).toContainEqual({ userId: "user-2" });
   });
 
   it("returns early if already shared", async () => {
     await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "viewer");
-    const result = await adapter.shareCollection("coll-1", "user-2", "editor");
+    await adapter.shareCollection("coll-1", "user-2");
+    const result = await adapter.shareCollection("coll-1", "user-2");
 
     expect(result).toContain("already shared");
     const count = await db.collectionSharedUsers
@@ -88,63 +64,39 @@ describe("shareCollection with permission parameter", () => {
   });
 });
 
-describe("updateSharePermission", () => {
-  it("updates permission from viewer to editor in both tables", async () => {
+describe("unshareCollection", () => {
+  it("removes the shared user record and updates sharedWith", async () => {
     await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "viewer");
-    await adapter.updateSharePermission("coll-1", "user-2", "editor");
+    await adapter.shareCollection("coll-1", "user-2");
+
+    await adapter.unshareCollection("coll-1", "user-2");
 
     const su = await db.collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
-    expect(su?.permission).toBe("editor");
+    expect(su).toBeUndefined();
 
     const coll = await db.collections.get("coll-1");
-    const entry = coll?.sharedWith.find((s) => s.userId === "user-2");
-    expect(entry?.permission).toBe("editor");
+    expect(coll?.sharedWith).toHaveLength(0);
   });
 
-  it("marks collectionSharedUsers record as unsynced after update", async () => {
+  it("tracks the deletion as a pending change", async () => {
     await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "viewer");
+    await adapter.shareCollection("coll-1", "user-2");
 
-    // Simulate previously synced state
+    // Simulate synced state for the sharing record
     const su = await db.collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
-    await db.collectionSharedUsers.update(su!.id, { syncedAt: 1000, syncVersion: 2 });
+    await db.collectionSharedUsers.update(su!.id, { syncedAt: 1000 });
 
-    await adapter.updateSharePermission("coll-1", "user-2", "editor");
+    await adapter.unshareCollection("coll-1", "user-2");
 
-    const updated = await db.collectionSharedUsers.get(su!.id);
-    expect(updated?.syncedAt).toBeUndefined();
-    expect(updated?.syncVersion).toBe(3); // incremented from 2
-  });
-
-  it("updates permission from editor to viewer", async () => {
-    await createTestCollection();
-    await adapter.shareCollection("coll-1", "user-2", "editor");
-    await adapter.updateSharePermission("coll-1", "user-2", "viewer");
-
-    const su = await db.collectionSharedUsers
-      .where("collectionId")
-      .equals("coll-1")
-      .first();
-    expect(su?.permission).toBe("viewer");
-  });
-
-  it("throws if collection not found", async () => {
-    await expect(
-      adapter.updateSharePermission("nonexistent", "user-2", "editor"),
-    ).rejects.toThrow("Collection not found");
-  });
-
-  it("throws if shared user record not found", async () => {
-    await createTestCollection();
-    await expect(
-      adapter.updateSharePermission("coll-1", "user-2", "editor"),
-    ).rejects.toThrow("Shared user record not found");
+    const pending = await db._pendingChanges.toArray();
+    expect(pending.some((p) => p.tableName === "collectionSharedUsers")).toBe(
+      true,
+    );
   });
 });

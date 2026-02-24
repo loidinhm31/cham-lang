@@ -23,9 +23,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
   const { t } = useTranslation();
   const { showAlert } = useDialog();
   const [username, setUsername] = useState("");
-  const [selectedPermission, setSelectedPermission] = useState<
-    "viewer" | "editor"
-  >("viewer");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string>("");
@@ -67,7 +64,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
   useEffect(() => {
     if (!isOpen) {
       setUsername("");
-      setSelectedPermission("viewer");
       setError(null);
     }
   }, [isOpen]);
@@ -82,8 +78,7 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
       return t("collections.shareDialog.cannotShareWithSelf");
     }
 
-    // Check if already shared with this user
-    // Note: We'll check again after lookup, but this is a quick check if username matches any existing IDs (unlikely but possible)
+    // Quick check against existing IDs (unlikely to match usernames but avoids obvious dupes)
     const isAlreadyShared = collection.sharedWith.some(
       (user) => user.userId === username.trim(),
     );
@@ -132,7 +127,7 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
         return;
       }
 
-      await CollectionService.shareCollection(collection.id!, user.userId, selectedPermission);
+      await CollectionService.shareCollection(collection.id!, user.userId);
 
       // Show success message
       showAlert(t("collections.shareDialog.shareSuccess"), {
@@ -141,7 +136,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
 
       // Reset form
       setUsername("");
-      setSelectedPermission("viewer");
 
       // Trigger callback to refresh collection data
       if (onShareSuccess) {
@@ -154,31 +148,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
       setError(errorMessage);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handlePermissionChange = async (
-    userId: string,
-    newPermission: "viewer" | "editor",
-  ) => {
-    try {
-      await CollectionService.updateSharePermission(
-        collection.id!,
-        userId,
-        newPermission,
-      );
-
-      showAlert(t("collections.shareDialog.permissionChanged"), {
-        variant: "success",
-      });
-
-      if (onShareSuccess) {
-        onShareSuccess();
-      }
-    } catch (err) {
-      console.error("Failed to update permission:", err);
-      showAlert(t("messages.error"), { variant: "error" });
-      throw err;
     }
   };
 
@@ -247,49 +216,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
                 disabled={loading}
               />
 
-              {/* Permission Radio Buttons */}
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="viewer"
-                    checked={selectedPermission === "viewer"}
-                    onChange={() => setSelectedPermission("viewer")}
-                    disabled={loading}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">
-                      {t("collections.shareDialog.viewer")}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {t("collections.shareDialog.viewerDescription")}
-                    </div>
-                  </div>
-                </label>
-
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="permission"
-                    value="editor"
-                    checked={selectedPermission === "editor"}
-                    onChange={() => setSelectedPermission("editor")}
-                    disabled={loading}
-                    className="w-4 h-4 text-orange-600"
-                  />
-                  <div>
-                    <div className="text-sm font-bold text-gray-900">
-                      {t("collections.shareDialog.editor")}
-                    </div>
-                    <div className="text-xs text-gray-600">
-                      {t("collections.shareDialog.editorDescription")}
-                    </div>
-                  </div>
-                </label>
-              </div>
-
               <Button
                 type="button"
                 variant="primary"
@@ -326,7 +252,6 @@ export const ShareCollectionDialog: React.FC<ShareCollectionDialogProps> = ({
                   sharedUser={sharedUser}
                   collectionId={collection.id!}
                   isOwner={isOwner}
-                  onPermissionChange={handlePermissionChange}
                   onRemove={handleRemoveUser}
                 />
               ))}

@@ -50,9 +50,7 @@ export class IndexedDBSyncStorage {
     const records: SyncRecord[] = [];
 
     // Get unsynced collections.
-    // Editors can push collection metadata changes (rename, etc.) to shared collections.
     // ownerId always reflects the actual collection owner (sharedBy for shared, or self).
-    // The server remaps editor writes to the owner's document via effective_user_id.
     const collections = await db.collections.toArray();
     for (const collection of collections) {
       if (collection.syncedAt === undefined || collection.syncedAt === null) {
@@ -178,7 +176,6 @@ export class IndexedDBSyncStorage {
             id: su.id,
             collectionId: su.collectionId,
             userId: su.userId,
-            permission: su.permission,
             createdAt: toUnixTimestamp(su.createdAt),
             syncVersion: su.syncVersion || 1,
           },
@@ -618,7 +615,6 @@ export class IndexedDBSyncStorage {
       id: record.rowId,
       collectionId: String(data.collectionId || ""),
       userId: String(data.userId || ""),
-      permission: String(data.permission || "viewer"),
       createdAt: toISODateString(data.createdAt),
       syncVersion: record.version,
       syncedAt: now,

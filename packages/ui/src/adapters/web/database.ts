@@ -45,7 +45,7 @@ export interface IDBCollection {
   description: string;
   language: string;
   sharedBy?: string;
-  sharedWith: Array<{ userId: string; permission: string }>;
+  sharedWith: Array<{ userId: string }>;
   isPublic: boolean;
   wordCount: number;
   createdAt: string;
@@ -160,7 +160,6 @@ export interface IDBCollectionSharedUser {
   id: string;
   collectionId: string;
   userId: string;
-  permission: string;
   createdAt: string;
   syncVersion?: number;
   syncedAt?: number;
@@ -336,12 +335,8 @@ export class ChamLangDatabase extends Dexie {
               delete c.shared_by;
             }
             if (c.shared_with !== undefined) {
-              // Convert nested fields in sharedWith
               const sw = c.shared_with as Array<Record<string, unknown>>;
-              c.sharedWith = sw.map((s) => ({
-                userId: s.user_id,
-                permission: s.permission,
-              }));
+              c.sharedWith = sw.map((s) => ({ userId: s.user_id }));
               delete c.shared_with;
             }
             if (c.is_public !== undefined) {

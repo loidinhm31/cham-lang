@@ -135,10 +135,17 @@ export class IndexedDBSyncAdapter implements ISyncService {
         conflicts = response.push.conflicts.length;
 
         if (pushed > 0) {
-          const syncedIds = pendingChanges.map((r) => ({
-            tableName: r.tableName,
-            rowId: r.rowId,
-          }));
+          // Exclude records that conflicted or failed — they need retry on next sync
+          type PushFailure = { tableName: string; rowId: string };
+          const pushFailures: PushFailure[] =
+            (response.push as { failures?: PushFailure[] }).failures ?? [];
+          const skipKeys = new Set<string>([
+            ...response.push.conflicts.map((c) => `${c.tableName}:${c.rowId}`),
+            ...pushFailures.map((f) => `${f.tableName}:${f.rowId}`),
+          ]);
+          const syncedIds = pendingChanges
+            .filter((r) => !skipKeys.has(`${r.tableName}:${r.rowId}`))
+            .map((r) => ({ tableName: r.tableName, rowId: r.rowId }));
           await this.storage.markSynced(syncedIds);
         }
 

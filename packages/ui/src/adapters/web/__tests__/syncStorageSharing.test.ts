@@ -2,6 +2,7 @@ import "fake-indexeddb/auto";
 import { describe, it, expect, beforeEach } from "vitest";
 import { db } from "../database";
 import { IndexedDBSyncStorage } from "../sync/IndexedDBSyncStorage";
+import type { PullRecord } from "@qm-hub/sync-client-types";
 
 const storage = new IndexedDBSyncStorage();
 
@@ -14,6 +15,30 @@ beforeEach(async () => {
   await db.collectionSharedUsers.clear();
   await db.practiceProgress.clear();
   await db._pendingChanges.clear();
+});
+
+describe("applyRemoteChanges - collectionSharedUsers", () => {
+  it("stores shared user record without permission field", async () => {
+    const record: PullRecord = {
+      tableName: "collectionSharedUsers",
+      rowId: "su-1",
+      data: {
+        id: "su-1",
+        collectionId: "coll-1",
+        userId: "user-2",
+        createdAt: 1700000000,
+        syncVersion: 1,
+      },
+      version: 1,
+      deleted: false,
+    };
+
+    await storage.applyRemoteChanges([record]);
+
+    const su = await db.collectionSharedUsers.get("su-1");
+    expect(su?.userId).toBe("user-2");
+    expect(su).not.toHaveProperty("permission");
+  });
 });
 
 describe("getPendingChanges - shared collections", () => {

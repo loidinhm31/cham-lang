@@ -43,24 +43,10 @@ export class CollectionService {
   static async shareCollection(
     collectionId: string,
     shareWithUserId: string,
-    permission?: "viewer" | "editor",
   ): Promise<string> {
     return getCollectionService().shareCollection(
       collectionId,
       shareWithUserId,
-      permission,
-    );
-  }
-
-  static async updateSharePermission(
-    collectionId: string,
-    userId: string,
-    permission: "viewer" | "editor",
-  ): Promise<string> {
-    return getCollectionService().updateSharePermission(
-      collectionId,
-      userId,
-      permission,
     );
   }
 
