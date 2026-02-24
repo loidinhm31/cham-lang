@@ -4,8 +4,8 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
-import { db, generateId, getCurrentTimestamp } from "./database";
-import { withSyncTracking, trackDelete } from "./syncHelpers";
+import { db, generateId, getCurrentTimestamp, type IDBCollection } from "./database";
+import { withSyncTracking, trackDelete, copyWithNewId } from "./syncHelpers";
 
 export class IndexedDBCollectionAdapter implements ICollectionService {
   private async hydrateSharedWith(collection: Collection): Promise<Collection> {
@@ -190,6 +190,46 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     );
 
     return "Collection unshared successfully";
+  }
+
+  async copyCollection(id: string): Promise<string> {
+    const source = await db.collections.get(id);
+    if (!source) throw new Error(`Collection ${id} not found`);
+
+    const vocabs = await db.vocabularies
+      .where("collectionId")
+      .equals(id)
+      .toArray();
+
+    const newCollectionId = generateId();
+    const now = getCurrentTimestamp();
+
+    const collectionCopy: IDBCollection = {
+      ...source,
+      id: newCollectionId,
+      name: `Copy of ${source.name}`,
+      sharedBy: undefined,
+      sharedWith: [],
+      isPublic: false,
+      wordCount: vocabs.length,
+      createdAt: now,
+      updatedAt: now,
+      syncVersion: 1,
+      syncedAt: undefined,
+    };
+
+    const vocabCopies = vocabs.map((v) =>
+      copyWithNewId(v, { collectionId: newCollectionId }),
+    );
+
+    await db.transaction("rw", [db.collections, db.vocabularies], async () => {
+      await db.collections.add(collectionCopy);
+      if (vocabCopies.length > 0) {
+        await db.vocabularies.bulkAdd(vocabCopies);
+      }
+    });
+
+    return newCollectionId;
   }
 
   async updateCollectionWordCount(collectionId: string): Promise<void> {

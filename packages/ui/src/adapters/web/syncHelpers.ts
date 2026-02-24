@@ -1,4 +1,4 @@
-import { db, generateId, type PendingChange } from "./database";
+import { db, generateId, getCurrentTimestamp, type PendingChange } from "./database";
 
 /**
  * Add sync tracking fields to a new or updated entity
@@ -11,6 +11,35 @@ export function withSyncTracking<T extends Record<string, unknown>>(
     ...entity,
     syncVersion: (existing?.syncVersion ?? 0) + 1,
     syncedAt: undefined, // Mark as unsynced
+  };
+}
+
+/**
+ * Create a copy of a synced entity with a new ID and reset sync state.
+ * The new ID is always forced last — any id in overrides is ignored.
+ * Pass overrides to customize other entity-specific fields (e.g. collectionId for vocabularies).
+ */
+export function copyWithNewId<
+  T extends {
+    id?: string;
+    syncVersion?: number;
+    syncedAt?: number | null;
+    createdAt: string;
+    updatedAt: string;
+  },
+>(
+  entity: T,
+  overrides?: Partial<T>,
+): T & { id: string; syncVersion: number; syncedAt: undefined } {
+  const now = getCurrentTimestamp();
+  return {
+    ...entity,
+    ...overrides,
+    id: generateId(),
+    createdAt: now,
+    updatedAt: now,
+    syncVersion: 1,
+    syncedAt: undefined,
   };
 }
 

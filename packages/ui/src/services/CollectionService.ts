@@ -60,6 +60,10 @@ export class CollectionService {
     );
   }
 
+  static async copyCollection(id: string): Promise<string> {
+    return getCollectionService().copyCollection(id);
+  }
+
   static async updateCollectionWordCount(collectionId: string): Promise<void> {
     return getCollectionService().updateCollectionWordCount(collectionId);
   }

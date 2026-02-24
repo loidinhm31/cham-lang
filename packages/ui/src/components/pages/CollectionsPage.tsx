@@ -3,6 +3,7 @@ import { useNav } from "@cham-lang/ui/hooks";
 import { useTranslation } from "react-i18next";
 import {
   BookOpen,
+  Copy,
   Edit,
   Globe,
   Lock,
@@ -37,6 +38,17 @@ export const CollectionsPage: React.FC = () => {
       console.error("Failed to load collections:", error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopy = async (id: string) => {
+    try {
+      await CollectionService.copyCollection(id);
+      await loadCollections();
+      showAlert(t("collections.copySuccess"), { variant: "success" });
+    } catch (error) {
+      console.error("Failed to copy collection:", error);
+      showAlert(t("collections.copyFailed"), { variant: "error" });
     }
   };
 
@@ -179,6 +191,15 @@ export const CollectionsPage: React.FC = () => {
                   >
                     <Edit className="w-4 h-4" />
                     <span className="hidden sm:inline">{t("common.edit")}</span>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleCopy(getCollectionId(collection)!)}
+                    className="flex items-center gap-1"
+                  >
+                    <Copy className="w-4 h-4" />
+                    <span className="hidden sm:inline">{t("common.copy")}</span>
                   </Button>
                   <Button
                     variant="danger"

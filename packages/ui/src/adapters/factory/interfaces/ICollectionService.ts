@@ -28,6 +28,9 @@ export interface ICollectionService {
     userIdToRemove: string,
   ): Promise<string>;
 
+  // Copy
+  copyCollection(id: string): Promise<string>;
+
   // Metadata
   updateCollectionWordCount(collectionId: string): Promise<void>;
   getLevelConfiguration(language: string): Promise<string[]>;
