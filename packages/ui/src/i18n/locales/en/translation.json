@@ -283,7 +283,8 @@
     "theCorrectAnswerIs": "The correct answer is:",
     "iWasCorrect": "I was correct",
     "iWasIncorrect": "I was incorrect",
-    "totalAttempts": "total attempts"
+    "totalAttempts": "total attempts",
+    "hint": "Hint"
   },
   "study": {
     "title": "Study Mode",

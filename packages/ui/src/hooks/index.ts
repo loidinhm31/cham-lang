@@ -1,4 +1,5 @@
 export { useServerConnection } from "./useServerConnection";
+export { useAsync } from "./useAsync";
 export { useTestSession } from "./useTestSession";
 export {
   useNav,

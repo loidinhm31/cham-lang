@@ -117,7 +117,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
           </div>
           {hint && !submitted && (
             <div className="mt-6 px-5 py-3 bg-(--color-answer-blur) rounded-2xl border-2 border-(--color-answer-blur-border) shadow-sm inline-block">
-              <p className="text-sm font-bold text-gray-800">💡 Hint: {hint}</p>
+              <p className="text-sm font-bold text-gray-800">💡 {t("practice.hint")}: {hint}</p>
             </div>
           )}
         </div>

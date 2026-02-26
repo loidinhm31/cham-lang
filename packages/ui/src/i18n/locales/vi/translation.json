@@ -283,7 +283,8 @@
     "theCorrectAnswerIs": "Đáp án đúng là:",
     "iWasCorrect": "Tôi đúng",
     "iWasIncorrect": "Tôi sai",
-    "totalAttempts": "tổng số lần thử"
+    "totalAttempts": "tổng số lần thử",
+    "hint": "Gợi ý"
   },
   "study": {
     "title": "Chế Độ Ôn Tập",

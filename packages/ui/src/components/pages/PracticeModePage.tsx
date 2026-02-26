@@ -304,10 +304,10 @@ export const PracticeModePage: React.FC = () => {
                   </div>
                   <div className="flex-1">
                     <p className="text-sm text-(--color-text-secondary)">
-                      {t("practice.dueForReview") || "Due for review"}
+                      {t("practice.dueForReview")}
                     </p>
                     <p className="text-3xl font-black text-teal-600 dark:text-teal-400">
-                      {dueWordsCount} {t("practice.words") || "words"}
+                      {dueWordsCount} {t("practice.words")}
                     </p>
                   </div>
                 </div>
@@ -318,7 +318,7 @@ export const PracticeModePage: React.FC = () => {
             <Card variant="glass">
               <div className="space-y-4">
                 <label className="block text-sm font-semibold text-(--color-text-primary)">
-                  {t("practice.contentMode") || "Content to Display"}
+                  {t("practice.contentMode")}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <button
@@ -334,11 +334,10 @@ export const PracticeModePage: React.FC = () => {
                     <div
                       className={`font-semibold ${contentMode === "definition" ? "text-purple-700 dark:text-purple-400" : "text-(--color-text-primary)"}`}
                     >
-                      {t("practice.useDefinition") || "Definition"}
+                      {t("practice.useDefinition")}
                     </div>
                     <div className="text-xs text-(--color-text-secondary) mt-1">
-                      {t("practice.useDefinitionDescription") ||
-                        "Standard meaning"}
+                      {t("practice.useDefinitionDescription")}
                     </div>
                   </button>
                   <button
@@ -354,10 +353,10 @@ export const PracticeModePage: React.FC = () => {
                     <div
                       className={`font-semibold ${contentMode === "concept" ? "text-purple-700 dark:text-purple-400" : "text-(--color-text-primary)"}`}
                     >
-                      {t("practice.useConcept") || "Concept"}
+                      {t("practice.useConcept")}
                     </div>
                     <div className="text-xs text-(--color-text-secondary) mt-1">
-                      {t("practice.useConceptDescription") || "Core idea"}
+                      {t("practice.useConceptDescription")}
                     </div>
                   </button>
                 </div>
@@ -368,7 +367,7 @@ export const PracticeModePage: React.FC = () => {
             <Card variant="glass">
               <div className="space-y-4">
                 <label className="block text-sm font-semibold text-(--color-text-primary)">
-                  {t("practice.batchSize") || "Words per Session"}
+                  {t("practice.batchSize")}
                 </label>
                 <div className="flex items-center gap-4">
                   <button
@@ -420,8 +419,7 @@ export const PracticeModePage: React.FC = () => {
                   ))}
                 </div>
                 <p className="text-xs text-(--color-text-secondary) text-center">
-                  {t("practice.batchSizeDescription") ||
-                    "Choose how many words you want to practice in each session"}
+                  {t("practice.batchSizeDescription")}
                 </p>
               </div>
             </Card>

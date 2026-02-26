@@ -62,6 +62,23 @@ const resolveTheme = (theme: Theme): ResolvedTheme => {
   return theme;
 };
 
+const applyResolvedTheme = (
+  resolved: ResolvedTheme,
+  embedded: boolean,
+  themeEventName: string,
+) => {
+  if (embedded) {
+    window.dispatchEvent(
+      new CustomEvent(themeEventName, { detail: { theme: resolved } }),
+    );
+  } else {
+    const root = window.document.documentElement;
+    root.setAttribute("data-theme", resolved);
+    root.classList.remove("dark", "chameleon", "simple", "cyber");
+    if (resolved !== "light") root.classList.add(resolved);
+  }
+};
+
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({
   children,
   defaultTheme = "light",
@@ -82,64 +99,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({
     resolveTheme(theme),
   );
 
+  // Single effect: persist preference, resolve theme, apply to DOM, and
+  // (when system) subscribe to OS preference changes.
   useEffect(() => {
     localStorage.setItem(storageKey, theme);
 
     const resolved = resolveTheme(theme);
     setResolvedTheme(resolved);
+    applyResolvedTheme(resolved, embedded, themeEventName);
 
-    if (embedded) {
-      // In embedded mode, dispatch custom event for ShadowWrapper to handle
-      // This avoids modifying document.documentElement which would affect other apps
-      window.dispatchEvent(
-        new CustomEvent(themeEventName, {
-          detail: { theme: resolved },
-        }),
-      );
-    } else {
-      // In standalone mode, apply theme to document element directly
-      const root = window.document.documentElement;
-
-      // Set data-theme attribute
-      root.setAttribute("data-theme", resolved);
-
-      // Remove all previous theme classes
-      root.classList.remove("dark", "chameleon", "simple", "cyber");
-
-      if (resolved !== "light") {
-        root.classList.add(resolved);
-      }
-    }
-  }, [theme, storageKey, embedded]);
-
-  // Listen for OS theme changes when "system" is selected
-  useEffect(() => {
     if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
     const handleChange = (e: MediaQueryListEvent) => {
       const newResolved: ResolvedTheme = e.matches ? "dark" : "light";
       setResolvedTheme(newResolved);
-
-      if (embedded) {
-        window.dispatchEvent(
-          new CustomEvent(themeEventName, {
-            detail: { theme: newResolved },
-          }),
-        );
-      } else {
-        const root = window.document.documentElement;
-        root.setAttribute("data-theme", newResolved);
-        root.classList.remove("dark", "chameleon", "simple", "cyber");
-        if (newResolved !== "light") {
-          root.classList.add(newResolved);
-        }
-      }
+      applyResolvedTheme(newResolved, embedded, themeEventName);
     };
 
     mediaQuery.addEventListener("change", handleChange);
     return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme, embedded, themeEventName]);
+  }, [theme, storageKey, embedded, themeEventName]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
