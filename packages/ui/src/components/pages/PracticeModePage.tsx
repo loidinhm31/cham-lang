@@ -3,7 +3,13 @@ import { useNav } from "@cham-lang/ui/hooks";
 import { useTranslation } from "react-i18next";
 import { Brain, CheckSquare, Clock, Library, PenTool } from "lucide-react";
 import { TopBar } from "@cham-lang/ui/components/molecules";
-import { Button, Card, Select } from "@cham-lang/ui/components/atoms";
+import {
+  Button,
+  Card,
+  ErrorBoundary,
+  LoadingSpinner,
+  Select,
+} from "@cham-lang/ui/components/atoms";
 import { CollectionService } from "@cham-lang/ui/services";
 import { VocabularyService } from "@cham-lang/ui/services";
 import { PracticeService } from "@cham-lang/ui/services";
@@ -181,20 +187,18 @@ export const PracticeModePage: React.FC = () => {
 
   if (loadingCollections) {
     return (
-      <>
+      <ErrorBoundary>
         <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="flex items-center justify-center min-h-screen">
-          <div className="text-xl text-(--color-text-secondary)">
-            {t("common.loading")}
-          </div>
+          <LoadingSpinner size="lg" label={t("common.loading")} />
         </div>
-      </>
+      </ErrorBoundary>
     );
   }
 
   if (collections.length === 0) {
     return (
-      <>
+      <ErrorBoundary>
         <TopBar title={t("practice.title")} showBack backTo="/" />
         <div className="px-4 pt-6">
           <Card variant="glass" className="p-12 text-center">
@@ -210,12 +214,12 @@ export const PracticeModePage: React.FC = () => {
             </Button>
           </Card>
         </div>
-      </>
+      </ErrorBoundary>
     );
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <TopBar title={t("practice.title")} showBack backTo="/" />
 
       <div className="px-4 pt-6 space-y-6">
@@ -536,6 +540,6 @@ export const PracticeModePage: React.FC = () => {
           </>
         )}
       </div>
-    </>
+    </ErrorBoundary>
   );
 };

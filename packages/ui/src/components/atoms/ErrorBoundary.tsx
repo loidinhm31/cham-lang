@@ -45,11 +45,10 @@ function DefaultFallback({ error, resetErrorBoundary }: FallbackProps) {
     <div
       className={cn(
         "flex flex-col items-center justify-center min-h-[200px] p-6",
-        "bg-red-50 dark:bg-red-900/20",
-        "border border-red-200 dark:border-red-800 rounded-lg",
+        "bg-red-500/10 border border-red-500/30 rounded-lg",
       )}
     >
-      <div className="text-red-600 dark:text-red-400 mb-4">
+      <div className="text-red-500 mb-4">
         <svg
           className="w-12 h-12"
           fill="none"
@@ -64,10 +63,10 @@ function DefaultFallback({ error, resetErrorBoundary }: FallbackProps) {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-semibold text-red-800 dark:text-red-300 mb-2">
+      <h3 className="text-lg font-semibold text-(--color-text-primary) mb-2">
         Something went wrong
       </h3>
-      <p className="text-sm text-red-600 dark:text-red-400 mb-4 text-center max-w-md">
+      <p className="text-sm text-red-500 mb-4 text-center max-w-md">
         {error.message}
       </p>
       <Button variant="danger" onClick={resetErrorBoundary}>

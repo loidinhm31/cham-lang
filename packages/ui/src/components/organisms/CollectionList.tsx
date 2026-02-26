@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { CollectionCard } from "@cham-lang/ui/components/molecules";
+import { LoadingSpinner } from "@cham-lang/ui/components/atoms";
 import type { Collection } from "@cham-lang/shared/types";
 import chameleonIcon from "../../assets/chameleon.svg";
 
@@ -20,7 +21,7 @@ export const CollectionList: React.FC<CollectionListProps> = ({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="text-gray-600">{t("app.loading")}</div>
+        <LoadingSpinner size="lg" label={t("app.loading")} />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Check, X } from "lucide-react";
 import { AudioPlayer } from "@cham-lang/ui/components/atoms";
 
@@ -21,6 +21,10 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
 }) => {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [answered, setAnswered] = useState(false);
+  const optionsRef = useRef(options);
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const handleOptionClick = useCallback(
     (option: string) => {
@@ -36,18 +40,14 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
     [answered, correctAnswer, onAnswer],
   );
 
-  // Keyboard shortcut handler
+  // Keyboard shortcut handler — deps limited to [answered] to avoid re-registration
+  // on parent re-renders; optionsRef keeps latest options without expanding deps
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
-      if (answered) {
-        return;
-      }
-
-      const key = event.key;
-      const index = parseInt(key) - 1;
-
-      if (index >= 0 && index < options.length) {
-        handleOptionClick(options[index]);
+      if (answered) return;
+      const index = parseInt(event.key) - 1;
+      if (index >= 0 && index < optionsRef.current.length) {
+        handleOptionClick(optionsRef.current[index]);
       }
     };
 
@@ -55,7 +55,7 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
     return () => {
       window.removeEventListener("keydown", handleKeyPress);
     };
-  }, [answered, options, handleOptionClick]);
+  }, [answered, handleOptionClick]);
 
   const getOptionStyle = (option: string) => {
     if (!answered) {

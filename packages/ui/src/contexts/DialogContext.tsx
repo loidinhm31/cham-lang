@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback } from "react";
+import React, { createContext, useContext, useRef, useState, useCallback } from "react";
 import {
   Dialog,
   DialogType,
@@ -30,10 +30,10 @@ const DialogContext = createContext<DialogContextType | undefined>(undefined);
 export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const resolveRef = useRef<((value: boolean) => void) | null>(null);
   const [dialogState, setDialogState] = useState<{
     isOpen: boolean;
     options: DialogOptions;
-    resolve?: (value: boolean) => void;
   }>({
     isOpen: false,
     options: {
@@ -47,6 +47,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
       message: string,
       options?: Partial<Omit<DialogOptions, "type" | "message">>,
     ) => {
+      resolveRef.current = null;
       setDialogState({
         isOpen: true,
         options: {
@@ -67,6 +68,7 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
       options?: Partial<Omit<DialogOptions, "type" | "message">>,
     ): Promise<boolean> => {
       return new Promise((resolve) => {
+        resolveRef.current = resolve;
         setDialogState({
           isOpen: true,
           options: {
@@ -77,7 +79,6 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
             ...options,
             message,
           },
-          resolve,
         });
       });
     },
@@ -85,18 +86,16 @@ export const DialogProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const handleConfirm = useCallback(() => {
-    if (dialogState.resolve) {
-      dialogState.resolve(true);
-    }
+    resolveRef.current?.(true);
+    resolveRef.current = null;
     setDialogState((prev) => ({ ...prev, isOpen: false }));
-  }, [dialogState.resolve]);
+  }, []);
 
   const handleCancel = useCallback(() => {
-    if (dialogState.resolve) {
-      dialogState.resolve(false);
-    }
+    resolveRef.current?.(false);
+    resolveRef.current = null;
     setDialogState((prev) => ({ ...prev, isOpen: false }));
-  }, [dialogState.resolve]);
+  }, []);
 
   return (
     <DialogContext.Provider value={{ showAlert, showConfirm }}>

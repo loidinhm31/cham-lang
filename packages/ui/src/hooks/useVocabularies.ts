@@ -59,19 +59,34 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
   const updateVocabulary = async (
     request: UpdateVocabularyRequest,
   ): Promise<void> => {
-    await VocabularyService.updateVocabulary(request);
-    await loadVocabularies();
+    setVocabularies((prev) =>
+      prev.map((v) => (v.id === request.id ? { ...v, ...request } : v)),
+    );
+    try {
+      await VocabularyService.updateVocabulary(request);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update vocabulary");
+      await loadVocabularies();
+      throw err;
+    }
   };
 
   const deleteVocabulary = async (vocabularyId: string): Promise<void> => {
-    await VocabularyService.deleteVocabulary(vocabularyId);
-    await loadVocabularies();
+    const snapshot = vocabularies;
+    setVocabularies((prev) => prev.filter((v) => v.id !== vocabularyId));
     if (selectedVocabularyId === vocabularyId) {
       setSelectedVocabularyId(
-        vocabularies.length > 1
-          ? vocabularies.find((v) => v.id !== vocabularyId)?.id || null
+        snapshot.length > 1
+          ? snapshot.find((v) => v.id !== vocabularyId)?.id || null
           : null,
       );
+    }
+    try {
+      await VocabularyService.deleteVocabulary(vocabularyId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete vocabulary");
+      await loadVocabularies();
+      throw err;
     }
   };
 

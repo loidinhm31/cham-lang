@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, X } from "lucide-react";
 import { CollectionService } from "@cham-lang/ui/services";
@@ -149,122 +149,136 @@ export const VocabularyForm: React.FC<VocabularyFormProps> = ({
     return validExtensions.some((ext) => lowerUrl.includes(ext));
   };
 
-  const handleCollectionChange = (collectionId: string) => {
-    const selectedCollection = collections.find(
-      (c) => getCollectionId(c) === collectionId,
-    );
-    if (selectedCollection) {
-      setFormData({
+  const handleCollectionChange = useCallback(
+    (collectionId: string) => {
+      const selectedCollection = collections.find(
+        (c) => getCollectionId(c) === collectionId,
+      );
+      if (selectedCollection) {
+        setFormData((prev) => ({
+          ...prev,
+          collectionId: collectionId,
+          language: selectedCollection.language,
+        }));
+      }
+    },
+    [collections],
+  );
+
+  const handleSubmit = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      const cleanedData = {
         ...formData,
-        collectionId: collectionId,
-        language: selectedCollection.language,
-      });
-    }
-  };
+        audioUrl: formData.audioUrl?.trim() || undefined,
+        concept: formData.concept?.trim() || "",
+        definitions: formData.definitions.filter(
+          (d) => d.meaning.trim() !== "",
+        ),
+        exampleSentences: formData.exampleSentences.filter(
+          (s) => s.trim() !== "",
+        ),
+        topics: formData.topics.filter((t) => t.trim() !== ""),
+        tags: formData.tags.filter((t) => t.trim() !== ""),
+      };
+      onSubmit(cleanedData);
+    },
+    [formData, onSubmit],
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Filter out empty values
-    const cleanedData = {
-      ...formData,
-      audioUrl: formData.audioUrl?.trim() || undefined,
-      concept: formData.concept?.trim() || "",
-      definitions: formData.definitions.filter((d) => d.meaning.trim() !== ""),
-      exampleSentences: formData.exampleSentences.filter(
-        (s) => s.trim() !== "",
-      ),
-      topics: formData.topics.filter((t) => t.trim() !== ""),
-      tags: formData.tags.filter((t) => t.trim() !== ""),
-    };
-    onSubmit(cleanedData);
-  };
-
-  const addDefinition = () => {
-    setFormData({
-      ...formData,
+  const addDefinition = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
       definitions: [
-        ...formData.definitions,
+        ...prev.definitions,
         { meaning: "", translation: "", example: "" },
       ],
+    }));
+  }, []);
+
+  const removeDefinition = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      definitions: prev.definitions.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const updateDefinition = useCallback(
+    (index: number, field: keyof Definition, value: string) => {
+      setFormData((prev) => {
+        const newDefinitions = [...prev.definitions];
+        newDefinitions[index] = { ...newDefinitions[index], [field]: value };
+        return { ...prev, definitions: newDefinitions };
+      });
+    },
+    [],
+  );
+
+  const addExampleSentence = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      exampleSentences: [...prev.exampleSentences, ""],
+    }));
+  }, []);
+
+  const removeExampleSentence = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      exampleSentences: prev.exampleSentences.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const updateExampleSentence = useCallback((index: number, value: string) => {
+    setFormData((prev) => {
+      const newSentences = [...prev.exampleSentences];
+      newSentences[index] = value;
+      return { ...prev, exampleSentences: newSentences };
     });
-  };
+  }, []);
 
-  const removeDefinition = (index: number) => {
-    setFormData({
-      ...formData,
-      definitions: formData.definitions.filter((_, i) => i !== index),
+  const addTopic = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      topics: [...prev.topics, ""],
+    }));
+  }, []);
+
+  const removeTopic = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      topics: prev.topics.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const updateTopic = useCallback((index: number, value: string) => {
+    setFormData((prev) => {
+      const newTopics = [...prev.topics];
+      newTopics[index] = value;
+      return { ...prev, topics: newTopics };
     });
-  };
+  }, []);
 
-  const updateDefinition = (
-    index: number,
-    field: keyof Definition,
-    value: string,
-  ) => {
-    const newDefinitions = [...formData.definitions];
-    newDefinitions[index] = { ...newDefinitions[index], [field]: value };
-    setFormData({ ...formData, definitions: newDefinitions });
-  };
+  const addTag = useCallback(() => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: [...prev.tags, ""],
+    }));
+  }, []);
 
-  const addExampleSentence = () => {
-    setFormData({
-      ...formData,
-      exampleSentences: [...formData.exampleSentences, ""],
+  const removeTag = useCallback((index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((_, i) => i !== index),
+    }));
+  }, []);
+
+  const updateTag = useCallback((index: number, value: string) => {
+    setFormData((prev) => {
+      const newTags = [...prev.tags];
+      newTags[index] = value;
+      return { ...prev, tags: newTags };
     });
-  };
-
-  const removeExampleSentence = (index: number) => {
-    setFormData({
-      ...formData,
-      exampleSentences: formData.exampleSentences.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateExampleSentence = (index: number, value: string) => {
-    const newSentences = [...formData.exampleSentences];
-    newSentences[index] = value;
-    setFormData({ ...formData, exampleSentences: newSentences });
-  };
-
-  const addTopic = () => {
-    setFormData({
-      ...formData,
-      topics: [...formData.topics, ""],
-    });
-  };
-
-  const removeTopic = (index: number) => {
-    setFormData({
-      ...formData,
-      topics: formData.topics.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateTopic = (index: number, value: string) => {
-    const newTopics = [...formData.topics];
-    newTopics[index] = value;
-    setFormData({ ...formData, topics: newTopics });
-  };
-
-  const addTag = () => {
-    setFormData({
-      ...formData,
-      tags: [...formData.tags, ""],
-    });
-  };
-
-  const removeTag = (index: number) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((_, i) => i !== index),
-    });
-  };
-
-  const updateTag = (index: number, value: string) => {
-    const newTags = [...formData.tags];
-    newTags[index] = value;
-    setFormData({ ...formData, tags: newTags });
-  };
+  }, []);
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

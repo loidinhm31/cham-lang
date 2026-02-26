@@ -54,19 +54,34 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
   const updateCollection = async (
     request: UpdateCollectionRequest,
   ): Promise<void> => {
-    await CollectionService.updateCollection(request);
-    await loadCollections();
+    setCollections((prev) =>
+      prev.map((c) => (c.id === request.id ? { ...c, ...request } : c)),
+    );
+    try {
+      await CollectionService.updateCollection(request);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update collection");
+      await loadCollections();
+      throw err;
+    }
   };
 
   const deleteCollection = async (collectionId: string): Promise<void> => {
-    await CollectionService.deleteCollection(collectionId);
-    await loadCollections();
+    const snapshot = collections;
+    setCollections((prev) => prev.filter((c) => c.id !== collectionId));
     if (selectedCollectionId === collectionId) {
       setSelectedCollectionId(
-        collections.length > 1
-          ? collections.find((c) => c.id !== collectionId)?.id || null
+        snapshot.length > 1
+          ? snapshot.find((c) => c.id !== collectionId)?.id || null
           : null,
       );
+    }
+    try {
+      await CollectionService.deleteCollection(collectionId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete collection");
+      await loadCollections();
+      throw err;
     }
   };
 

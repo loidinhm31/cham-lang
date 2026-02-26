@@ -8,6 +8,7 @@ import {
   SearchFiltersCard,
 } from "@cham-lang/ui/components/molecules";
 import { CollectionList } from "@cham-lang/ui/components/organisms";
+import { ErrorBoundary } from "@cham-lang/ui/components/atoms";
 import { VocabularyService } from "@cham-lang/ui/services";
 import { CollectionService } from "@cham-lang/ui/services";
 import type { Collection } from "@cham-lang/shared/types";
@@ -178,7 +179,7 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <>
+    <ErrorBoundary>
       <TopBar title={t("app.name")} showBack={false} />
 
       <div className="px-4 md:px-6 lg:px-8 xl:px-10 2xl:px-12 pt-8 pb-24">
@@ -219,6 +220,6 @@ export const HomePage: React.FC = () => {
           loading={loading}
         />
       </div>
-    </>
+    </ErrorBoundary>
   );
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { isTauri } from "@cham-lang/ui/utils";
 import { WebGDriveAdapter } from "@cham-lang/ui/adapters/web";
 
@@ -12,13 +12,19 @@ const SyncNotificationContext = createContext<
   SyncNotificationContextType | undefined
 >(undefined);
 
-// Web adapter instance for GDrive operations
-const webGDriveAdapter = new WebGDriveAdapter();
-
 export const SyncNotificationProvider: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
   const [hasSyncNotification, setHasSyncNotification] = useState(false);
+  const webGDriveAdapterRef = useRef<WebGDriveAdapter | null>(null);
+
+  // Only call from within !isTauri() branches — Tauri paths use invoke() directly
+  const getWebGDriveAdapter = (): WebGDriveAdapter => {
+    if (!webGDriveAdapterRef.current) {
+      webGDriveAdapterRef.current = new WebGDriveAdapter();
+    }
+    return webGDriveAdapterRef.current;
+  };
 
   const checkSyncStatus = async () => {
     try {
@@ -42,7 +48,7 @@ export const SyncNotificationProvider: React.FC<{
         } else {
           // Use WebGDriveAdapter for web platform
           isDifferent =
-            await webGDriveAdapter.checkVersionDifference(accessToken);
+            await getWebGDriveAdapter().checkVersionDifference(accessToken);
         }
 
         setHasSyncNotification(isDifferent);
@@ -68,7 +74,7 @@ export const SyncNotificationProvider: React.FC<{
               newAccessToken = response.accessToken;
             } else {
               // Use WebGDriveAdapter for token refresh
-              const response = await webGDriveAdapter.refreshToken();
+              const response = await getWebGDriveAdapter().refreshToken();
               newAccessToken = response.accessToken;
             }
 
@@ -84,7 +90,9 @@ export const SyncNotificationProvider: React.FC<{
               });
             } else {
               isDifferent =
-                await webGDriveAdapter.checkVersionDifference(newAccessToken);
+                await getWebGDriveAdapter().checkVersionDifference(
+                  newAccessToken,
+                );
             }
 
             setHasSyncNotification(isDifferent);
