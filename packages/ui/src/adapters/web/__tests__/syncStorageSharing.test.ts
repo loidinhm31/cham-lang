@@ -31,6 +31,7 @@ describe("applyRemoteChanges - collectionSharedUsers", () => {
       },
       version: 1,
       deleted: false,
+      syncedAt: "",
     };
 
     await storage.applyRemoteChanges([record]);

@@ -99,6 +99,30 @@ export class IndexedDBSyncAdapter implements ISyncService {
   async syncWithProgress(
     onProgress: (progress: SyncProgress) => void,
   ): Promise<SyncResult> {
+    // Prevent concurrent sync across tabs — returns early if another tab holds the lock
+    if (typeof navigator !== "undefined" && navigator.locks) {
+      let result: SyncResult = {
+        pushed: 0, pulled: 0, conflicts: 0,
+        success: false,
+        error: "Sync already running in another tab",
+        syncedAt: Math.floor(Date.now() / 1000),
+      };
+      await navigator.locks.request(
+        "cham-lang-sync",
+        { ifAvailable: true },
+        async (lock) => {
+          if (!lock) return; // result stays as the "already running" fallback
+          result = await this._doSync(onProgress);
+        },
+      );
+      return result;
+    }
+    return this._doSync(onProgress);
+  }
+
+  private async _doSync(
+    onProgress: (progress: SyncProgress) => void,
+  ): Promise<SyncResult> {
     // Get fresh client with current config
     const client = this.ensureClient();
 
@@ -217,6 +241,8 @@ export class IndexedDBSyncAdapter implements ISyncService {
 
       const syncedAt = Math.floor(Date.now() / 1000);
       await this.storage.saveLastSyncAt(syncedAt);
+      // Purge soft-deleted records confirmed by server (TTL 60 days)
+      await this.storage.purgeConfirmedDeletes();
 
       return {
         pushed,

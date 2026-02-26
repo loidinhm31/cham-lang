@@ -5,7 +5,7 @@ import type {
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
 import { db, generateId, getCurrentTimestamp, type IDBCollection } from "./database";
-import { withSyncTracking, trackDelete, copyWithNewId } from "./syncHelpers";
+import { withSyncTracking, copyWithNewId } from "./syncHelpers";
 
 export class IndexedDBCollectionAdapter implements ICollectionService {
   private async hydrateSharedWith(collection: Collection): Promise<Collection> {
@@ -13,6 +13,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     const sharedUsers = await db.collectionSharedUsers
       .where("collectionId")
       .equals(collection.id)
+      .filter((su) => !su.deleted)
       .toArray();
     collection.sharedWith = sharedUsers.map((su) => ({
       userId: su.userId,
@@ -41,12 +42,14 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
   async getCollection(id: string): Promise<Collection> {
     const collection = await db.collections.get(id);
-    if (!collection) throw new Error(`Collection not found: ${id}`);
+    if (!collection || collection.deleted === 1) throw new Error(`Collection not found: ${id}`);
     return this.hydrateSharedWith(collection as Collection);
   }
 
   async getUserCollections(): Promise<Collection[]> {
-    const collections = await db.collections.toArray();
+    const collections = await db.collections
+      .filter((c) => !c.deleted)
+      .toArray();
     collections.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return Promise.all(
       collections.map((c) => this.hydrateSharedWith(c as Collection)),
@@ -54,21 +57,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async getPublicCollections(language?: string): Promise<Collection[]> {
-    let collections = await db.collections
-      .where("isPublic")
-      .equals(1) // Dexie stores booleans as 0/1
+    const all = await db.collections
+      .filter((c) => !c.deleted && c.isPublic)
       .toArray();
 
-    // Fallback: filter manually since boolean indexing can be tricky
-    if (collections.length === 0) {
-      const all = await db.collections.toArray();
-      collections = all.filter((c) => c.isPublic);
-    }
-
-    if (language) {
-      collections = collections.filter((c) => c.language === language);
-    }
-    return collections as Collection[];
+    return (language ? all.filter((c) => c.language === language) : all) as Collection[];
   }
 
   async updateCollection(request: UpdateCollectionRequest): Promise<string> {
@@ -92,25 +85,38 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   async deleteCollection(id: string): Promise<string> {
     await db.transaction(
       "rw",
-      [db.collections, db.vocabularies, db._pendingChanges],
+      [db.collections, db.vocabularies],
       async () => {
-        // Track vocabulary deletions for sync
+        const now = Date.now();
+        const nowIso = new Date(now).toISOString();
+
+        // Soft-delete all vocabularies in this collection
         const vocabs = await db.vocabularies
           .where("collectionId")
           .equals(id)
+          .filter((v) => !v.deleted)
           .toArray();
         for (const vocab of vocabs) {
-          await trackDelete("vocabularies", vocab.id, vocab.syncVersion ?? 1);
+          await db.vocabularies.update(vocab.id, {
+            deleted: 1,
+            deletedAt: now,
+            syncVersion: (vocab.syncVersion ?? 0) + 1,
+            syncedAt: undefined,
+            updatedAt: nowIso,
+          });
         }
-        // Track collection deletion for sync
+
+        // Soft-delete the collection
         const collection = await db.collections.get(id);
-        if (collection) {
-          await trackDelete("collections", id, collection.syncVersion ?? 1);
+        if (collection && !collection.deleted) {
+          await db.collections.update(id, {
+            deleted: 1,
+            deletedAt: now,
+            syncVersion: (collection.syncVersion ?? 0) + 1,
+            syncedAt: undefined,
+            updatedAt: nowIso,
+          });
         }
-        // Delete all vocabularies in this collection
-        await db.vocabularies.where("collectionId").equals(id).delete();
-        // Delete the collection
-        await db.collections.delete(id);
       },
     );
     return "Collection deleted successfully";
@@ -123,11 +129,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     const collection = await db.collections.get(collectionId);
     if (!collection) throw new Error(`Collection not found: ${collectionId}`);
 
-    // Check if already shared with this user
+    // Check if already shared with this user (excluding soft-deleted records — re-share is allowed)
     const existing = await db.collectionSharedUsers
       .where("collectionId")
       .equals(collectionId)
-      .filter((su) => su.userId === shareWithUserId)
+      .filter((su) => su.userId === shareWithUserId && !su.deleted)
       .first();
     if (existing) {
       return "Collection already shared with this user";
@@ -171,12 +177,13 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       .first();
 
     if (sharedUserRecord) {
-      await trackDelete(
-        "collectionSharedUsers",
-        sharedUserRecord.id,
-        sharedUserRecord.syncVersion ?? 1,
-      );
-      await db.collectionSharedUsers.delete(sharedUserRecord.id);
+      const delNow = Date.now();
+      await db.collectionSharedUsers.update(sharedUserRecord.id, {
+        deleted: 1,
+        deletedAt: delNow,
+        syncVersion: (sharedUserRecord.syncVersion ?? 0) + 1,
+        syncedAt: undefined,
+      });
     }
 
     // Update the collection's sharedWith array for immediate UI feedback
@@ -199,6 +206,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     const vocabs = await db.vocabularies
       .where("collectionId")
       .equals(id)
+      .filter((v) => !v.deleted)
       .toArray();
 
     const newCollectionId = generateId();
@@ -236,6 +244,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     const count = await db.vocabularies
       .where("collectionId")
       .equals(collectionId)
+      .filter((v) => !v.deleted)
       .count();
     await db.collections.update(collectionId, { wordCount: count });
   }

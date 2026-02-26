@@ -65,27 +65,30 @@ describe("shareCollection", () => {
 });
 
 describe("unshareCollection", () => {
-  it("removes the shared user record and updates sharedWith", async () => {
+  it("soft-deletes the shared user record and updates sharedWith", async () => {
     await createTestCollection();
     await adapter.shareCollection("coll-1", "user-2");
 
     await adapter.unshareCollection("coll-1", "user-2");
 
+    // Record still exists but is soft-deleted
     const su = await db.collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
-    expect(su).toBeUndefined();
+    expect(su).toBeDefined();
+    expect(su?.deleted).toBe(1);
+    expect(su?.syncedAt).toBeUndefined();
 
     const coll = await db.collections.get("coll-1");
     expect(coll?.sharedWith).toHaveLength(0);
   });
 
-  it("tracks the deletion as a pending change", async () => {
+  it("marks soft-deleted sharing record as unsynced for push", async () => {
     await createTestCollection();
     await adapter.shareCollection("coll-1", "user-2");
 
-    // Simulate synced state for the sharing record
+    // Simulate previously synced sharing record
     const su = await db.collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
@@ -94,9 +97,8 @@ describe("unshareCollection", () => {
 
     await adapter.unshareCollection("coll-1", "user-2");
 
-    const pending = await db._pendingChanges.toArray();
-    expect(pending.some((p) => p.tableName === "collectionSharedUsers")).toBe(
-      true,
-    );
+    const afterDelete = await db.collectionSharedUsers.get(su!.id);
+    expect(afterDelete?.deleted).toBe(1);
+    expect(afterDelete?.syncedAt).toBeUndefined(); // queued for push
   });
 });

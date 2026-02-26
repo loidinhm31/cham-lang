@@ -37,6 +37,8 @@ export interface IDBVocabulary {
   updatedAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBCollection {
@@ -52,6 +54,8 @@ export interface IDBCollection {
   updatedAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBPracticeSession {
@@ -112,6 +116,8 @@ export interface IDBPracticeProgress {
   updatedAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBLearningSettings {
@@ -138,6 +144,8 @@ export interface IDBTopic {
   createdAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBTag {
@@ -146,6 +154,8 @@ export interface IDBTag {
   createdAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBUserLearningLanguage {
@@ -154,6 +164,8 @@ export interface IDBUserLearningLanguage {
   createdAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 export interface IDBCollectionSharedUser {
@@ -163,6 +175,8 @@ export interface IDBCollectionSharedUser {
   createdAt: string;
   syncVersion?: number;
   syncedAt?: number;
+  deleted?: 0 | 1;
+  deletedAt?: number;
 }
 
 // =============================================================================
@@ -212,16 +226,16 @@ export class ChamLangDatabase extends Dexie {
     super("ChamLangDB");
 
     this.version(1).stores({
-      vocabularies:    "id, word, language, collectionId, level, createdAt, updatedAt, syncedAt",
-      collections:     "id, name, language, sharedBy, isPublic, createdAt, syncedAt",
+      vocabularies:    "id, word, language, collectionId, level, createdAt, updatedAt, syncedAt, deleted",
+      collections:     "id, name, language, sharedBy, isPublic, createdAt, syncedAt, deleted",
       practiceSessions:"id, collectionId, language, mode, startedAt, syncedAt",
       wordProgress:    "id, language, vocabularyId, nextReviewDate, leitnerBox, [language+vocabularyId], syncedAt",
-      practiceProgress:"id, language, syncedAt",
+      practiceProgress:"id, language, syncedAt, deleted",
       learningSettings:"id, syncedAt",
-      topics:          "id, name, syncedAt",
-      tags:            "id, name, syncedAt",
-      userLearningLanguages: "id, language, syncedAt",
-      collectionSharedUsers: "id, collectionId, userId, syncedAt",
+      topics:          "id, name, syncedAt, deleted",
+      tags:            "id, name, syncedAt, deleted",
+      userLearningLanguages: "id, language, syncedAt, deleted",
+      collectionSharedUsers: "id, collectionId, userId, syncedAt, deleted",
       _syncMeta:       "key",
       _pendingChanges: "id, tableName, recordId",
     });
