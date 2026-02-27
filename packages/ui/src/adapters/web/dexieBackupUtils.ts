@@ -4,7 +4,7 @@
  */
 
 import {
-  db,
+  getDb,
   type IDBVocabulary,
   type IDBCollection,
   type IDBPracticeSession,
@@ -63,18 +63,18 @@ export async function exportDatabaseToJSON(): Promise<ChamLangBackup> {
     syncMeta,
     pendingChanges,
   ] = await Promise.all([
-    db.vocabularies.toArray(),
-    db.collections.toArray(),
-    db.practiceSessions.toArray(),
-    db.wordProgress.toArray(),
-    db.practiceProgress.toArray(),
-    db.learningSettings.toArray(),
-    db.topics.toArray(),
-    db.tags.toArray(),
-    db.userLearningLanguages.toArray(),
-    db.collectionSharedUsers.toArray(),
-    db._syncMeta.toArray(),
-    db._pendingChanges.toArray(),
+    getDb().vocabularies.toArray(),
+    getDb().collections.toArray(),
+    getDb().practiceSessions.toArray(),
+    getDb().wordProgress.toArray(),
+    getDb().practiceProgress.toArray(),
+    getDb().learningSettings.toArray(),
+    getDb().topics.toArray(),
+    getDb().tags.toArray(),
+    getDb().userLearningLanguages.toArray(),
+    getDb().collectionSharedUsers.toArray(),
+    getDb()._syncMeta.toArray(),
+    getDb()._pendingChanges.toArray(),
   ]);
 
   return {
@@ -110,37 +110,37 @@ export async function importDatabaseFromJSON(
   }
 
   // Clear all tables and import new data in a transaction
-  await db.transaction(
+  await getDb().transaction(
     "rw",
     [
-      db.vocabularies,
-      db.collections,
-      db.practiceSessions,
-      db.wordProgress,
-      db.practiceProgress,
-      db.learningSettings,
-      db.topics,
-      db.tags,
-      db.userLearningLanguages,
-      db.collectionSharedUsers,
-      db._syncMeta,
-      db._pendingChanges,
+      getDb().vocabularies,
+      getDb().collections,
+      getDb().practiceSessions,
+      getDb().wordProgress,
+      getDb().practiceProgress,
+      getDb().learningSettings,
+      getDb().topics,
+      getDb().tags,
+      getDb().userLearningLanguages,
+      getDb().collectionSharedUsers,
+      getDb()._syncMeta,
+      getDb()._pendingChanges,
     ],
     async () => {
       // Clear all tables
       await Promise.all([
-        db.vocabularies.clear(),
-        db.collections.clear(),
-        db.practiceSessions.clear(),
-        db.wordProgress.clear(),
-        db.practiceProgress.clear(),
-        db.learningSettings.clear(),
-        db.topics.clear(),
-        db.tags.clear(),
-        db.userLearningLanguages.clear(),
-        db.collectionSharedUsers.clear(),
-        db._syncMeta.clear(),
-        db._pendingChanges.clear(),
+        getDb().vocabularies.clear(),
+        getDb().collections.clear(),
+        getDb().practiceSessions.clear(),
+        getDb().wordProgress.clear(),
+        getDb().practiceProgress.clear(),
+        getDb().learningSettings.clear(),
+        getDb().topics.clear(),
+        getDb().tags.clear(),
+        getDb().userLearningLanguages.clear(),
+        getDb().collectionSharedUsers.clear(),
+        getDb()._syncMeta.clear(),
+        getDb()._pendingChanges.clear(),
       ]);
 
       // Bulk insert all data
@@ -148,26 +148,26 @@ export async function importDatabaseFromJSON(
 
       await Promise.all([
         tables.vocabularies.length > 0 &&
-          db.vocabularies.bulkAdd(tables.vocabularies),
+          getDb().vocabularies.bulkAdd(tables.vocabularies),
         tables.collections.length > 0 &&
-          db.collections.bulkAdd(tables.collections),
+          getDb().collections.bulkAdd(tables.collections),
         tables.practiceSessions.length > 0 &&
-          db.practiceSessions.bulkAdd(tables.practiceSessions),
+          getDb().practiceSessions.bulkAdd(tables.practiceSessions),
         tables.wordProgress.length > 0 &&
-          db.wordProgress.bulkAdd(tables.wordProgress),
+          getDb().wordProgress.bulkAdd(tables.wordProgress),
         tables.practiceProgress.length > 0 &&
-          db.practiceProgress.bulkAdd(tables.practiceProgress),
+          getDb().practiceProgress.bulkAdd(tables.practiceProgress),
         tables.learningSettings.length > 0 &&
-          db.learningSettings.bulkAdd(tables.learningSettings),
-        tables.topics.length > 0 && db.topics.bulkAdd(tables.topics),
-        tables.tags.length > 0 && db.tags.bulkAdd(tables.tags),
+          getDb().learningSettings.bulkAdd(tables.learningSettings),
+        tables.topics.length > 0 && getDb().topics.bulkAdd(tables.topics),
+        tables.tags.length > 0 && getDb().tags.bulkAdd(tables.tags),
         tables.userLearningLanguages.length > 0 &&
-          db.userLearningLanguages.bulkAdd(tables.userLearningLanguages),
+          getDb().userLearningLanguages.bulkAdd(tables.userLearningLanguages),
         tables.collectionSharedUsers.length > 0 &&
-          db.collectionSharedUsers.bulkAdd(tables.collectionSharedUsers),
-        tables._syncMeta.length > 0 && db._syncMeta.bulkAdd(tables._syncMeta),
+          getDb().collectionSharedUsers.bulkAdd(tables.collectionSharedUsers),
+        tables._syncMeta.length > 0 && getDb()._syncMeta.bulkAdd(tables._syncMeta),
         tables._pendingChanges.length > 0 &&
-          db._pendingChanges.bulkAdd(tables._pendingChanges),
+          getDb()._pendingChanges.bulkAdd(tables._pendingChanges),
       ]);
     },
   );
@@ -177,36 +177,36 @@ export async function importDatabaseFromJSON(
  * Clear all tables in the database
  */
 export async function clearAllTables(): Promise<void> {
-  await db.transaction(
+  await getDb().transaction(
     "rw",
     [
-      db.vocabularies,
-      db.collections,
-      db.practiceSessions,
-      db.wordProgress,
-      db.practiceProgress,
-      db.learningSettings,
-      db.topics,
-      db.tags,
-      db.userLearningLanguages,
-      db.collectionSharedUsers,
-      db._syncMeta,
-      db._pendingChanges,
+      getDb().vocabularies,
+      getDb().collections,
+      getDb().practiceSessions,
+      getDb().wordProgress,
+      getDb().practiceProgress,
+      getDb().learningSettings,
+      getDb().topics,
+      getDb().tags,
+      getDb().userLearningLanguages,
+      getDb().collectionSharedUsers,
+      getDb()._syncMeta,
+      getDb()._pendingChanges,
     ],
     async () => {
       await Promise.all([
-        db.vocabularies.clear(),
-        db.collections.clear(),
-        db.practiceSessions.clear(),
-        db.wordProgress.clear(),
-        db.practiceProgress.clear(),
-        db.learningSettings.clear(),
-        db.topics.clear(),
-        db.tags.clear(),
-        db.userLearningLanguages.clear(),
-        db.collectionSharedUsers.clear(),
-        db._syncMeta.clear(),
-        db._pendingChanges.clear(),
+        getDb().vocabularies.clear(),
+        getDb().collections.clear(),
+        getDb().practiceSessions.clear(),
+        getDb().wordProgress.clear(),
+        getDb().practiceProgress.clear(),
+        getDb().learningSettings.clear(),
+        getDb().topics.clear(),
+        getDb().tags.clear(),
+        getDb().userLearningLanguages.clear(),
+        getDb().collectionSharedUsers.clear(),
+        getDb()._syncMeta.clear(),
+        getDb()._pendingChanges.clear(),
       ]);
     },
   );
@@ -282,16 +282,16 @@ export async function getDatabaseStats(): Promise<{
     userLearningLanguageCount,
     collectionSharedUserCount,
   ] = await Promise.all([
-    db.vocabularies.count(),
-    db.collections.count(),
-    db.practiceSessions.count(),
-    db.wordProgress.count(),
-    db.practiceProgress.count(),
-    db.learningSettings.count(),
-    db.topics.count(),
-    db.tags.count(),
-    db.userLearningLanguages.count(),
-    db.collectionSharedUsers.count(),
+    getDb().vocabularies.count(),
+    getDb().collections.count(),
+    getDb().practiceSessions.count(),
+    getDb().wordProgress.count(),
+    getDb().practiceProgress.count(),
+    getDb().learningSettings.count(),
+    getDb().topics.count(),
+    getDb().tags.count(),
+    getDb().userLearningLanguages.count(),
+    getDb().collectionSharedUsers.count(),
   ]);
 
   const tableStats = {

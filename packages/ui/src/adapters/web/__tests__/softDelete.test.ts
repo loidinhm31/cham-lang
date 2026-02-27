@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto";
-import { describe, it, expect, beforeEach } from "vitest";
-import { db } from "../database";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { getDb, initDb } from "../database";
 import { IndexedDBVocabularyAdapter } from "../IndexedDBVocabularyAdapter";
 import { IndexedDBCollectionAdapter } from "../IndexedDBCollectionAdapter";
 import { IndexedDBSyncStorage } from "../sync/IndexedDBSyncStorage";
@@ -13,7 +13,7 @@ const storage = new IndexedDBSyncStorage();
 const now = new Date().toISOString();
 
 async function seedCollection(id = "coll-1", wordCount = 0) {
-  await db.collections.add({
+  await getDb().collections.add({
     id,
     name: "Test",
     description: "",
@@ -29,7 +29,7 @@ async function seedCollection(id = "coll-1", wordCount = 0) {
 }
 
 async function seedVocab(id = "vocab-1", collectionId = "coll-1") {
-  await db.vocabularies.add({
+  await getDb().vocabularies.add({
     id,
     word: "test",
     wordType: "noun",
@@ -49,16 +49,18 @@ async function seedVocab(id = "vocab-1", collectionId = "coll-1") {
   });
 }
 
+beforeAll(() => initDb());
+
 beforeEach(async () => {
-  await db.collections.clear();
-  await db.vocabularies.clear();
-  await db.topics.clear();
-  await db.tags.clear();
-  await db.userLearningLanguages.clear();
-  await db.collectionSharedUsers.clear();
-  await db.practiceProgress.clear();
-  await db._syncMeta.clear();
-  await db._pendingChanges.clear();
+  await getDb().collections.clear();
+  await getDb().vocabularies.clear();
+  await getDb().topics.clear();
+  await getDb().tags.clear();
+  await getDb().userLearningLanguages.clear();
+  await getDb().collectionSharedUsers.clear();
+  await getDb().practiceProgress.clear();
+  await getDb()._syncMeta.clear();
+  await getDb()._pendingChanges.clear();
 });
 
 // =============================================================================
@@ -72,7 +74,7 @@ describe("IndexedDBVocabularyAdapter - soft delete", () => {
 
     await vocabAdapter.deleteVocabulary("vocab-1");
 
-    const record = await db.vocabularies.get("vocab-1");
+    const record = await getDb().vocabularies.get("vocab-1");
     expect(record).toBeDefined();
     expect(record?.deleted).toBe(1);
     expect(record?.deletedAt).toBeGreaterThan(0);
@@ -106,7 +108,7 @@ describe("IndexedDBVocabularyAdapter - soft delete", () => {
 
     await vocabAdapter.deleteVocabulary("vocab-1");
 
-    const coll = await db.collections.get("coll-1");
+    const coll = await getDb().collections.get("coll-1");
     expect(coll?.wordCount).toBe(0);
   });
 
@@ -116,7 +118,7 @@ describe("IndexedDBVocabularyAdapter - soft delete", () => {
 
     await vocabAdapter.deleteVocabulary("vocab-1");
 
-    const record = await db.vocabularies.get("vocab-1");
+    const record = await getDb().vocabularies.get("vocab-1");
     expect(record?.syncVersion).toBe(2); // was 1, incremented
   });
 });
@@ -133,11 +135,11 @@ describe("IndexedDBCollectionAdapter - soft delete", () => {
 
     await collectionAdapter.deleteCollection("coll-1");
 
-    const coll = await db.collections.get("coll-1");
+    const coll = await getDb().collections.get("coll-1");
     expect(coll?.deleted).toBe(1);
 
-    const v1 = await db.vocabularies.get("vocab-1");
-    const v2 = await db.vocabularies.get("vocab-2");
+    const v1 = await getDb().vocabularies.get("vocab-1");
+    const v2 = await getDb().vocabularies.get("vocab-2");
     expect(v1?.deleted).toBe(1);
     expect(v2?.deleted).toBe(1);
   });
@@ -161,7 +163,7 @@ describe("IndexedDBSyncStorage.getPendingChanges - soft delete propagation", () 
   it("emits deleted:true for unsynced soft-deleted vocab", async () => {
     await seedCollection("coll-1");
     // Seed a soft-deleted vocab with syncedAt=undefined
-    await db.vocabularies.add({
+    await getDb().vocabularies.add({
       id: "vocab-del",
       word: "gone",
       wordType: "noun",
@@ -192,7 +194,7 @@ describe("IndexedDBSyncStorage.getPendingChanges - soft delete propagation", () 
   it("emits deleted:false for unsynced non-deleted vocab", async () => {
     await seedCollection("coll-1");
     // Re-seed with syncedAt=undefined (unsynced upsert)
-    await db.vocabularies.add({
+    await getDb().vocabularies.add({
       id: "vocab-new",
       word: "hello",
       wordType: "noun",
@@ -238,7 +240,7 @@ describe("IndexedDBSyncStorage.applyRemoteChanges - soft delete from server", ()
 
     await storage.applyRemoteChanges([record]);
 
-    const vocab = await db.vocabularies.get("vocab-1");
+    const vocab = await getDb().vocabularies.get("vocab-1");
     expect(vocab).toBeDefined();
     expect(vocab?.deleted).toBe(1);
     expect(vocab?.deletedAt).toBeGreaterThan(0);
@@ -260,11 +262,11 @@ describe("IndexedDBSyncStorage.applyRemoteChanges - soft delete from server", ()
 
     await storage.applyRemoteChanges([record]);
 
-    const coll = await db.collections.get("coll-1");
+    const coll = await getDb().collections.get("coll-1");
     expect(coll?.deleted).toBe(1);
 
-    const v1 = await db.vocabularies.get("vocab-1");
-    const v2 = await db.vocabularies.get("vocab-2");
+    const v1 = await getDb().vocabularies.get("vocab-1");
+    const v2 = await getDb().vocabularies.get("vocab-2");
     expect(v1?.deleted).toBe(1);
     expect(v2?.deleted).toBe(1);
   });
@@ -292,7 +294,7 @@ describe("IndexedDBSyncStorage.applyRemoteChanges - soft delete from server", ()
 
     await storage.applyRemoteChanges([record]);
 
-    const coll = await db.collections.get("coll-server");
+    const coll = await getDb().collections.get("coll-server");
     expect(coll?.name).toBe("From Server");
     expect(coll?.deleted).toBeUndefined();
   });

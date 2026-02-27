@@ -43,6 +43,7 @@ import {
 // Shared Adapters
 import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
 import { getAuthService } from "@cham-lang/ui/adapters/factory";
+import { initDb } from "@cham-lang/ui/adapters/web";
 
 export interface ChamLangAppProps {
   className?: string;
@@ -77,8 +78,20 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
   basePath,
   className,
 }) => {
-  // Initialize services synchronously before first render
+  // Gate rendering on DB ready to prevent getDb() throws before initDb() completes
+  const [dbReady, setDbReady] = useState(false);
+
+  useEffect(() => {
+    // Embedded: use userId from hub. Standalone: userId=undefined → legacy "ChamLangDB"
+    setDbReady(false);
+    initDb(authTokens?.userId)
+      .then(() => setDbReady(true))
+      .catch(console.error);
+  }, [authTokens?.userId]);
+
+  // Initialize services only after DB is ready
   const platform = useMemo<IPlatformServices>(() => {
+    if (!dbReady) return {} as IPlatformServices;
     // Data platform - all platforms use IndexedDB
     setCollectionService(new IndexedDBCollectionAdapter());
     setVocabularyService(new IndexedDBVocabularyAdapter());
@@ -108,11 +121,11 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
     setSyncService(syncAdapter);
 
     return getAllServices();
-  }, []);
+  }, [dbReady]);
 
   // Inject auth tokens when embedded (using auth adapter)
   useEffect(() => {
-    if (authTokens?.accessToken && authTokens?.refreshToken) {
+    if (dbReady && authTokens?.accessToken && authTokens?.refreshToken) {
       const auth = getAuthService() as QmServerAuthAdapter;
       auth
         .saveTokensExternal?.(
@@ -122,7 +135,7 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
         )
         .catch(console.error);
     }
-  }, [authTokens, platform.auth]);
+  }, [dbReady, authTokens, platform.auth]);
 
   // Determine if we should skip auth (tokens provided externally)
   const skipAuth = !!(authTokens?.accessToken && authTokens?.refreshToken);
@@ -133,8 +146,10 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
   );
 
   useEffect(() => {
-    setPortalContainer(containerRef.current);
-  }, []);
+    if (containerRef.current) setPortalContainer(containerRef.current);
+  }, [dbReady]);
+
+  if (!dbReady) return null;
 
   const content = (
     <AppShell

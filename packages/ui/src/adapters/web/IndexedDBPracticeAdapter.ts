@@ -6,7 +6,7 @@ import type {
   UserPracticeProgress,
   WordProgress,
 } from "@cham-lang/shared/types";
-import { db, generateId, getCurrentTimestamp } from "./database";
+import { getDb, generateId, getCurrentTimestamp } from "./database";
 
 export class IndexedDBPracticeAdapter implements IPracticeService {
   async createPracticeSession(
@@ -14,7 +14,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
   ): Promise<string> {
     const id = generateId();
     const now = getCurrentTimestamp();
-    await db.practiceSessions.add({
+    await getDb().practiceSessions.add({
       id,
       collectionId: request.collectionId,
       mode: request.mode,
@@ -30,7 +30,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     });
 
     // Update practice progress
-    let progress = await db.practiceProgress
+    let progress = await getDb().practiceProgress
       .where("language")
       .equals(request.language)
       .first();
@@ -47,7 +47,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
         createdAt: now,
         updatedAt: now,
       };
-      await db.practiceProgress.add(progress);
+      await getDb().practiceProgress.add(progress);
     }
 
     const today = new Date().toISOString().split("T")[0];
@@ -63,7 +63,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
       newStreak = lastDate === yesterdayStr ? progress.currentStreak + 1 : 1;
     }
 
-    await db.practiceProgress.update(progress.id, {
+    await getDb().practiceProgress.update(progress.id, {
       totalSessions: progress.totalSessions + 1,
       totalWordsPracticed:
         progress.totalWordsPracticed + request.results.length,
@@ -80,7 +80,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     language: string,
     limit?: number,
   ): Promise<PracticeSession[]> {
-    let sessions = await db.practiceSessions
+    let sessions = await getDb().practiceSessions
       .where("language")
       .equals(language)
       .toArray();
@@ -93,7 +93,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     request: UpdateProgressRequest,
   ): Promise<string> {
     // Find existing word progress
-    const existing = await db.wordProgress
+    const existing = await getDb().wordProgress
       .where("[language+vocabularyId]")
       .equals([request.language, request.vocabularyId])
       .first();
@@ -101,7 +101,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     const now = getCurrentTimestamp();
 
     if (existing) {
-      await db.wordProgress.update(existing.id, {
+      await getDb().wordProgress.update(existing.id, {
         word: request.word,
         correctCount: request.correctCount,
         incorrectCount: request.incorrectCount,
@@ -116,7 +116,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
         lastPracticed: now,
       });
     } else {
-      await db.wordProgress.add({
+      await getDb().wordProgress.add({
         id: generateId(),
         language: request.language,
         vocabularyId: request.vocabularyId,
@@ -144,14 +144,14 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
   async getPracticeProgress(
     language: string,
   ): Promise<UserPracticeProgress | null> {
-    const progress = await db.practiceProgress
+    const progress = await getDb().practiceProgress
       .where("language")
       .equals(language)
       .first();
 
     if (!progress) return null;
 
-    const wordsProgress = await db.wordProgress
+    const wordsProgress = await getDb().wordProgress
       .where("language")
       .equals(language)
       .toArray();
@@ -174,7 +174,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     language: string,
     vocabularyId: string,
   ): Promise<WordProgress | null> {
-    const wp = await db.wordProgress
+    const wp = await getDb().wordProgress
       .where("[language+vocabularyId]")
       .equals([language, vocabularyId])
       .first();

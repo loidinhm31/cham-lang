@@ -4,11 +4,11 @@ import type {
 } from "@cham-lang/ui/adapters/factory/interfaces";
 import type { LearningSettings } from "@cham-lang/shared/types";
 import { DEFAULT_LEARNING_SETTINGS } from "@cham-lang/shared/types";
-import { db, generateId, getCurrentTimestamp } from "./database";
+import { getDb, generateId, getCurrentTimestamp } from "./database";
 
 export class IndexedDBLearningSettingsAdapter implements ILearningSettingsService {
   async getLearningSettings(): Promise<LearningSettings | null> {
-    const settings = await db.learningSettings.limit(1).first();
+    const settings = await getDb().learningSettings.limit(1).first();
     return (settings as LearningSettings) || null;
   }
 
@@ -24,7 +24,7 @@ export class IndexedDBLearningSettingsAdapter implements ILearningSettingsServic
       updatedAt: now,
     };
 
-    await db.learningSettings.add(settings);
+    await getDb().learningSettings.add(settings);
     return settings as LearningSettings;
   }
 
@@ -39,7 +39,7 @@ export class IndexedDBLearningSettingsAdapter implements ILearningSettingsServic
       updatedAt: getCurrentTimestamp(),
     };
 
-    await db.learningSettings.update(existing.id!, updated);
+    await getDb().learningSettings.update(existing.id!, updated);
     return updated as LearningSettings;
   }
 }

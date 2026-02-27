@@ -222,8 +222,8 @@ export class ChamLangDatabase extends Dexie {
   _syncMeta!: EntityTable<SyncMeta, "key">;
   _pendingChanges!: EntityTable<PendingChange, "id">;
 
-  constructor() {
-    super("ChamLangDB");
+  constructor(dbName = "ChamLangDB") {
+    super(dbName);
 
     this.version(1).stores({
       vocabularies:    "id, word, language, collectionId, level, createdAt, updatedAt, syncedAt, deleted",
@@ -264,8 +264,62 @@ export class ChamLangDatabase extends Dexie {
   }
 }
 
-// Singleton database instance
-export const db = new ChamLangDatabase();
+// =============================================================================
+// Per-user DB management
+// =============================================================================
+
+let _db: ChamLangDatabase | null = null;
+let _currentUserId: string | null = null;
+
+async function hashUserId(userId: string): Promise<string> {
+  const encoded = new TextEncoder().encode(userId);
+  const hash = await crypto.subtle.digest("SHA-256", encoded);
+  return Array.from(new Uint8Array(hash))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("")
+    .slice(0, 12);
+}
+
+/**
+ * Initialize (or reinitialize) the DB for a specific user.
+ * If userId is undefined (standalone mode), uses the legacy "ChamLangDB" name.
+ * Calling with the same userId is a no-op.
+ */
+export async function initDb(userId?: string): Promise<ChamLangDatabase> {
+  if (!userId) {
+    // Standalone fallback: legacy singleton name preserves existing behavior.
+    // If currently open for a user, close it first.
+    if (!_db || _currentUserId !== null) {
+      if (_db) _db.close();
+      _db = new ChamLangDatabase("ChamLangDB");
+      _currentUserId = null;
+    }
+    return _db;
+  }
+  if (_db && _currentUserId === userId) return _db;
+  if (_db) _db.close();
+  const prefix = await hashUserId(userId);
+  _db = new ChamLangDatabase(`ChamLangDB_${prefix}`);
+  _currentUserId = userId;
+  return _db;
+}
+
+/** Returns the active DB instance. Throws if initDb() has not been called. */
+export function getDb(): ChamLangDatabase {
+  if (!_db) throw new Error("ChamLangDB not initialized. Call initDb() first.");
+  return _db;
+}
+
+/** Close and delete the current user's IndexedDB. Used on logout. */
+export async function deleteCurrentDb(): Promise<void> {
+  if (_db) {
+    const name = _db.name;
+    _db.close();
+    await Dexie.delete(name);
+    _db = null;
+    _currentUserId = null;
+  }
+}
 
 /**
  * Generate a UUID v4

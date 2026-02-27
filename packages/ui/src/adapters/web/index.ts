@@ -10,7 +10,7 @@ export { IndexedDBCSVAdapter } from "./IndexedDBCSVAdapter";
 export { BrowserNotificationAdapter } from "./BrowserNotificationAdapter";
 export { NoOpGDriveAdapter } from "./NoOpGDriveAdapter";
 export { WebGDriveAdapter } from "./WebGDriveAdapter";
-export { db, ChamLangDatabase } from "./database";
+export { initDb, getDb, deleteCurrentDb, ChamLangDatabase } from "./database";
 export * from "./sync";
 export {
   exportDatabaseToJSON,

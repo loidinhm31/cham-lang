@@ -1,4 +1,4 @@
-import { db, generateId, getCurrentTimestamp, type PendingChange } from "./database";
+import { getDb, generateId, getCurrentTimestamp, type PendingChange } from "./database";
 
 /**
  * Add sync tracking fields to a new or updated entity
@@ -59,5 +59,5 @@ export async function trackDelete(
     syncVersion,
     createdAt: Math.floor(Date.now() / 1000),
   };
-  await db._pendingChanges.add(change);
+  await getDb()._pendingChanges.add(change);
 }

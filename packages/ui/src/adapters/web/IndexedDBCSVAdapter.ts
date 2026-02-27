@@ -4,7 +4,7 @@ import type {
   SimpleImportRequest,
   ImportResult,
 } from "@cham-lang/ui/adapters/factory/interfaces";
-import { db, generateId, getCurrentTimestamp } from "./database";
+import { getDb, generateId, getCurrentTimestamp } from "./database";
 
 export class IndexedDBCSVAdapter implements ICSVService {
   async getExportDirectory(): Promise<string> {
@@ -21,10 +21,10 @@ export class IndexedDBCSVAdapter implements ICSVService {
     );
 
     for (const collectionId of collectionIds) {
-      const collection = await db.collections.get(collectionId);
+      const collection = await getDb().collections.get(collectionId);
       if (!collection) continue;
 
-      const vocabs = await db.vocabularies
+      const vocabs = await getDb().vocabularies
         .where("collectionId")
         .equals(collectionId)
         .toArray();
@@ -133,7 +133,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
     const collectionsCreated: string[] = [];
 
     // Pre-load existing collections
-    const existingCollections = await db.collections.toArray();
+    const existingCollections = await getDb().collections.toArray();
     for (const c of existingCollections) {
       collectionCache.set(c.name.toLowerCase(), c.id);
     }
@@ -165,7 +165,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
           const newId = generateId();
           const lang =
             langIdx !== -1 && row[langIdx]?.trim() ? row[langIdx].trim() : "en";
-          await db.collections.add({
+          await getDb().collections.add({
             id: newId,
             name: collectionName,
             description: "",
@@ -232,7 +232,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
                 .map((w) => ({ word: w, relationship: "" }))
             : [];
 
-        await db.vocabularies.add({
+        await getDb().vocabularies.add({
           id: generateId(),
           word,
           wordType:
@@ -264,9 +264,9 @@ export class IndexedDBCSVAdapter implements ICSVService {
 
     // Update word counts
     for (const [collId, count] of importedPerCollection) {
-      const coll = await db.collections.get(collId);
+      const coll = await getDb().collections.get(collId);
       if (coll) {
-        await db.collections.update(collId, {
+        await getDb().collections.update(collId, {
           wordCount: (coll.wordCount || 0) + count,
         });
       }
@@ -307,7 +307,7 @@ export class IndexedDBCSVAdapter implements ICSVService {
       }
 
       try {
-        await db.vocabularies.add({
+        await getDb().vocabularies.add({
           id: generateId(),
           word: item.word.trim(),
           wordType: "n/a",
@@ -334,9 +334,9 @@ export class IndexedDBCSVAdapter implements ICSVService {
     }
 
     // Update word count
-    const coll = await db.collections.get(collectionId);
+    const coll = await getDb().collections.get(collectionId);
     if (coll) {
-      await db.collections.update(collectionId, {
+      await getDb().collections.update(collectionId, {
         wordCount: (coll.wordCount || 0) + imported,
       });
     }

@@ -1,20 +1,22 @@
 import "fake-indexeddb/auto";
-import { describe, it, expect, beforeEach } from "vitest";
-import { db } from "../database";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { getDb, initDb } from "../database";
 import { IndexedDBSyncStorage } from "../sync/IndexedDBSyncStorage";
 import type { PullRecord } from "@qm-hub/sync-client-types";
 
 const storage = new IndexedDBSyncStorage();
 
+beforeAll(() => initDb());
+
 beforeEach(async () => {
-  await db.collections.clear();
-  await db.vocabularies.clear();
-  await db.topics.clear();
-  await db.tags.clear();
-  await db.userLearningLanguages.clear();
-  await db.collectionSharedUsers.clear();
-  await db.practiceProgress.clear();
-  await db._pendingChanges.clear();
+  await getDb().collections.clear();
+  await getDb().vocabularies.clear();
+  await getDb().topics.clear();
+  await getDb().tags.clear();
+  await getDb().userLearningLanguages.clear();
+  await getDb().collectionSharedUsers.clear();
+  await getDb().practiceProgress.clear();
+  await getDb()._pendingChanges.clear();
 });
 
 describe("applyRemoteChanges - collectionSharedUsers", () => {
@@ -36,7 +38,7 @@ describe("applyRemoteChanges - collectionSharedUsers", () => {
 
     await storage.applyRemoteChanges([record]);
 
-    const su = await db.collectionSharedUsers.get("su-1");
+    const su = await getDb().collectionSharedUsers.get("su-1");
     expect(su?.userId).toBe("user-2");
     expect(su).not.toHaveProperty("permission");
   });
@@ -44,7 +46,7 @@ describe("applyRemoteChanges - collectionSharedUsers", () => {
 
 describe("getPendingChanges - shared collections", () => {
   it("includes shared collections in pending changes", async () => {
-    await db.collections.add({
+    await getDb().collections.add({
       id: "coll-1",
       name: "Shared Coll",
       description: "",
@@ -66,7 +68,7 @@ describe("getPendingChanges - shared collections", () => {
   });
 
   it("sets ownerId to sharedBy for shared collections", async () => {
-    await db.collections.add({
+    await getDb().collections.add({
       id: "coll-1",
       name: "Shared",
       description: "",
@@ -87,7 +89,7 @@ describe("getPendingChanges - shared collections", () => {
   });
 
   it("sets ownerId to userId for own collections", async () => {
-    await db.collections.add({
+    await getDb().collections.add({
       id: "coll-2",
       name: "My Own",
       description: "",
@@ -107,7 +109,7 @@ describe("getPendingChanges - shared collections", () => {
   });
 
   it("sets ownerId to null when no userId and no sharedBy", async () => {
-    await db.collections.add({
+    await getDb().collections.add({
       id: "coll-3",
       name: "Orphan",
       description: "",
@@ -128,7 +130,7 @@ describe("getPendingChanges - shared collections", () => {
   });
 
   it("excludes synced shared collections", async () => {
-    await db.collections.add({
+    await getDb().collections.add({
       id: "coll-4",
       name: "Synced Shared",
       description: "",

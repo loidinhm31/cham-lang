@@ -6,7 +6,7 @@
  */
 
 import {
-  db,
+  getDb,
   SYNC_META_KEYS,
   type IDBCollection,
   type IDBVocabulary,
@@ -58,7 +58,7 @@ export class IndexedDBSyncStorage {
       r.syncedAt === undefined || r.syncedAt === null;
 
     // Collections
-    const collections = await db.collections.toArray();
+    const collections = await getDb().collections.toArray();
     for (const collection of collections) {
       if (!isUnsynced(collection)) continue;
       if (collection.deleted) {
@@ -93,7 +93,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Vocabularies
-    const vocabularies = await db.vocabularies.toArray();
+    const vocabularies = await getDb().vocabularies.toArray();
     for (const vocab of vocabularies) {
       if (!isUnsynced(vocab)) continue;
       if (vocab.deleted) {
@@ -134,7 +134,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Topics
-    const topics = await db.topics.toArray();
+    const topics = await getDb().topics.toArray();
     for (const topic of topics) {
       if (!isUnsynced(topic)) continue;
       if (topic.deleted) {
@@ -151,7 +151,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Tags
-    const tags = await db.tags.toArray();
+    const tags = await getDb().tags.toArray();
     for (const tag of tags) {
       if (!isUnsynced(tag)) continue;
       if (tag.deleted) {
@@ -168,7 +168,7 @@ export class IndexedDBSyncStorage {
     }
 
     // User learning languages
-    const langs = await db.userLearningLanguages.toArray();
+    const langs = await getDb().userLearningLanguages.toArray();
     for (const lang of langs) {
       if (!isUnsynced(lang)) continue;
       if (lang.deleted) {
@@ -185,7 +185,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Collection shared users
-    const sharedUsers = await db.collectionSharedUsers.toArray();
+    const sharedUsers = await getDb().collectionSharedUsers.toArray();
     for (const su of sharedUsers) {
       if (!isUnsynced(su)) continue;
       if (su.deleted) {
@@ -202,7 +202,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Practice progress
-    const practiceProgress = await db.practiceProgress.toArray();
+    const practiceProgress = await getDb().practiceProgress.toArray();
     for (const pp of practiceProgress) {
       if (!isUnsynced(pp)) continue;
       if (pp.deleted) {
@@ -230,7 +230,7 @@ export class IndexedDBSyncStorage {
     }
 
     // Legacy _pendingChanges drain (backward compat — pre-soft-delete hard-delete records)
-    const pendingDeletes = await db._pendingChanges.toArray();
+    const pendingDeletes = await getDb()._pendingChanges.toArray();
     for (const change of pendingDeletes) {
       records.push({
         tableName: change.tableName,
@@ -245,28 +245,28 @@ export class IndexedDBSyncStorage {
   }
 
   async getPendingChangesCount(): Promise<number> {
-    const unsyncedVocabs = await db.vocabularies
+    const unsyncedVocabs = await getDb().vocabularies
       .filter((v) => v.syncedAt === undefined || v.syncedAt === null)
       .count();
-    const unsyncedCollections = await db.collections
+    const unsyncedCollections = await getDb().collections
       .filter((c) => c.syncedAt === undefined || c.syncedAt === null)
       .count();
-    const unsyncedTopics = await db.topics
+    const unsyncedTopics = await getDb().topics
       .filter((t) => t.syncedAt === undefined || t.syncedAt === null)
       .count();
-    const unsyncedTags = await db.tags
+    const unsyncedTags = await getDb().tags
       .filter((t) => t.syncedAt === undefined || t.syncedAt === null)
       .count();
-    const unsyncedLangs = await db.userLearningLanguages
+    const unsyncedLangs = await getDb().userLearningLanguages
       .filter((l) => l.syncedAt === undefined || l.syncedAt === null)
       .count();
-    const unsyncedShared = await db.collectionSharedUsers
+    const unsyncedShared = await getDb().collectionSharedUsers
       .filter((s) => s.syncedAt === undefined || s.syncedAt === null)
       .count();
-    const unsyncedProgress = await db.practiceProgress
+    const unsyncedProgress = await getDb().practiceProgress
       .filter((p) => p.syncedAt === undefined || p.syncedAt === null)
       .count();
-    const pendingDeletes = await db._pendingChanges.count();
+    const pendingDeletes = await getDb()._pendingChanges.count();
     return (
       unsyncedVocabs +
       unsyncedCollections +
@@ -297,30 +297,30 @@ export class IndexedDBSyncStorage {
 
     for (const { tableName, rowId } of syncedRecords) {
       if (tableName === "collections") {
-        const r = await db.collections.get(rowId);
-        if (r) await db.collections.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().collections.get(rowId);
+        if (r) await getDb().collections.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "vocabularies") {
-        const r = await db.vocabularies.get(rowId);
-        if (r) await db.vocabularies.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().vocabularies.get(rowId);
+        if (r) await getDb().vocabularies.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "topics") {
-        const r = await db.topics.get(rowId);
-        if (r) await db.topics.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().topics.get(rowId);
+        if (r) await getDb().topics.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "tags") {
-        const r = await db.tags.get(rowId);
-        if (r) await db.tags.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().tags.get(rowId);
+        if (r) await getDb().tags.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "userLearningLanguages") {
-        const r = await db.userLearningLanguages.get(rowId);
-        if (r) await db.userLearningLanguages.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().userLearningLanguages.get(rowId);
+        if (r) await getDb().userLearningLanguages.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "collectionSharedUsers") {
-        const r = await db.collectionSharedUsers.get(rowId);
-        if (r) await db.collectionSharedUsers.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().collectionSharedUsers.get(rowId);
+        if (r) await getDb().collectionSharedUsers.update(rowId, payload(r.deleted, r.syncVersion || 1));
       } else if (tableName === "practiceProgress") {
-        const r = await db.practiceProgress.get(rowId);
-        if (r) await db.practiceProgress.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        const r = await getDb().practiceProgress.get(rowId);
+        if (r) await getDb().practiceProgress.update(rowId, payload(r.deleted, r.syncVersion || 1));
       }
 
       // Drain legacy _pendingChanges (pre-soft-delete hard-delete records)
-      await db._pendingChanges.where("recordId").equals(rowId).delete();
+      await getDb()._pendingChanges.where("recordId").equals(rowId).delete();
     }
   }
 
@@ -356,12 +356,12 @@ export class IndexedDBSyncStorage {
       // Unauthenticated — treat all collections as own
     }
 
-    await db.transaction(
+    await getDb().transaction(
       "rw",
       [
-        db.vocabularies, db.collections, db.topics, db.tags,
-        db.userLearningLanguages, db.collectionSharedUsers,
-        db.practiceProgress, db._pendingChanges,
+        getDb().vocabularies, getDb().collections, getDb().topics, getDb().tags,
+        getDb().userLearningLanguages, getDb().collectionSharedUsers,
+        getDb().practiceProgress, getDb()._pendingChanges,
       ],
       async () => {
         const now = Math.floor(Date.now() / 1000);
@@ -393,62 +393,62 @@ export class IndexedDBSyncStorage {
 
         for (const record of deleted) {
           if (record.tableName === "vocabularies") {
-            const existing = await db.vocabularies.get(record.rowId);
+            const existing = await getDb().vocabularies.get(record.rowId);
             if (existing?.collectionId) affectedCollectionIds.add(existing.collectionId);
             if (existing && !existing.deleted) {
-              await db.vocabularies.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().vocabularies.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           } else if (record.tableName === "collections") {
             // Soft-delete all vocabs in the collection
-            await db.vocabularies
+            await getDb().vocabularies
               .where("collectionId")
               .equals(record.rowId)
               .filter((v) => !v.deleted)
               .modify({ deleted: 1, deletedAt: now });
-            const collection = await db.collections.get(record.rowId);
+            const collection = await getDb().collections.get(record.rowId);
             if (collection && !collection.deleted) {
-              await db.collections.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().collections.update(record.rowId, { deleted: 1, deletedAt: now });
             }
             affectedCollectionIds.delete(record.rowId);
           } else if (record.tableName === "topics") {
-            const existing = await db.topics.get(record.rowId);
+            const existing = await getDb().topics.get(record.rowId);
             if (existing && !existing.deleted) {
-              await db.topics.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().topics.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           } else if (record.tableName === "tags") {
-            const existing = await db.tags.get(record.rowId);
+            const existing = await getDb().tags.get(record.rowId);
             if (existing && !existing.deleted) {
-              await db.tags.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().tags.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           } else if (record.tableName === "userLearningLanguages") {
-            const existing = await db.userLearningLanguages.get(record.rowId);
+            const existing = await getDb().userLearningLanguages.get(record.rowId);
             if (existing && !existing.deleted) {
-              await db.userLearningLanguages.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().userLearningLanguages.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           } else if (record.tableName === "collectionSharedUsers") {
-            const existing = await db.collectionSharedUsers.get(record.rowId);
+            const existing = await getDb().collectionSharedUsers.get(record.rowId);
             if (existing && !existing.deleted) {
-              await db.collectionSharedUsers.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().collectionSharedUsers.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           } else if (record.tableName === "practiceProgress") {
-            const existing = await db.practiceProgress.get(record.rowId);
+            const existing = await getDb().practiceProgress.get(record.rowId);
             if (existing && !existing.deleted) {
-              await db.practiceProgress.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().practiceProgress.update(record.rowId, { deleted: 1, deletedAt: now });
             }
           }
-          await db._pendingChanges.where("recordId").equals(record.rowId).delete();
+          await getDb()._pendingChanges.where("recordId").equals(record.rowId).delete();
         }
 
         // Recalculate wordCount for affected (non-deleted) collections
         for (const collectionId of affectedCollectionIds) {
-          const collection = await db.collections.get(collectionId);
+          const collection = await getDb().collections.get(collectionId);
           if (collection && !collection.deleted) {
-            const count = await db.vocabularies
+            const count = await getDb().vocabularies
               .where("collectionId")
               .equals(collectionId)
               .filter((v) => !v.deleted)
               .count();
-            await db.collections.update(collectionId, { wordCount: count });
+            await getDb().collections.update(collectionId, { wordCount: count });
           }
         }
       },
@@ -462,7 +462,7 @@ export class IndexedDBSyncStorage {
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.collections.get(record.rowId);
+    const existing = await getDb().collections.get(record.rowId);
 
     // Derive sharedBy from ownerId: if ownerId differs from current user -> sharedBy = ownerId
     let sharedBy: string | undefined;
@@ -488,9 +488,9 @@ export class IndexedDBSyncStorage {
 
     if (existing) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await db.collections.update(record.rowId, collectionData as any);
+      await getDb().collections.update(record.rowId, collectionData as any);
     } else {
-      await db.collections.add(collectionData);
+      await getDb().collections.add(collectionData);
     }
   }
 
@@ -500,7 +500,7 @@ export class IndexedDBSyncStorage {
   ): Promise<string | undefined> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.vocabularies.get(record.rowId);
+    const existing = await getDb().vocabularies.get(record.rowId);
     const oldCollectionId = existing?.collectionId;
 
     const vocabData: IDBVocabulary = {
@@ -528,9 +528,9 @@ export class IndexedDBSyncStorage {
 
     if (existing) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await db.vocabularies.update(record.rowId, vocabData as any);
+      await getDb().vocabularies.update(record.rowId, vocabData as any);
     } else {
-      await db.vocabularies.add(vocabData);
+      await getDb().vocabularies.add(vocabData);
     }
 
     return oldCollectionId;
@@ -542,7 +542,7 @@ export class IndexedDBSyncStorage {
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.topics.get(record.rowId);
+    const existing = await getDb().topics.get(record.rowId);
     const topicData = {
       id: record.rowId,
       name: String(data.name || ""),
@@ -551,16 +551,16 @@ export class IndexedDBSyncStorage {
       syncedAt: now,
     };
     if (existing) {
-      await db.topics.update(record.rowId, topicData);
+      await getDb().topics.update(record.rowId, topicData);
     } else {
-      await db.topics.add(topicData);
+      await getDb().topics.add(topicData);
     }
   }
 
   private async applyTagChange(record: PullRecord, now: number): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.tags.get(record.rowId);
+    const existing = await getDb().tags.get(record.rowId);
     const tagData = {
       id: record.rowId,
       name: String(data.name || ""),
@@ -569,9 +569,9 @@ export class IndexedDBSyncStorage {
       syncedAt: now,
     };
     if (existing) {
-      await db.tags.update(record.rowId, tagData);
+      await getDb().tags.update(record.rowId, tagData);
     } else {
-      await db.tags.add(tagData);
+      await getDb().tags.add(tagData);
     }
   }
 
@@ -581,7 +581,7 @@ export class IndexedDBSyncStorage {
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.userLearningLanguages.get(record.rowId);
+    const existing = await getDb().userLearningLanguages.get(record.rowId);
     const langData = {
       id: record.rowId,
       language: String(data.language || ""),
@@ -590,9 +590,9 @@ export class IndexedDBSyncStorage {
       syncedAt: now,
     };
     if (existing) {
-      await db.userLearningLanguages.update(record.rowId, langData);
+      await getDb().userLearningLanguages.update(record.rowId, langData);
     } else {
-      await db.userLearningLanguages.add(langData);
+      await getDb().userLearningLanguages.add(langData);
     }
   }
 
@@ -602,7 +602,7 @@ export class IndexedDBSyncStorage {
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.collectionSharedUsers.get(record.rowId);
+    const existing = await getDb().collectionSharedUsers.get(record.rowId);
     const suData = {
       id: record.rowId,
       collectionId: String(data.collectionId || ""),
@@ -612,9 +612,9 @@ export class IndexedDBSyncStorage {
       syncedAt: now,
     };
     if (existing) {
-      await db.collectionSharedUsers.update(record.rowId, suData);
+      await getDb().collectionSharedUsers.update(record.rowId, suData);
     } else {
-      await db.collectionSharedUsers.add(suData);
+      await getDb().collectionSharedUsers.add(suData);
     }
   }
 
@@ -624,7 +624,7 @@ export class IndexedDBSyncStorage {
   ): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = record.data as any;
-    const existing = await db.practiceProgress.get(record.rowId);
+    const existing = await getDb().practiceProgress.get(record.rowId);
     const ppData = {
       id: record.rowId,
       language: String(data.language || ""),
@@ -639,9 +639,9 @@ export class IndexedDBSyncStorage {
       syncedAt: now,
     };
     if (existing) {
-      await db.practiceProgress.update(record.rowId, ppData);
+      await getDb().practiceProgress.update(record.rowId, ppData);
     } else {
-      await db.practiceProgress.add(ppData);
+      await getDb().practiceProgress.add(ppData);
     }
   }
 
@@ -650,10 +650,10 @@ export class IndexedDBSyncStorage {
   // =========================================================================
 
   async getCheckpoint(): Promise<Checkpoint | undefined> {
-    const updatedAt = await db.getSyncMeta(
+    const updatedAt = await getDb().getSyncMeta(
       SYNC_META_KEYS.CHECKPOINT_UPDATED_AT,
     );
-    const id = await db.getSyncMeta(SYNC_META_KEYS.CHECKPOINT_ID);
+    const id = await getDb().getSyncMeta(SYNC_META_KEYS.CHECKPOINT_ID);
 
     if (updatedAt && id) {
       return { updatedAt, id };
@@ -662,22 +662,22 @@ export class IndexedDBSyncStorage {
   }
 
   async saveCheckpoint(checkpoint: Checkpoint): Promise<void> {
-    await db.setSyncMeta(
+    await getDb().setSyncMeta(
       SYNC_META_KEYS.CHECKPOINT_UPDATED_AT,
       checkpoint.updatedAt as string,
     );
-    await db.setSyncMeta(SYNC_META_KEYS.CHECKPOINT_ID, checkpoint.id);
+    await getDb().setSyncMeta(SYNC_META_KEYS.CHECKPOINT_ID, checkpoint.id);
   }
 
   async getLastSyncAt(): Promise<number | undefined> {
-    const val = await db.getSyncMeta(SYNC_META_KEYS.LAST_SYNC_AT);
+    const val = await getDb().getSyncMeta(SYNC_META_KEYS.LAST_SYNC_AT);
     return val ? parseInt(val, 10) : undefined;
   }
 
   async saveLastSyncAt(timestamp: string | number): Promise<void> {
     const val =
       typeof timestamp === "number" ? timestamp.toString() : timestamp;
-    await db.setSyncMeta(SYNC_META_KEYS.LAST_SYNC_AT, val);
+    await getDb().setSyncMeta(SYNC_META_KEYS.LAST_SYNC_AT, val);
   }
 
   /**
@@ -688,23 +688,23 @@ export class IndexedDBSyncStorage {
   async purgeConfirmedDeletes(ttlDays = 60): Promise<void> {
     const cutoff = Date.now() - ttlDays * 24 * 60 * 60 * 1000;
 
-    await db.transaction(
+    await getDb().transaction(
       "rw",
       [
-        db.vocabularies, db.collections, db.topics, db.tags,
-        db.userLearningLanguages, db.collectionSharedUsers, db.practiceProgress,
+        getDb().vocabularies, getDb().collections, getDb().topics, getDb().tags,
+        getDb().userLearningLanguages, getDb().collectionSharedUsers, getDb().practiceProgress,
       ],
       async () => {
         const isPurgeable = (r: { deleted?: 0 | 1; syncedAt?: number; deletedAt?: number }) =>
           r.deleted === 1 && r.syncedAt !== undefined && (r.deletedAt ?? 0) < cutoff;
 
-        await db.vocabularies.filter(isPurgeable).delete();
-        await db.collections.filter(isPurgeable).delete();
-        await db.topics.filter(isPurgeable).delete();
-        await db.tags.filter(isPurgeable).delete();
-        await db.userLearningLanguages.filter(isPurgeable).delete();
-        await db.collectionSharedUsers.filter(isPurgeable).delete();
-        await db.practiceProgress.filter(isPurgeable).delete();
+        await getDb().vocabularies.filter(isPurgeable).delete();
+        await getDb().collections.filter(isPurgeable).delete();
+        await getDb().topics.filter(isPurgeable).delete();
+        await getDb().tags.filter(isPurgeable).delete();
+        await getDb().userLearningLanguages.filter(isPurgeable).delete();
+        await getDb().collectionSharedUsers.filter(isPurgeable).delete();
+        await getDb().practiceProgress.filter(isPurgeable).delete();
       },
     );
   }

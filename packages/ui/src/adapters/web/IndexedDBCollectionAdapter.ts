@@ -4,13 +4,13 @@ import type {
   CreateCollectionRequest,
   UpdateCollectionRequest,
 } from "@cham-lang/shared/types";
-import { db, generateId, getCurrentTimestamp, type IDBCollection } from "./database";
+import { getDb, generateId, getCurrentTimestamp, type IDBCollection } from "./database";
 import { withSyncTracking, copyWithNewId } from "./syncHelpers";
 
 export class IndexedDBCollectionAdapter implements ICollectionService {
   private async hydrateSharedWith(collection: Collection): Promise<Collection> {
     if (!collection.id) return collection;
-    const sharedUsers = await db.collectionSharedUsers
+    const sharedUsers = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals(collection.id)
       .filter((su) => !su.deleted)
@@ -24,7 +24,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   async createCollection(request: CreateCollectionRequest): Promise<string> {
     const id = generateId();
     const now = getCurrentTimestamp();
-    await db.collections.add(
+    await getDb().collections.add(
       withSyncTracking({
         id,
         name: request.name,
@@ -41,13 +41,13 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async getCollection(id: string): Promise<Collection> {
-    const collection = await db.collections.get(id);
+    const collection = await getDb().collections.get(id);
     if (!collection || collection.deleted === 1) throw new Error(`Collection not found: ${id}`);
     return this.hydrateSharedWith(collection as Collection);
   }
 
   async getUserCollections(): Promise<Collection[]> {
-    const collections = await db.collections
+    const collections = await getDb().collections
       .filter((c) => !c.deleted)
       .toArray();
     collections.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -57,7 +57,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async getPublicCollections(language?: string): Promise<Collection[]> {
-    const all = await db.collections
+    const all = await getDb().collections
       .filter((c) => !c.deleted && c.isPublic)
       .toArray();
 
@@ -65,11 +65,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async updateCollection(request: UpdateCollectionRequest): Promise<string> {
-    const existing = await db.collections.get(request.id);
+    const existing = await getDb().collections.get(request.id);
     if (!existing) throw new Error(`Collection not found: ${request.id}`);
 
     const { id, ...updates } = request;
-    await db.collections.update(
+    await getDb().collections.update(
       id,
       withSyncTracking(
         {
@@ -83,21 +83,21 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async deleteCollection(id: string): Promise<string> {
-    await db.transaction(
+    await getDb().transaction(
       "rw",
-      [db.collections, db.vocabularies],
+      [getDb().collections, getDb().vocabularies],
       async () => {
         const now = Date.now();
         const nowIso = new Date(now).toISOString();
 
         // Soft-delete all vocabularies in this collection
-        const vocabs = await db.vocabularies
+        const vocabs = await getDb().vocabularies
           .where("collectionId")
           .equals(id)
           .filter((v) => !v.deleted)
           .toArray();
         for (const vocab of vocabs) {
-          await db.vocabularies.update(vocab.id, {
+          await getDb().vocabularies.update(vocab.id, {
             deleted: 1,
             deletedAt: now,
             syncVersion: (vocab.syncVersion ?? 0) + 1,
@@ -107,9 +107,9 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
         }
 
         // Soft-delete the collection
-        const collection = await db.collections.get(id);
+        const collection = await getDb().collections.get(id);
         if (collection && !collection.deleted) {
-          await db.collections.update(id, {
+          await getDb().collections.update(id, {
             deleted: 1,
             deletedAt: now,
             syncVersion: (collection.syncVersion ?? 0) + 1,
@@ -126,11 +126,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     collectionId: string,
     shareWithUserId: string,
   ): Promise<string> {
-    const collection = await db.collections.get(collectionId);
+    const collection = await getDb().collections.get(collectionId);
     if (!collection) throw new Error(`Collection not found: ${collectionId}`);
 
     // Check if already shared with this user (excluding soft-deleted records — re-share is allowed)
-    const existing = await db.collectionSharedUsers
+    const existing = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals(collectionId)
       .filter((su) => su.userId === shareWithUserId && !su.deleted)
@@ -143,7 +143,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     const now = getCurrentTimestamp();
 
     // Add to collectionSharedUsers table (sync will pick this up)
-    await db.collectionSharedUsers.add(
+    await getDb().collectionSharedUsers.add(
       withSyncTracking({
         id,
         collectionId: collectionId,
@@ -154,7 +154,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
     // Update the collection's sharedWith array for immediate UI feedback
     const sharedWith = [...collection.sharedWith, { userId: shareWithUserId }];
-    await db.collections.update(
+    await getDb().collections.update(
       collectionId,
       withSyncTracking({ sharedWith: sharedWith, updatedAt: now }, collection),
     );
@@ -166,11 +166,11 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
     collectionId: string,
     userIdToRemove: string,
   ): Promise<string> {
-    const collection = await db.collections.get(collectionId);
+    const collection = await getDb().collections.get(collectionId);
     if (!collection) throw new Error(`Collection not found: ${collectionId}`);
 
     // Find and track deletion of the shared user record
-    const sharedUserRecord = await db.collectionSharedUsers
+    const sharedUserRecord = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals(collectionId)
       .filter((su) => su.userId === userIdToRemove)
@@ -178,7 +178,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
 
     if (sharedUserRecord) {
       const delNow = Date.now();
-      await db.collectionSharedUsers.update(sharedUserRecord.id, {
+      await getDb().collectionSharedUsers.update(sharedUserRecord.id, {
         deleted: 1,
         deletedAt: delNow,
         syncVersion: (sharedUserRecord.syncVersion ?? 0) + 1,
@@ -191,7 +191,7 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       (su) => su.userId !== userIdToRemove,
     );
     const now = getCurrentTimestamp();
-    await db.collections.update(
+    await getDb().collections.update(
       collectionId,
       withSyncTracking({ sharedWith: sharedWith, updatedAt: now }, collection),
     );
@@ -200,10 +200,10 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async copyCollection(id: string): Promise<string> {
-    const source = await db.collections.get(id);
+    const source = await getDb().collections.get(id);
     if (!source) throw new Error(`Collection ${id} not found`);
 
-    const vocabs = await db.vocabularies
+    const vocabs = await getDb().vocabularies
       .where("collectionId")
       .equals(id)
       .filter((v) => !v.deleted)
@@ -230,10 +230,10 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
       copyWithNewId(v, { collectionId: newCollectionId }),
     );
 
-    await db.transaction("rw", [db.collections, db.vocabularies], async () => {
-      await db.collections.add(collectionCopy);
+    await getDb().transaction("rw", [getDb().collections, getDb().vocabularies], async () => {
+      await getDb().collections.add(collectionCopy);
       if (vocabCopies.length > 0) {
-        await db.vocabularies.bulkAdd(vocabCopies);
+        await getDb().vocabularies.bulkAdd(vocabCopies);
       }
     });
 
@@ -241,12 +241,12 @@ export class IndexedDBCollectionAdapter implements ICollectionService {
   }
 
   async updateCollectionWordCount(collectionId: string): Promise<void> {
-    const count = await db.vocabularies
+    const count = await getDb().vocabularies
       .where("collectionId")
       .equals(collectionId)
       .filter((v) => !v.deleted)
       .count();
-    await db.collections.update(collectionId, { wordCount: count });
+    await getDb().collections.update(collectionId, { wordCount: count });
   }
 
   async getLevelConfiguration(language: string): Promise<string[]> {

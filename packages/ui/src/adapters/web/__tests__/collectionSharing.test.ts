@@ -1,12 +1,14 @@
 import "fake-indexeddb/auto";
-import { describe, it, expect, beforeEach } from "vitest";
-import { db } from "../database";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { getDb, initDb } from "../database";
 import { IndexedDBCollectionAdapter } from "../IndexedDBCollectionAdapter";
 
 const adapter = new IndexedDBCollectionAdapter();
 
+beforeAll(() => initDb());
+
 async function createTestCollection(id: string = "coll-1") {
-  await db.collections.add({
+  await getDb().collections.add({
     id,
     name: "Test Collection",
     description: "",
@@ -22,10 +24,10 @@ async function createTestCollection(id: string = "coll-1") {
 }
 
 beforeEach(async () => {
-  await db.collections.clear();
-  await db.collectionSharedUsers.clear();
-  await db.vocabularies.clear();
-  await db._pendingChanges.clear();
+  await getDb().collections.clear();
+  await getDb().collectionSharedUsers.clear();
+  await getDb().vocabularies.clear();
+  await getDb()._pendingChanges.clear();
 });
 
 describe("shareCollection", () => {
@@ -33,14 +35,14 @@ describe("shareCollection", () => {
     await createTestCollection();
     await adapter.shareCollection("coll-1", "user-2");
 
-    const su = await db.collectionSharedUsers
+    const su = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
     expect(su?.userId).toBe("user-2");
     expect(su).not.toHaveProperty("permission");
 
-    const coll = await db.collections.get("coll-1");
+    const coll = await getDb().collections.get("coll-1");
     expect(coll?.sharedWith).toContainEqual({ userId: "user-2" });
   });
 
@@ -50,7 +52,7 @@ describe("shareCollection", () => {
     const result = await adapter.shareCollection("coll-1", "user-2");
 
     expect(result).toContain("already shared");
-    const count = await db.collectionSharedUsers
+    const count = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .count();
@@ -72,7 +74,7 @@ describe("unshareCollection", () => {
     await adapter.unshareCollection("coll-1", "user-2");
 
     // Record still exists but is soft-deleted
-    const su = await db.collectionSharedUsers
+    const su = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
@@ -80,7 +82,7 @@ describe("unshareCollection", () => {
     expect(su?.deleted).toBe(1);
     expect(su?.syncedAt).toBeUndefined();
 
-    const coll = await db.collections.get("coll-1");
+    const coll = await getDb().collections.get("coll-1");
     expect(coll?.sharedWith).toHaveLength(0);
   });
 
@@ -89,15 +91,15 @@ describe("unshareCollection", () => {
     await adapter.shareCollection("coll-1", "user-2");
 
     // Simulate previously synced sharing record
-    const su = await db.collectionSharedUsers
+    const su = await getDb().collectionSharedUsers
       .where("collectionId")
       .equals("coll-1")
       .first();
-    await db.collectionSharedUsers.update(su!.id, { syncedAt: 1000 });
+    await getDb().collectionSharedUsers.update(su!.id, { syncedAt: 1000 });
 
     await adapter.unshareCollection("coll-1", "user-2");
 
-    const afterDelete = await db.collectionSharedUsers.get(su!.id);
+    const afterDelete = await getDb().collectionSharedUsers.get(su!.id);
     expect(afterDelete?.deleted).toBe(1);
     expect(afterDelete?.syncedAt).toBeUndefined(); // queued for push
   });
