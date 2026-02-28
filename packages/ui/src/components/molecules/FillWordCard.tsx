@@ -102,11 +102,11 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">✏️</div>
-          <h3 className="text-3xl font-black text-gray-900 mb-6">
+          <h3 className="text-3xl font-black text-(--color-text-primary) mb-6">
             {t("practice.fillWordTitle")}
           </h3>
-          <div className="bg-white rounded-3xl p-6 border-[3px] border-gray-300 shadow-[0_6px_0_rgba(0,0,0,0.1),0_3px_8px_rgba(0,0,0,0.08)]">
-            <p className="text-2xl font-semibold text-gray-900 leading-relaxed whitespace-pre-line">
+          <div className="bg-(--color-bg-white) rounded-3xl p-6 border-[3px] border-(--color-border-light) shadow-[0_6px_0_rgba(0,0,0,0.1),0_3px_8px_rgba(0,0,0,0.08)]">
+            <p className="text-2xl font-semibold text-(--color-text-primary) leading-relaxed whitespace-pre-line">
               {definition}
             </p>
             {audioUrl && (
@@ -117,7 +117,7 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
           </div>
           {hint && !submitted && (
             <div className="mt-6 px-5 py-3 bg-(--color-answer-blur) rounded-2xl border-2 border-(--color-answer-blur-border) shadow-sm inline-block">
-              <p className="text-sm font-bold text-gray-800">💡 {t("practice.hint")}: {hint}</p>
+              <p className="text-sm font-bold text-(--color-text-primary)">💡 {t("practice.hint")}: {hint}</p>
             </div>
           )}
         </div>
@@ -167,21 +167,21 @@ export const FillWordCard: React.FC<FillWordCardProps> = ({
           {/* Self-assessment mode: waiting for user decision */}
           {awaitingSelfAssessment && (
             <div className="space-y-4">
-              <div className="p-6 rounded-3xl bg-white border-[3px] border-gray-300 shadow-[0_4px_0_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.1)]">
+              <div className="p-6 rounded-3xl bg-(--color-bg-white) border-[3px] border-(--color-border-light) shadow-[0_4px_0_rgba(0,0,0,0.15),0_2px_8px_rgba(0,0,0,0.1)]">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-bold text-gray-600 mb-2">
+                    <p className="text-sm font-bold text-(--color-text-secondary) mb-2">
                       {t("practice.yourAnswer")}
                     </p>
-                    <p className="text-xl font-bold text-gray-900 whitespace-pre-line">
+                    <p className="text-xl font-bold text-(--color-text-primary) whitespace-pre-line">
                       {answer.trim()}
                     </p>
                   </div>
-                  <div className="border-t-2 border-gray-200 pt-4">
-                    <p className="text-sm font-bold text-gray-600 mb-2">
+                  <div className="border-t-2 border-(--color-border-light) pt-4">
+                    <p className="text-sm font-bold text-(--color-text-secondary) mb-2">
                       {t("practice.correctAnswer")}
                     </p>
-                    <p className="text-xl font-bold text-gray-900 whitespace-pre-line">
+                    <p className="text-xl font-bold text-(--color-text-primary) whitespace-pre-line">
                       {correctAnswer}
                     </p>
                   </div>

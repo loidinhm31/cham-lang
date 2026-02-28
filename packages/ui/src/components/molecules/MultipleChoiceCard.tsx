@@ -59,7 +59,7 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
 
   const getOptionStyle = (option: string) => {
     if (!answered) {
-      return "bg-white border-gray-300 text-gray-900 hover:translate-y-[-2px] hover:shadow-[0_8px_0_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.1)]";
+      return "bg-(--color-bg-white) border-(--color-border-light) text-(--color-text-primary) hover:translate-y-[-2px] hover:shadow-[0_8px_0_rgba(0,0,0,0.12),0_4px_12px_rgba(0,0,0,0.1)]";
     }
 
     if (option === correctAnswer) {
@@ -78,12 +78,12 @@ export const MultipleChoiceCard: React.FC<MultipleChoiceCardProps> = ({
       <div className="flex flex-col h-full">
         <div className="text-center mb-8">
           <div className="text-6xl mb-6">🎯</div>
-          <h3 className="text-4xl font-black text-gray-900 mb-3 whitespace-pre-line">
+          <h3 className="text-4xl font-black text-(--color-text-primary) mb-3 whitespace-pre-line">
             {question}
           </h3>
           {subtitle && (
             <div className="flex items-center justify-center gap-3">
-              <p className="text-xl font-semibold text-indigo-600">
+              <p className="text-xl font-semibold text-(--color-primary-500)">
                 {subtitle}
               </p>
               {audioUrl && <AudioPlayer audioUrl={audioUrl} size="md" />}

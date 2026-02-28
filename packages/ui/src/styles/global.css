@@ -345,35 +345,35 @@
     --glass-bg: rgba(255, 255, 255, 0.9);
     --color-bg-app: #ffffff;
 
-    /* Word type colors - grayscale for simple theme */
-    --color-word-noun: #000000;
-    --color-word-noun-border: #000000;
-    --color-word-verb: #222222;
-    --color-word-verb-border: #222222;
-    --color-word-adjective: #444444;
-    --color-word-adjective-border: #444444;
-    --color-word-adverb: #666666;
+    /* Word type colors - light grayscale for simple theme (dark border differentiates, light bg ensures readability) */
+    --color-word-noun: #f0f0f0;
+    --color-word-noun-border: #333333;
+    --color-word-verb: #f2f2f2;
+    --color-word-verb-border: #444444;
+    --color-word-adjective: #f4f4f4;
+    --color-word-adjective-border: #555555;
+    --color-word-adverb: #f5f5f5;
     --color-word-adverb-border: #666666;
-    --color-word-pronoun: #888888;
-    --color-word-pronoun-border: #888888;
-    --color-word-preposition: #AAAAAA;
-    --color-word-preposition-border: #AAAAAA;
-    --color-word-conjunction: #CCCCCC;
-    --color-word-conjunction-border: #CCCCCC;
-    --color-word-phrase: #DDDDDD;
-    --color-word-phrase-border: #DDDDDD;
-    --color-word-phrase-alt: #EEEEEE;
-    --color-word-phrase-alt-border: #EEEEEE;
-    --color-word-default: #F8F8F8;
-    --color-word-default-border: #DDDDDD;
-    --color-answer-correct: #CCCCCC;
-    --color-answer-correct-border: #AAAAAA;
-    --color-answer-incorrect: #888888;
-    --color-answer-incorrect-border: #666666;
-    --color-answer-neutral: #DDDDDD;
-    --color-answer-neutral-border: #BBBBBB;
-    --color-answer-blur: #EEEEEE;
-    --color-answer-blur-border: #CCCCCC;
+    --color-word-pronoun: #f6f6f6;
+    --color-word-pronoun-border: #777777;
+    --color-word-preposition: #f7f7f7;
+    --color-word-preposition-border: #888888;
+    --color-word-conjunction: #f8f8f8;
+    --color-word-conjunction-border: #999999;
+    --color-word-phrase: #f9f9f9;
+    --color-word-phrase-border: #aaaaaa;
+    --color-word-phrase-alt: #fafafa;
+    --color-word-phrase-alt-border: #bbbbbb;
+    --color-word-default: #ffffff;
+    --color-word-default-border: #cccccc;
+    --color-answer-correct: #e8e8e8;
+    --color-answer-correct-border: #aaaaaa;
+    --color-answer-incorrect: #e8e8e8;
+    --color-answer-incorrect-border: #888888;
+    --color-answer-neutral: #f0f0f0;
+    --color-answer-neutral-border: #cccccc;
+    --color-answer-blur: #f5f5f5;
+    --color-answer-blur-border: #cccccc;
   }
 
   .cyber {
