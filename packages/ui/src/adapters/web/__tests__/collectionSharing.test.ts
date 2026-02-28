@@ -35,8 +35,8 @@ describe("shareCollection", () => {
     await createTestCollection();
     await adapter.shareCollection("coll-1", "user-2");
 
-    const su = await getDb().collectionSharedUsers
-      .where("collectionId")
+    const su = await getDb()
+      .collectionSharedUsers.where("collectionId")
       .equals("coll-1")
       .first();
     expect(su?.userId).toBe("user-2");
@@ -52,8 +52,8 @@ describe("shareCollection", () => {
     const result = await adapter.shareCollection("coll-1", "user-2");
 
     expect(result).toContain("already shared");
-    const count = await getDb().collectionSharedUsers
-      .where("collectionId")
+    const count = await getDb()
+      .collectionSharedUsers.where("collectionId")
       .equals("coll-1")
       .count();
     expect(count).toBe(1);
@@ -74,8 +74,8 @@ describe("unshareCollection", () => {
     await adapter.unshareCollection("coll-1", "user-2");
 
     // Record still exists but is soft-deleted
-    const su = await getDb().collectionSharedUsers
-      .where("collectionId")
+    const su = await getDb()
+      .collectionSharedUsers.where("collectionId")
       .equals("coll-1")
       .first();
     expect(su).toBeDefined();
@@ -91,8 +91,8 @@ describe("unshareCollection", () => {
     await adapter.shareCollection("coll-1", "user-2");
 
     // Simulate previously synced sharing record
-    const su = await getDb().collectionSharedUsers
-      .where("collectionId")
+    const su = await getDb()
+      .collectionSharedUsers.where("collectionId")
       .equals("coll-1")
       .first();
     await getDb().collectionSharedUsers.update(su!.id, { syncedAt: 1000 });

@@ -15,6 +15,7 @@ import {
   setPracticeService,
   setSyncService,
   setVocabularyService,
+  getSyncService,
 } from "@cham-lang/ui/adapters/factory";
 import {
   type IPlatformServices,
@@ -43,7 +44,14 @@ import {
 // Shared Adapters
 import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
 import { getAuthService } from "@cham-lang/ui/adapters/factory";
-import { initDb } from "@cham-lang/ui/adapters/web";
+import {
+  initDb,
+  deleteCurrentDb,
+  IndexedDBSyncStorage,
+} from "@cham-lang/ui/adapters/web";
+
+type LogoutCleanupFn = () => Promise<{ success: boolean; error?: string }>;
+type UnregisterFn = () => void;
 
 export interface ChamLangAppProps {
   className?: string;
@@ -60,6 +68,8 @@ export interface ChamLangAppProps {
   onLogoutRequest?: () => void;
   /** Base path for navigation when embedded (e.g., '/cham-lang') */
   basePath?: string;
+  /** Register a cleanup callback for logout (sync + delete DB). Returns unregister fn. */
+  registerLogoutCleanup?: (appId: string, fn: LogoutCleanupFn) => UnregisterFn;
 }
 
 /**
@@ -77,6 +87,7 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
   onLogoutRequest,
   basePath,
   className,
+  registerLogoutCleanup,
 }) => {
   // Gate rendering on DB ready to prevent getDb() throws before initDb() completes
   const [dbReady, setDbReady] = useState(false);
@@ -88,6 +99,30 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
       .then(() => setDbReady(true))
       .catch(console.error);
   }, [authTokens?.userId]);
+
+  // Register logout cleanup with hub after DB is ready
+  useEffect(() => {
+    if (!dbReady || !registerLogoutCleanup) return;
+    const unregister = registerLogoutCleanup("cham-lang", async () => {
+      try {
+        const storage = new IndexedDBSyncStorage();
+        const hasPending = await storage.hasPendingChanges();
+        if (hasPending) {
+          const syncService = getSyncService();
+          const result = await syncService.syncNow();
+          if (!result.success) return { success: false, error: result.error };
+        }
+        await deleteCurrentDb();
+        return { success: true };
+      } catch (e) {
+        return {
+          success: false,
+          error: e instanceof Error ? e.message : "Cleanup failed",
+        };
+      }
+    });
+    return unregister;
+  }, [dbReady, registerLogoutCleanup]);
 
   // Initialize services only after DB is ready
   const platform = useMemo<IPlatformServices>(() => {

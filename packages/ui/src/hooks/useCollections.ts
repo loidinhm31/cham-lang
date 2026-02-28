@@ -60,7 +60,9 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
     try {
       await CollectionService.updateCollection(request);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update collection");
+      setError(
+        err instanceof Error ? err.message : "Failed to update collection",
+      );
       await loadCollections();
       throw err;
     }
@@ -79,7 +81,9 @@ export const useCollections = (options: UseCollectionsOptions = {}) => {
     try {
       await CollectionService.deleteCollection(collectionId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete collection");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete collection",
+      );
       await loadCollections();
       throw err;
     }

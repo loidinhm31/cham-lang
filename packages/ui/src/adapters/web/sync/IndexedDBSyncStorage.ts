@@ -138,12 +138,23 @@ export class IndexedDBSyncStorage {
     for (const topic of topics) {
       if (!isUnsynced(topic)) continue;
       if (topic.deleted) {
-        records.push({ tableName: "topics", rowId: topic.id, data: {}, version: topic.syncVersion || 1, deleted: true });
+        records.push({
+          tableName: "topics",
+          rowId: topic.id,
+          data: {},
+          version: topic.syncVersion || 1,
+          deleted: true,
+        });
       } else {
         records.push({
           tableName: "topics",
           rowId: topic.id,
-          data: { id: topic.id, name: topic.name, createdAt: toUnixTimestamp(topic.createdAt), syncVersion: topic.syncVersion || 1 },
+          data: {
+            id: topic.id,
+            name: topic.name,
+            createdAt: toUnixTimestamp(topic.createdAt),
+            syncVersion: topic.syncVersion || 1,
+          },
           version: topic.syncVersion || 1,
           deleted: false,
         });
@@ -155,12 +166,23 @@ export class IndexedDBSyncStorage {
     for (const tag of tags) {
       if (!isUnsynced(tag)) continue;
       if (tag.deleted) {
-        records.push({ tableName: "tags", rowId: tag.id, data: {}, version: tag.syncVersion || 1, deleted: true });
+        records.push({
+          tableName: "tags",
+          rowId: tag.id,
+          data: {},
+          version: tag.syncVersion || 1,
+          deleted: true,
+        });
       } else {
         records.push({
           tableName: "tags",
           rowId: tag.id,
-          data: { id: tag.id, name: tag.name, createdAt: toUnixTimestamp(tag.createdAt), syncVersion: tag.syncVersion || 1 },
+          data: {
+            id: tag.id,
+            name: tag.name,
+            createdAt: toUnixTimestamp(tag.createdAt),
+            syncVersion: tag.syncVersion || 1,
+          },
           version: tag.syncVersion || 1,
           deleted: false,
         });
@@ -172,12 +194,23 @@ export class IndexedDBSyncStorage {
     for (const lang of langs) {
       if (!isUnsynced(lang)) continue;
       if (lang.deleted) {
-        records.push({ tableName: "userLearningLanguages", rowId: lang.id, data: {}, version: lang.syncVersion || 1, deleted: true });
+        records.push({
+          tableName: "userLearningLanguages",
+          rowId: lang.id,
+          data: {},
+          version: lang.syncVersion || 1,
+          deleted: true,
+        });
       } else {
         records.push({
           tableName: "userLearningLanguages",
           rowId: lang.id,
-          data: { id: lang.id, language: lang.language, createdAt: toUnixTimestamp(lang.createdAt), syncVersion: lang.syncVersion || 1 },
+          data: {
+            id: lang.id,
+            language: lang.language,
+            createdAt: toUnixTimestamp(lang.createdAt),
+            syncVersion: lang.syncVersion || 1,
+          },
           version: lang.syncVersion || 1,
           deleted: false,
         });
@@ -189,12 +222,24 @@ export class IndexedDBSyncStorage {
     for (const su of sharedUsers) {
       if (!isUnsynced(su)) continue;
       if (su.deleted) {
-        records.push({ tableName: "collectionSharedUsers", rowId: su.id, data: {}, version: su.syncVersion || 1, deleted: true });
+        records.push({
+          tableName: "collectionSharedUsers",
+          rowId: su.id,
+          data: {},
+          version: su.syncVersion || 1,
+          deleted: true,
+        });
       } else {
         records.push({
           tableName: "collectionSharedUsers",
           rowId: su.id,
-          data: { id: su.id, collectionId: su.collectionId, userId: su.userId, createdAt: toUnixTimestamp(su.createdAt), syncVersion: su.syncVersion || 1 },
+          data: {
+            id: su.id,
+            collectionId: su.collectionId,
+            userId: su.userId,
+            createdAt: toUnixTimestamp(su.createdAt),
+            syncVersion: su.syncVersion || 1,
+          },
           version: su.syncVersion || 1,
           deleted: false,
         });
@@ -206,7 +251,13 @@ export class IndexedDBSyncStorage {
     for (const pp of practiceProgress) {
       if (!isUnsynced(pp)) continue;
       if (pp.deleted) {
-        records.push({ tableName: "practiceProgress", rowId: pp.id, data: {}, version: pp.syncVersion || 1, deleted: true });
+        records.push({
+          tableName: "practiceProgress",
+          rowId: pp.id,
+          data: {},
+          version: pp.syncVersion || 1,
+          deleted: true,
+        });
       } else {
         records.push({
           tableName: "practiceProgress",
@@ -229,6 +280,69 @@ export class IndexedDBSyncStorage {
       }
     }
 
+    // Learning settings (SR algorithm config, daily limits, reminders)
+    const learningSettings = await getDb().learningSettings.toArray();
+    for (const ls of learningSettings) {
+      if (!isUnsynced(ls)) continue;
+      records.push({
+        tableName: "learningSettings",
+        rowId: ls.id,
+        data: {
+          id: ls.id,
+          srAlgorithm: ls.srAlgorithm,
+          leitnerBoxCount: ls.leitnerBoxCount,
+          consecutiveCorrectRequired: ls.consecutiveCorrectRequired,
+          showFailedWordsInSession: ls.showFailedWordsInSession,
+          newWordsPerDay: ls.newWordsPerDay ?? null,
+          dailyReviewLimit: ls.dailyReviewLimit ?? null,
+          autoAdvanceTimeoutSeconds: ls.autoAdvanceTimeoutSeconds,
+          showHintInFillword: ls.showHintInFillword,
+          reminderEnabled: ls.reminderEnabled ?? false,
+          reminderTime: ls.reminderTime ?? "",
+          createdAt: toUnixTimestamp(ls.createdAt),
+          updatedAt: toUnixTimestamp(ls.updatedAt),
+          syncVersion: ls.syncVersion || 1,
+        },
+        version: ls.syncVersion || 1,
+        deleted: false,
+      });
+    }
+
+    // Word progress (spaced repetition state per vocabulary item)
+    const wordProgress = await getDb().wordProgress.toArray();
+    for (const wp of wordProgress) {
+      if (!isUnsynced(wp)) continue;
+      records.push({
+        tableName: "wordProgress",
+        rowId: wp.id,
+        data: {
+          id: wp.id,
+          language: wp.language,
+          vocabularyId: wp.vocabularyId,
+          word: wp.word,
+          correctCount: wp.correctCount,
+          incorrectCount: wp.incorrectCount,
+          totalReviews: wp.totalReviews,
+          masteryLevel: wp.masteryLevel,
+          nextReviewDate: toUnixTimestamp(wp.nextReviewDate),
+          intervalDays: wp.intervalDays,
+          easinessFactor: wp.easinessFactor,
+          consecutiveCorrectCount: wp.consecutiveCorrectCount,
+          leitnerBox: wp.leitnerBox,
+          lastIntervalDays: wp.lastIntervalDays,
+          failedInSession: wp.failedInSession,
+          retryCount: wp.retryCount,
+          completedModesInCycle: wp.completedModesInCycle,
+          lastPracticed: toUnixTimestamp(wp.lastPracticed),
+          createdAt: toUnixTimestamp(wp.createdAt ?? wp.lastPracticed),
+          updatedAt: toUnixTimestamp(wp.updatedAt ?? wp.lastPracticed),
+          syncVersion: wp.syncVersion || 1,
+        },
+        version: wp.syncVersion || 1,
+        deleted: false,
+      });
+    }
+
     // Legacy _pendingChanges drain (backward compat — pre-soft-delete hard-delete records)
     const pendingDeletes = await getDb()._pendingChanges.toArray();
     for (const change of pendingDeletes) {
@@ -244,27 +358,71 @@ export class IndexedDBSyncStorage {
     return records;
   }
 
+  async hasPendingChanges(): Promise<boolean> {
+    // _pendingChanges only stores delete operations (PendingChange.operation === "delete")
+    const pendingDeletes = await getDb()._pendingChanges.count();
+    if (pendingDeletes > 0) return true;
+    const tables = [
+      getDb().vocabularies,
+      getDb().collections,
+      getDb().topics,
+      getDb().tags,
+      getDb().userLearningLanguages,
+      getDb().collectionSharedUsers,
+      getDb().practiceProgress,
+      getDb().wordProgress,
+      getDb().learningSettings,
+    ];
+    for (const table of tables) {
+      const count = await table
+        .filter((r) => r.syncedAt === undefined || r.syncedAt === null)
+        .count();
+      if (count > 0) return true;
+    }
+    return false;
+  }
+
   async getPendingChangesCount(): Promise<number> {
-    const unsyncedVocabs = await getDb().vocabularies
-      .filter((v) => v.syncedAt === undefined || v.syncedAt === null)
+    const unsyncedVocabs = await getDb()
+      .vocabularies.filter(
+        (v) => v.syncedAt === undefined || v.syncedAt === null,
+      )
       .count();
-    const unsyncedCollections = await getDb().collections
-      .filter((c) => c.syncedAt === undefined || c.syncedAt === null)
+    const unsyncedCollections = await getDb()
+      .collections.filter(
+        (c) => c.syncedAt === undefined || c.syncedAt === null,
+      )
       .count();
-    const unsyncedTopics = await getDb().topics
-      .filter((t) => t.syncedAt === undefined || t.syncedAt === null)
+    const unsyncedTopics = await getDb()
+      .topics.filter((t) => t.syncedAt === undefined || t.syncedAt === null)
       .count();
-    const unsyncedTags = await getDb().tags
-      .filter((t) => t.syncedAt === undefined || t.syncedAt === null)
+    const unsyncedTags = await getDb()
+      .tags.filter((t) => t.syncedAt === undefined || t.syncedAt === null)
       .count();
-    const unsyncedLangs = await getDb().userLearningLanguages
-      .filter((l) => l.syncedAt === undefined || l.syncedAt === null)
+    const unsyncedLangs = await getDb()
+      .userLearningLanguages.filter(
+        (l) => l.syncedAt === undefined || l.syncedAt === null,
+      )
       .count();
-    const unsyncedShared = await getDb().collectionSharedUsers
-      .filter((s) => s.syncedAt === undefined || s.syncedAt === null)
+    const unsyncedShared = await getDb()
+      .collectionSharedUsers.filter(
+        (s) => s.syncedAt === undefined || s.syncedAt === null,
+      )
       .count();
-    const unsyncedProgress = await getDb().practiceProgress
-      .filter((p) => p.syncedAt === undefined || p.syncedAt === null)
+    const unsyncedProgress = await getDb()
+      .practiceProgress.filter(
+        (p) => p.syncedAt === undefined || p.syncedAt === null,
+      )
+      .count();
+    const unsyncedWordProgress = await getDb()
+      .wordProgress.filter(
+        (w) => w.syncedAt === undefined || w.syncedAt === null,
+      )
+      .count();
+    const unsyncedSettings = await getDb()
+      .learningSettings.filter(
+        (s) => s.syncedAt === undefined || s.syncedAt === null,
+      )
       .count();
     const pendingDeletes = await getDb()._pendingChanges.count();
     return (
@@ -275,6 +433,8 @@ export class IndexedDBSyncStorage {
       unsyncedLangs +
       unsyncedShared +
       unsyncedProgress +
+      unsyncedWordProgress +
+      unsyncedSettings +
       pendingDeletes
     );
   }
@@ -290,7 +450,10 @@ export class IndexedDBSyncStorage {
 
     /** Build update payload: soft-deleted records only stamp syncedAt (version already
      *  incremented on delete); live records also bump syncVersion. */
-    const payload = (deleted: 0 | 1 | boolean | undefined, currentVersion: number) =>
+    const payload = (
+      deleted: 0 | 1 | boolean | undefined,
+      currentVersion: number,
+    ) =>
       deleted
         ? { syncedAt: now }
         : { syncedAt: now, syncVersion: currentVersion + 1 };
@@ -298,25 +461,67 @@ export class IndexedDBSyncStorage {
     for (const { tableName, rowId } of syncedRecords) {
       if (tableName === "collections") {
         const r = await getDb().collections.get(rowId);
-        if (r) await getDb().collections.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().collections.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "vocabularies") {
         const r = await getDb().vocabularies.get(rowId);
-        if (r) await getDb().vocabularies.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().vocabularies.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "topics") {
         const r = await getDb().topics.get(rowId);
-        if (r) await getDb().topics.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().topics.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "tags") {
         const r = await getDb().tags.get(rowId);
-        if (r) await getDb().tags.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().tags.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "userLearningLanguages") {
         const r = await getDb().userLearningLanguages.get(rowId);
-        if (r) await getDb().userLearningLanguages.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().userLearningLanguages.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "collectionSharedUsers") {
         const r = await getDb().collectionSharedUsers.get(rowId);
-        if (r) await getDb().collectionSharedUsers.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().collectionSharedUsers.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
       } else if (tableName === "practiceProgress") {
         const r = await getDb().practiceProgress.get(rowId);
-        if (r) await getDb().practiceProgress.update(rowId, payload(r.deleted, r.syncVersion || 1));
+        if (r)
+          await getDb().practiceProgress.update(
+            rowId,
+            payload(r.deleted, r.syncVersion || 1),
+          );
+      } else if (tableName === "wordProgress") {
+        const r = await getDb().wordProgress.get(rowId);
+        if (r)
+          await getDb().wordProgress.update(rowId, {
+            syncedAt: Math.floor(Date.now() / 1000),
+            syncVersion: (r.syncVersion || 1) + 1,
+          });
+      } else if (tableName === "learningSettings") {
+        const r = await getDb().learningSettings.get(rowId);
+        if (r)
+          await getDb().learningSettings.update(rowId, {
+            syncedAt: Math.floor(Date.now() / 1000),
+            syncVersion: (r.syncVersion || 1) + 1,
+          });
       }
 
       // Drain legacy _pendingChanges (pre-soft-delete hard-delete records)
@@ -334,17 +539,37 @@ export class IndexedDBSyncStorage {
     const deleted = records.filter((r) => r.deleted);
 
     const upsertOrder: Record<string, number> = {
-      topics: 0, tags: 1, collections: 2, userLearningLanguages: 3,
-      collectionSharedUsers: 4, vocabularies: 5, wordProgress: 6,
-      learningSettings: 7, practiceSessions: 8, practiceProgress: 9,
+      topics: 0,
+      tags: 1,
+      collections: 2,
+      userLearningLanguages: 3,
+      collectionSharedUsers: 4,
+      vocabularies: 5,
+      wordProgress: 6,
+      learningSettings: 7,
+      practiceSessions: 8,
+      practiceProgress: 9,
     };
     const deleteOrder: Record<string, number> = {
-      practiceProgress: 0, practiceSessions: 1, wordProgress: 2,
-      collectionSharedUsers: 3, vocabularies: 4, userLearningLanguages: 5,
-      collections: 6, learningSettings: 7, topics: 8, tags: 9,
+      practiceProgress: 0,
+      practiceSessions: 1,
+      wordProgress: 2,
+      collectionSharedUsers: 3,
+      vocabularies: 4,
+      userLearningLanguages: 5,
+      collections: 6,
+      learningSettings: 7,
+      topics: 8,
+      tags: 9,
     };
-    nonDeleted.sort((a, b) => (upsertOrder[a.tableName] ?? 10) - (upsertOrder[b.tableName] ?? 10));
-    deleted.sort((a, b) => (deleteOrder[a.tableName] ?? 10) - (deleteOrder[b.tableName] ?? 10));
+    nonDeleted.sort(
+      (a, b) =>
+        (upsertOrder[a.tableName] ?? 10) - (upsertOrder[b.tableName] ?? 10),
+    );
+    deleted.sort(
+      (a, b) =>
+        (deleteOrder[a.tableName] ?? 10) - (deleteOrder[b.tableName] ?? 10),
+    );
 
     // Resolve auth info before the transaction — avoids non-IDB async inside IDB tx
     let currentUserId: string | undefined;
@@ -359,9 +584,16 @@ export class IndexedDBSyncStorage {
     await getDb().transaction(
       "rw",
       [
-        getDb().vocabularies, getDb().collections, getDb().topics, getDb().tags,
-        getDb().userLearningLanguages, getDb().collectionSharedUsers,
-        getDb().practiceProgress, getDb()._pendingChanges,
+        getDb().vocabularies,
+        getDb().collections,
+        getDb().topics,
+        getDb().tags,
+        getDb().userLearningLanguages,
+        getDb().collectionSharedUsers,
+        getDb().wordProgress,
+        getDb().learningSettings,
+        getDb().practiceProgress,
+        getDb()._pendingChanges,
       ],
       async () => {
         const now = Math.floor(Date.now() / 1000);
@@ -371,9 +603,14 @@ export class IndexedDBSyncStorage {
           if (record.tableName === "collections") {
             await this.applyCollectionChange(record, now, currentUserId);
           } else if (record.tableName === "vocabularies") {
-            const oldCollectionId = await this.applyVocabularyChange(record, now);
+            const oldCollectionId = await this.applyVocabularyChange(
+              record,
+              now,
+            );
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const newCollectionId = String((record.data as any).collectionId || "");
+            const newCollectionId = String(
+              (record.data as any).collectionId || "",
+            );
             if (newCollectionId) affectedCollectionIds.add(newCollectionId);
             if (oldCollectionId && oldCollectionId !== newCollectionId) {
               affectedCollectionIds.add(oldCollectionId);
@@ -386,6 +623,10 @@ export class IndexedDBSyncStorage {
             await this.applyUserLearningLanguageChange(record, now);
           } else if (record.tableName === "collectionSharedUsers") {
             await this.applyCollectionSharedUserChange(record, now);
+          } else if (record.tableName === "wordProgress") {
+            await this.applyWordProgressChange(record, now);
+          } else if (record.tableName === "learningSettings") {
+            await this.applyLearningSettingsChange(record, now);
           } else if (record.tableName === "practiceProgress") {
             await this.applyPracticeProgressChange(record, now);
           }
@@ -394,61 +635,96 @@ export class IndexedDBSyncStorage {
         for (const record of deleted) {
           if (record.tableName === "vocabularies") {
             const existing = await getDb().vocabularies.get(record.rowId);
-            if (existing?.collectionId) affectedCollectionIds.add(existing.collectionId);
+            if (existing?.collectionId)
+              affectedCollectionIds.add(existing.collectionId);
             if (existing && !existing.deleted) {
-              await getDb().vocabularies.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().vocabularies.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
           } else if (record.tableName === "collections") {
             // Soft-delete all vocabs in the collection
-            await getDb().vocabularies
-              .where("collectionId")
+            await getDb()
+              .vocabularies.where("collectionId")
               .equals(record.rowId)
               .filter((v) => !v.deleted)
               .modify({ deleted: 1, deletedAt: now });
             const collection = await getDb().collections.get(record.rowId);
             if (collection && !collection.deleted) {
-              await getDb().collections.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().collections.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
             affectedCollectionIds.delete(record.rowId);
           } else if (record.tableName === "topics") {
             const existing = await getDb().topics.get(record.rowId);
             if (existing && !existing.deleted) {
-              await getDb().topics.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().topics.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
           } else if (record.tableName === "tags") {
             const existing = await getDb().tags.get(record.rowId);
             if (existing && !existing.deleted) {
-              await getDb().tags.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().tags.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
           } else if (record.tableName === "userLearningLanguages") {
-            const existing = await getDb().userLearningLanguages.get(record.rowId);
+            const existing = await getDb().userLearningLanguages.get(
+              record.rowId,
+            );
             if (existing && !existing.deleted) {
-              await getDb().userLearningLanguages.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().userLearningLanguages.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
           } else if (record.tableName === "collectionSharedUsers") {
-            const existing = await getDb().collectionSharedUsers.get(record.rowId);
+            const existing = await getDb().collectionSharedUsers.get(
+              record.rowId,
+            );
             if (existing && !existing.deleted) {
-              await getDb().collectionSharedUsers.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().collectionSharedUsers.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
+          } else if (record.tableName === "wordProgress") {
+            await getDb().wordProgress.delete(record.rowId);
+          } else if (record.tableName === "learningSettings") {
+            await getDb().learningSettings.delete(record.rowId);
           } else if (record.tableName === "practiceProgress") {
             const existing = await getDb().practiceProgress.get(record.rowId);
             if (existing && !existing.deleted) {
-              await getDb().practiceProgress.update(record.rowId, { deleted: 1, deletedAt: now });
+              await getDb().practiceProgress.update(record.rowId, {
+                deleted: 1,
+                deletedAt: now,
+              });
             }
           }
-          await getDb()._pendingChanges.where("recordId").equals(record.rowId).delete();
+          await getDb()
+            ._pendingChanges.where("recordId")
+            .equals(record.rowId)
+            .delete();
         }
 
         // Recalculate wordCount for affected (non-deleted) collections
         for (const collectionId of affectedCollectionIds) {
           const collection = await getDb().collections.get(collectionId);
           if (collection && !collection.deleted) {
-            const count = await getDb().vocabularies
-              .where("collectionId")
+            const count = await getDb()
+              .vocabularies.where("collectionId")
               .equals(collectionId)
               .filter((v) => !v.deleted)
               .count();
-            await getDb().collections.update(collectionId, { wordCount: count });
+            await getDb().collections.update(collectionId, {
+              wordCount: count,
+            });
           }
         }
       },
@@ -645,6 +921,83 @@ export class IndexedDBSyncStorage {
     }
   }
 
+  private async applyLearningSettingsChange(
+    record: PullRecord,
+    now: number,
+  ): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = record.data as any;
+    const existing = await getDb().learningSettings.get(record.rowId);
+    const lsData = {
+      id: record.rowId,
+      srAlgorithm: String(data.srAlgorithm || "modifiedsm2"),
+      leitnerBoxCount: Number(data.leitnerBoxCount || 5),
+      consecutiveCorrectRequired: Number(data.consecutiveCorrectRequired || 3),
+      showFailedWordsInSession: Boolean(data.showFailedWordsInSession),
+      newWordsPerDay:
+        data.newWordsPerDay != null ? Number(data.newWordsPerDay) : undefined,
+      dailyReviewLimit:
+        data.dailyReviewLimit != null
+          ? Number(data.dailyReviewLimit)
+          : undefined,
+      autoAdvanceTimeoutSeconds: Number(data.autoAdvanceTimeoutSeconds || 2),
+      showHintInFillword: Boolean(data.showHintInFillword),
+      reminderEnabled: Boolean(data.reminderEnabled),
+      reminderTime: data.reminderTime ? String(data.reminderTime) : undefined,
+      createdAt: toISODateString(data.createdAt),
+      updatedAt: toISODateString(data.updatedAt),
+      syncVersion: record.version,
+      syncedAt: now,
+    };
+    if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await getDb().learningSettings.update(record.rowId, lsData as any);
+    } else {
+      await getDb().learningSettings.add(lsData);
+    }
+  }
+
+  private async applyWordProgressChange(
+    record: PullRecord,
+    now: number,
+  ): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const data = record.data as any;
+    const existing = await getDb().wordProgress.get(record.rowId);
+    const wpData = {
+      id: record.rowId,
+      language: String(data.language || ""),
+      vocabularyId: String(data.vocabularyId || ""),
+      word: String(data.word || ""),
+      correctCount: Number(data.correctCount || 0),
+      incorrectCount: Number(data.incorrectCount || 0),
+      totalReviews: Number(data.totalReviews || 0),
+      masteryLevel: Number(data.masteryLevel || 0),
+      nextReviewDate: toISODateString(data.nextReviewDate),
+      intervalDays: Number(data.intervalDays || 1),
+      easinessFactor: Number(data.easinessFactor || 2.5),
+      consecutiveCorrectCount: Number(data.consecutiveCorrectCount || 0),
+      leitnerBox: Number(data.leitnerBox || 1),
+      lastIntervalDays: Number(data.lastIntervalDays || 0),
+      failedInSession: Boolean(data.failedInSession),
+      retryCount: Number(data.retryCount || 0),
+      completedModesInCycle: Array.isArray(data.completedModesInCycle)
+        ? data.completedModesInCycle
+        : [],
+      lastPracticed: toISODateString(data.lastPracticed),
+      createdAt: toISODateString(data.createdAt),
+      updatedAt: toISODateString(data.updatedAt),
+      syncVersion: record.version,
+      syncedAt: now,
+    };
+    if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await getDb().wordProgress.update(record.rowId, wpData as any);
+    } else {
+      await getDb().wordProgress.add(wpData);
+    }
+  }
+
   // =========================================================================
   // Checkpoint Management
   // =========================================================================
@@ -691,12 +1044,23 @@ export class IndexedDBSyncStorage {
     await getDb().transaction(
       "rw",
       [
-        getDb().vocabularies, getDb().collections, getDb().topics, getDb().tags,
-        getDb().userLearningLanguages, getDb().collectionSharedUsers, getDb().practiceProgress,
+        getDb().vocabularies,
+        getDb().collections,
+        getDb().topics,
+        getDb().tags,
+        getDb().userLearningLanguages,
+        getDb().collectionSharedUsers,
+        getDb().practiceProgress,
       ],
       async () => {
-        const isPurgeable = (r: { deleted?: 0 | 1; syncedAt?: number; deletedAt?: number }) =>
-          r.deleted === 1 && r.syncedAt !== undefined && (r.deletedAt ?? 0) < cutoff;
+        const isPurgeable = (r: {
+          deleted?: 0 | 1;
+          syncedAt?: number;
+          deletedAt?: number;
+        }) =>
+          r.deleted === 1 &&
+          r.syncedAt !== undefined &&
+          (r.deletedAt ?? 0) < cutoff;
 
         await getDb().vocabularies.filter(isPurgeable).delete();
         await getDb().collections.filter(isPurgeable).delete();

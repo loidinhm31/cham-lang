@@ -37,7 +37,8 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
 
   async getVocabulary(id: string): Promise<Vocabulary> {
     const vocab = await getDb().vocabularies.get(id);
-    if (!vocab || vocab.deleted === 1) throw new Error(`Vocabulary not found: ${id}`);
+    if (!vocab || vocab.deleted === 1)
+      throw new Error(`Vocabulary not found: ${id}`);
     return vocab as Vocabulary;
   }
 
@@ -45,18 +46,21 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     language?: string,
     limit?: number,
   ): Promise<Vocabulary[]> {
-    const all = await getDb().vocabularies
-      .orderBy("createdAt")
+    const all = await getDb()
+      .vocabularies.orderBy("createdAt")
       .reverse()
       .filter((v) => !v.deleted)
       .toArray();
-    const filtered = language ? all.filter((v) => v.language === language) : all;
+    const filtered = language
+      ? all.filter((v) => v.language === language)
+      : all;
     return (limit ? filtered.slice(0, limit) : filtered) as Vocabulary[];
   }
 
   async updateVocabulary(request: UpdateVocabularyRequest): Promise<string> {
     const existing = await getDb().vocabularies.get(request.id);
-    if (!existing || existing.deleted === 1) throw new Error(`Vocabulary not found: ${request.id}`);
+    if (!existing || existing.deleted === 1)
+      throw new Error(`Vocabulary not found: ${request.id}`);
 
     const { id, ...updates } = request;
     const oldCollectionId = existing.collectionId;
@@ -92,26 +96,30 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
   }
 
   async deleteVocabulary(id: string): Promise<string> {
-    await getDb().transaction("rw", [getDb().vocabularies, getDb().collections], async () => {
-      const vocab = await getDb().vocabularies.get(id);
-      if (!vocab || vocab.deleted === 1) return;
+    await getDb().transaction(
+      "rw",
+      [getDb().vocabularies, getDb().collections],
+      async () => {
+        const vocab = await getDb().vocabularies.get(id);
+        if (!vocab || vocab.deleted === 1) return;
 
-      const now = Date.now();
-      await getDb().vocabularies.update(id, {
-        deleted: 1,
-        deletedAt: now,
-        syncVersion: (vocab.syncVersion ?? 0) + 1,
-        syncedAt: undefined,
-        updatedAt: new Date(now).toISOString(),
-      });
-
-      const collection = await getDb().collections.get(vocab.collectionId);
-      if (collection) {
-        await getDb().collections.update(vocab.collectionId, {
-          wordCount: Math.max(0, (collection.wordCount || 0) - 1),
+        const now = Date.now();
+        await getDb().vocabularies.update(id, {
+          deleted: 1,
+          deletedAt: now,
+          syncVersion: (vocab.syncVersion ?? 0) + 1,
+          syncedAt: undefined,
+          updatedAt: new Date(now).toISOString(),
         });
-      }
-    });
+
+        const collection = await getDb().collections.get(vocab.collectionId);
+        if (collection) {
+          await getDb().collections.update(vocab.collectionId, {
+            wordCount: Math.max(0, (collection.wordCount || 0) - 1),
+          });
+        }
+      },
+    );
     return "Vocabulary deleted successfully";
   }
 
@@ -124,7 +132,11 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
 
     for (const vocabId of vocabularyIds) {
       const vocab = await getDb().vocabularies.get(vocabId);
-      if (!vocab || vocab.deleted === 1 || vocab.collectionId === targetCollectionId) {
+      if (
+        !vocab ||
+        vocab.deleted === 1 ||
+        vocab.collectionId === targetCollectionId
+      ) {
         skippedCount++;
         continue;
       }
@@ -133,6 +145,8 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
       await getDb().vocabularies.update(vocabId, {
         collectionId: targetCollectionId,
         updatedAt: getCurrentTimestamp(),
+        syncVersion: (vocab.syncVersion ?? 0) + 1,
+        syncedAt: undefined,
       });
 
       // Update old collection count
@@ -187,8 +201,8 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     collectionId: string,
     limit?: number,
   ): Promise<Vocabulary[]> {
-    let results = await getDb().vocabularies
-      .where("collectionId")
+    let results = await getDb()
+      .vocabularies.where("collectionId")
       .equals(collectionId)
       .filter((v) => !v.deleted)
       .toArray();
@@ -201,8 +215,8 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
     limit?: number,
     offset?: number,
   ): Promise<PaginatedResponse<Vocabulary>> {
-    const all = await getDb().vocabularies
-      .where("collectionId")
+    const all = await getDb()
+      .vocabularies.where("collectionId")
       .equals(collectionId)
       .filter((v) => !v.deleted)
       .toArray();
@@ -223,19 +237,25 @@ export class IndexedDBVocabularyAdapter implements IVocabularyService {
   }
 
   async getAllLanguages(): Promise<string[]> {
-    const collections = await getDb().collections.filter((c) => !c.deleted).toArray();
+    const collections = await getDb()
+      .collections.filter((c) => !c.deleted)
+      .toArray();
     const languages = new Set(collections.map((c) => c.language));
     return [...languages];
   }
 
   async getAllTopics(): Promise<string[]> {
-    const vocabs = await getDb().vocabularies.filter((v) => !v.deleted).toArray();
+    const vocabs = await getDb()
+      .vocabularies.filter((v) => !v.deleted)
+      .toArray();
     const topics = new Set(vocabs.flatMap((v) => v.topics));
     return [...topics].sort();
   }
 
   async getAllTags(): Promise<string[]> {
-    const vocabs = await getDb().vocabularies.filter((v) => !v.deleted).toArray();
+    const vocabs = await getDb()
+      .vocabularies.filter((v) => !v.deleted)
+      .toArray();
     const tags = new Set(vocabs.flatMap((v) => v.tags));
     return [...tags].sort();
   }

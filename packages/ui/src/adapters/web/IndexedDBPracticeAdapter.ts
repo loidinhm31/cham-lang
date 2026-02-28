@@ -30,8 +30,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     });
 
     // Update practice progress
-    let progress = await getDb().practiceProgress
-      .where("language")
+    let progress = await getDb()
+      .practiceProgress.where("language")
       .equals(request.language)
       .first();
 
@@ -71,6 +71,7 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
       longestStreak: Math.max(progress.longestStreak, newStreak),
       lastPracticeDate: now,
       updatedAt: now,
+      syncedAt: undefined, // mark dirty so next sync pushes the update
     });
 
     return id;
@@ -80,8 +81,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     language: string,
     limit?: number,
   ): Promise<PracticeSession[]> {
-    let sessions = await getDb().practiceSessions
-      .where("language")
+    let sessions = await getDb()
+      .practiceSessions.where("language")
       .equals(language)
       .toArray();
     sessions.sort((a, b) => b.startedAt.localeCompare(a.startedAt));
@@ -93,8 +94,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     request: UpdateProgressRequest,
   ): Promise<string> {
     // Find existing word progress
-    const existing = await getDb().wordProgress
-      .where("[language+vocabularyId]")
+    const existing = await getDb()
+      .wordProgress.where("[language+vocabularyId]")
       .equals([request.language, request.vocabularyId])
       .first();
 
@@ -114,6 +115,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
         totalReviews: request.totalReviews,
         completedModesInCycle: request.completedModesInCycle,
         lastPracticed: now,
+        updatedAt: now,
+        syncedAt: undefined, // mark dirty
       });
     } else {
       await getDb().wordProgress.add({
@@ -135,6 +138,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
         failedInSession: false,
         retryCount: 0,
         completedModesInCycle: request.completedModesInCycle,
+        createdAt: now,
+        updatedAt: now,
       });
     }
 
@@ -144,15 +149,15 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
   async getPracticeProgress(
     language: string,
   ): Promise<UserPracticeProgress | null> {
-    const progress = await getDb().practiceProgress
-      .where("language")
+    const progress = await getDb()
+      .practiceProgress.where("language")
       .equals(language)
       .first();
 
     if (!progress) return null;
 
-    const wordsProgress = await getDb().wordProgress
-      .where("language")
+    const wordsProgress = await getDb()
+      .wordProgress.where("language")
       .equals(language)
       .toArray();
 
@@ -174,8 +179,8 @@ export class IndexedDBPracticeAdapter implements IPracticeService {
     language: string,
     vocabularyId: string,
   ): Promise<WordProgress | null> {
-    const wp = await getDb().wordProgress
-      .where("[language+vocabularyId]")
+    const wp = await getDb()
+      .wordProgress.where("[language+vocabularyId]")
       .equals([language, vocabularyId])
       .first();
     return (wp as WordProgress) || null;

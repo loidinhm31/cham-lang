@@ -24,8 +24,8 @@ export class IndexedDBCSVAdapter implements ICSVService {
       const collection = await getDb().collections.get(collectionId);
       if (!collection) continue;
 
-      const vocabs = await getDb().vocabularies
-        .where("collectionId")
+      const vocabs = await getDb()
+        .vocabularies.where("collectionId")
         .equals(collectionId)
         .toArray();
 

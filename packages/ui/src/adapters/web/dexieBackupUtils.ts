@@ -165,7 +165,8 @@ export async function importDatabaseFromJSON(
           getDb().userLearningLanguages.bulkAdd(tables.userLearningLanguages),
         tables.collectionSharedUsers.length > 0 &&
           getDb().collectionSharedUsers.bulkAdd(tables.collectionSharedUsers),
-        tables._syncMeta.length > 0 && getDb()._syncMeta.bulkAdd(tables._syncMeta),
+        tables._syncMeta.length > 0 &&
+          getDb()._syncMeta.bulkAdd(tables._syncMeta),
         tables._pendingChanges.length > 0 &&
           getDb()._pendingChanges.bulkAdd(tables._pendingChanges),
       ]);

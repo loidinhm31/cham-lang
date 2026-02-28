@@ -100,6 +100,8 @@ export interface IDBWordProgress {
   failedInSession: boolean;
   retryCount: number;
   completedModesInCycle: string[];
+  createdAt?: string;
+  updatedAt?: string;
   syncVersion?: number;
   syncedAt?: number;
 }
@@ -226,17 +228,20 @@ export class ChamLangDatabase extends Dexie {
     super(dbName);
 
     this.version(1).stores({
-      vocabularies:    "id, word, language, collectionId, level, createdAt, updatedAt, syncedAt, deleted",
-      collections:     "id, name, language, sharedBy, isPublic, createdAt, syncedAt, deleted",
-      practiceSessions:"id, collectionId, language, mode, startedAt, syncedAt",
-      wordProgress:    "id, language, vocabularyId, nextReviewDate, leitnerBox, [language+vocabularyId], syncedAt",
-      practiceProgress:"id, language, syncedAt, deleted",
-      learningSettings:"id, syncedAt",
-      topics:          "id, name, syncedAt, deleted",
-      tags:            "id, name, syncedAt, deleted",
+      vocabularies:
+        "id, word, language, collectionId, level, createdAt, updatedAt, syncedAt, deleted",
+      collections:
+        "id, name, language, sharedBy, isPublic, createdAt, syncedAt, deleted",
+      practiceSessions: "id, collectionId, language, mode, startedAt, syncedAt",
+      wordProgress:
+        "id, language, vocabularyId, nextReviewDate, leitnerBox, [language+vocabularyId], syncedAt",
+      practiceProgress: "id, language, syncedAt, deleted",
+      learningSettings: "id, syncedAt",
+      topics: "id, name, syncedAt, deleted",
+      tags: "id, name, syncedAt, deleted",
       userLearningLanguages: "id, language, syncedAt, deleted",
       collectionSharedUsers: "id, collectionId, userId, syncedAt, deleted",
-      _syncMeta:       "key",
+      _syncMeta: "key",
       _pendingChanges: "id, tableName, recordId",
     });
 

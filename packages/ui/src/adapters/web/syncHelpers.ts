@@ -1,4 +1,9 @@
-import { getDb, generateId, getCurrentTimestamp, type PendingChange } from "./database";
+import {
+  getDb,
+  generateId,
+  getCurrentTimestamp,
+  type PendingChange,
+} from "./database";
 
 /**
  * Add sync tracking fields to a new or updated entity

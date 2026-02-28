@@ -102,7 +102,9 @@ export class IndexedDBSyncAdapter implements ISyncService {
     // Prevent concurrent sync across tabs — returns early if another tab holds the lock
     if (typeof navigator !== "undefined" && navigator.locks) {
       let result: SyncResult = {
-        pushed: 0, pulled: 0, conflicts: 0,
+        pushed: 0,
+        pulled: 0,
+        conflicts: 0,
         success: false,
         error: "Sync already running in another tab",
         syncedAt: Math.floor(Date.now() / 1000),

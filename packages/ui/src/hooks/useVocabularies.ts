@@ -65,7 +65,9 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
     try {
       await VocabularyService.updateVocabulary(request);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update vocabulary");
+      setError(
+        err instanceof Error ? err.message : "Failed to update vocabulary",
+      );
       await loadVocabularies();
       throw err;
     }
@@ -84,7 +86,9 @@ export const useVocabularies = (options: UseVocabulariesOptions = {}) => {
     try {
       await VocabularyService.deleteVocabulary(vocabularyId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete vocabulary");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete vocabulary",
+      );
       await loadVocabularies();
       throw err;
     }
