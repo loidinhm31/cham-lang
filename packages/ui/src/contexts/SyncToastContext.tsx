@@ -50,6 +50,8 @@ export function SyncToastProvider({
   const [toasts, setToasts] = useState<SyncToast[]>([]);
   const timers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
   const idCounterRef = useRef(0);
+  const toastsRef = useRef<SyncToast[]>([]);
+  toastsRef.current = toasts;
 
   useEffect(() => () => { timers.current.forEach(clearTimeout); }, []);
 
@@ -70,9 +72,23 @@ export function SyncToastProvider({
   const addToast = useCallback(
     (message: string, type: ToastType): string => {
       const id = `st-${++idCounterRef.current}`;
+      const current = toastsRef.current;
+
+      // Cancel timers for any toasts that FIFO eviction will drop
+      if (current.length >= MAX_TOASTS) {
+        const evictCount = current.length - MAX_TOASTS + 1;
+        for (let i = 0; i < evictCount; i++) {
+          const evictedId = current[i].id;
+          const timer = timers.current.get(evictedId);
+          if (timer) {
+            clearTimeout(timer);
+            timers.current.delete(evictedId);
+          }
+        }
+      }
+
       setToasts((prev) => {
         const next = [...prev, { id, message, type }];
-        // FIFO eviction: drop oldest if over cap
         return next.length > MAX_TOASTS ? next.slice(next.length - MAX_TOASTS) : next;
       });
       scheduleRemove(id, type);
