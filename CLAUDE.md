@@ -2,6 +2,53 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Architecture Reference — Read Before Planning or Implementing
+
+**`docs/architecture.md`** is the authoritative reference for this codebase. It contains:
+
+- State machine diagrams for app boot, auth, practice session, and sync cycle
+- Schema contracts for all data models with sync column conventions
+- ServiceFactory lifecycle and invariants
+- Component → Hook → Service dataflow with I/O contracts
+- Sequence diagrams for vocabulary add, practice session, and sync cycle
+- Key invariants and anti-patterns (what never to do)
+
+### Workflow — Design First, Then Code
+
+Every non-trivial change follows this two-gate process:
+
+```
+Request → [GATE 1: Design] → Plan & Code → [GATE 2: Post-impl review]
+```
+
+#### Gate 1 — Design (before planning or writing any code)
+
+1. Read `docs/architecture.md` in full — especially §12 Key Invariants.
+2. **Update `docs/architecture.md` to reflect the intended design:**
+   - Add/modify the relevant state machine, dataflow, or sequence diagram.
+   - Update schema contracts if data model changes.
+   - Add new invariants or anti-patterns if the design introduces new rules.
+3. Review the updated doc: does the design violate any existing invariant? Does it introduce new coupling or break the ServiceFactory pattern?
+4. Only after the architecture is updated and reviewed — start planning and writing code.
+
+> The architecture doc is the design surface. Code implements the design, not the other way around.
+
+#### Gate 2 — Post-implementation review (after code is complete)
+
+1. Diff your implementation against `docs/architecture.md`.
+2. Patch any section where the actual code diverged from the design (intended drift is fine — unintended drift is a bug in the doc).
+3. If a new invariant or anti-pattern was discovered during implementation, add it to §12.
+
+| What changed in code | Section(s) to patch |
+|---|---|
+| New / modified DB table or field | §2 Schema Contracts |
+| New service, adapter, or factory registration | §3 ServiceFactory Lifecycle + §8 Dataflow |
+| Auth or token handling change | §5 Auth State Machine |
+| Practice mode added/removed, mask bits changed | §6 Practice Session State Machine |
+| Sync table order, lock name, or conflict strategy | §7 Sync State Machine + §11 Sequence: Sync |
+| New page, hook, or service I/O contract | §8 Component & Hook Dataflow |
+| New invariant or anti-pattern discovered | §12 Key Invariants & Anti-Patterns |
+
 ## Project Overview
 
 Cham Lang is an offline-first vocabulary learning app supporting desktop (Tauri), Android, and web platforms. Features spaced repetition, multiple practice modes, Google Drive backup, and sync with qm-hub server.
