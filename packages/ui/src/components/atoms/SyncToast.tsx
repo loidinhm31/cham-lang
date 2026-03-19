@@ -28,10 +28,10 @@ export function SyncToast() {
         <div
           key={toast.id}
           className={[
-            "flex items-center gap-3 max-w-80 rounded-lg border px-4 py-3 shadow-lg text-sm font-medium text-(--color-text-primary)",
-            toast.type === "success" && "bg-green-500/10 border-green-500/30",
-            toast.type === "error" && "bg-red-500/10 border-red-500/30",
-            toast.type === "syncing" && "bg-blue-500/10 border-blue-500/30",
+            "flex items-center gap-3 max-w-80 rounded-lg border px-4 py-3 shadow-lg backdrop-blur-sm text-sm font-medium text-(--color-text-primary)",
+            toast.type === "success" && "bg-green-500/20 border-green-500/50",
+            toast.type === "error" && "bg-red-500/20 border-red-500/50",
+            toast.type === "syncing" && "bg-blue-500/20 border-blue-500/50",
           ]
             .filter(Boolean)
             .join(" ")}
