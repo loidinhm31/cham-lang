@@ -1,30 +1,45 @@
 import { useCallback, useEffect, useRef } from "react";
 import type { ISyncService } from "@cham-lang/ui/adapters/factory/interfaces";
+import type { SyncResult } from "@cham-lang/shared";
 
 interface UseAutoSyncOptions {
   syncService: ISyncService | null;
   enabled: boolean;
   intervalMs?: number;
+  onSyncStart?: () => void;
+  onSyncResult?: (result: SyncResult) => void;
 }
 
 export function useAutoSync({
   syncService,
   enabled,
   intervalMs = 60_000,
+  onSyncStart,
+  onSyncResult,
 }: UseAutoSyncOptions): void {
   const isSyncingRef = useRef(false);
 
   const doSync = useCallback(async () => {
     if (!syncService || isSyncingRef.current) return;
     isSyncingRef.current = true;
+    onSyncStart?.();
     try {
-      await syncService.syncNow();
+      const result = await syncService.syncNow();
+      onSyncResult?.(result);
     } catch (e) {
       console.warn("[auto-sync] failed:", e);
+      onSyncResult?.({
+        pushed: 0,
+        pulled: 0,
+        conflicts: 0,
+        success: false,
+        error: e instanceof Error ? e.message : "Sync failed",
+        syncedAt: Date.now(),
+      });
     } finally {
       isSyncingRef.current = false;
     }
-  }, [syncService]);
+  }, [syncService, onSyncStart, onSyncResult]);
 
   useEffect(() => {
     if (!enabled || !syncService) return;

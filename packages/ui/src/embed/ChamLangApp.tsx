@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { DialogProvider, ThemeProvider } from "@cham-lang/ui/contexts";
+import { SyncToastProvider } from "@cham-lang/ui/contexts/SyncToastContext";
+import { SyncToast } from "@cham-lang/ui/components/atoms/SyncToast";
 import "@cham-lang/ui/i18n/config";
 import { AppShell } from "@cham-lang/ui/components/templates";
 import { BasePathContext, PortalContainerContext } from "@cham-lang/ui/hooks";
@@ -22,6 +24,7 @@ import {
   PlatformProvider,
 } from "@cham-lang/ui/platform";
 import { isTauri } from "@cham-lang/ui/utils";
+import { useSyncToast } from "../hooks/useSyncToast";
 
 // IndexedDB Adapters - used for ALL data storage across all platforms
 import {
@@ -45,6 +48,7 @@ import {
 import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
 import { getAuthService } from "@cham-lang/ui/adapters/factory";
 import { useAutoSync } from "../hooks/useAutoSync";
+import type { ISyncService } from "@cham-lang/ui/adapters/factory/interfaces";
 import {
   initDb,
   deleteCurrentDb,
@@ -53,6 +57,23 @@ import {
 
 type LogoutCleanupFn = () => Promise<{ success: boolean; error?: string }>;
 type UnregisterFn = () => void;
+
+function SyncAutoSyncManager({
+  syncService,
+  enabled,
+}: {
+  syncService: ISyncService | null;
+  enabled: boolean;
+}) {
+  const { handleSyncStart, handleSyncResult } = useSyncToast();
+  useAutoSync({
+    syncService,
+    enabled,
+    onSyncStart: handleSyncStart,
+    onSyncResult: handleSyncResult,
+  });
+  return null;
+}
 
 export interface ChamLangAppProps {
   className?: string;
@@ -160,10 +181,7 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
   }, [dbReady]);
 
   const isAuthenticated = !!(authTokens?.accessToken && authTokens?.refreshToken);
-  useAutoSync({
-    syncService: dbReady ? getSyncService() : null,
-    enabled: dbReady && isAuthenticated && embedded,
-  });
+  const autoSyncEnabled = dbReady && isAuthenticated && embedded;
 
   // Inject auth tokens when embedded (using auth adapter)
   useEffect(() => {
@@ -207,9 +225,16 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
         <PlatformProvider services={platform}>
           <BasePathContext.Provider value={basePath || ""}>
             <PortalContainerContext.Provider value={portalContainer}>
-              <DialogProvider>
-                {useRouter ? <BrowserRouter>{content}</BrowserRouter> : content}
-              </DialogProvider>
+              <SyncToastProvider position="top-right">
+                <DialogProvider>
+                  {useRouter ? <BrowserRouter>{content}</BrowserRouter> : content}
+                </DialogProvider>
+                <SyncAutoSyncManager
+                  syncService={dbReady ? getSyncService() : null}
+                  enabled={autoSyncEnabled}
+                />
+                <SyncToast />
+              </SyncToastProvider>
             </PortalContainerContext.Provider>
           </BasePathContext.Provider>
         </PlatformProvider>
