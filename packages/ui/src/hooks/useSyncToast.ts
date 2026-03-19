@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { useSyncToastContext } from "@cham-lang/ui/contexts/SyncToastContext";
+import { useSyncToastContext } from "@cham-lang/ui/contexts";
 import type { SyncResult } from "@cham-lang/shared";
 
 export function useSyncToast() {

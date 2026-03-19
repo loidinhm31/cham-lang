@@ -1,13 +1,13 @@
-import { useSyncToastContext, type ToastPosition } from "@cham-lang/ui/contexts/SyncToastContext";
+import { useSyncToastContext, type ToastPosition } from "../../contexts/SyncToastContext";
 
 function positionClasses(position: ToastPosition): string {
   switch (position) {
     case "top-right":
-      return "top-4 right-4";
+      return "top-4 right-4 max-sm:left-1/2 max-sm:-translate-x-1/2 max-sm:right-auto";
     case "top-center":
       return "top-4 left-1/2 -translate-x-1/2";
     case "bottom-right":
-      return "bottom-4 right-4";
+      return "bottom-4 right-4 max-sm:left-1/2 max-sm:-translate-x-1/2 max-sm:right-auto max-sm:bottom-4";
     case "bottom-center":
       return "bottom-4 left-1/2 -translate-x-1/2";
   }
@@ -20,7 +20,7 @@ export function SyncToast() {
 
   return (
     <div
-      className={`fixed z-[9999] flex flex-col gap-2 max-sm:left-1/2 max-sm:-translate-x-1/2 max-sm:top-4 max-sm:right-auto ${positionClasses(position)}`}
+      className={`fixed z-[9999] flex flex-col gap-2 ${positionClasses(position)}`}
       aria-live="polite"
       aria-label="Sync notifications"
     >
@@ -28,13 +28,10 @@ export function SyncToast() {
         <div
           key={toast.id}
           className={[
-            "flex items-center gap-3 max-w-80 rounded-lg border px-4 py-3 shadow-lg text-sm font-medium",
-            toast.type === "success" &&
-              "bg-green-500/10 border-green-500/30 text-green-400",
-            toast.type === "error" &&
-              "bg-red-500/10 border-red-500/30 text-red-400",
-            toast.type === "syncing" &&
-              "bg-blue-500/10 border-blue-500/30 text-blue-400",
+            "flex items-center gap-3 max-w-80 rounded-lg border px-4 py-3 shadow-lg text-sm font-medium text-(--color-text-primary)",
+            toast.type === "success" && "bg-green-500/10 border-green-500/30",
+            toast.type === "error" && "bg-red-500/10 border-red-500/30",
+            toast.type === "syncing" && "bg-blue-500/10 border-blue-500/30",
           ]
             .filter(Boolean)
             .join(" ")}

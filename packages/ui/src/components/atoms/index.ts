@@ -25,3 +25,4 @@ export type { CardVariant } from "./Card";
 export type { DialogType, DialogVariant } from "./Dialog";
 export type { WordStatus } from "./StatusBadge";
 export type { FallbackProps, ErrorBoundaryProps } from "./ErrorBoundary";
+export { SyncToast } from "./SyncToast";

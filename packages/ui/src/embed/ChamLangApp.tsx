@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { BrowserRouter } from "react-router-dom";
 import { DialogProvider, ThemeProvider } from "@cham-lang/ui/contexts";
-import { SyncToastProvider } from "@cham-lang/ui/contexts/SyncToastContext";
-import { SyncToast } from "@cham-lang/ui/components/atoms/SyncToast";
+import { SyncToastProvider } from "@cham-lang/ui/contexts";
+import { SyncToast } from "@cham-lang/ui/components/atoms";
 import "@cham-lang/ui/i18n/config";
 import { AppShell } from "@cham-lang/ui/components/templates";
 import { BasePathContext, PortalContainerContext } from "@cham-lang/ui/hooks";
