@@ -44,6 +44,7 @@ import {
 // Shared Adapters
 import { QmServerAuthAdapter } from "@cham-lang/ui/adapters/shared";
 import { getAuthService } from "@cham-lang/ui/adapters/factory";
+import { useAutoSync } from "../hooks/useAutoSync";
 import {
   initDb,
   deleteCurrentDb,
@@ -157,6 +158,12 @@ export const ChamLangApp: React.FC<ChamLangAppProps> = ({
 
     return getAllServices();
   }, [dbReady]);
+
+  const isAuthenticated = !!(authTokens?.accessToken && authTokens?.refreshToken);
+  useAutoSync({
+    syncService: dbReady ? getSyncService() : null,
+    enabled: dbReady && isAuthenticated && embedded,
+  });
 
   // Inject auth tokens when embedded (using auth adapter)
   useEffect(() => {
