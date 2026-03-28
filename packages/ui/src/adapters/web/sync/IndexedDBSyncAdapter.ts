@@ -74,6 +74,16 @@ export class IndexedDBSyncAdapter implements ISyncService {
       this.client = new QmSyncClient(clientConfig, this.config.httpClient);
       this.lastConfigHash = configHash;
       this.initialized = false;
+      // Write rotated tokens back to persistent storage immediately so the
+      // next syncWithProgress() load doesn't overwrite them with stale values.
+      if (this.config.saveTokens) {
+        const client = this.client;
+        client.setOnTokenRefresh((at, rt) => {
+          this.config.saveTokens!(at, rt, client.getUserId() ?? "").catch(
+            (e) => console.error("[IndexedDBSyncAdapter] Failed to save refreshed tokens:", e),
+          );
+        });
+      }
     }
 
     return this.client;
