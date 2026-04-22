@@ -51,7 +51,7 @@ Request → [GATE 1: Design] → Plan & Code → [GATE 2: Post-impl review]
 
 ## Project Overview
 
-Cham Lang is an offline-first vocabulary learning app supporting desktop (Tauri), Android, and web platforms. Features spaced repetition, multiple practice modes, Google Drive backup, and sync with qm-hub server.
+Cham Lang is an offline-first vocabulary learning app supporting desktop (Tauri), Android, and web platforms. Features spaced repetition, multiple practice modes, Google Drive backup, and sync with glean-oak server.
 
 **All platforms use IndexedDB for data storage** via Dexie.js, enabling true offline-first operation with a unified codebase. The Rust backend is minimal - only providing native notifications and system tray.
 
@@ -117,7 +117,7 @@ Follows **Atomic Design**:
 
 - `web/` - IndexedDB adapters (Dexie.js) for all data operations (vocabulary, collection, practice, settings, CSV, sync)
 - `tauri/` - Platform-specific: Native notifications (`TauriNotificationAdapter`), Google OAuth (`TauriGDriveAdapter`)
-- `shared/` - Cross-platform: `QmServerAuthAdapter` for qm-hub authentication
+- `shared/` - Cross-platform: `QmServerAuthAdapter` for glean-oak authentication
 - `factory/` - `ServiceFactory` with setter/getter pattern for dependency injection
 
 ### ServiceFactory Pattern
@@ -183,7 +183,7 @@ The app supports 6 theme options stored in localStorage under `cham-lang-theme`:
 | `"cyber"`     | `.cyber`                                   | Developer terminal aesthetic                                            |
 | `"system"`    | `.dark` or _(no class)_                    | Follows `prefers-color-scheme` — resolves to `"light"` or `"dark"` only |
 
-Both a CSS class and `data-theme` attribute are set on the root element in standalone mode. In embedded mode, the `"cham-lang-theme-change"` custom event (`CHAM_LANG_THEME_EVENT`) is dispatched on `window` with `{ detail: { theme: resolved } }` for the `ShadowWrapper` in qm-hub-app to handle.
+Both a CSS class and `data-theme` attribute are set on the root element in standalone mode. In embedded mode, the `"cham-lang-theme-change"` custom event (`CHAM_LANG_THEME_EVENT`) is dispatched on `window` with `{ detail: { theme: resolved } }` for the `ShadowWrapper` in glean-oak-app to handle.
 
 ### Custom Tailwind Variants
 
@@ -251,14 +251,14 @@ cham-lang's primary visual style is claymorphism. These utility classes are defi
 
 ### CSS Isolation Note
 
-`global.css` has bare `body` and `h1`–`h6` selectors **outside** `@layer base`. These are safe for standalone mode but can bleed into `qm-hub-app`'s light DOM in embedded/dev HMR mode. The host app's unlayered `body { }` rule prevents visible bleedthrough, but any new bare element selectors added to `global.css` **must** go inside `@layer base`.
+`global.css` has bare `body` and `h1`–`h6` selectors **outside** `@layer base`. These are safe for standalone mode but can bleed into `glean-oak-app`'s light DOM in embedded/dev HMR mode. The host app's unlayered `body { }` rule prevents visible bleedthrough, but any new bare element selectors added to `global.css` **must** go inside `@layer base`.
 
 ### Anti-Patterns
 
 - **Do NOT use `dark:` prefix** for styles that should also apply in chameleon/simple/cyber — `dark:` only activates in `.dark`, not other themes.
 - **Do NOT hardcode** hex values for theme-sensitive colors — use the CSS variable equivalents.
 - **Do NOT use `bg-gradient-to-*` on buttons** — Tailwind v4 gradient chains break in Shadow DOM. Use `.btn-primary`, `.btn-secondary`, `.btn-success`, `.btn-danger`, etc. instead.
-- **Do NOT add bare element selectors** (`body`, `h1`–`h6`) outside `@layer base` — they can leak into `qm-hub-app`'s light DOM.
+- **Do NOT add bare element selectors** (`body`, `h1`–`h6`) outside `@layer base` — they can leak into `glean-oak-app`'s light DOM.
 
 ## Platform Abstraction
 
@@ -303,7 +303,7 @@ Required sync columns (camelCase): `syncVersion`, `syncedAt`, `createdAt`, `upda
 ## Sync Architecture
 
 - **Offline-first**: All data stored locally in IndexedDB
-- **Checkpoint-based sync**: Uses `IndexedDBSyncAdapter` to sync with qm-hub server
+- **Checkpoint-based sync**: Uses `IndexedDBSyncAdapter` to sync with glean-oak server
 - **Dual auth**: API keys identify apps (`X-API-Key` + `X-App-Id`), JWT tokens authenticate users (`Authorization: Bearer`)
 - **Per-table sync**: Each table tracks its own `lastSyncTimestamp` in `syncMetadata`
 - **Client-generated UUIDs**: Enables offline record creation
@@ -311,7 +311,7 @@ Required sync columns (camelCase): `syncVersion`, `syncedAt`, `createdAt`, `upda
 
 ## Embeddable Component Pattern
 
-`ChamLangApp` in `packages/ui/src/embed/ChamLangApp.tsx` can run standalone or embedded in qm-hub-app:
+`ChamLangApp` in `packages/ui/src/embed/ChamLangApp.tsx` can run standalone or embedded in glean-oak-app:
 
 ```tsx
 <ChamLangApp

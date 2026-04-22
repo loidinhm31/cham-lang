@@ -2,7 +2,7 @@ import type { SyncProgress, SyncResult, SyncStatus } from "@cham-lang/shared";
 
 /**
  * Sync service interface for data synchronization
- * Implemented by IndexedDBSyncAdapter which uses QmSyncClient for all platforms
+ * Implemented by IndexedDBSyncAdapter which uses GleanOakClient for all platforms
  */
 export interface ISyncService {
   /**

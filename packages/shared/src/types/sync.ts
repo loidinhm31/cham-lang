@@ -1,6 +1,6 @@
-// Sync types for data synchronization with qm-sync
+// Sync types for data synchronization with glean-oak-sync
 
-// Re-export sync protocol types from @qm-hub/sync-client-types (single source of truth)
+// Re-export sync protocol types from @glean-oak/sync-client-types (single source of truth)
 export type {
   SyncRecord,
   Checkpoint,
@@ -18,7 +18,7 @@ export type {
   HttpResponse,
   SyncClientConfig,
   RefreshResponse,
-} from "@qm-hub/sync-client-types";
+} from "@glean-oak/sync-client-types";
 
 // Re-export helper functions
 export {
@@ -26,17 +26,17 @@ export {
   withBearer,
   createSyncClientConfig,
   initialCheckpoint,
-} from "@qm-hub/sync-client-types";
+} from "@glean-oak/sync-client-types";
 
 // Re-export client implementation for TypeScript/JavaScript apps
 export {
-  QmSyncClient,
+  GleanOakClient,
   fetchHttpClient,
   type HttpClientFn,
-} from "@qm-hub/sync-client-types";
+} from "@glean-oak/sync-client-types";
 
 // =============================================================================
-// App-specific types (not in @qm-hub/sync-client-types)
+// App-specific types (not in @glean-oak/sync-client-types)
 // =============================================================================
 
 /**

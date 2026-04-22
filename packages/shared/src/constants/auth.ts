@@ -1,19 +1,19 @@
 /**
- * Centralized auth storage keys for qm-hub ecosystem.
+ * Centralized auth storage keys for glean-oak ecosystem.
  *
- * These keys are shared across all apps (qm-hub-app, cham-lang, etc.)
+ * These keys are shared across all apps (glean-oak-app, cham-lang, etc.)
  * to enable single sign-on via localStorage.
  */
 export const AUTH_STORAGE_KEYS = {
-  ACCESS_TOKEN: "qm-hub-access-token",
-  REFRESH_TOKEN: "qm-hub-refresh-token",
-  USER_ID: "qm-hub-user-id",
-  APPS: "qm-hub-apps",
-  IS_ADMIN: "qm-hub-is-admin",
-  SERVER_URL: "qm-hub-server-url",
-  APP_ID: "qm-hub-app-id",
-  API_KEY: "qm-hub-api-key",
-  OTP_TYPE: "qm-hub-otp-type",
+  ACCESS_TOKEN: "glean-oak-access-token",
+  REFRESH_TOKEN: "glean-oak-refresh-token",
+  USER_ID: "glean-oak-user-id",
+  APPS: "glean-oak-apps",
+  IS_ADMIN: "glean-oak-is-admin",
+  SERVER_URL: "glean-oak-server-url",
+  APP_ID: "glean-oak-app-id",
+  API_KEY: "glean-oak-api-key",
+  OTP_TYPE: "glean-oak-otp-type",
 } as const;
 
 export type AuthStorageKey =

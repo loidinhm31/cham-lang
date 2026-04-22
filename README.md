@@ -1,6 +1,6 @@
 # Cham Lang
 
-An **offline-first vocabulary learning app** with intelligent spaced repetition. Supports web, desktop (Tauri v2), and Android platforms. Embeddable in [qm-hub-app](../../qm-hub-app) via Shadow DOM.
+An **offline-first vocabulary learning app** with intelligent spaced repetition. Supports web, desktop (Tauri v2), and Android platforms. Embeddable in [glean-oak-app](../../glean-oak-app) via Shadow DOM.
 
 **Version:** 0.4.1 | **Status:** Active Development
 
@@ -12,7 +12,7 @@ An **offline-first vocabulary learning app** with intelligent spaced repetition.
 | **Collections** | Language-specific organization + read-only sharing |
 | **Practice Modes** | Flashcard, Fill Word, Multiple Choice + Study Mode (untracked) |
 | **Spaced Repetition** | SM-2, Modified SM-2, Simple Doubling + Leitner boxes (3/5/7) |
-| **Sync** | Checkpoint-based offline-first sync with qm-hub-server |
+| **Sync** | Checkpoint-based offline-first sync with glean-oak-server |
 | **Google Drive Backup** | Export/restore entire database |
 | **Daily Reminders** | Notifications with persistent scheduling (WorkManager on Android) |
 | **6 Themes** | Light, Dark, Chameleon, Simple, Cyber, System + CSS custom properties |
@@ -51,7 +51,7 @@ pnpm lint && pnpm format
 ## Tech Stack
 
 **Frontend:** React 19, TypeScript 5.8, React Router 7, Vite 5, Tailwind CSS 4
-**Data:** IndexedDB (Dexie.js 4), localStorage, optional qm-hub-server sync
+**Data:** IndexedDB (Dexie.js 4), localStorage, optional glean-oak-server sync
 **Desktop:** Tauri v2 + plugins (notification, schedule-task, google-auth)
 **Mobile:** Tauri Android + WorkManager for background tasks
 **Forms:** React Hook Form 7, Radix UI primitives
@@ -62,7 +62,7 @@ pnpm lint && pnpm format
 
 - **Offline-first:** All data in IndexedDB; sync is async, optional
 - **ServiceFactory DI:** Singleton services via setter/getter, initialized in root
-- **Embeddable:** Runs standalone or in qm-hub-app via Shadow DOM with SSO
+- **Embeddable:** Runs standalone or in glean-oak-app via Shadow DOM with SSO
 - **Multi-platform:** Same React codebase for web, desktop, Android
 - **Atomic Design:** atoms → molecules → organisms → pages
 - **Spaced Repetition:** 3 algorithms + Leitner boxes + multi-mode cycling
@@ -142,7 +142,7 @@ See `docs/architecture.md` for detailed **gate 1 (design)** and **gate 2 (post-i
 ## Troubleshooting
 
 - **IDB quota exceeded:** Large backups require Google Drive export
-- **Sync failures:** Check network + qm-hub-server availability; see `_syncMeta` checkpoint
+- **Sync failures:** Check network + glean-oak-server availability; see `_syncMeta` checkpoint
 - **Theme changes not applying:** Ensure `--color-*` variables are set; check `global.css`
 - **Android build fails:** Verify Android SDK + NDK installed; check `ANDROID_HOME` environment variable
 

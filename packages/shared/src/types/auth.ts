@@ -1,4 +1,4 @@
-// Authentication types for qm-sync integration
+// Authentication types for glean-oak-sync integration
 
 /**
  * Response from register/login endpoints

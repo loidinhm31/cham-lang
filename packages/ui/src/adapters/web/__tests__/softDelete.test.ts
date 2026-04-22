@@ -4,7 +4,7 @@ import { getDb, initDb } from "../database";
 import { IndexedDBVocabularyAdapter } from "../IndexedDBVocabularyAdapter";
 import { IndexedDBCollectionAdapter } from "../IndexedDBCollectionAdapter";
 import { IndexedDBSyncStorage } from "../sync/IndexedDBSyncStorage";
-import type { PullRecord } from "@qm-hub/sync-client-types";
+import type { PullRecord } from "@glean-oak/sync-client-types";
 
 const vocabAdapter = new IndexedDBVocabularyAdapter();
 const collectionAdapter = new IndexedDBCollectionAdapter();

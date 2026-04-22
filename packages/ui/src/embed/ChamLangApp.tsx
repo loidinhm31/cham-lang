@@ -78,7 +78,7 @@ function SyncAutoSyncManager({
 export interface ChamLangAppProps {
   className?: string;
   useRouter?: boolean;
-  /** Auth tokens when embedded in qm-hub */
+  /** Auth tokens when embedded in glean-oak */
   authTokens?: {
     accessToken: string;
     refreshToken: string;
@@ -97,7 +97,7 @@ export interface ChamLangAppProps {
 /**
  * ChamLangApp - Main embeddable component
  *
- * When embedded in another app (like qm-hub-app), this component:
+ * When embedded in another app (like glean-oak-app), this component:
  * 1. Uses shared localStorage tokens for SSO
  * 2. Hides outer navigation (sidebar, bottom nav) in embedded mode
  * 3. Notifies parent app on logout request

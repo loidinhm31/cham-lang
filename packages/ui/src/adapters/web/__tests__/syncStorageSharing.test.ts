@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 import { getDb, initDb } from "../database";
 import { IndexedDBSyncStorage } from "../sync/IndexedDBSyncStorage";
-import type { PullRecord } from "@qm-hub/sync-client-types";
+import type { PullRecord } from "@glean-oak/sync-client-types";
 
 const storage = new IndexedDBSyncStorage();
 

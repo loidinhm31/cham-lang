@@ -12,7 +12,7 @@ import { serviceLogger } from "@cham-lang/ui/utils";
 import {
   createSyncClientConfig,
   type HttpClientFn,
-  QmSyncClient,
+  GleanOakClient,
 } from "@cham-lang/shared/types";
 import { IndexedDBSyncStorage } from "@cham-lang/ui/adapters/web";
 
@@ -42,7 +42,7 @@ export interface IndexedDBSyncAdapterConfig {
 }
 
 export class IndexedDBSyncAdapter implements ISyncService {
-  private client: QmSyncClient | null = null;
+  private client: GleanOakClient | null = null;
   private storage: IndexedDBSyncStorage;
   private config: IndexedDBSyncAdapterConfig;
   private initialized = false;
@@ -61,7 +61,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
     return `${syncConfig.serverUrl}|${syncConfig.appId}|${syncConfig.apiKey}`;
   }
 
-  private ensureClient(): QmSyncClient {
+  private ensureClient(): GleanOakClient {
     const syncConfig = this.config.getConfig();
     const configHash = this.getConfigHash(syncConfig);
 
@@ -71,7 +71,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
         syncConfig.appId,
         syncConfig.apiKey,
       );
-      this.client = new QmSyncClient(clientConfig, this.config.httpClient);
+      this.client = new GleanOakClient(clientConfig, this.config.httpClient);
       this.lastConfigHash = configHash;
       this.initialized = false;
       // Write rotated tokens back to persistent storage immediately so the
@@ -210,7 +210,7 @@ export class IndexedDBSyncAdapter implements ISyncService {
           phase: "pulling",
           recordsPushed: pushed,
           recordsPulled: pulled,
-          hasMore,
+          hasMore: hasMore ?? false,
           currentPage: page,
         });
 
@@ -228,14 +228,14 @@ export class IndexedDBSyncAdapter implements ISyncService {
           pulled += pullResponse.records.length;
 
           currentCheckpoint = pullResponse.checkpoint;
-          hasMore = pullResponse.hasMore;
+          hasMore = pullResponse.hasMore ?? false;
 
           // Emit progress after each page
           onProgress({
             phase: "pulling",
             recordsPushed: pushed,
             recordsPulled: pulled,
-            hasMore,
+            hasMore: hasMore ?? false,
             currentPage: page,
           });
         }
